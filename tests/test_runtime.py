@@ -120,6 +120,15 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(decision.status, "ABSTAIN")
         self.assertIn("unexpected", decision.reason.lower())
 
+    def test_recommendation_below_declared_input_minimum_causes_abstention(self) -> None:
+        scenario = self.scenarios["low_oxygen"]
+        rule = self.policy.rules[0]
+        recommendation = replace(rule.recommendation, delta=-100.0)
+        policy = replace(self.policy, rules=(replace(rule, recommendation=recommendation),))
+        decision = evaluate(policy, scenario.observations, scenario.evaluated_at)
+        self.assertEqual(decision.status, "ABSTAIN")
+        self.assertIn("outside", decision.reason)
+
     def test_decision_ids_are_full_content_hashes(self) -> None:
         normal = self.scenarios["normal"]
         low = self.scenarios["low_oxygen"]

@@ -1,0 +1,11 @@
+DECISION_PROGRAM VERSION 1
+POLICY oxygen_advisory SHA256 718eed62975140fa147d45f756ebe554703fb774a78e42132b248d3b83b0d9a5
+BIND agitation_rpm FROM agitation_rpm
+BIND dissolved_oxygen_pct FROM dissolved_oxygen_pct
+BIND dissolved_oxygen_slope FROM dissolved_oxygen_slope
+BIND sensor_agreement FROM sensor_agreement
+COMPUTE oxygen_risk
+APPLY low_oxygen_advisory
+EXPECT RECOMMENDATION
+PROPOSE agitation_rpm DELTA 5 rpm
+END

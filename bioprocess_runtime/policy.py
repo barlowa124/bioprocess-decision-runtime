@@ -95,7 +95,8 @@ def parse_policy_text(source: str) -> Policy:
                 current_rule["condition"] = _comparison(tokens[1:])
             elif command == "REQUIRE" and current_rule is not None:
                 requirements = current_rule["requirements"]
-                assert isinstance(requirements, list)
+                if not isinstance(requirements, list):
+                    raise PolicySyntaxError("Rule requirements have invalid parser state")
                 requirements.append(_comparison(tokens[1:]))
             elif command == "RECOMMEND" and current_rule is not None:
                 if len(tokens) != 7 or tokens[2] != "DELTA" or tokens[4] != "MAX":
@@ -110,7 +111,8 @@ def parse_policy_text(source: str) -> Policy:
                 if missing:
                     raise PolicySyntaxError(f"Incomplete rule; missing {', '.join(sorted(missing))}")
                 recommendation = current_rule["recommendation"]
-                assert isinstance(recommendation, Recommendation)
+                if not isinstance(recommendation, Recommendation):
+                    raise PolicySyntaxError("Rule recommendation has invalid parser state")
                 recommendation_unit = current_rule["recommendation_unit"]
                 if recommendation.field not in inputs or inputs[recommendation.field].unit != recommendation_unit:
                     raise PolicySyntaxError("Recommendation field or unit does not match a declared input")

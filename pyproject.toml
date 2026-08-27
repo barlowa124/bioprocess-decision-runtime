@@ -15,6 +15,12 @@ dependencies = [
     "scikit-learn>=1.6,<1.9",
 ]
 
+[project.optional-dependencies]
+gemma = [
+    "torch==2.7.1",
+    "transformers==4.53.3",
+]
+
 [project.scripts]
 bioprocess-runtime = "bioprocess_runtime.cli:main"
 

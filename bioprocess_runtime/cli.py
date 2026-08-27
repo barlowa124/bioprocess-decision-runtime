@@ -163,6 +163,75 @@ def command_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def _write_json(path: Path | None, payload: dict[str, Any]) -> None:
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if path is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(rendered, encoding="utf-8")
+    print(rendered, end="")
+
+
+def command_gemma_interpret(args: argparse.Namespace) -> int:
+    from .interpretability import load_local_gemma, run_concept_experiment
+
+    model, tokenizer = load_local_gemma(args.model_path)
+    report = run_concept_experiment(model, tokenizer, args.model_path)
+    _write_json(args.output, report)
+    return 0
+
+
+def command_program_evaluate(args: argparse.Namespace) -> int:
+    from .decision_program import execute_decision_program, parse_decision_program
+
+    available = scenarios()
+    if args.scenario not in available:
+        print(f"Unknown scenario {args.scenario!r}", file=sys.stderr)
+        return 2
+    scenario = available[args.scenario]
+    policy = load_policy(args.policy)
+    program = parse_decision_program(args.program.read_text(encoding="utf-8"))
+    result = execute_decision_program(program, policy, scenario.observations, scenario.evaluated_at).to_dict()
+    _write_json(args.output, result)
+    return 0 if result["accepted"] else 1
+
+
+def command_gemma_program(args: argparse.Namespace) -> int:
+    from .gemma_api import GemmaAPIConfig, generate_and_execute_program
+
+    available = scenarios()
+    if args.scenario not in available:
+        print(f"Unknown scenario {args.scenario!r}", file=sys.stderr)
+        return 2
+    scenario = available[args.scenario]
+    policy = load_policy(args.policy)
+    config = GemmaAPIConfig(
+        base_url=args.base_url,
+        model=args.model,
+        seed=args.seed,
+        max_tokens=args.max_tokens,
+        timeout_seconds=args.timeout,
+    )
+    result = generate_and_execute_program(config, policy, scenario.observations, scenario.evaluated_at)
+    _write_json(args.output, result)
+    return 0 if result["execution"]["accepted"] else 1
+
+
+def command_gemma_program_suite(args: argparse.Namespace) -> int:
+    from .gemma_api import GemmaAPIConfig, run_program_suite
+
+    policy = load_policy(args.policy)
+    config = GemmaAPIConfig(
+        base_url=args.base_url,
+        model=args.model,
+        seed=args.seed,
+        max_tokens=args.max_tokens,
+        timeout_seconds=args.timeout,
+    )
+    result = run_program_suite(config, policy, scenarios())
+    _write_json(args.output, result)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bioprocess-runtime",
@@ -201,6 +270,39 @@ def build_parser() -> argparse.ArgumentParser:
     replay_parser.add_argument("decision_id")
     replay_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
     replay_parser.set_defaults(handler=command_replay)
+
+    interpret_parser = subparsers.add_parser("gemma-interpret", help="Run activation and causal-intervention experiments on local Gemma")
+    interpret_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    interpret_parser.add_argument("--output", type=Path)
+    interpret_parser.set_defaults(handler=command_gemma_interpret)
+
+    program_parser = subparsers.add_parser("program-evaluate", help="Evaluate a saved evidence-bound decision program")
+    program_parser.add_argument("program", type=Path)
+    program_parser.add_argument("--scenario", default="low_oxygen")
+    program_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
+    program_parser.add_argument("--output", type=Path)
+    program_parser.set_defaults(handler=command_program_evaluate)
+
+    gemma_program_parser = subparsers.add_parser("gemma-program", help="Ask local Gemma 4 for a decision program and independently interpret it")
+    gemma_program_parser.add_argument("--scenario", default="low_oxygen")
+    gemma_program_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
+    gemma_program_parser.add_argument("--base-url", default="http://127.0.0.1:5000/v1")
+    gemma_program_parser.add_argument("--model", default="gemma-4-31B-it-IQ4_XS.gguf")
+    gemma_program_parser.add_argument("--seed", type=int, default=17)
+    gemma_program_parser.add_argument("--max-tokens", type=int, default=512)
+    gemma_program_parser.add_argument("--timeout", type=int, default=300)
+    gemma_program_parser.add_argument("--output", type=Path)
+    gemma_program_parser.set_defaults(handler=command_gemma_program)
+
+    gemma_suite_parser = subparsers.add_parser("gemma-program-suite", help="Evaluate local Gemma 4 program generation across all scenarios")
+    gemma_suite_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
+    gemma_suite_parser.add_argument("--base-url", default="http://127.0.0.1:5000/v1")
+    gemma_suite_parser.add_argument("--model", default="gemma-4-31B-it-IQ4_XS.gguf")
+    gemma_suite_parser.add_argument("--seed", type=int, default=17)
+    gemma_suite_parser.add_argument("--max-tokens", type=int, default=512)
+    gemma_suite_parser.add_argument("--timeout", type=int, default=300)
+    gemma_suite_parser.add_argument("--output", type=Path)
+    gemma_suite_parser.set_defaults(handler=command_gemma_program_suite)
     return parser
 
 
@@ -208,7 +310,7 @@ def main() -> int:
     try:
         args = build_parser().parse_args()
         return args.handler(args)
-    except (PolicySyntaxError, OSError, ValueError) as exc:
+    except (PolicySyntaxError, OSError, RuntimeError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 

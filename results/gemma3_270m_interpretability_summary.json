@@ -1,0 +1,41 @@
+{
+  "scope": "Exploratory activation analysis on synthetic language prompts; not a complete interpretation or biological validation.",
+  "model": {
+    "repository": "unsloth/gemma-3-270m-it",
+    "class": "Gemma3ForCausalLM",
+    "snapshot_sha256": "b736debd207a627057268cb50981e0f2dac07c677a54f8ad322fc30afd9b79b3",
+    "layers": 18,
+    "hidden_size": 640,
+    "dtype": "torch.bfloat16",
+    "device": "NVIDIA GeForce RTX 4090"
+  },
+  "concept": {
+    "name": "low_oxygen_language_contrast",
+    "method": "Mean residual-stream difference at the final prompt token",
+    "prompt_manifest_sha256": "9be31554307edbd94f026122f366aa4970f1f83146462fba1b1eecd7221299ab",
+    "positive_target_token": "Yes",
+    "negative_target_token": "No"
+  },
+  "best_observed_layer": {
+    "layer": 10,
+    "held_out_roc_auc": 1.0,
+    "held_out_effect_size": 1.8345688581466675,
+    "training_projection_gap": 70.24378204345703,
+    "intervention_prompt_count": 4,
+    "baseline_yes_minus_no_logit_mean": 1.59375,
+    "intervened_yes_minus_no_logit_mean": 2.0,
+    "intervention_logit_margin_delta_mean": 0.40625,
+    "intervention_logit_margin_delta_minimum": 0.25,
+    "intervention_logit_margin_delta_maximum": 0.75,
+    "positive_intervention_effect_fraction": 1.0
+  },
+  "interpretation": "Layer 10 perfectly ranked eight held-out prompts from the same authored prompt family. Adding the measured direction increased the Yes-minus-No next-token logit margin on all four held-out negative prompts, with mean change 0.40625 and range 0.25 to 0.75. This is evidence of linear separability and model sensitivity, not proof of a stable semantic feature or complete causal circuit.",
+  "limitations": [
+    "A linear direction can encode lexical or formatting correlations rather than a stable human concept.",
+    "The held-out set contains only eight synthetic prompts from the same authored prompt family.",
+    "Residual intervention demonstrates sensitivity, not a complete causal circuit or semantic proof.",
+    "Results on Gemma 3 270M do not establish behavior of Gemma 4 31B or another checkpoint.",
+    "The bfloat16 results are not claimed to be numerically identical across hardware, drivers, or library versions.",
+    "No GMP, process-control, product-quality, clinical, or patient-safety conclusion is supported."
+  ]
+}

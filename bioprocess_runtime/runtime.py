@@ -140,7 +140,7 @@ def evaluate(policy: Policy, observations: dict[str, Observation], evaluated_at:
 
     for rule in policy.rules:
         matched, actual = _compare(rule.condition, values)
-        trace.append(TraceStep("rule_condition", "MATCH" if matched else "NO_MATCH", f"Evaluated rule {rule.name}", {"field": rule.condition.field, "actual": actual, "operator": rule.condition.operator, "expected": rule.condition.expected}))
+        trace.append(TraceStep("rule_condition", "MATCH" if matched else "NO_MATCH", f"Evaluated rule {rule.name}", {"rule": rule.name, "field": rule.condition.field, "actual": actual, "operator": rule.condition.operator, "expected": rule.condition.expected}))
         if not matched:
             continue
         for requirement in rule.requirements:
@@ -151,9 +151,10 @@ def evaluate(policy: Policy, observations: dict[str, Observation], evaluated_at:
         recommendation = rule.recommendation
         current = float(values[recommendation.field])
         proposed = current + recommendation.delta
-        if proposed > recommendation.maximum:
-            trace.append(TraceStep("recommendation_constraint", "FAIL", "Proposed value exceeds the demonstration policy maximum", {"field": recommendation.field, "current": current, "delta": recommendation.delta, "proposed": proposed, "maximum": recommendation.maximum}))
-            return _finalize(policy, observations, evaluated_at, "ABSTAIN", f"Recommendation exceeds demonstration policy maximum for {recommendation.field}", model_output, None, trace)
+        minimum = policy.inputs[recommendation.field].minimum
+        if (minimum is not None and proposed < minimum) or proposed > recommendation.maximum:
+            trace.append(TraceStep("recommendation_constraint", "FAIL", "Proposed value is outside the demonstration policy interval", {"field": recommendation.field, "current": current, "delta": recommendation.delta, "proposed": proposed, "minimum": minimum, "maximum": recommendation.maximum}))
+            return _finalize(policy, observations, evaluated_at, "ABSTAIN", f"Recommendation is outside the demonstration policy interval for {recommendation.field}", model_output, None, trace)
         output = {
             "field": recommendation.field,
             "current": current,
