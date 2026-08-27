@@ -118,6 +118,86 @@ class ActivationCapture:
             handle.remove()
 
 
+class ProjectionInputCapture:
+    def __init__(self, model: Any, component: str):
+        self.model = model
+        self.layers = ActivationCapture._resolve_layers(model)
+        if component not in {"attention_heads", "mlp_neurons"}:
+            raise ValueError(f"Unsupported projection component {component!r}")
+        self.component = component
+
+    def _module(self, layer_index: int) -> Any:
+        layer = self.layers[layer_index]
+        return layer.self_attn.o_proj if self.component == "attention_heads" else layer.mlp.down_proj
+
+    @contextmanager
+    def capture(self, layer_index: int, position: str | int = "last") -> Iterator[dict[str, Any]]:
+        captured: dict[str, Any] = {}
+
+        def hook(_module: Any, arguments: Any) -> None:
+            tensor = arguments[0]
+            token_index = ActivationCapture._position_index(tensor.shape[1], position)
+            captured["activation"] = tensor[0, token_index].detach().float().cpu().clone()
+
+        handle = self._module(layer_index).register_forward_pre_hook(hook)
+        try:
+            yield captured
+        finally:
+            handle.remove()
+
+    @contextmanager
+    def replace(
+        self,
+        layer_index: int,
+        start: int,
+        end: int,
+        replacement: Any,
+        position: str | int = "last",
+    ) -> Iterator[None]:
+        import torch
+
+        def hook(_module: Any, arguments: Any) -> tuple[Any, ...]:
+            tensor = arguments[0]
+            modified = tensor.clone()
+            token_index = ActivationCapture._position_index(modified.shape[1], position)
+            value = replacement.to(device=modified.device, dtype=modified.dtype)
+            modified[:, token_index, start:end] = value
+            return (modified, *arguments[1:])
+
+        handle = self._module(layer_index).register_forward_pre_hook(hook)
+        try:
+            with torch.no_grad():
+                yield
+        finally:
+            handle.remove()
+
+    @contextmanager
+    def replace_indices(
+        self,
+        layer_index: int,
+        indices: np.ndarray,
+        replacement: Any,
+        position: str | int = "last",
+    ) -> Iterator[None]:
+        import torch
+
+        def hook(_module: Any, arguments: Any) -> tuple[Any, ...]:
+            tensor = arguments[0]
+            modified = tensor.clone()
+            token_index = ActivationCapture._position_index(modified.shape[1], position)
+            tensor_indices = torch.as_tensor(indices, device=modified.device, dtype=torch.long)
+            values = replacement.to(device=modified.device, dtype=modified.dtype)
+            modified[:, token_index, tensor_indices] = values
+            return (modified, *arguments[1:])
+
+        handle = self._module(layer_index).register_forward_pre_hook(hook)
+        try:
+            with torch.no_grad():
+                yield
+        finally:
+            handle.remove()
+
+
 def default_low_oxygen_prompts() -> PromptSet:
     question = " Does this record describe a low-oxygen condition requiring review? Answer Yes or No."
     test_question = "\nREVIEW_QUERY: Is low oxygen review required? Respond Yes or No."
@@ -154,13 +234,29 @@ def default_low_oxygen_prompts() -> PromptSet:
             "INPUT_RECORD|do_pct=27|do_slope_pct_per_min=-1.2|state=falling" + test_question,
             "INPUT_RECORD|do_pct=31|do_slope_pct_per_min=-0.9|state=declining" + test_question,
             "TABLE_ROW: oxygen=29 percent; trend=downward; status=limited" + test_question,
-            "TELEMETRY: DO low; derivative negative; observation worsening" + test_question,
+            "TELEMETRY: DO below reference; derivative negative; observation worsening" + test_question,
+            "CSV_ROW,oxygen_percent=33,slope=-0.7,trajectory=falling" + test_question,
+            "JSON_RECORD: {\"oxygen_percent\": 26, \"slope\": -1.3, \"trajectory\": \"down\"}" + test_question,
+            "<reading oxygen_percent=\"32\" slope=\"-0.8\" trajectory=\"falling\"/>" + test_question,
+            "DO=30 percent; dDO_dt=-1.1 percent_per_minute" + test_question,
+            "The current oxygen measurement has declined to 29 percent and continues downward." + test_question,
+            "Sensor sequence: 38 percent, 34 percent, 30 percent; intervals equal." + test_question,
+            "Oxygen availability is below its reference region with a negative derivative." + test_question,
+            "Process note: the oxygen signal is diminished and has not stabilized." + test_question,
         ),
         negative_test=(
             "INPUT_RECORD|do_pct=47|do_slope_pct_per_min=0.0|state=stable" + test_question,
             "INPUT_RECORD|do_pct=44|do_slope_pct_per_min=0.1|state=steady" + test_question,
             "TABLE_ROW: oxygen=49 percent; trend=flat; status=adequate" + test_question,
-            "TELEMETRY: DO normal; derivative zero; observation unchanged" + test_question,
+            "TELEMETRY: DO within reference; derivative zero; observation unchanged" + test_question,
+            "CSV_ROW,oxygen_percent=46,slope=0.0,trajectory=stable" + test_question,
+            "JSON_RECORD: {\"oxygen_percent\": 50, \"slope\": 0.1, \"trajectory\": \"flat\"}" + test_question,
+            "<reading oxygen_percent=\"48\" slope=\"0.0\" trajectory=\"stable\"/>" + test_question,
+            "DO=45 percent; dDO_dt=0.0 percent_per_minute" + test_question,
+            "The current oxygen measurement remains at 47 percent without decline." + test_question,
+            "Sensor sequence: 46 percent, 46 percent, 47 percent; intervals equal." + test_question,
+            "Oxygen availability is within its reference region with a flat derivative." + test_question,
+            "Process note: the oxygen signal is adequate and has stabilized." + test_question,
         ),
     )
 
@@ -285,6 +381,161 @@ def _intervention_metrics(
         "logit_margin_delta_minimum": float(np.min(deltas)),
         "logit_margin_delta_maximum": float(np.max(deltas)),
         "positive_effect_fraction": float(np.mean(deltas > 0)),
+    }
+
+
+def _projection_matrix(
+    model: Any,
+    tokenizer: Any,
+    prompts: tuple[str, ...],
+    capture: ProjectionInputCapture,
+    layer_index: int,
+    position: str | int = "last",
+) -> np.ndarray:
+    import torch
+
+    values = []
+    for prompt in prompts:
+        with capture.capture(layer_index, position) as activation, torch.no_grad():
+            model(**_tokenize(tokenizer, prompt, _model_device(model)), use_cache=False)
+        values.append(activation["activation"].numpy())
+    return np.stack(values)
+
+
+def _replacement_metrics(
+    model: Any,
+    tokenizer: Any,
+    context: Any,
+    prompts: tuple[str, ...],
+    positive_token_id: int,
+    negative_token_id: int,
+) -> dict[str, Any]:
+    baseline = [_next_token_margin(model, tokenizer, prompt, positive_token_id, negative_token_id) for prompt in prompts]
+    with context:
+        replaced = [_next_token_margin(model, tokenizer, prompt, positive_token_id, negative_token_id) for prompt in prompts]
+    deltas = np.array(replaced) - np.array(baseline)
+    return {
+        "prompt_count": len(prompts),
+        "baseline_yes_minus_no_logit_mean": float(np.mean(baseline)),
+        "replaced_yes_minus_no_logit_mean": float(np.mean(replaced)),
+        "logit_margin_delta_mean": float(np.mean(deltas)),
+        "logit_margin_delta_minimum": float(np.min(deltas)),
+        "logit_margin_delta_maximum": float(np.max(deltas)),
+        "negative_effect_fraction": float(np.mean(deltas < 0)),
+    }
+
+
+def _attention_head_analysis(
+    model: Any,
+    tokenizer: Any,
+    prompt_set: PromptSet,
+    layer_index: int,
+    positive_token_id: int,
+    negative_token_id: int,
+) -> dict[str, Any]:
+    import torch
+
+    capture = ProjectionInputCapture(model, "attention_heads")
+    positive_training = _projection_matrix(model, tokenizer, prompt_set.positive_training, capture, layer_index)
+    negative_training = _projection_matrix(model, tokenizer, prompt_set.negative_training, capture, layer_index)
+    positive_validation = _projection_matrix(model, tokenizer, prompt_set.positive_validation, capture, layer_index)
+    negative_validation = _projection_matrix(model, tokenizer, prompt_set.negative_validation, capture, layer_index)
+    positive_test = _projection_matrix(model, tokenizer, prompt_set.positive_test, capture, layer_index)
+    negative_test = _projection_matrix(model, tokenizer, prompt_set.negative_test, capture, layer_index)
+    head_count = int(model.config.num_attention_heads)
+    head_dimension = positive_training.shape[1] // head_count
+    heads = []
+    directions = {}
+    for head in range(head_count):
+        start = head * head_dimension
+        end = start + head_dimension
+        direction = _direction(positive_training[:, start:end], negative_training[:, start:end])
+        directions[head] = direction
+        heads.append(
+            {
+                "head": head,
+                "validation": _direction_metrics(direction, positive_validation[:, start:end], negative_validation[:, start:end]),
+            }
+        )
+    selected = max(heads, key=lambda item: (item["validation"]["roc_auc"], item["validation"]["effect_size"]))
+    selected_head = int(selected["head"])
+    start = selected_head * head_dimension
+    end = start + head_dimension
+    direction = directions[selected_head]
+    test = _direction_metrics(direction, positive_test[:, start:end], negative_test[:, start:end])
+    negative_baseline = torch.from_numpy(np.mean(negative_training[:, start:end], axis=0))
+    replacement = _replacement_metrics(
+        model,
+        tokenizer,
+        capture.replace(layer_index, start, end, negative_baseline),
+        prompt_set.positive_test,
+        positive_token_id,
+        negative_token_id,
+    )
+    return {
+        "head_count": head_count,
+        "head_dimension": head_dimension,
+        "selection_protocol": "Head selected only on validation metrics after training-set direction construction.",
+        "selected_head": selected_head,
+        "selected_validation": selected["validation"],
+        "selected_test": test,
+        "positive_test_replacement_with_negative_training_mean": replacement,
+        "heads": heads,
+    }
+
+
+def _mlp_neuron_analysis(
+    model: Any,
+    tokenizer: Any,
+    prompt_set: PromptSet,
+    layer_index: int,
+    positive_token_id: int,
+    negative_token_id: int,
+    candidate_count: int = 8,
+) -> dict[str, Any]:
+    import torch
+
+    capture = ProjectionInputCapture(model, "mlp_neurons")
+    positive_training = _projection_matrix(model, tokenizer, prompt_set.positive_training, capture, layer_index)
+    negative_training = _projection_matrix(model, tokenizer, prompt_set.negative_training, capture, layer_index)
+    positive_validation = _projection_matrix(model, tokenizer, prompt_set.positive_validation, capture, layer_index)
+    negative_validation = _projection_matrix(model, tokenizer, prompt_set.negative_validation, capture, layer_index)
+    positive_test = _projection_matrix(model, tokenizer, prompt_set.positive_test, capture, layer_index)
+    negative_test = _projection_matrix(model, tokenizer, prompt_set.negative_test, capture, layer_index)
+    signed_difference = np.mean(positive_training, axis=0) - np.mean(negative_training, axis=0)
+    ranked = np.argsort(np.abs(signed_difference))[::-1][:candidate_count].copy()
+    neurons = []
+    for neuron in ranked:
+        sign = 1.0 if signed_difference[neuron] >= 0 else -1.0
+        validation = _direction_metrics(
+            np.array([sign]),
+            positive_validation[:, neuron:neuron + 1],
+            negative_validation[:, neuron:neuron + 1],
+        )
+        test = _direction_metrics(np.array([sign]), positive_test[:, neuron:neuron + 1], negative_test[:, neuron:neuron + 1])
+        neurons.append(
+            {
+                "neuron": int(neuron),
+                "training_mean_difference": float(signed_difference[neuron]),
+                "orientation": sign,
+                "validation": validation,
+                "test": test,
+            }
+        )
+    replacement_values = torch.from_numpy(np.mean(negative_training[:, ranked], axis=0))
+    group_replacement = _replacement_metrics(
+        model,
+        tokenizer,
+        capture.replace_indices(layer_index, ranked, replacement_values),
+        prompt_set.positive_test,
+        positive_token_id,
+        negative_token_id,
+    )
+    return {
+        "intermediate_size": int(positive_training.shape[1]),
+        "candidate_selection": f"Top {candidate_count} neurons by absolute training-set mean difference; test data not used for selection.",
+        "candidates": neurons,
+        "positive_test_group_replacement_with_negative_training_means": group_replacement,
     }
 
 
@@ -456,6 +707,12 @@ def run_concept_experiment(model: Any, tokenizer: Any, model_path: str | Path, p
         _component_analysis(model, tokenizer, prompt_set, selected_layer, component, "last", positive_token_id, negative_token_id)
         for component in ("attention", "mlp")
     ]
+    attention_head_localization = _attention_head_analysis(
+        model, tokenizer, prompt_set, selected_layer, positive_token_id, negative_token_id
+    )
+    mlp_neuron_localization = _mlp_neuron_analysis(
+        model, tokenizer, prompt_set, selected_layer, positive_token_id, negative_token_id
+    )
     layer_types = getattr(model.config, "layer_types", None)
     prompt_manifest = {
         "positive_training": prompt_set.positive_training,
@@ -482,7 +739,11 @@ def run_concept_experiment(model: Any, tokenizer: Any, model_path: str | Path, p
             "prompt_manifest_sha256": hashlib.sha256(json.dumps(prompt_manifest, sort_keys=True).encode("utf-8")).hexdigest(),
             "positive_target_token": {"text": "Yes", "id": positive_token_id},
             "negative_target_token": {"text": "No", "id": negative_token_id},
-            "split_sizes_per_class": {"training": 6, "validation": 4, "format_shift_test": 4},
+            "split_sizes_per_class": {
+                "training": len(prompt_set.positive_training),
+                "validation": len(prompt_set.positive_validation),
+                "format_shift_test": len(prompt_set.positive_test),
+            },
         },
         "selection_protocol": "Layer selected only by validation ROC AUC, then effect size; final metrics and interventions use format-shifted test prompts.",
         "selected_layer": {
@@ -495,13 +756,16 @@ def run_concept_experiment(model: Any, tokenizer: Any, model_path: str | Path, p
         "null_controls": null_controls,
         "token_position_localization": position_localization,
         "component_localization": component_localization,
+        "attention_head_localization": attention_head_localization,
+        "mlp_neuron_localization": mlp_neuron_localization,
         "layer_selection": layer_selection,
         "limitations": [
             "A linear direction can encode lexical, formatting, or authored-dataset correlations rather than a stable human concept.",
-            "The format-shift test set is separately formatted but still authored for this experiment and contains only eight prompts.",
+            "The fixed format and vocabulary stress test is still authored for this experiment and contains only 24 prompts.",
             "Empirical null p-values are descriptive controls for this finite prompt set, not population-level significance claims.",
             "Residual and component interventions demonstrate sensitivity, not a complete causal circuit or semantic proof.",
-            "Attention and MLP outputs are aggregate component outputs; individual heads and neurons are not localized.",
+            "Head localization uses pre-output-projection channel blocks and does not isolate query, key, value, or attention-pattern mechanisms.",
+            "MLP localization tests eight training-ranked intermediate neurons; multiple-comparison and interaction effects remain unresolved.",
             "Results on Gemma 3 270M do not establish behavior of Gemma 4 31B or another checkpoint.",
             "The bfloat16 results are not claimed to be numerically identical across hardware, drivers, or library versions.",
             "No GMP, process-control, product-quality, clinical, or patient-safety conclusion is supported.",

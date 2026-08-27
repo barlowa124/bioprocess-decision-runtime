@@ -6,19 +6,24 @@
     "snapshot_sha256": "b736debd207a627057268cb50981e0f2dac07c677a54f8ad322fc30afd9b79b3",
     "layers": 18,
     "hidden_size": 640,
+    "attention_heads": 4,
+    "attention_head_dimension": 256,
+    "mlp_intermediate_size": 2048,
     "dtype": "torch.bfloat16",
     "device": "NVIDIA GeForce RTX 4090"
   },
   "method": {
     "concept": "low_oxygen_language_contrast",
+    "prompt_manifest_sha256": "f53542c2de195b511b605b83625722fe391d8d85837b7f2ba174b4672af08040",
     "training_prompts_per_class": 6,
     "validation_prompts_per_class": 4,
-    "format_shift_test_prompts_per_class": 4,
+    "fixed_format_vocabulary_stress_test_prompts_per_class": 12,
     "layer_selection": "Validation ROC AUC, then validation effect size",
     "null_iterations": 200,
     "null_layer_selection": "Each null iteration independently selects its best validation layer before test evaluation",
     "token_positions": ["quarter", "middle", "last"],
-    "components": ["residual", "attention", "mlp"]
+    "aggregate_components": ["residual", "attention", "mlp"],
+    "fine_localization": ["pre-output-projection attention head channels", "pre-down-projection MLP intermediate neurons"]
   },
   "selected_layer": {
     "layer": 10,
@@ -26,66 +31,62 @@
     "validation_roc_auc": 1.0,
     "validation_effect_size": 1.8345688581466675
   },
-  "final_format_shift_test": {
-    "roc_auc": 0.75,
-    "effect_size": 0.6665226817131042,
-    "projection_gap": 7.3616943359375
+  "final_stress_test": {
+    "roc_auc": 0.6875,
+    "effect_size": 0.7411642670631409,
+    "projection_gap": 16.040000915527344
   },
   "null_controls": {
     "shuffled_training_labels": {
       "iterations": 200,
-      "mean_roc_auc": 0.5471875,
-      "95th_percentile": 0.6875,
-      "empirical_right_tail_p_value": 0.04477611940298507
+      "mean_roc_auc": 0.5357465277777778,
+      "95th_percentile": 0.625,
+      "maximum": 0.6597222222222223,
+      "empirical_right_tail_p_value": 0.004975124378109453
     },
     "random_directions": {
       "iterations": 200,
-      "mean_roc_auc": 0.544375,
-      "95th_percentile": 0.75,
-      "empirical_right_tail_p_value": 0.07960199004975124
+      "mean_roc_auc": 0.5278819444444445,
+      "95th_percentile": 0.6180555555555556,
+      "maximum": 0.6527777777777778,
+      "empirical_right_tail_p_value": 0.004975124378109453
     }
   },
   "selected_layer_intervention": {
-    "test_negative_prompts": 4,
-    "yes_minus_no_logit_delta_mean": 0.328125,
-    "yes_minus_no_logit_delta_range": [0.1875, 0.375],
-    "positive_effect_fraction": 1.0
+    "negative_test_prompts": 12,
+    "yes_minus_no_logit_delta_mean": 0.265625,
+    "yes_minus_no_logit_delta_range": [0.0, 0.5],
+    "positive_effect_fraction": 0.9166666666666666
   },
-  "token_position_localization": {
-    "quarter": {
-      "test_roc_auc": 0.875,
-      "intervention_delta_mean": 0.0,
-      "positive_effect_fraction": 0.5
-    },
-    "middle": {
-      "test_roc_auc": 0.3125,
-      "intervention_delta_mean": 0.140625,
-      "positive_effect_fraction": 0.75
-    },
-    "last": {
-      "test_roc_auc": 0.75,
-      "intervention_delta_mean": 0.328125,
-      "positive_effect_fraction": 1.0
+  "selected_attention_head": {
+    "head": 0,
+    "selection": "Validation ROC AUC after training-set direction construction",
+    "validation_roc_auc": 1.0,
+    "stress_test_roc_auc": 0.5833333333333333,
+    "positive_test_replacement_with_negative_training_mean": {
+      "logit_margin_delta_mean": -0.109375,
+      "logit_margin_delta_range": [-0.375, 0.125],
+      "negative_effect_fraction": 0.5833333333333334
     }
   },
-  "component_localization_at_layer_10": {
-    "attention": {
-      "test_roc_auc": 0.625,
-      "intervention_delta_mean": 0.265625,
-      "positive_effect_fraction": 1.0
-    },
-    "mlp": {
-      "test_roc_auc": 0.625,
-      "intervention_delta_mean": 0.28125,
-      "positive_effect_fraction": 1.0
+  "training_ranked_mlp_neurons": {
+    "candidate_count": 8,
+    "best_candidate_stress_test_roc_auc": 0.6493055555555556,
+    "best_candidate_neuron": 193,
+    "group_replacement_with_negative_training_means": {
+      "logit_margin_delta_mean": 0.08333333333333333,
+      "logit_margin_delta_range": [-0.125, 0.375],
+      "negative_effect_fraction": 0.16666666666666666
     }
   },
-  "interpretation": "The validation-selected direction generalized moderately to the separately formatted test prompts with ROC AUC 0.75. After repeating layer selection within every null iteration, the result exceeded the shuffled-label 95th percentile of 0.6875 (empirical p=0.0448) but equaled the random-direction 95th percentile of 0.75 (empirical p=0.0796). Residual, attention, and MLP interventions consistently shifted the selected output margin on four negative test prompts. The mixed null results and tiny authored test set are insufficient to identify a stable semantic feature or complete causal circuit.",
+  "interpretation": "The validation-selected residual direction achieved stress-test ROC AUC 0.6875, above every one of 200 shuffled-label and 200 random-direction null runs after each null repeated layer selection. Residual intervention shifted the Yes-minus-No margin positively on 11 of 12 negative prompts. Finer localization was weak: the validation-selected attention head fell to ROC AUC 0.583 on stress testing, individual training-ranked MLP neurons reached at most 0.649, and replacing the eight selected MLP activations with negative-training means did not reduce the output margin on most positive prompts. The evidence supports a distributed residual-stream association and intervention sensitivity in this authored dataset, not a stable semantic feature, localized mechanism, or complete causal circuit.",
   "limitations": [
-    "All prompt sets were authored for this experiment and the final test set contains only eight prompts.",
-    "The format shift reduces but does not eliminate lexical, formatting, or dataset-construction confounds.",
-    "The empirical null results do not support a strong statistical claim for the selected direction.",
-    "Attention and MLP results operate on aggregate component outputs rather than individual heads or neurons.",
+    "All prompt sets were authored for this experiment; the larger test set is fixed and versioned but not externally independent or formally preregistered.",
+    "The stress test broadens formats and vocabulary but does not eliminate dataset-construction confounds.",
+    "Empirical p-values are finite-control diagnostics for this prompt set, not population-level significance claims.",
+    "Head localization uses pre-output-projection channel blocks and does not isolate query, key, value, or attention-pattern mechanisms.",
+    "MLP localization evaluates eight training-ranked intermediate neurons and does not resolve interactions or multiple-comparison uncertainty.",
+    "Activation replacement with a negative-training mean is one intervention baseline and may create off-distribution internal states.",
     "Intervention sensitivity is not semantic proof or biological validation.",
     "Results on Gemma 3 270M do not establish behavior of Gemma 4 31B or another checkpoint.",
     "The bfloat16 results are not claimed to be numerically identical across hardware, drivers, or library versions.",

@@ -200,15 +200,19 @@ The experiment:
 
 1. Uses six training prompts per class to compute candidate directions across all 18 residual-stream layers.
 2. Uses a separate four-per-class validation set to select one layer by ROC AUC and then effect size.
-3. Evaluates the selected layer once on a separately formatted four-per-class test set.
+3. Evaluates the selected layer once on a fixed, separately formatted 12-per-class vocabulary and format stress test.
 4. Compares test performance with 200 shuffled-label and 200 random-direction null iterations, each of which independently repeats validation-based layer selection.
-5. Intervenes on four negative test prompts and measures changes in the next-token `Yes`-minus-`No` logit margin.
+5. Intervenes on 12 negative test prompts and measures changes in the next-token `Yes`-minus-`No` logit margin.
 6. Repeats localization at quarter, middle, and final relative token positions.
 7. Separately captures and intervenes on aggregate attention and MLP outputs at the selected layer.
+8. Splits the pre-output-projection attention tensor into four head-channel blocks and tests the validation-selected head.
+9. Ranks eight of 2,048 MLP intermediate neurons using training data only, then tests them and replaces their activations with negative-training means.
 
-The checked-in result is [`results/gemma3_270m_interpretability_summary.json`](results/gemma3_270m_interpretability_summary.json). Validation selected layer 10 with ROC AUC `1.0`, but performance fell to ROC AUC `0.75` on the format-shifted test. After repeating layer selection in every null iteration, the score exceeded the shuffled-label 95th percentile of `0.6875` (empirical p=`0.0448`) but equaled the random-direction 95th percentile of `0.75` (empirical p=`0.0796`).
+The checked-in result is [`results/gemma3_270m_interpretability_summary.json`](results/gemma3_270m_interpretability_summary.json). Validation selected layer 10 with ROC AUC `1.0`; the larger stress-test ROC AUC was `0.6875`. That exceeded every one of 200 shuffled-label and 200 random-direction null runs after each null repeated layer selection. Both empirical right-tail p-values reached the finite-control minimum of `1/201 = 0.00498`.
 
-Adding the selected residual direction increased the `Yes`-minus-`No` margin on all four negative test prompts, with mean change `+0.328` and range `+0.188` to `+0.375`. Aggregate attention and MLP interventions also shifted the margin, but each component direction reached only test ROC AUC `0.625`. The null controls are mixed, the test set is tiny, and all prompts remain authored; these results are insufficient to identify a stable low-oxygen semantic feature or complete causal circuit. The model runs in `bfloat16`; exact numerical equivalence across hardware, drivers, or library versions is not claimed.
+Adding the selected residual direction increased the `Yes`-minus-`No` margin on 11 of 12 negative test prompts, with mean change `+0.266` and range `0.0` to `+0.5`. Finer localization was substantially weaker: validation-selected attention head 0 fell to stress-test ROC AUC `0.583`, while the best of eight training-ranked MLP neurons reached `0.649`. Replacing all eight selected MLP activations with negative-training means unexpectedly increased the mean output margin, rather than removing the presumed signal.
+
+The evidence supports a distributed residual-stream association and intervention sensitivity in this authored dataset, but not a stable semantic feature, a localized head/neuron mechanism, or a complete causal circuit. The fixed stress test is not externally independent or formally preregistered. The model runs in `bfloat16`; exact numerical equivalence across hardware, drivers, or library versions is not claimed.
 
 ## Objective B: force Gemma through an executable language
 

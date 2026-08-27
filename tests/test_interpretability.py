@@ -9,6 +9,7 @@ import numpy as np
 
 from bioprocess_runtime.interpretability import (
     ActivationCapture,
+    ProjectionInputCapture,
     _effect_size,
     _normalized,
     _null_controls,
@@ -26,12 +27,20 @@ class ActivationCaptureTests(unittest.TestCase):
         import torch
 
         class ToyAttention(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.o_proj = torch.nn.Identity()
+
             def forward(self, hidden):
-                return (hidden + 0.25, None)
+                return (self.o_proj(hidden + 0.25), None)
 
         class ToyMLP(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.down_proj = torch.nn.Identity()
+
             def forward(self, hidden):
-                return hidden + 0.5
+                return self.down_proj(hidden + 0.5)
 
         class ToyLayer(torch.nn.Module):
             def __init__(self):
@@ -82,6 +91,22 @@ class ActivationCaptureTests(unittest.TestCase):
         self.assertTrue(self.torch.equal(attention[0], self.torch.full((4,), 0.25)))
         self.assertTrue(self.torch.equal(mlp[0], self.torch.full((4,), 0.75)))
 
+    def test_projection_input_capture_and_replacement(self) -> None:
+        hidden = self.torch.zeros((1, 3, 4))
+        capture = ProjectionInputCapture(self.model, "attention_heads")
+        with capture.capture(0) as activation:
+            self.model(hidden)
+        self.assertTrue(self.torch.equal(activation["activation"], self.torch.full((4,), 0.25)))
+        replacement = self.torch.tensor([2.0, 3.0])
+        baseline = self.model(hidden)
+        with capture.replace(0, 0, 2, replacement):
+            replaced = self.model(hidden)
+        self.assertTrue(self.torch.equal((replaced - baseline)[0, -1], self.torch.tensor([1.75, 2.75, 0.0, 0.0])))
+        indices = np.arange(4)[::-1][:2].copy()
+        with capture.replace_indices(0, indices, self.torch.tensor([4.0, 5.0])):
+            indexed = self.model(hidden)
+        self.assertTrue(self.torch.equal((indexed - baseline)[0, -1], self.torch.tensor([0.0, 0.0, 4.75, 3.75])))
+
     def test_intervention_changes_only_last_token(self) -> None:
         hidden = self.torch.zeros((1, 3, 4))
         direction = self.torch.tensor([1.0, 0.0, 0.0, 0.0])
@@ -113,6 +138,10 @@ class InterpretabilityMathTests(unittest.TestCase):
         self.assertFalse(groups[0] & groups[1])
         self.assertFalse(groups[0] & groups[2])
         self.assertFalse(groups[1] & groups[2])
+        self.assertEqual(len(prompts.positive_training), 6)
+        self.assertEqual(len(prompts.positive_validation), 4)
+        self.assertEqual(len(prompts.positive_test), 12)
+        self.assertEqual(len(prompts.negative_test), 12)
 
     def test_null_controls_are_seeded_and_report_empirical_p_values(self) -> None:
         positive_training = np.array([[2.0, 1.0], [3.0, 1.0], [4.0, 1.0]])
