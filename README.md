@@ -198,15 +198,17 @@ python -m bioprocess_runtime gemma-interpret --model-path .models/gemma-3-270m-i
 
 The experiment:
 
-1. Captures the final-prompt-token residual stream after every one of Gemma 3 270M's 18 decoder layers.
-2. Computes a unit-length candidate direction from the mean difference between six low-oxygen and six normal-oxygen prompts.
-3. Projects eight held-out prompts onto that direction and reports ROC AUC and effect size at every layer.
-4. Adds the measured direction to a negative prompt's residual stream at one layer at a time.
-5. Measures the resulting change in the next-token `Yes`-minus-`No` logit margin.
+1. Uses six training prompts per class to compute candidate directions across all 18 residual-stream layers.
+2. Uses a separate four-per-class validation set to select one layer by ROC AUC and then effect size.
+3. Evaluates the selected layer once on a separately formatted four-per-class test set.
+4. Compares test performance with 200 shuffled-label and 200 random-direction null iterations, each of which independently repeats validation-based layer selection.
+5. Intervenes on four negative test prompts and measures changes in the next-token `Yes`-minus-`No` logit margin.
+6. Repeats localization at quarter, middle, and final relative token positions.
+7. Separately captures and intervenes on aggregate attention and MLP outputs at the selected layer.
 
-The checked-in result is [`results/gemma3_270m_interpretability_summary.json`](results/gemma3_270m_interpretability_summary.json). The strongest observed separation was at layer 10: held-out ROC AUC `1.0` and effect size `1.835`. Adding that direction increased the `Yes`-minus-`No` logit margin on all four held-out negative prompts, with mean change `+0.40625` and range `+0.25` to `+0.75`.
+The checked-in result is [`results/gemma3_270m_interpretability_summary.json`](results/gemma3_270m_interpretability_summary.json). Validation selected layer 10 with ROC AUC `1.0`, but performance fell to ROC AUC `0.75` on the format-shifted test. After repeating layer selection in every null iteration, the score exceeded the shuffled-label 95th percentile of `0.6875` (empirical p=`0.0448`) but equaled the random-direction 95th percentile of `0.75` (empirical p=`0.0796`).
 
-This does **not** mean layer 10 contains a proven low-oxygen concept. The eight held-out prompts share an authored prompt family, and the direction may encode lexical or formatting correlations. The intervention establishes model sensitivity to that measured direction, not a complete causal circuit or stable biological semantics. The model runs in `bfloat16`; exact numerical equivalence across hardware, drivers, or library versions is not claimed. The full experiment records all layer results and limitations.
+Adding the selected residual direction increased the `Yes`-minus-`No` margin on all four negative test prompts, with mean change `+0.328` and range `+0.188` to `+0.375`. Aggregate attention and MLP interventions also shifted the margin, but each component direction reached only test ROC AUC `0.625`. The null controls are mixed, the test set is tiny, and all prompts remain authored; these results are insufficient to identify a stable low-oxygen semantic feature or complete causal circuit. The model runs in `bfloat16`; exact numerical equivalence across hardware, drivers, or library versions is not claimed.
 
 ## Objective B: force Gemma through an executable language
 

@@ -9,31 +9,84 @@
     "dtype": "torch.bfloat16",
     "device": "NVIDIA GeForce RTX 4090"
   },
-  "concept": {
-    "name": "low_oxygen_language_contrast",
-    "method": "Mean residual-stream difference at the final prompt token",
-    "prompt_manifest_sha256": "9be31554307edbd94f026122f366aa4970f1f83146462fba1b1eecd7221299ab",
-    "positive_target_token": "Yes",
-    "negative_target_token": "No"
+  "method": {
+    "concept": "low_oxygen_language_contrast",
+    "training_prompts_per_class": 6,
+    "validation_prompts_per_class": 4,
+    "format_shift_test_prompts_per_class": 4,
+    "layer_selection": "Validation ROC AUC, then validation effect size",
+    "null_iterations": 200,
+    "null_layer_selection": "Each null iteration independently selects its best validation layer before test evaluation",
+    "token_positions": ["quarter", "middle", "last"],
+    "components": ["residual", "attention", "mlp"]
   },
-  "best_observed_layer": {
+  "selected_layer": {
     "layer": 10,
-    "held_out_roc_auc": 1.0,
-    "held_out_effect_size": 1.8345688581466675,
-    "training_projection_gap": 70.24378204345703,
-    "intervention_prompt_count": 4,
-    "baseline_yes_minus_no_logit_mean": 1.59375,
-    "intervened_yes_minus_no_logit_mean": 2.0,
-    "intervention_logit_margin_delta_mean": 0.40625,
-    "intervention_logit_margin_delta_minimum": 0.25,
-    "intervention_logit_margin_delta_maximum": 0.75,
-    "positive_intervention_effect_fraction": 1.0
+    "attention_type": "sliding_attention",
+    "validation_roc_auc": 1.0,
+    "validation_effect_size": 1.8345688581466675
   },
-  "interpretation": "Layer 10 perfectly ranked eight held-out prompts from the same authored prompt family. Adding the measured direction increased the Yes-minus-No next-token logit margin on all four held-out negative prompts, with mean change 0.40625 and range 0.25 to 0.75. This is evidence of linear separability and model sensitivity, not proof of a stable semantic feature or complete causal circuit.",
+  "final_format_shift_test": {
+    "roc_auc": 0.75,
+    "effect_size": 0.6665226817131042,
+    "projection_gap": 7.3616943359375
+  },
+  "null_controls": {
+    "shuffled_training_labels": {
+      "iterations": 200,
+      "mean_roc_auc": 0.5471875,
+      "95th_percentile": 0.6875,
+      "empirical_right_tail_p_value": 0.04477611940298507
+    },
+    "random_directions": {
+      "iterations": 200,
+      "mean_roc_auc": 0.544375,
+      "95th_percentile": 0.75,
+      "empirical_right_tail_p_value": 0.07960199004975124
+    }
+  },
+  "selected_layer_intervention": {
+    "test_negative_prompts": 4,
+    "yes_minus_no_logit_delta_mean": 0.328125,
+    "yes_minus_no_logit_delta_range": [0.1875, 0.375],
+    "positive_effect_fraction": 1.0
+  },
+  "token_position_localization": {
+    "quarter": {
+      "test_roc_auc": 0.875,
+      "intervention_delta_mean": 0.0,
+      "positive_effect_fraction": 0.5
+    },
+    "middle": {
+      "test_roc_auc": 0.3125,
+      "intervention_delta_mean": 0.140625,
+      "positive_effect_fraction": 0.75
+    },
+    "last": {
+      "test_roc_auc": 0.75,
+      "intervention_delta_mean": 0.328125,
+      "positive_effect_fraction": 1.0
+    }
+  },
+  "component_localization_at_layer_10": {
+    "attention": {
+      "test_roc_auc": 0.625,
+      "intervention_delta_mean": 0.265625,
+      "positive_effect_fraction": 1.0
+    },
+    "mlp": {
+      "test_roc_auc": 0.625,
+      "intervention_delta_mean": 0.28125,
+      "positive_effect_fraction": 1.0
+    }
+  },
+  "interpretation": "The validation-selected direction generalized moderately to the separately formatted test prompts with ROC AUC 0.75. After repeating layer selection within every null iteration, the result exceeded the shuffled-label 95th percentile of 0.6875 (empirical p=0.0448) but equaled the random-direction 95th percentile of 0.75 (empirical p=0.0796). Residual, attention, and MLP interventions consistently shifted the selected output margin on four negative test prompts. The mixed null results and tiny authored test set are insufficient to identify a stable semantic feature or complete causal circuit.",
   "limitations": [
-    "A linear direction can encode lexical or formatting correlations rather than a stable human concept.",
-    "The held-out set contains only eight synthetic prompts from the same authored prompt family.",
-    "Residual intervention demonstrates sensitivity, not a complete causal circuit or semantic proof.",
+    "All prompt sets were authored for this experiment and the final test set contains only eight prompts.",
+    "The format shift reduces but does not eliminate lexical, formatting, or dataset-construction confounds.",
+    "The empirical null results do not support a strong statistical claim for the selected direction.",
+    "Attention and MLP results operate on aggregate component outputs rather than individual heads or neurons.",
+    "Intervention sensitivity is not semantic proof or biological validation.",
     "Results on Gemma 3 270M do not establish behavior of Gemma 4 31B or another checkpoint.",
     "The bfloat16 results are not claimed to be numerically identical across hardware, drivers, or library versions.",
     "No GMP, process-control, product-quality, clinical, or patient-safety conclusion is supported."
