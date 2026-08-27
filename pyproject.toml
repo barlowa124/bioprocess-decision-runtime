@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bioprocess-decision-runtime"
+version = "0.1.0"
+description = "Interpretable-by-construction runtime for bounded synthetic bioprocess decisions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Angus Barlow" }]
+dependencies = [
+    "numpy>=1.26,<2.4",
+    "scikit-learn>=1.6,<1.9",
+]
+
+[project.scripts]
+bioprocess-runtime = "bioprocess_runtime.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bioprocess_runtime*"]

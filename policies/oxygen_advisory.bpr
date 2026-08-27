@@ -1,0 +1,24 @@
+# Synthetic demonstration policy. Values are illustrative and are not process safety limits.
+POLICY oxygen_advisory VERSION 1.0.0
+INTENDED_USE "Generate advisory agitation recommendations in a synthetic stirred-tank scenario"
+MODE ADVISORY
+
+INPUT dissolved_oxygen_pct NUMBER UNIT percent MIN 0 MAX 100 MAX_AGE_SECONDS 30
+INPUT dissolved_oxygen_slope NUMBER UNIT percent_per_minute MIN -5 MAX 5 MAX_AGE_SECONDS 30
+INPUT agitation_rpm NUMBER UNIT rpm MIN 0 MAX 200 MAX_AGE_SECONDS 30
+INPUT sensor_agreement BOOLEAN UNIT boolean MIN 0 MAX 1 MAX_AGE_SECONDS 30
+
+MODEL oxygen_risk LOGISTIC
+BIAS 5.0
+WEIGHT dissolved_oxygen_pct -0.12
+WEIGHT dissolved_oxygen_slope -1.5
+END_MODEL
+
+RULE low_oxygen_advisory
+WHEN oxygen_risk >= 0.75
+REQUIRE sensor_agreement == true
+RECOMMEND agitation_rpm DELTA 5 MAX 120 rpm
+ELSE_ABSTAIN "Redundant synthetic sensors disagree; no recommendation is permitted"
+END_RULE
+
+DEFAULT NO_ACTION "Transparent risk score remains below the configured demonstration threshold"
