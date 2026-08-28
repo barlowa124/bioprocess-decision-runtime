@@ -563,6 +563,22 @@ def command_nsight_target(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_nsight_capture(args: argparse.Namespace) -> int:
+    from .nsight_attestation import capture_nsight_launch
+
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    request = capture_nsight_launch(
+        args.kernel,
+        args.model_path,
+        prompt,
+        args.report_base,
+        args.binding,
+        args.request,
+    )
+    print(json.dumps(request, indent=2, sort_keys=True))
+    return 0
+
+
 def command_nsight_launch_certificate(args: argparse.Namespace) -> int:
     from .nsight_attestation import build_nsight_launch_certificate
 
@@ -572,6 +588,7 @@ def command_nsight_launch_certificate(args: argparse.Namespace) -> int:
         args.cuda_summary,
         args.cupti_report,
         args.cupti_artifact_directory,
+        capture_request_path=args.capture_request,
     )
     _write_json(args.output, certificate)
     return 0 if certificate["all_checks_pass"] else 1
@@ -582,6 +599,30 @@ def command_nsight_launch_verify(args: argparse.Namespace) -> int:
 
     certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
     verification = verify_nsight_launch_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_nsight_kernel_suite(args: argparse.Namespace) -> int:
+    from .nsight_attestation import build_nsight_kernel_suite
+
+    suite = build_nsight_kernel_suite(
+        args.report_directory,
+        args.cuda_manifest,
+        args.cupti_report,
+        args.cupti_artifact_directory,
+        args.redact,
+    )
+    _write_json(args.output, suite)
+    return 0 if suite["complete"] else 1
+
+
+def command_nsight_kernel_suite_verify(args: argparse.Namespace) -> int:
+    from .nsight_attestation import verify_nsight_kernel_suite
+
+    suite = json.loads(args.suite.read_text(encoding="utf-8"))
+    cupti_report = json.loads(args.cupti_report.read_text(encoding="utf-8")) if args.cupti_report else None
+    verification = verify_nsight_kernel_suite(suite, args.certificate_directory, cupti_report)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -819,18 +860,45 @@ def build_parser() -> argparse.ArgumentParser:
     nsight_target_parser.add_argument("--output", type=Path, required=True)
     nsight_target_parser.set_defaults(handler=command_nsight_target)
 
+    nsight_capture_parser = subparsers.add_parser("nsight-capture", help="Record and execute one exact NVTX-bounded Nsight kernel request")
+    nsight_capture_parser.add_argument("--kernel", required=True)
+    nsight_capture_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    nsight_capture_prompt = nsight_capture_parser.add_mutually_exclusive_group(required=True)
+    nsight_capture_prompt.add_argument("--prompt")
+    nsight_capture_prompt.add_argument("--prompt-file", type=Path)
+    nsight_capture_parser.add_argument("--report-base", type=Path, required=True)
+    nsight_capture_parser.add_argument("--binding", type=Path, required=True)
+    nsight_capture_parser.add_argument("--request", type=Path, required=True)
+    nsight_capture_parser.set_defaults(handler=command_nsight_capture)
+
     nsight_certificate_parser = subparsers.add_parser("nsight-launch-certificate", help="Bind an Nsight launch SASS view to Gemma execution and CUPTI cubin evidence")
     nsight_certificate_parser.add_argument("--report", type=Path, required=True)
     nsight_certificate_parser.add_argument("--binding", type=Path, required=True)
     nsight_certificate_parser.add_argument("--cuda-summary", type=Path, required=True)
     nsight_certificate_parser.add_argument("--cupti-report", type=Path, required=True)
     nsight_certificate_parser.add_argument("--cupti-artifact-directory", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--capture-request", type=Path)
     nsight_certificate_parser.add_argument("--output", type=Path, required=True)
     nsight_certificate_parser.set_defaults(handler=command_nsight_launch_certificate)
 
     nsight_verify_parser = subparsers.add_parser("nsight-launch-verify", help="Verify an Nsight launch certificate's integrity and internal claims")
     nsight_verify_parser.add_argument("certificate", type=Path)
     nsight_verify_parser.set_defaults(handler=command_nsight_launch_verify)
+
+    nsight_suite_parser = subparsers.add_parser("nsight-kernel-suite", help="Build launch certificates for every recorded distinct forward kernel")
+    nsight_suite_parser.add_argument("--report-directory", type=Path, required=True)
+    nsight_suite_parser.add_argument("--cuda-manifest", type=Path, required=True)
+    nsight_suite_parser.add_argument("--cupti-report", type=Path, required=True)
+    nsight_suite_parser.add_argument("--cupti-artifact-directory", type=Path, required=True)
+    nsight_suite_parser.add_argument("--redact", action="store_true", help="Redact report, cubin, SASS, and certificate hashes")
+    nsight_suite_parser.add_argument("--output", type=Path, required=True)
+    nsight_suite_parser.set_defaults(handler=command_nsight_kernel_suite)
+
+    nsight_suite_verify_parser = subparsers.add_parser("nsight-kernel-suite-verify", help="Verify aggregate and optional per-certificate Nsight suite claims")
+    nsight_suite_verify_parser.add_argument("suite", type=Path)
+    nsight_suite_verify_parser.add_argument("--certificate-directory", type=Path)
+    nsight_suite_verify_parser.add_argument("--cupti-report", type=Path)
+    nsight_suite_verify_parser.set_defaults(handler=command_nsight_kernel_suite_verify)
 
     nsight_parser = subparsers.add_parser("cuda-nsight-permission", help="Probe permission for launch-specific Nsight Compute evidence")
     nsight_parser.add_argument("--output", type=Path)

@@ -458,7 +458,33 @@ The checked [`results/gemma3_270m_nsight_launch_certificate.json`](results/gemma
 - `cuobjdump` reported the same 104-instruction function in CUPTI module 20.
 - After normalizing absolute addresses to function offsets, every predicate, opcode, and operand matched; both sequences have canonical hash `acd6a12e...903e627`.
 
-This provides launch-specific instruction-text identity for one PyTorch fill kernel executed inside the bound forward. It is not a proof of SASS semantics, hardware execution correctness, fused-attention or matrix-multiplication kernels, or the complete Gemma computation. Nsight and CUPTI are both NVIDIA tooling, so this is stronger execution provenance rather than independent hardware verification.
+This provides launch-specific instruction-text identity for one PyTorch fill kernel executed inside the bound forward. It is not a proof of SASS semantics or hardware execution correctness. Nsight and CUPTI are both NVIDIA tooling, so this is stronger execution provenance rather than independent hardware verification.
+
+### Complete distinct-kernel launch suite
+
+The same exact-name, NVTX, process, model, input, output, CUPTI-module, and normalized-SASS checks were attempted for every distinct non-copy kernel in the recorded forward. `nsight-capture` writes a hash-bound exact-kernel request before invoking Nsight; this supplies auditable selection evidence when Nsight's session page omits an exceptionally long option value. After collecting the per-symbol reports, build and verify the aggregate:
+
+```powershell
+python -m bioprocess_runtime nsight-kernel-suite --report-directory artifacts/nsight_suite --cuda-manifest artifacts/cuda_provenance_manifest.json --cupti-report artifacts/cupti_module_capture.json --cupti-artifact-directory artifacts/cupti_modules --output results/gemma3_270m_nsight_kernel_suite.json
+python -m bioprocess_runtime nsight-kernel-suite-verify results/gemma3_270m_nsight_kernel_suite.json --certificate-directory artifacts/nsight_suite --cupti-report artifacts/cupti_module_capture.json
+```
+
+The checked [`results/gemma3_270m_nsight_kernel_suite.json`](results/gemma3_270m_nsight_kernel_suite.json) reports:
+
+| Family | Distinct symbols | Recorded launches represented |
+|---|---:|---:|
+| Fused attention | 1/1 | 18/18 |
+| Linear algebra/GEMM | 6/6 | 129/129 |
+| RMSNorm and other reductions | 3/3 | 183/183 |
+| GELU | 1/1 | 18/18 |
+| Elementwise and indexing | 24/24 | 1,719/1,719 |
+| **Total** | **35/35** | **2,067/2,067** |
+
+Every distinct symbol received one successful launch certificate. Nsight's session page retained the exact filter value for 33 symbols; the two omitted very long values are instead bound by pre-execution request hashes. The suite includes the 3,584-instruction fused-attention function, major GEMM variants, the 3,024-instruction RMS mean reduction, the 600-instruction GELU function, and elementwise kernels. Across the 35 distinct functions, 30,872 normalized instruction lines were bound to CUPTI-loaded cubins. Base opcode names for which the project has at least one proposed semantics rule occur on 7,980 lines (`25.85%`); this is syntactic overlap only. In particular, arbitrary `LOP3.LUT` operands are counted even though only LUT values `0x96` and `0xe8` currently have checked identities.
+
+The 100% launch-weighted figure means every symbol responsible for the 2,067 recorded non-copy launches has one representative invocation attested. It does not mean all 2,067 invocations were separately profiled, that equivalent symbols are used on other prompts or shapes, or that any instruction's semantics or hardware execution has been independently proven. Normalization reconciles documented presentation differences between Nsight and `cuobjdump`, including absolute versus relative control targets, operand ordering, `.reuse` annotations, and explicit conversion aliases; negative tests ensure distinct registers, predicates, and control targets remain distinct. Exact ELF symbol sets and single function-section checks prevent prefix or multi-function matches. The exact CUPTI cubin hashes retain the underlying binary commitments.
+
+The aggregate verifier performs arithmetic and integrity checks by itself. Supplying `--certificate-directory` re-verifies every individual certificate and cross-checks its kernel, cubin, SASS hash, and instruction count; supplying `--cupti-report` re-links every cubin hash to the captured module set. `--redact` can remove report, cubin, SASS, and certificate hashes from a shareable suite, while the checked private-repository result intentionally retains them for reproducibility.
 
 ## Objective B: force Gemma through an executable language
 

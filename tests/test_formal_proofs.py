@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -115,7 +116,12 @@ class CuptiAttestationTests(unittest.TestCase):
 
 class NsightAttestationTests(unittest.TestCase):
     def test_launch_details_and_sass_normalization(self) -> None:
-        from bioprocess_runtime.nsight_attestation import _parse_cuobjdump_sass, _parse_details, _parse_nsight_sass
+        from bioprocess_runtime.nsight_attestation import (
+            _parse_cuobjdump_sass,
+            _parse_details,
+            _parse_elf_function_symbols,
+            _parse_nsight_sass,
+        )
 
         details = (
             '"Process ID","Kernel Name","Context","Stream","Block Size","Grid Size","CC","Metric Name","Metric Unit","Metric Value"\n'
@@ -124,6 +130,8 @@ class NsightAttestationTests(unittest.TestCase):
         parsed = _parse_details(details)
         self.assertEqual(parsed["process_id"], 42)
         self.assertEqual(parsed["kernel_name"], "kernel")
+        symbols = _parse_elf_function_symbols("STT_FUNC STB_GLOBAL STO_ENTRY exact\nSTT_OBJECT STB_GLOBAL STO_ENTRY ignored")
+        self.assertEqual(symbols, {"exact"})
         nsight = (
             "0x100 IADD3 R0, R1, R2, R3\n"
             "0x110 @P0 BRA 0x100\n"
@@ -141,6 +149,182 @@ class NsightAttestationTests(unittest.TestCase):
             "/*0050*/ @UPT NOP;\n"
         )
         self.assertEqual(_parse_nsight_sass(nsight), _parse_cuobjdump_sass(static))
+
+    def test_tool_specific_sass_renderings_normalize_equally(self) -> None:
+        from bioprocess_runtime.nsight_attestation import _parse_cuobjdump_sass, _parse_nsight_sass
+
+        nsight = (
+            "0x100 F2FP.F16.F32.PACK_AB R1, R2, R3\n"
+            "0x110 BRA.U 0x130\n"
+            "0x120 LDGSTS.E.128 P4, [R1][R2.64]\n"
+            "0x130 LDG.E.64 R5, P3, [R6.64]\n"
+            "0x140 BRX R7, -0x20\n"
+            "0x150 RET.REL.NODEC R2, 0x100\n"
+        )
+        static = (
+            "/*0000*/ F2FP.PACK_AB R1, R2.reuse, R3;\n"
+            "/*0010*/ BRA.U 0x30;\n"
+            "/*0020*/ LDGSTS.E.128 [R1], [R2.64], P4;\n"
+            "/*0030*/ LDG.E.64 R5, [R6.64], P3;\n"
+            "/*0040*/ BRX R7 -0x20;\n"
+            "/*0050*/ RET.REL.NODEC R2 0x0;\n"
+        )
+        self.assertEqual(_parse_nsight_sass(nsight), _parse_cuobjdump_sass(static))
+
+    def test_sass_normalization_preserves_semantic_differences(self) -> None:
+        from bioprocess_runtime.nsight_attestation import _parse_nsight_sass
+
+        base = _parse_nsight_sass("0x100 LDG.E.64 R5, P3, [R6.64]\n0x110 BRA.U 0x130\n")
+        different_destination = _parse_nsight_sass("0x100 LDG.E.64 R7, P3, [R6.64]\n0x110 BRA.U 0x130\n")
+        different_predicate = _parse_nsight_sass("0x100 LDG.E.64 R5, P4, [R6.64]\n0x110 BRA.U 0x130\n")
+        different_target = _parse_nsight_sass("0x100 LDG.E.64 R5, P3, [R6.64]\n0x110 BRA.U 0x140\n")
+        self.assertNotEqual(base, different_destination)
+        self.assertNotEqual(base, different_predicate)
+        self.assertNotEqual(base, different_target)
+
+    def test_kernel_suite_verifier_recomputes_coverage_claims(self) -> None:
+        from bioprocess_runtime.nsight_attestation import verify_nsight_kernel_suite
+
+        certificate = {
+            "checks": {"launch_sass_matches_loaded_cubin_function": True},
+            "all_checks_pass": True,
+            "details": {"kernel_name": "gelu_kernel"},
+            "cupti_module": {"cubin_sha256": "cubin"},
+            "launch_sass": {"canonical_sha256": "sass", "instruction_count": 10},
+            "loaded_cubin_function_sass": {"canonical_sha256": "sass"},
+        }
+        certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
+        entry = {
+            "index": 0,
+            "kernel_name": "gelu_kernel",
+            "family": "gelu",
+            "observed_forward_launch_count": 18,
+            "instruction_count": 10,
+            "syntactic_proposed_semantics_opcode_lines": 2,
+            "certificate_sha256": certificate["certificate_sha256"],
+            "cubin_sha256": "cubin",
+            "sass_canonical_sha256": "sass",
+            "session_exact_kernel_filter_value_visible": True,
+            "capture_request_sha256": None,
+        }
+        suite = {
+            "expected_distinct_kernels": 1,
+            "attested_distinct_kernels": 1,
+            "session_exact_filter_value_kernels": 1,
+            "capture_request_backed_kernels": 0,
+            "distinct_coverage_fraction": 1.0,
+            "expected_kernel_launches": 18,
+            "attested_kernel_launches": 18,
+            "launch_weighted_coverage_fraction": 1.0,
+            "distinct_function_instruction_lines": 10,
+            "syntactic_proposed_semantics_opcode_lines": 2,
+            "syntactic_proposed_semantics_opcode_fraction": 0.2,
+            "families": {
+                "gelu": {
+                    "expected_distinct": 1,
+                    "attested_distinct": 1,
+                    "expected_launches": 18,
+                    "attested_launches": 18,
+                }
+            },
+            "entries": [entry],
+            "failures": [],
+            "complete": True,
+        }
+        suite["suite_sha256"] = hashlib.sha256(canonical_json(suite).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_nsight_kernel_suite(suite)["valid"])
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "k00_certificate.json").write_text(json.dumps(certificate), encoding="utf-8")
+            verification = verify_nsight_kernel_suite(
+                suite,
+                Path(directory),
+                {"modules": [{"cubin_sha256": "cubin"}]},
+            )
+            self.assertTrue(verification["per_certificate_claims_valid"])
+            self.assertTrue(verification["cupti_links_valid"])
+            self.assertTrue(verification["valid"])
+        damaged = copy.deepcopy(suite)
+        damaged["launch_weighted_coverage_fraction"] = 0.5
+        self.assertFalse(verify_nsight_kernel_suite(damaged)["valid"])
+
+    def test_capture_request_binds_exact_kernel_before_execution(self) -> None:
+        from bioprocess_runtime.nsight_attestation import capture_nsight_launch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_base = root / "report"
+            binding = root / "binding.json"
+            request_path = root / "request.json"
+
+            def run(command: list[str], **kwargs: object) -> SimpleNamespace:
+                self.assertIn("--kernel-name", command)
+                self.assertEqual(command[command.index("--kernel-name") + 1], "exact_kernel")
+                report_base.with_suffix(".ncu-rep").write_bytes(b"report")
+                binding.write_text("{}", encoding="utf-8")
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with (
+                patch("bioprocess_runtime.nsight_attestation.shutil.which", return_value="ncu"),
+                patch("bioprocess_runtime.nsight_attestation.subprocess.run", side_effect=run),
+            ):
+                request = capture_nsight_launch(
+                    "exact_kernel", Path("model"), "synthetic prompt", report_base, binding, request_path
+                )
+            stored = json.loads(request_path.read_text(encoding="utf-8"))
+            self.assertEqual(stored, request)
+            body = {key: value for key, value in request.items() if key != "request_sha256"}
+            self.assertEqual(request["request_sha256"], hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest())
+
+    def test_kernel_suite_builder_enumerates_manifest_symbols(self) -> None:
+        from bioprocess_runtime.nsight_attestation import build_nsight_kernel_suite
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "manifest.json"
+            cupti = root / "cupti.json"
+            manifest.write_text(json.dumps({"profile": {"kernel_launch_counts": {"kernel_a": 2, "kernel_b": 3}}}), encoding="utf-8")
+            cupti.write_text(
+                json.dumps(
+                    {
+                        "modules": [
+                            {"artifact": "a.cubin", "cubin_sha256": "hash_a"},
+                            {"artifact": "b.cubin", "cubin_sha256": "hash_b"},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            for label in ("k00", "k01"):
+                (root / f"{label}.ncu-rep").write_bytes(b"report")
+                (root / f"{label}_binding.json").write_text("{}", encoding="utf-8")
+            completed = [
+                SimpleNamespace(stdout="STT_FUNC STB_GLOBAL STO_ENTRY kernel_a"),
+                SimpleNamespace(stdout="STT_FUNC STB_GLOBAL STO_ENTRY kernel_b"),
+            ]
+
+            def certificate(report: Path, *args: object) -> dict[str, object]:
+                index = 0 if report.name.startswith("k00") else 1
+                return {
+                    "all_checks_pass": True,
+                    "checks": {"bound": True},
+                    "cupti_module": {"module_id": index, "cubin_sha256": f"hash_{'a' if index == 0 else 'b'}"},
+                    "launch_sass": {"instruction_count": 1, "canonical_sha256": f"sass_{index}", "opcode_histogram": {"MOV": 1}},
+                    "report_sha256": f"report_{index}",
+                    "certificate_sha256": f"certificate_{index}",
+                    "session_exact_kernel_filter_value_visible": True,
+                    "capture_request_sha256": None,
+                }
+
+            with (
+                patch("bioprocess_runtime.nsight_attestation.shutil.which", return_value="cuobjdump"),
+                patch("bioprocess_runtime.nsight_attestation.subprocess.run", side_effect=completed),
+                patch("bioprocess_runtime.nsight_attestation.build_nsight_launch_certificate", side_effect=certificate),
+            ):
+                suite = build_nsight_kernel_suite(root, manifest, cupti, root)
+            self.assertTrue(suite["complete"])
+            self.assertEqual(suite["attested_distinct_kernels"], 2)
+            self.assertEqual(suite["attested_kernel_launches"], 5)
+            self.assertEqual(suite["syntactic_proposed_semantics_opcode_fraction"], 1.0)
 
     def test_launch_certificate_verifier_detects_claim_changes(self) -> None:
         from bioprocess_runtime.nsight_attestation import verify_nsight_launch_certificate

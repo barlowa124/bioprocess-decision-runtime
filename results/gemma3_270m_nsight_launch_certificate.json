@@ -1,13 +1,14 @@
 {
   "all_checks_pass": true,
   "binding_sha256": "0c89963ec481434d168c48b3f5a12127465a9f9c7fa882ed33303bffb8d1757e",
-  "certificate_sha256": "4eaf0ee85b50454be5acf56dae4f62c544624428acd65be32393a75ded33b72e",
+  "capture_request_sha256": null,
+  "certificate_sha256": "787d8b5cdf9af71f46fd4b47e542e8ca53bd66f4770c99dec16848395d66bab7",
   "checks": {
     "binding_hash_valid": true,
     "binding_nvtx_range_matches": true,
-    "cupti_module_hash_matches_static_image": true,
+    "cupti_module_artifact_hash_valid": true,
+    "exact_kernel_selection_recorded": true,
     "input_matches_profile": true,
-    "kernel_filter_recorded": true,
     "kernel_matches_profile": true,
     "launch_sass_matches_loaded_cubin_function": true,
     "model_state_matches_profile": true,
@@ -186,8 +187,10 @@
       "UPRMT": 6
     }
   },
+  "observed_forward_launch_count": 238,
   "report_sha256": "602e5cade878ca9025ee8e5d73fe53be12240e8a450d7b77cd56ae805b309cb3",
   "scope": "Launch-specific Nsight SASS bound by process ID and NVTX range to a Gemma execution, then compared with the matching CUPTI-loaded cubin function; not hardware-semantic proof.",
+  "session_exact_kernel_filter_value_visible": true,
   "session_output_sha256": "b5d97b40a98c679422a955d30d2b8f6f3fc0777186a41838946e05d6d88f3b9f",
   "source_output_sha256": "0f1879227f5d918f57d04e46340e7dfd98af23b4e4b6c156cfefdf88a59222e3"
 }
