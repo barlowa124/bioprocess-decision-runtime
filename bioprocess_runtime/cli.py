@@ -445,6 +445,57 @@ def command_bounded_domain_summary(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_formal_proofs(args: argparse.Namespace) -> int:
+    from .formal_proofs import build_formal_proof_certificate
+
+    certificate = build_formal_proof_certificate()
+    _write_json(args.output, certificate)
+    return 0 if certificate["proved"] == certificate["total"] else 1
+
+
+def command_formal_proofs_verify(args: argparse.Namespace) -> int:
+    from .formal_proofs import verify_formal_proof_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_formal_proof_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_cuda_provenance(args: argparse.Namespace) -> int:
+    from .cuda_provenance import build_cuda_provenance_manifest
+    from .interpretability import _model_device, _tokenize, load_local_gemma
+
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    model, tokenizer = load_local_gemma(args.model_path)
+    inputs = _tokenize(tokenizer, prompt, _model_device(model))
+    manifest = build_cuda_provenance_manifest(model, inputs, args.kernel, args.redact)
+    _write_json(args.output, manifest)
+    if manifest["profiled_symbol_disassembly"]["profiled_kernel_name"] is None:
+        print("Warning: no profiled kernel was bound to an extracted compatible image", file=sys.stderr)
+        return 1
+    return 0
+
+
+def command_cuda_provenance_verify(args: argparse.Namespace) -> int:
+    from .cuda_provenance import verify_cuda_provenance_manifest
+
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    verification = verify_cuda_provenance_manifest(manifest, args.verify_local_binaries)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_cuda_provenance_summary(args: argparse.Namespace) -> int:
+    from .cuda_provenance import summarize_cuda_provenance, verify_cuda_provenance_manifest
+
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    if not verify_cuda_provenance_manifest(manifest)["valid"]:
+        raise ValueError("Cannot summarize an invalid CUDA provenance manifest")
+    _write_json(args.output, summarize_cuda_provenance(manifest))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bioprocess-runtime",
@@ -591,6 +642,34 @@ def build_parser() -> argparse.ArgumentParser:
     domain_summary_parser.add_argument("certificate", type=Path)
     domain_summary_parser.add_argument("--output", type=Path, required=True)
     domain_summary_parser.set_defaults(handler=command_bounded_domain_summary)
+
+    formal_parser = subparsers.add_parser("formal-proofs", help="Machine-check universal finite-bitvector and integer operator properties")
+    formal_parser.add_argument("--output", type=Path)
+    formal_parser.set_defaults(handler=command_formal_proofs)
+
+    formal_verify_parser = subparsers.add_parser("formal-proofs-verify", help="Re-execute an SMT proof certificate")
+    formal_verify_parser.add_argument("certificate", type=Path)
+    formal_verify_parser.set_defaults(handler=command_formal_proofs_verify)
+
+    cuda_parser = subparsers.add_parser("cuda-provenance", help="Profile CUDA launches and fingerprint compatible embedded device code")
+    cuda_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    cuda_prompt = cuda_parser.add_mutually_exclusive_group(required=True)
+    cuda_prompt.add_argument("--prompt")
+    cuda_prompt.add_argument("--prompt-file", type=Path)
+    cuda_parser.add_argument("--kernel", help="Regular expression selecting an observed PyTorch-native kernel symbol")
+    cuda_parser.add_argument("--redact", action="store_true", help="Redact device name, input IDs, and binary hashes")
+    cuda_parser.add_argument("--output", type=Path, required=True)
+    cuda_parser.set_defaults(handler=command_cuda_provenance)
+
+    cuda_verify_parser = subparsers.add_parser("cuda-provenance-verify", help="Verify a CUDA provenance manifest and optional local binary hashes")
+    cuda_verify_parser.add_argument("manifest", type=Path)
+    cuda_verify_parser.add_argument("--verify-local-binaries", action="store_true")
+    cuda_verify_parser.set_defaults(handler=command_cuda_provenance_verify)
+
+    cuda_summary_parser = subparsers.add_parser("cuda-provenance-summary", help="Build a compact summary from a verified CUDA provenance manifest")
+    cuda_summary_parser.add_argument("manifest", type=Path)
+    cuda_summary_parser.add_argument("--output", type=Path, required=True)
+    cuda_summary_parser.set_defaults(handler=command_cuda_provenance_summary)
     return parser
 
 

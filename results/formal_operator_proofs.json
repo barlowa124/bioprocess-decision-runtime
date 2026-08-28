@@ -1,0 +1,139 @@
+{
+  "certificate_sha256": "6e1237c280dd0bc0d7ed5ffe965688193c06ea6d5a9ba937844af9a817540aed",
+  "proofs": [
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "ripple_add_equals_modular_addition",
+      "proved": true,
+      "scope": {
+        "arithmetic": "modulo 2^8",
+        "input": "all pairs of 8-bit bitvectors"
+      },
+      "smt2_sha256": "8239c4285d20eb21fa21ed21779e6e37fc3fe234c885b502e52761e9990cfcad",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "shift_add_equals_modular_multiplication",
+      "proved": true,
+      "scope": {
+        "input": "all pairs of 4-bit unsigned bitvectors",
+        "output": "8-bit modular product"
+      },
+      "smt2_sha256": "366fc4055913bab1db863801c5111a109f43bec8c673ac1fe1c7cda72f12c43e",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "three_term_shift_add_dot_equals_direct_dot",
+      "proved": true,
+      "scope": {
+        "accumulator": "8-bit modular",
+        "input": "all six assignments of three 3-bit unsigned inputs and three 3-bit unsigned weights"
+      },
+      "smt2_sha256": "f5f0f08ca660733e5496ebdd2d778391427a0f136f9119d0ece25c41330788b0",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "first_index_argmax_is_maximal_and_stable_on_ties",
+      "proved": true,
+      "scope": {
+        "input": "all triples of 8-bit unsigned logits",
+        "tie_rule": "lowest index"
+      },
+      "smt2_sha256": "6886e480325cf363f55d03aa62f2deb9ffced7e205a53a099e7c4688b856f955",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "sliding_causal_mask_equivalence",
+      "proved": true,
+      "scope": {
+        "input": "all integer sequence lengths, positive windows, and in-range query/key positions"
+      },
+      "smt2_sha256": "dd433eab8b72bc453af04fd88c6a1495e073c5b00240332156df031e524f333e",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "grouped_query_head_mapping_is_total_and_in_range",
+      "proved": true,
+      "scope": {
+        "input": "all positive key/value-head and group counts and every valid query-head index"
+      },
+      "smt2_sha256": "a4210c123feaee41bf2733a52075159718a0bb16ca5b414729455b3046451a9d",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "rotate_half_encoding_double_application_is_negation",
+      "proved": true,
+      "scope": {
+        "arithmetic": "modulo 2^8",
+        "input": "all pairs of 8-bit coordinates",
+        "model": "Algebraic SMT encoding sanity check, not verification of a PyTorch or CUDA circuit."
+      },
+      "smt2_sha256": "e08cca0d61e7e5d7188f249d21d97cb2563d41dde5865d7f62099d98ebf51539",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "bfloat16_float32_round_trip_preserves_non_nan_bits",
+      "proved": true,
+      "scope": {
+        "input": "all non-NaN IEEE-754 bfloat16 bit patterns",
+        "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+        "rounding": "round to nearest, ties to even"
+      },
+      "smt2_sha256": "b5c7a7aa6250634052b4295aaca297da38c42901b21d2eb70dd9ab08541d25c2",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "bfloat16_multiplication_by_one_preserves_non_nan_bits",
+      "proved": true,
+      "scope": {
+        "input": "all non-NaN IEEE-754 bfloat16 bit patterns",
+        "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+        "rounding": "round to nearest, ties to even"
+      },
+      "smt2_sha256": "bed1c79271f4313088f6c4a732785dd081e349f39915bea610b907d7b92d31dd",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "verified_primitives_compose",
+      "proved": true,
+      "scope": {
+        "input": "all 8-bit bitvectors",
+        "program": "((x + 7) * 3) + 5 modulo 2^8"
+      },
+      "smt2_sha256": "73a138756549fc2e895d954a741a562779de861be71d8dcba716b724b44b7806",
+      "solver_result": "unsat"
+    }
+  ],
+  "proved": 10,
+  "scope": "Universal SMT proofs over explicitly stated bitvector, integer, and selected IEEE-754 bfloat16 formulas; not complete softmax, GELU, RMSNorm, or full-transformer proofs.",
+  "solver": {
+    "name": "Z3",
+    "version": "4.15.3"
+  },
+  "total": 10,
+  "unresolved": [
+    "Complete IEEE-754 and bfloat16 operator equivalence beyond the proved properties",
+    "Transcendental softmax, GELU, trigonometric RoPE, and reciprocal-square-root semantics",
+    "full Gemma equivalence for unbounded token sequences",
+    "CUDA SASS instruction-level semantic equivalence"
+  ]
+}

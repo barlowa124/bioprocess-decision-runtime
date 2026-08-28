@@ -116,7 +116,7 @@ The Gemma experiments use optional dependencies. The tested NVIDIA installation 
 
 ```powershell
 python -m pip install "torch==2.7.1" --index-url https://download.pytorch.org/whl/cu128
-python -m pip install -e ".[gemma]"
+python -m pip install -e ".[gemma,proof]"
 ```
 
 Download the 536 MB Transformers checkpoint used for activation experiments. The model uses Google's Gemma license and is excluded from Git:
@@ -358,6 +358,55 @@ The checked 18-state result is [`results/gemma3_270m_bounded_domain_summary.json
 - The complete 18-record state chain verified, and a fresh model load reproduced the full certificate exactly.
 
 The axes are expandable, but the proof remains exhaustive only for the explicitly listed values and canonical serialization. It does not cover intermediate values, paraphrases, other templates, or unrestricted natural language unless those states are added to the declared domain.
+
+### Universal symbolic operator proofs
+
+Z3 checks the negation of each declared property and requires `unsat`, establishing that no counterexample exists within the complete stated mathematical domain:
+
+```powershell
+python -m bioprocess_runtime formal-proofs --output results/formal_operator_proofs.json
+python -m bioprocess_runtime formal-proofs-verify results/formal_operator_proofs.json
+```
+
+The checked certificate is [`results/formal_operator_proofs.json`](results/formal_operator_proofs.json). All 10 properties re-verified:
+
+- Ripple-carry addition equals modular addition for every pair of 8-bit bitvectors.
+- Shift-add multiplication equals direct multiplication for every pair of 4-bit unsigned bitvectors.
+- A three-term shift-add dot product equals its direct modular form for all six assignments of 3-bit inputs and weights.
+- Three-way argmax always returns a maximal value and uses the first index on ties for all 8-bit unsigned logits.
+- Sliding causal-mask formulations are equivalent for all positive sequence lengths and windows and all valid integer positions.
+- Grouped-query head mapping is total, partitioned, and in range for all positive head/group counts.
+- The algebraic SMT encoding of the two-coordinate `rotate_half` mapping has the expected double-application/negation identity for all 8-bit coordinates; this is an encoding sanity check, not circuit verification.
+- In SMT-LIB's abstract IEEE-754 theory, widening every non-NaN bfloat16 value to float32 and narrowing with round-to-nearest-even preserves its bits.
+- In the same abstract theory, multiplying every non-NaN bfloat16 value by exactly one preserves its bits.
+- Independently expressed modular primitives compose equivalently for every 8-bit input to the checked arithmetic program.
+
+These are universal proofs for the formulas and widths stated in each obligation. They are not a universal proof of Gemma, unrestricted natural language, arbitrary tensor dimensions, or the transcendental implementations used by softmax, GELU, RoPE, and RMSNorm. Solver-generated SMT-LIB identifiers are not stable across repeated constructions in one process, so verification requires certificate integrity plus equality of re-executed claims rather than identical regenerated JSON.
+
+### CUDA launch and binary provenance
+
+The CUDA probe profiles one real Gemma forward pass, hashes the relevant PyTorch distribution binaries, inventories embedded cubins with `cuobjdump`, extracts a compatible cubin containing an observed kernel symbol, and disassembles that image with `nvdisasm`:
+
+```powershell
+python -m bioprocess_runtime cuda-provenance --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --output artifacts/cuda_provenance_manifest.json
+python -m bioprocess_runtime cuda-provenance-verify artifacts/cuda_provenance_manifest.json --verify-local-binaries
+python -m bioprocess_runtime cuda-provenance-summary artifacts/cuda_provenance_manifest.json --output results/gemma3_270m_cuda_provenance_summary.json
+```
+
+`--kernel` can restrict extraction to a regular expression over observed PyTorch-native symbols. Without it, the probe chooses the highest-launch-count compatible candidate. `--redact` omits device identity, token IDs, and binary hashes when generating a shareable manifest. The checked private-repository summary intentionally retains the synthetic input IDs, GPU model, and distribution-binary hashes as reproducibility evidence; it contains no local paths or credentials and should be regenerated with `--redact` before publication if that environment fingerprint is not intended to be shared.
+
+The checked summary is [`results/gemma3_270m_cuda_provenance_summary.json`](results/gemma3_270m_cuda_provenance_summary.json):
+
+- The profile is bound to the checkpoint-state hash, exact 30 input token IDs, input tensors, output-logit tensor, SDPA configuration, and selected token `10784`.
+- 2,069 CUDA events and 35 unique kernel symbols were observed.
+- Launch families comprised 18 fused-attention, 1,848 PyTorch-native, 201 vendor-linear-algebra, and 2 memory-copy events.
+- `torch_cuda.dll`, cuBLAS, cuBLASLt, and CUDA runtime binary values are committed by SHA-256.
+- `torch_cuda.dll` contained 3,877 enumerated embedded images across its recorded architectures.
+- The highest-launch-count profiled PyTorch-native symbol with extractable compatible SASS was launched 238 times and was present in `sm_86` image `torch_cuda.727.sm_86.cubin`.
+- SHA-256 values cryptographically commit the extracted image and complete `nvdisasm` output; a heuristic fingerprint counted 74,817 instruction lines across 92 opcode forms in the complete image.
+- Re-hashing the local distribution binaries matched the manifest.
+
+This records an important provenance step but is not yet instruction-level verification. The RTX 4090 reports compute capability 8.9 while `torch.cuda.get_arch_list()` does not advertise an exact `sm_89` target for this build; the analysis therefore examines a compatible `sm_86` image. The driver has not attested that this exact image was selected for each launch. Vendor-library internals, JIT-generated code, formal SASS semantics, and a proof connecting every instruction to IEEE-754/bfloat16 equations remain unresolved.
 
 ## Objective B: force Gemma through an executable language
 

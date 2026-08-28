@@ -20,6 +20,9 @@ gemma = [
     "torch==2.7.1",
     "transformers==4.53.3",
 ]
+proof = [
+    "z3-solver==4.15.3.0",
+]
 
 [project.scripts]
 bioprocess-runtime = "bioprocess_runtime.cli:main"

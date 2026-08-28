@@ -1,0 +1,194 @@
+{
+  "execution_binding": {
+    "attention_implementation": "sdpa",
+    "attention_mask_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.int64",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 30,
+      "sha256": "7e1ec7f5f074f6888823443fd47e6c82ccd5f780770271d2d7af7573bf9d4892",
+      "shape": [
+        1,
+        30
+      ]
+    },
+    "input_ids": [
+      [
+        2,
+        105,
+        2364,
+        107,
+        818,
+        12123,
+        6013,
+        563,
+        236743,
+        236800,
+        236771,
+        3591,
+        532,
+        45261,
+        236761,
+        14300,
+        672,
+        1660,
+        3540,
+        236881,
+        25685,
+        8438,
+        653,
+        2301,
+        236761,
+        106,
+        107,
+        105,
+        4368,
+        107
+      ]
+    ],
+    "input_ids_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.int64",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 30,
+      "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+      "shape": [
+        1,
+        30
+      ]
+    },
+    "model_class": "Gemma3ForCausalLM",
+    "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
+    "output_logits_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 262144,
+      "sha256": "c03fb1d6dbf5fa3e05321c63c3fae24f64bab46014bfd5875512515daa71c6c5",
+      "shape": [
+        1,
+        1,
+        262144
+      ]
+    },
+    "selected_token_id": 10784
+  },
+  "manifest_sha256": "76cdbf4eabd2c49596234cc95433514a4168663a8ca17407809ba7186b01e3a9",
+  "privacy": {
+    "redacted": false
+  },
+  "profile": {
+    "cuda_event_count": 2069,
+    "families": {
+      "fused_attention": {
+        "launches": 18,
+        "unique_symbols": 1
+      },
+      "memory_copy": {
+        "launches": 2,
+        "unique_symbols": 1
+      },
+      "pytorch_native": {
+        "launches": 1848,
+        "unique_symbols": 27
+      },
+      "vendor_linear_algebra": {
+        "launches": 201,
+        "unique_symbols": 7
+      }
+    },
+    "unique_kernel_count": 35
+  },
+  "profiled_symbol_disassembly": {
+    "binding": "An observed launch symbol was found in a compatible extracted image; the driver-selected image for that launch is not attested.",
+    "embedded_architecture": "sm_86",
+    "embedded_image": "torch_cuda.727.sm_86.cubin",
+    "embedded_image_sha256": "16d1c289d7cec008ede9f03c03f317bd7081e30aebbd11149cd25158f1b2340f",
+    "image_instruction_count": 74817,
+    "instruction_parse": "Heuristic address/opcode-line count across the complete extracted image, not a semantic SASS parse.",
+    "nvdisasm_output_sha256": "7ce4c5190ea248902800e4aef1cf5b5a2d0d4f4a4cc8a379306a5f7de632947d",
+    "observed_launch_count": 238,
+    "profiled_kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLy1EEEEviT0_T1_",
+    "profiled_symbol_present_in_image": true,
+    "selection": "Highest-launch-count observed PyTorch-native symbol matching the optional filter with extractable compatible SASS.",
+    "unique_opcodes": 92
+  },
+  "runtime": {
+    "compatible_embedded_architecture_examined": "sm_86",
+    "device_capability": [
+      8,
+      9
+    ],
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "exact_architecture_advertised_by_torch": false,
+    "supported_binary_architectures": [
+      "sm_50",
+      "sm_60",
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90",
+      "sm_100",
+      "sm_120"
+    ],
+    "torch_cuda_version": "12.8",
+    "torch_version": "2.7.1+cu128"
+  },
+  "runtime_distribution_binaries": [
+    {
+      "name": "torch_cuda.dll",
+      "role": "torch_cuda",
+      "sha256": "6ca1ce93905d6b8f3b28ab70f5de91d528de7f4538b972d0d7485ee49faf8bb0",
+      "size_bytes": 1311574016
+    },
+    {
+      "name": "cublas64_12.dll",
+      "role": "cublas",
+      "sha256": "0a60a7ecbf906f7f3842826fecaf412f1587ff6269729339245a1ec224364161",
+      "size_bytes": 113712640
+    },
+    {
+      "name": "cublasLt64_12.dll",
+      "role": "cublas_lt",
+      "sha256": "a21ddfc1c9cd090ab07d2c6aad235aa4f15fe60fe896d5db28adf7a279c09ef3",
+      "size_bytes": 692441600
+    },
+    {
+      "name": "cudart64_12.dll",
+      "role": "cuda_runtime",
+      "sha256": "9d9b868955149875ac4ef43442aaaa8913d4a7b3e4d6dd60ee871626aa045768",
+      "size_bytes": 573952
+    }
+  ],
+  "scope": "Observed CUDA launch names plus binary and compatible-image fingerprints; not instruction-level semantic verification.",
+  "torch_cuda_embedded_images": {
+    "architectures": {
+      "sm_100": 412,
+      "sm_100a": 1,
+      "sm_120": 412,
+      "sm_50": 412,
+      "sm_60": 412,
+      "sm_61": 288,
+      "sm_70": 412,
+      "sm_75": 288,
+      "sm_80": 412,
+      "sm_86": 412,
+      "sm_89": 2,
+      "sm_90": 412,
+      "sm_90a": 2
+    },
+    "listing_sha256": "75468e136d5f41601977df74610afa3c1e75a60dcf17f8f2d728816919c5b4bc",
+    "total_images": 3877
+  },
+  "unresolved": [
+    "Driver attestation of the exact cubin selected for every launch",
+    "JIT-generated and vendor-library internal kernel binary extraction",
+    "Formal SASS operational semantics",
+    "Instruction-by-instruction proof against IEEE-754 and bfloat16 specifications"
+  ]
+}
