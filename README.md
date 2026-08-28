@@ -415,7 +415,7 @@ python -m bioprocess_runtime sass-semantics --output results/sass_semantics_proo
 python -m bioprocess_runtime sass-semantics-verify results/sass_semantics_proofs.json
 ```
 
-The checked [`results/sass_semantics_proofs.json`](results/sass_semantics_proofs.json) proves seven properties for base forms of `MOV`, `IADD3`, `IMAD`, `LOP3.LUT`, `SEL`, and `ISETP.GE.U32`. Five of those base opcodes—`MOV`, `IADD3`, `IMAD`, `LOP3.LUT`, and `SEL`—occur exactly in the extracted image and cover 20,277 of 74,817 heuristic instruction lines (`27.10%`); `ISETP.GE.U32` does not occur without modifiers. Modifier variants, registers wider than the stated obligations, memory operations, predication, condition codes, barriers, warps, and control flow are excluded. These are proposed equations checked for internal consistency—not NVIDIA-certified semantics and not proof that hardware implements them.
+The checked [`results/sass_semantics_proofs.json`](results/sass_semantics_proofs.json) now verifies 24 scoped properties spanning 27 exact opcode names. Coverage includes modular integer arithmetic and move forms, signed/unsigned predicate comparisons, a reduced-width funnel-shift invariant, abstract IEEE-754 RNE properties for `FADD`, `FMUL`, and `FFMA`, predicate selection, and abstract `NOP`/branch/exit state transitions. The selected extracted image has 54,850 of 74,817 lines (`73.31%`) whose exact opcode name appears in this proposed-semantics registry. Register widths and modifiers beyond each stated obligation, arbitrary LUT values, memory, barriers, warps, reconvergence, complete control flow, and hardware conformance remain excluded. These are proposed equations checked for internal consistency—not NVIDIA-certified semantics and not proof that hardware implements them.
 
 ### Driver module-load capture
 
@@ -480,11 +480,22 @@ The checked [`results/gemma3_270m_nsight_kernel_suite.json`](results/gemma3_270m
 | Elementwise and indexing | 24/24 | 1,719/1,719 |
 | **Total** | **35/35** | **2,067/2,067** |
 
-Every distinct symbol received one successful launch certificate. Nsight's session page retained the exact filter value for 33 symbols; the two omitted very long values are instead bound by pre-execution request hashes. The suite includes the 3,584-instruction fused-attention function, major GEMM variants, the 3,024-instruction RMS mean reduction, the 600-instruction GELU function, and elementwise kernels. Across the 35 distinct functions, 30,872 normalized instruction lines were bound to CUPTI-loaded cubins. Base opcode names for which the project has at least one proposed semantics rule occur on 7,980 lines (`25.85%`); this is syntactic overlap only. In particular, arbitrary `LOP3.LUT` operands are counted even though only LUT values `0x96` and `0xe8` currently have checked identities.
+Every distinct symbol received one successful launch certificate. Nsight's session page retained the exact filter value for 33 symbols; the two omitted very long values are instead bound by pre-execution request hashes. The suite includes the 3,584-instruction fused-attention function, major GEMM variants, the 3,024-instruction RMS mean reduction, the 600-instruction GELU function, and elementwise kernels. Across the 35 distinct functions, 30,872 normalized instruction lines were bound to CUPTI-loaded cubins. Exact opcode names for which the project has at least one proposed semantics rule occur on 21,295 lines (`68.98%`); this is syntactic overlap only. In particular, arbitrary `LOP3.LUT` operands are counted even though only LUT values `0x96` and `0xe8` currently have checked identities.
 
 The 100% launch-weighted figure means every symbol responsible for the 2,067 recorded non-copy launches has one representative invocation attested. It does not mean all 2,067 invocations were separately profiled, that equivalent symbols are used on other prompts or shapes, or that any instruction's semantics or hardware execution has been independently proven. Normalization reconciles documented presentation differences between Nsight and `cuobjdump`, including absolute versus relative control targets, operand ordering, `.reuse` annotations, and explicit conversion aliases; negative tests ensure distinct registers, predicates, and control targets remain distinct. Exact ELF symbol sets and single function-section checks prevent prefix or multi-function matches. The exact CUPTI cubin hashes retain the underlying binary commitments.
 
 The aggregate verifier performs arithmetic and integrity checks by itself. Supplying `--certificate-directory` re-verifies every individual certificate and cross-checks its kernel, cubin, SASS hash, and instruction count; supplying `--cupti-report` re-links every cubin hash to the captured module set. `--redact` can remove report, cubin, SASS, and certificate hashes from a shareable suite, while the checked private-repository result intentionally retains them for reproducibility.
+
+### Architecture-to-kernel correspondence
+
+A separate registry maps expected Gemma stage patterns to attested symbols:
+
+```powershell
+python -m bioprocess_runtime operator-correspondence --suite results/gemma3_270m_nsight_kernel_suite.json --output results/gemma3_270m_operator_correspondence.json
+python -m bioprocess_runtime operator-correspondence-verify results/gemma3_270m_operator_correspondence.json
+```
+
+The checked [`results/gemma3_270m_operator_correspondence.json`](results/gemma3_270m_operator_correspondence.json) finds attested symbol patterns for embedding lookup, RMS normalization, rotary embedding, linear projections, fused SDPA, gated GELU MLP, residual addition, and mask/index construction. Every structural pattern is present, but every stage deliberately retains `semantic_equivalence_established: false`, and the aggregate retains `full_operator_semantic_equivalence_established: false`. Symbol occurrence does not identify each repeated invocation's layer, bind launch arguments to exact tensor coordinates, or prove that composed instruction semantics equal the independent Gemma equations.
 
 ## Objective B: force Gemma through an executable language
 

@@ -1,0 +1,266 @@
+{
+  "all_distinct_kernel_symbols_attested": true,
+  "all_stage_patterns_observed_and_attested": true,
+  "correspondence_sha256": "fff2a4860c5e9c03c82278114f0232b6a0ea97a9c29180bd4fa104830e701314",
+  "full_operator_semantic_equivalence_established": false,
+  "remaining_obligations": [
+    "Correlate each repeated kernel invocation to a specific model layer and operator call.",
+    "Prove tensor-address, shape, stride, dtype, and scalar-parameter bindings for each launch.",
+    "Complete semantics for every instruction and modifier in each matched function.",
+    "Prove composed instruction semantics equal the independent Gemma operator equations.",
+    "Independently validate NVIDIA hardware execution against the proposed SASS semantics."
+  ],
+  "scope": "Architecture-to-kernel-symbol correspondence for one attested Gemma forward; symbol occurrence is not proof that every invocation implements the named mathematical stage.",
+  "source_suite_sha256": "533129ff3982af41e75ff764c84c846847412c9c495c4d0db4754ab9be926ce4",
+  "stages": [
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "indexSelect": [
+          {
+            "index": 27,
+            "kernel_name": "_ZN2at6native44_GLOBAL__N__516f300d_11_Indexing_cu_2a2c434e21indexSelectLargeIndexIN3c108BFloat16ExjLi2ELi2ELin2ELb1EEEvNS_4cuda6detail10TensorInfoIT_T1_EENS7_IKS8_S9_EENS7_IKT0_S9_EEiiS9_S9_x",
+            "module_id": 21,
+            "sass_canonical_sha256": "7151d250ed41eee2a200a6d1ccad41dc04fd714add176888c2b52a6d0f756f9e"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "indexSelect"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "embedding_lookup"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "BinaryFunctorIfff": [
+          {
+            "index": 4,
+            "kernel_name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "module_id": 22,
+            "sass_canonical_sha256": "ccdc5805613393d943f6c5701be5e17a181eea6a4a6ea0f3f5e3c07b703dc1ee"
+          }
+        ],
+        "MeanOps": [
+          {
+            "index": 3,
+            "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+            "module_id": 32,
+            "sass_canonical_sha256": "67f47ce3dbfb91ac36111c2a8649517eb13a0ec9a9beb679c6b173222ca27a0e"
+          }
+        ],
+        "PowKernel": [
+          {
+            "index": 20,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_50_GLOBAL__N__f7789698_12_PowKernel_cu_fe73ebd8_314029pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLy2EEEEviS6_T1_",
+            "module_id": 31,
+            "sass_canonical_sha256": "afc15f37f03486be3e6ce10d51481874b9e7b799b957b449bc2b4dc9df397dcc"
+          }
+        ],
+        "rsqrt_kernel": [
+          {
+            "index": 23,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+            "module_id": 34,
+            "sass_canonical_sha256": "9e7d2febb4f4ab41f654d23b910c1ec90b7289edea265a9b90d37982c246a0a9"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "MeanOps",
+        "PowKernel",
+        "rsqrt_kernel",
+        "BinaryFunctorIfff"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "rms_normalization"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "CatArrayBatchedCopy": [
+          {
+            "index": 25,
+            "kernel_name": "_ZN2at6native40_GLOBAL__N__0b46c3ea_8_Shape_cu_85d9f36c19CatArrayBatchedCopyINS1_10OpaqueTypeILj2EEEjLi4ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "module_id": 28,
+            "sass_canonical_sha256": "83a16d0fdcffc8194f4acef49345a55d2280b49142847c02e62293ddeea2df32"
+          },
+          {
+            "index": 26,
+            "kernel_name": "_ZN2at6native40_GLOBAL__N__0b46c3ea_8_Shape_cu_85d9f36c19CatArrayBatchedCopyINS1_10OpaqueTypeILj4EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "module_id": 28,
+            "sass_canonical_sha256": "4f71772a01ea79417663a784d6d45d0b14a15f33d7b42745a73e36a0d2e06cb3"
+          }
+        ],
+        "cos_kernel": [
+          {
+            "index": 21,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+            "module_id": 29,
+            "sass_canonical_sha256": "2578c068e4baa3d3311721c545af6433d246983306d53077bfad3923e93c239d"
+          }
+        ],
+        "sin_kernel": [
+          {
+            "index": 22,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+            "module_id": 30,
+            "sass_canonical_sha256": "0b398a60f2c89f4414a689bc6ae6499e7ba2ec47745d8d9c882f85b8810a943e"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "cos_kernel",
+        "sin_kernel",
+        "CatArrayBatchedCopy"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "rotary_embedding"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "gemm": [
+          {
+            "index": 0,
+            "kernel_name": "_Z13gemmk1_kernelIifLi256ELi5ELb0ELb0ELb0ELb0E30cublasGemvTensorStridedBatchedIKfES2_S0_IfEfLi0EEv18cublasGemmk1ParamsIT0_T7_T8_T9_T10_N8biasTypeINS8_10value_typeES9_E4typeEE",
+            "module_id": 27,
+            "sass_canonical_sha256": "5c211319d54b77d8e9026d867bb34044a370cdaadc44499b04e736a7612285b6"
+          },
+          {
+            "index": 29,
+            "kernel_name": "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+            "module_id": 41,
+            "sass_canonical_sha256": "f87ecd0d03e04f5b09d6ed9633c242139f42c6287fbab0c2d452aa364edc3eee"
+          },
+          {
+            "index": 30,
+            "kernel_name": "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+            "module_id": 41,
+            "sass_canonical_sha256": "d38de663fad7e45d283d8d8437c888da612a7618cbfaab77d7bd9e82484a286a"
+          },
+          {
+            "index": 31,
+            "kernel_name": "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE",
+            "module_id": 41,
+            "sass_canonical_sha256": "4a5d4e6ed8582e1532b02a19beb86c67555962d8f7e1e0530ca33169a8a380b1"
+          },
+          {
+            "index": 34,
+            "kernel_name": "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+            "module_id": 38,
+            "sass_canonical_sha256": "08d983d467d5ae5de3b99c6cf7e011ca9a778f422c2dad90f9dd4303e92acbe6"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "gemm"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "linear_projections"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "fmha_cutlass": [
+          {
+            "index": 1,
+            "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+            "module_id": 44,
+            "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "fmha_cutlass"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "fused_sdpa_attention"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "BinaryFunctorIN3c108BFloat16": [
+          {
+            "index": 5,
+            "kernel_name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIN3c108BFloat16ES5_S5_NS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "module_id": 22,
+            "sass_canonical_sha256": "bbb91c365de8fb67598ca1924864d48b1e3af8a6603cf6ed60ee6a7c6c01e43d"
+          },
+          {
+            "index": 16,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIN3c108BFloat16ES4_S4_NS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLy3EEEEviT0_T1_",
+            "module_id": 22,
+            "sass_canonical_sha256": "6a8dae508dcf18f42d5660c855c2e9a891546fb6da279b80565c7ee741040eae"
+          }
+        ],
+        "GeluCUDAKernelImpl": [
+          {
+            "index": 24,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_",
+            "module_id": 45,
+            "sass_canonical_sha256": "7d3ea1829b3bf3d5e39386df49f12303bd1dc076eda078cbcc6885f43268fdd0"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "GeluCUDAKernelImpl",
+        "BinaryFunctorIN3c108BFloat16"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "gated_gelu_mlp"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "CUDAFunctor_addIN3c108BFloat16": [
+          {
+            "index": 6,
+            "kernel_name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIN3c108BFloat16EEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "module_id": 33,
+            "sass_canonical_sha256": "26ece65d54e34a699d16f2efd4bf0b3616182bf87ab81885d556f4392f5a12ea"
+          },
+          {
+            "index": 17,
+            "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIN3c108BFloat16EEESt5arrayIPcLy3EEEEviT0_T1_",
+            "module_id": 33,
+            "sass_canonical_sha256": "9b671bd4770916e8c8dafdc7c5e3933d23b7ed4bce762b787a69eaa8bcc9e4f5"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "CUDAFunctor_addIN3c108BFloat16"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "residual_addition"
+    },
+    {
+      "all_patterns_observed_and_attested": true,
+      "matched_symbols": {
+        "and_kernel_cuda": [
+          {
+            "index": 2,
+            "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIbNS0_14func_wrapper_tIbZZZNS0_15and_kernel_cudaERNS_14TensorIteratorEENKUlvE_clEvENKUlvE10_clEvEUlbbE_EEjbLi4ELi4EEEEEvT1_",
+            "module_id": 25,
+            "sass_canonical_sha256": "9b1e2b41a4eea52bdfc3cc0eb22ae100d76ed80fe0a37b2f1e2ea859a87c38c0"
+          }
+        ],
+        "arange_cuda_out": [
+          {
+            "index": 28,
+            "kernel_name": "_ZN50_GLOBAL__N__2530b397_17_RangeFactories_cu_4cc9e74429elementwise_kernel_with_indexIiZZZN2at6native15arange_cuda_outERKN3c106ScalarES6_S6_RNS1_6TensorEENKUlvE_clEvENKUlvE2_clEvEUlxE_EEvT_T0_PN15function_traitsISD_E11result_typeE",
+            "module_id": 23,
+            "sass_canonical_sha256": "1f42068d64c189d1c78f039d6779dd8b083a9c183bb2475235b62733caccec75"
+          }
+        ]
+      },
+      "required_symbol_patterns": [
+        "arange_cuda_out",
+        "and_kernel_cuda"
+      ],
+      "semantic_equivalence_established": false,
+      "stage": "mask_and_index_construction"
+    }
+  ]
+}

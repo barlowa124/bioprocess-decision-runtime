@@ -1,17 +1,38 @@
 {
-  "certificate_sha256": "bdfbe354bb54181a4efe8eb6388dc720c3cc3dacbe03cb98c0cfa1e0fe7c998e",
+  "certificate_sha256": "979e551a49d7a27d5c64400f9c67d98e2ba812c54682a6eee37dec8ffeb4fbef",
   "covered_base_opcodes": [
-    "MOV",
+    "BRA",
+    "BRA.U",
+    "EXIT",
+    "FADD",
+    "FFMA",
+    "FMUL",
+    "FSEL",
     "IADD3",
     "IMAD",
+    "IMAD.IADD",
+    "IMAD.MOV",
+    "IMAD.MOV.U32",
+    "IMAD.SHL.U32",
+    "IMAD.U32",
+    "ISETP.EQ.AND",
+    "ISETP.GE.AND",
+    "ISETP.GE.U32.AND",
+    "ISETP.GT.AND",
+    "ISETP.GT.U32.AND",
+    "ISETP.LT.AND",
+    "ISETP.LT.U32.AND",
+    "ISETP.NE.AND",
     "LOP3.LUT",
+    "MOV",
+    "NOP",
     "SEL",
-    "ISETP.GE.U32"
+    "SHF.R.U32.HI"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
     "register width and type variants beyond the stated formulas",
-    "predication, condition-code, carry, memory, barrier, warp, and control-flow semantics",
+    "Memory, barrier, warp, reconvergence, and complete control-flow semantics",
     "NVIDIA hardware conformance to these proposed equations"
   ],
   "proofs": [
@@ -91,13 +112,213 @@
         "opcode": "ISETP.GE.U32"
       },
       "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_eq_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.EQ.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_ne_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.NE.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_ge_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.GE.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_gt_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.GT.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_lt_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.LT.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_ge_u32_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.GE.U32.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_gt_u32_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.GT.U32.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_lt_u32_and_matches_comparison_and_prior_predicate",
+      "proved": true,
+      "scope": {
+        "boundary": "Predicate output only; condition-code side effects and opcode modifiers are excluded.",
+        "input": "all pairs of 8-bit values and both prior-predicate values",
+        "opcode": "ISETP.LT.U32.AND"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_move_forms_are_identity_encodings",
+      "proved": true,
+      "scope": {
+        "boundary": "Proposed move pseudo-form only; encoded source selection and modifiers are premises.",
+        "input": "all 8-bit source values",
+        "opcodes": [
+          "IMAD.MOV",
+          "IMAD.MOV.U32"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "shf_r_u32_hi_selects_low_at_zero_and_high_at_word_width",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width funnel-shift model; hardware shift masking and other modifiers are excluded.",
+        "input": "all pairs of 8-bit words at shift values zero and eight",
+        "opcode": "SHF.R.U32.HI"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_iadd_and_u32_share_modular_multiply_add_core",
+      "proved": true,
+      "scope": {
+        "boundary": "Core low-word equation only; high-word, carry, sign-extension, and modifiers are excluded.",
+        "input": "all triples of 8-bit values",
+        "opcodes": [
+          "IMAD.IADD",
+          "IMAD.U32"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_shl_power_of_two_form_matches_left_shift",
+      "proved": true,
+      "scope": {
+        "boundary": "One power-of-two form; arbitrary immediates and modifiers are not proved.",
+        "input": "all 8-bit values for the checked multiply-by-eight form",
+        "opcode": "IMAD.SHL.U32"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "fadd_rne_is_bit_commutative_for_non_nan_results",
+      "proved": true,
+      "scope": {
+        "boundary": "Abstract IEEE-754 RNE model; FTZ, saturation, and hardware conformance are excluded.",
+        "input": "all non-NaN float32 pairs whose RNE sum is not NaN",
+        "opcode": "FADD"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "fmul_rne_is_bit_commutative_for_non_nan_results",
+      "proved": true,
+      "scope": {
+        "boundary": "Abstract IEEE-754 RNE model; FTZ, saturation, and hardware conformance are excluded.",
+        "input": "all non-NaN float32 pairs whose RNE product is not NaN",
+        "opcode": "FMUL"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ffma_proposed_semantics_is_single_rounding_ieee_fma",
+      "proved": true,
+      "scope": {
+        "boundary": "Definition check in abstract IEEE-754 RNE theory; modifiers and hardware conformance are excluded.",
+        "input": "all float32 triples",
+        "opcode": "FFMA"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "fsel_and_sel_share_predicate_selection_equation",
+      "proved": true,
+      "scope": {
+        "input": "all abstract operand bit patterns and predicate values",
+        "opcodes": [
+          "FSEL",
+          "SEL"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "nop_preserves_state_branch_selects_target_and_exit_terminates",
+      "proved": true,
+      "scope": {
+        "boundary": "Abstract control-state equations; reconvergence, predication, PC width, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract states and branch targets",
+        "opcodes": [
+          "NOP",
+          "BRA",
+          "BRA.U",
+          "EXIT"
+        ]
+      },
+      "solver_result": "unsat"
     }
   ],
-  "proved": 7,
-  "scope": "Proposed bitvector operational semantics for a small base-opcode subset observed in the extracted CUDA image; not NVIDIA-certified SASS semantics.",
+  "proved": 24,
+  "scope": "Proposed bitvector, abstract IEEE-754, and abstract control semantics for selected exact opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 7
+  "total": 24
 }

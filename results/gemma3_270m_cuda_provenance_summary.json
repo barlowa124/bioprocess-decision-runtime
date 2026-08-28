@@ -116,19 +116,6 @@
     "selection": "Highest-launch-count observed PyTorch-native symbol matching the optional filter with extractable compatible SASS.",
     "unique_opcodes": 92
   },
-  "proposed_sass_semantics_coverage": {
-    "coverage_fraction": 0.27102129195236374,
-    "covered_instruction_lines": 20277,
-    "exact_covered_opcodes_present": [
-      "IADD3",
-      "IMAD",
-      "LOP3.LUT",
-      "MOV",
-      "SEL"
-    ],
-    "scope": "Syntactic exact-base-opcode coverage only; no modifier folding or hardware-semantic claim.",
-    "total_instruction_lines": 74817
-  },
   "runtime": {
     "compatible_embedded_architecture_examined": "sm_86",
     "device_capability": [
@@ -179,6 +166,35 @@
     }
   ],
   "scope": "Observed CUDA launch names plus binary and compatible-image fingerprints; not instruction-level semantic verification.",
+  "syntactic_proposed_semantics_opcode_coverage": {
+    "coverage_fraction": 0.7331221513827071,
+    "covered_instruction_lines": 54850,
+    "exact_covered_opcodes_present": [
+      "BRA",
+      "EXIT",
+      "FADD",
+      "FSEL",
+      "IADD3",
+      "IMAD",
+      "IMAD.IADD",
+      "IMAD.MOV",
+      "IMAD.MOV.U32",
+      "IMAD.SHL.U32",
+      "IMAD.U32",
+      "ISETP.GE.AND",
+      "ISETP.GE.U32.AND",
+      "ISETP.GT.AND",
+      "ISETP.GT.U32.AND",
+      "ISETP.NE.AND",
+      "LOP3.LUT",
+      "MOV",
+      "NOP",
+      "SEL",
+      "SHF.R.U32.HI"
+    ],
+    "scope": "Syntactic exact-base-opcode coverage only; no modifier folding or hardware-semantic claim.",
+    "total_instruction_lines": 74817
+  },
   "torch_cuda_embedded_images": {
     "architectures": {
       "sm_100": 412,

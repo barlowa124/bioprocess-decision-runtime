@@ -481,6 +481,24 @@ def command_sass_semantics_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_operator_correspondence(args: argparse.Namespace) -> int:
+    from .operator_correspondence import build_operator_correspondence
+
+    suite = json.loads(args.suite.read_text(encoding="utf-8"))
+    correspondence = build_operator_correspondence(suite)
+    _write_json(args.output, correspondence)
+    return 0 if correspondence["all_stage_patterns_observed_and_attested"] else 1
+
+
+def command_operator_correspondence_verify(args: argparse.Namespace) -> int:
+    from .operator_correspondence import verify_operator_correspondence
+
+    correspondence = json.loads(args.correspondence.read_text(encoding="utf-8"))
+    verification = verify_operator_correspondence(correspondence)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_cupti_module_capture(args: argparse.Namespace) -> int:
     from .cupti_attestation import CuptiModuleCapture
 
@@ -831,6 +849,15 @@ def build_parser() -> argparse.ArgumentParser:
     sass_verify_parser = subparsers.add_parser("sass-semantics-verify", help="Re-execute a proposed SASS-semantics certificate")
     sass_verify_parser.add_argument("certificate", type=Path)
     sass_verify_parser.set_defaults(handler=command_sass_semantics_verify)
+
+    correspondence_parser = subparsers.add_parser("operator-correspondence", help="Map attested kernel symbols to expected Gemma operator-stage patterns")
+    correspondence_parser.add_argument("--suite", type=Path, required=True)
+    correspondence_parser.add_argument("--output", type=Path, required=True)
+    correspondence_parser.set_defaults(handler=command_operator_correspondence)
+
+    correspondence_verify_parser = subparsers.add_parser("operator-correspondence-verify", help="Verify operator-correspondence integrity and semantic boundaries")
+    correspondence_verify_parser.add_argument("correspondence", type=Path)
+    correspondence_verify_parser.set_defaults(handler=command_operator_correspondence_verify)
 
     cupti_parser = subparsers.add_parser("cupti-module-capture", help="Capture cubins presented during CUDA module-load callbacks")
     cupti_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

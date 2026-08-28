@@ -331,7 +331,7 @@ def summarize_cuda_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
             "nvdisasm_output_sha256": disassembly.get("nvdisasm_output_sha256"),
             "binding": disassembly.get("binding"),
         },
-        "proposed_sass_semantics_coverage": sass_image_coverage(disassembly.get("image_opcode_histogram", {})),
+        "syntactic_proposed_semantics_opcode_coverage": sass_image_coverage(disassembly.get("image_opcode_histogram", {})),
         "unresolved": manifest["unresolved"],
     }
 

@@ -58,6 +58,8 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
+        self.assertGreaterEqual(certificate["total"], 24)
+        self.assertTrue({"FFMA", "FMUL", "FADD", "SHF.R.U32.HI", "ISETP.NE.AND"}.issubset(certificate["covered_base_opcodes"]))
         self.assertTrue(verify_sass_semantics_certificate(certificate)["valid"])
         self.assertIn("not NVIDIA-certified", certificate["scope"])
 
@@ -73,7 +75,7 @@ class SassSemanticsTests(unittest.TestCase):
         from bioprocess_runtime.sass_semantics import sass_image_coverage
 
         coverage = sass_image_coverage({"MOV": 3, "IADD3": 2, "IADD3.X": 7, "BRA": 5})
-        self.assertEqual(coverage["covered_instruction_lines"], 5)
+        self.assertEqual(coverage["covered_instruction_lines"], 10)
         self.assertEqual(coverage["total_instruction_lines"], 17)
         self.assertIn("Syntactic", coverage["scope"])
 
@@ -342,6 +344,34 @@ class NsightAttestationTests(unittest.TestCase):
         self.assertFalse(verify_nsight_launch_certificate(damaged)["valid"])
 
 
+class OperatorCorrespondenceTests(unittest.TestCase):
+    def test_stage_pattern_presence_does_not_become_semantic_equivalence(self) -> None:
+        from bioprocess_runtime.operator_correspondence import (
+            STAGE_PATTERNS,
+            build_operator_correspondence,
+            verify_operator_correspondence,
+        )
+
+        entries = []
+        for index, pattern in enumerate(dict.fromkeys(pattern for patterns in STAGE_PATTERNS.values() for pattern in patterns)):
+            entries.append(
+                {
+                    "index": index,
+                    "kernel_name": f"prefix_{pattern}_suffix",
+                    "module_id": index,
+                    "sass_canonical_sha256": f"sass_{index}",
+                }
+            )
+        correspondence = build_operator_correspondence({"entries": entries, "suite_sha256": "suite", "complete": True})
+        self.assertTrue(correspondence["all_stage_patterns_observed_and_attested"])
+        self.assertFalse(correspondence["full_operator_semantic_equivalence_established"])
+        self.assertTrue(all(not stage["semantic_equivalence_established"] for stage in correspondence["stages"]))
+        self.assertTrue(verify_operator_correspondence(correspondence)["valid"])
+        damaged = copy.deepcopy(correspondence)
+        damaged["full_operator_semantic_equivalence_established"] = True
+        self.assertFalse(verify_operator_correspondence(damaged)["valid"])
+
+
 class CudaProvenanceTests(unittest.TestCase):
     def test_embedded_image_and_architecture_parsing(self) -> None:
         from bioprocess_runtime.cuda_provenance import _compatible_architecture, _locate_embedded_image, _parse_embedded_images
@@ -467,4 +497,4 @@ class CudaProvenanceTests(unittest.TestCase):
         self.assertEqual(summary["profile"]["families"]["pytorch_native"]["launches"], 2)
         self.assertIn("not instruction-level", summary["scope"])
         self.assertEqual(summary["profiled_symbol_disassembly"]["unique_opcodes"], 1)
-        self.assertEqual(summary["proposed_sass_semantics_coverage"]["coverage_fraction"], 1.0)
+        self.assertEqual(summary["syntactic_proposed_semantics_opcode_coverage"]["coverage_fraction"], 1.0)
