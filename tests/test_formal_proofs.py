@@ -113,6 +113,51 @@ class CuptiAttestationTests(unittest.TestCase):
         self.assertFalse(verify_cupti_module_capture(damaged)["valid"])
 
 
+class NsightAttestationTests(unittest.TestCase):
+    def test_launch_details_and_sass_normalization(self) -> None:
+        from bioprocess_runtime.nsight_attestation import _parse_cuobjdump_sass, _parse_details, _parse_nsight_sass
+
+        details = (
+            '"Process ID","Kernel Name","Context","Stream","Block Size","Grid Size","CC","Metric Name","Metric Unit","Metric Value"\n'
+            '"42","kernel","1","7","(128, 1, 1)","(1, 1, 1)","8.9","Threads","thread","128"\n'
+        )
+        parsed = _parse_details(details)
+        self.assertEqual(parsed["process_id"], 42)
+        self.assertEqual(parsed["kernel_name"], "kernel")
+        nsight = (
+            "0x100 IADD3 R0, R1, R2, R3\n"
+            "0x110 @P0 BRA 0x100\n"
+            "0x120 @PT NOP\n"
+            "0x130 @!PT EXIT\n"
+            "0x140 @UP0 MOV R0, R1\n"
+            "0x150 @UPT NOP\n"
+        )
+        static = (
+            "/*0000*/ IADD3 R0, R1, R2, R3 ;\n"
+            "/*0010*/ @P0 BRA 0x0;\n"
+            "/*0020*/ @PT NOP;\n"
+            "/*0030*/ @!PT EXIT;\n"
+            "/*0040*/ @UP0 MOV R0, R1;\n"
+            "/*0050*/ @UPT NOP;\n"
+        )
+        self.assertEqual(_parse_nsight_sass(nsight), _parse_cuobjdump_sass(static))
+
+    def test_launch_certificate_verifier_detects_claim_changes(self) -> None:
+        from bioprocess_runtime.nsight_attestation import verify_nsight_launch_certificate
+
+        certificate = {
+            "checks": {"launch_sass_matches_loaded_cubin_function": True, "other": True},
+            "all_checks_pass": True,
+            "launch_sass": {"canonical_sha256": "same"},
+            "loaded_cubin_function_sass": {"canonical_sha256": "same"},
+        }
+        certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_nsight_launch_certificate(certificate)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["launch_sass"]["canonical_sha256"] = "different"
+        self.assertFalse(verify_nsight_launch_certificate(damaged)["valid"])
+
+
 class CudaProvenanceTests(unittest.TestCase):
     def test_embedded_image_and_architecture_parsing(self) -> None:
         from bioprocess_runtime.cuda_provenance import _compatible_architecture, _locate_embedded_image, _parse_embedded_images

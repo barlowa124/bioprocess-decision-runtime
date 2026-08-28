@@ -429,17 +429,36 @@ python -m bioprocess_runtime cupti-module-summary artifacts/cupti_module_capture
 
 The checked [`results/gemma3_270m_cupti_module_summary.json`](results/gemma3_270m_cupti_module_summary.json) records 28 module-load events and 28 unique cubin values with no callback errors. All local cubin sizes and hashes verified. The statically extracted and disassembled image hash `16d1c289...f1b2340f` exactly matched CUPTI module ID 20 during the checkpoint/input/output-bound Gemma execution.
 
-This is stronger than inferring runtime use from a distribution binary: it proves that the exact disassembled cubin value was presented at a driver module-load callback in the same bound execution. It still does not prove that the profiled function launch resolved to module 20; function-to-module launch correlation remains required.
+This is stronger than inferring runtime use from a distribution binary: it records that the exact disassembled cubin value was presented at a driver module-load callback in the same bound execution.
 
 ### Launch-specific profiler attestation
 
-The installed Nsight Compute tool was invoked to obtain launch-specific evidence:
+With NVIDIA performance-counter access enabled, the permission probe now succeeds:
 
 ```powershell
 python -m bioprocess_runtime cuda-nsight-permission --output results/gemma3_270m_nsight_attestation_status.json
 ```
 
-The checked status records `ERR_NVGPUCTRPERM`. NVIDIA performance-counter permission is disabled for the current user, so Nsight could not produce a launch-specific report or SASS view. The command records this as a failed capability probe, not a successful Gemma attestation. Enabling that system permission is a user-controlled environment change; until then, driver-selected cubin identity, vendor-library internals, JIT-generated code, complete formal SASS semantics, and instruction-to-IEEE-754 equivalence remain unresolved.
+One exact mangled kernel is collected inside an NVTX-bounded Gemma forward. The target process independently emits a checkpoint/input/output binding, and the resulting report is compared with the matching CUPTI cubin:
+
+```powershell
+$kernel = (Get-Content results/gemma3_270m_cuda_provenance_summary.json | ConvertFrom-Json).profiled_symbol_disassembly.profiled_kernel_name
+ncu --target-processes all --nvtx --nvtx-include "gemma_bound_forward/" --kernel-name-base mangled --kernel-name $kernel --launch-count 1 --section LaunchStats --export artifacts/gemma_launch_attestation --force-overwrite python -m bioprocess_runtime gemma-nsight-target --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --output artifacts/nsight_execution_binding.json
+python -m bioprocess_runtime nsight-launch-certificate --report artifacts/gemma_launch_attestation.ncu-rep --binding artifacts/nsight_execution_binding.json --cuda-summary results/gemma3_270m_cuda_provenance_summary.json --cupti-report artifacts/cupti_module_capture.json --cupti-artifact-directory artifacts/cupti_modules --output results/gemma3_270m_nsight_launch_certificate.json
+python -m bioprocess_runtime nsight-launch-verify results/gemma3_270m_nsight_launch_certificate.json
+```
+
+The checked [`results/gemma3_270m_nsight_launch_certificate.json`](results/gemma3_270m_nsight_launch_certificate.json) passes all 13 bindings:
+
+- The report process ID equals the process that emitted the Gemma execution binding.
+- The session records the `gemma_bound_forward` NVTX filter, exact mangled-kernel filter, and one-launch limit.
+- Checkpoint, input-token tensor, output-logit tensor, and selected token `10784` match the earlier operational profile.
+- The launch used compute capability 8.9, context 1, stream 7, block `(128,1,1)`, and grid `(1,1,1)`.
+- Nsight reported 104 SASS instructions for the launch.
+- `cuobjdump` reported the same 104-instruction function in CUPTI module 20.
+- After normalizing absolute addresses to function offsets, every predicate, opcode, and operand matched; both sequences have canonical hash `acd6a12e...903e627`.
+
+This provides launch-specific instruction-text identity for one PyTorch fill kernel executed inside the bound forward. It is not a proof of SASS semantics, hardware execution correctness, fused-attention or matrix-multiplication kernels, or the complete Gemma computation. Nsight and CUPTI are both NVIDIA tooling, so this is stronger execution provenance rather than independent hardware verification.
 
 ## Objective B: force Gemma through an executable language
 

@@ -1,0 +1,193 @@
+{
+  "all_checks_pass": true,
+  "binding_sha256": "0c89963ec481434d168c48b3f5a12127465a9f9c7fa882ed33303bffb8d1757e",
+  "certificate_sha256": "4eaf0ee85b50454be5acf56dae4f62c544624428acd65be32393a75ded33b72e",
+  "checks": {
+    "binding_hash_valid": true,
+    "binding_nvtx_range_matches": true,
+    "cupti_module_hash_matches_static_image": true,
+    "input_matches_profile": true,
+    "kernel_filter_recorded": true,
+    "kernel_matches_profile": true,
+    "launch_sass_matches_loaded_cubin_function": true,
+    "model_state_matches_profile": true,
+    "nvtx_filter_recorded": true,
+    "output_matches_profile": true,
+    "process_id_matches": true,
+    "selected_token_matches_profile": true,
+    "single_launch_filter_recorded": true
+  },
+  "cupti_module": {
+    "cubin_sha256": "16d1c289d7cec008ede9f03c03f317bd7081e30aebbd11149cd25158f1b2340f",
+    "cubin_size": 1928192,
+    "module_id": 20
+  },
+  "details": {
+    "block_size": "(128, 1, 1)",
+    "compute_capability": "8.9",
+    "context": 1,
+    "grid_size": "(1, 1, 1)",
+    "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLy1EEEEviT0_T1_",
+    "metrics": {
+      "# SMs": {
+        "unit": "SM",
+        "value": "128"
+      },
+      "# TPCs": {
+        "unit": "",
+        "value": "64"
+      },
+      "Block Size": {
+        "unit": "",
+        "value": "128"
+      },
+      "Driver Shared Memory Per Block": {
+        "unit": "Kbyte/block",
+        "value": "1.02"
+      },
+      "Dynamic Shared Memory Per Block": {
+        "unit": "byte/block",
+        "value": "0"
+      },
+      "Enabled TPC IDs": {
+        "unit": "",
+        "value": "all"
+      },
+      "Function Cache Configuration": {
+        "unit": "",
+        "value": "CachePreferNone"
+      },
+      "Grid Size": {
+        "unit": "",
+        "value": "1"
+      },
+      "Registers Per Thread": {
+        "unit": "register/thread",
+        "value": "16"
+      },
+      "Shared Memory Configuration Size": {
+        "unit": "Kbyte",
+        "value": "32.77"
+      },
+      "Stack Size": {
+        "unit": "",
+        "value": "1,024"
+      },
+      "Static Shared Memory Per Block": {
+        "unit": "byte/block",
+        "value": "0"
+      },
+      "Threads": {
+        "unit": "thread",
+        "value": "128"
+      },
+      "Uses Green Context": {
+        "unit": "",
+        "value": "0"
+      },
+      "Waves Per SM": {
+        "unit": "",
+        "value": "0.00"
+      }
+    },
+    "process_id": 281336,
+    "stream": 7
+  },
+  "execution_binding": {
+    "input_ids_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.int64",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 30,
+      "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+      "shape": [
+        1,
+        30
+      ]
+    },
+    "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
+    "nvtx_range": "gemma_bound_forward",
+    "output_logits_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 262144,
+      "sha256": "c03fb1d6dbf5fa3e05321c63c3fae24f64bab46014bfd5875512515daa71c6c5",
+      "shape": [
+        1,
+        1,
+        262144
+      ]
+    },
+    "process_id": 281336,
+    "scope": "Execution binding emitted by the Nsight target process; the report must independently match its process ID and NVTX-filtered kernel.",
+    "selected_token_id": 10784
+  },
+  "launch_sass": {
+    "canonical_sha256": "acd6a12e3828544f9ada145f0d8994548bbbaed6f1560dcfd92246d45903e627",
+    "first_offset": 0,
+    "instruction_count": 104,
+    "last_offset": 1648,
+    "opcode_histogram": {
+      "BRA": 2,
+      "EXIT": 10,
+      "IADD3": 12,
+      "IMAD.IADD": 4,
+      "IMAD.MOV.U32": 7,
+      "IMAD.SHL.U32": 1,
+      "IMAD.U32": 1,
+      "IMAD.WIDE": 1,
+      "IMAD.WIDE.U32": 9,
+      "ISETP.GE.AND": 8,
+      "ISETP.GE.U32.AND": 1,
+      "MOV": 4,
+      "NOP": 12,
+      "S2R": 3,
+      "STG.E": 8,
+      "STG.E.128": 2,
+      "ULDC.64": 1,
+      "ULDC.U8": 8,
+      "ULOP3.LUT": 4,
+      "UPRMT": 6
+    }
+  },
+  "limitations": [
+    "Nsight and CUPTI are NVIDIA tooling and are not independent hardware implementations.",
+    "Matching SASS establishes instruction-text identity, not correctness of instruction semantics.",
+    "Only one selected kernel launch is attested by this certificate."
+  ],
+  "loaded_cubin_function_sass": {
+    "canonical_sha256": "acd6a12e3828544f9ada145f0d8994548bbbaed6f1560dcfd92246d45903e627",
+    "first_offset": 0,
+    "instruction_count": 104,
+    "last_offset": 1648,
+    "opcode_histogram": {
+      "BRA": 2,
+      "EXIT": 10,
+      "IADD3": 12,
+      "IMAD.IADD": 4,
+      "IMAD.MOV.U32": 7,
+      "IMAD.SHL.U32": 1,
+      "IMAD.U32": 1,
+      "IMAD.WIDE": 1,
+      "IMAD.WIDE.U32": 9,
+      "ISETP.GE.AND": 8,
+      "ISETP.GE.U32.AND": 1,
+      "MOV": 4,
+      "NOP": 12,
+      "S2R": 3,
+      "STG.E": 8,
+      "STG.E.128": 2,
+      "ULDC.64": 1,
+      "ULDC.U8": 8,
+      "ULOP3.LUT": 4,
+      "UPRMT": 6
+    }
+  },
+  "report_sha256": "602e5cade878ca9025ee8e5d73fe53be12240e8a450d7b77cd56ae805b309cb3",
+  "scope": "Launch-specific Nsight SASS bound by process ID and NVTX range to a Gemma execution, then compared with the matching CUPTI-loaded cubin function; not hardware-semantic proof.",
+  "session_output_sha256": "b5d97b40a98c679422a955d30d2b8f6f3fc0777186a41838946e05d6d88f3b9f",
+  "source_output_sha256": "0f1879227f5d918f57d04e46340e7dfd98af23b4e4b6c156cfefdf88a59222e3"
+}

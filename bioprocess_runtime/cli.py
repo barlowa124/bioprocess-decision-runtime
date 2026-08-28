@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -529,6 +531,61 @@ def command_cupti_module_summary(args: argparse.Namespace) -> int:
     return 0 if summary["profiled_static_image_binding"]["matched"] else 1
 
 
+def command_nsight_target(args: argparse.Namespace) -> int:
+    import torch
+
+    from .interpretability import _model_device, _tokenize, load_local_gemma
+    from .operational_semantics import tensor_descriptor
+    from .reference_gemma import model_state_sha256
+    from .serialization import canonical_json
+
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    model, tokenizer = load_local_gemma(args.model_path)
+    inputs = _tokenize(tokenizer, prompt, _model_device(model))
+    torch.cuda.nvtx.range_push("gemma_bound_forward")
+    try:
+        with torch.no_grad():
+            output = model(**inputs, use_cache=False, logits_to_keep=1)
+        torch.cuda.synchronize()
+    finally:
+        torch.cuda.nvtx.range_pop()
+    binding = {
+        "scope": "Execution binding emitted by the Nsight target process; the report must independently match its process ID and NVTX-filtered kernel.",
+        "process_id": os.getpid(),
+        "model_state_sha256": model_state_sha256(model),
+        "input_ids_tensor": tensor_descriptor(inputs["input_ids"]),
+        "output_logits_tensor": tensor_descriptor(output.logits),
+        "selected_token_id": int(torch.argmax(output.logits[0, -1]).item()),
+        "nvtx_range": "gemma_bound_forward",
+    }
+    binding["binding_sha256"] = hashlib.sha256(canonical_json(binding).encode("utf-8")).hexdigest()
+    _write_json(args.output, binding)
+    return 0
+
+
+def command_nsight_launch_certificate(args: argparse.Namespace) -> int:
+    from .nsight_attestation import build_nsight_launch_certificate
+
+    certificate = build_nsight_launch_certificate(
+        args.report,
+        args.binding,
+        args.cuda_summary,
+        args.cupti_report,
+        args.cupti_artifact_directory,
+    )
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_nsight_launch_verify(args: argparse.Namespace) -> int:
+    from .nsight_attestation import verify_nsight_launch_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_nsight_launch_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_nsight_permission(args: argparse.Namespace) -> int:
     from .cuda_provenance import probe_nsight_compute_permission
 
@@ -753,6 +810,27 @@ def build_parser() -> argparse.ArgumentParser:
     cupti_summary_parser.add_argument("--cuda-summary", type=Path, required=True)
     cupti_summary_parser.add_argument("--output", type=Path, required=True)
     cupti_summary_parser.set_defaults(handler=command_cupti_module_summary)
+
+    nsight_target_parser = subparsers.add_parser("gemma-nsight-target", help="Run one NVTX-bounded Gemma forward and emit an execution binding")
+    nsight_target_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    nsight_target_prompt = nsight_target_parser.add_mutually_exclusive_group(required=True)
+    nsight_target_prompt.add_argument("--prompt")
+    nsight_target_prompt.add_argument("--prompt-file", type=Path)
+    nsight_target_parser.add_argument("--output", type=Path, required=True)
+    nsight_target_parser.set_defaults(handler=command_nsight_target)
+
+    nsight_certificate_parser = subparsers.add_parser("nsight-launch-certificate", help="Bind an Nsight launch SASS view to Gemma execution and CUPTI cubin evidence")
+    nsight_certificate_parser.add_argument("--report", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--binding", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--cuda-summary", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--cupti-report", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--cupti-artifact-directory", type=Path, required=True)
+    nsight_certificate_parser.add_argument("--output", type=Path, required=True)
+    nsight_certificate_parser.set_defaults(handler=command_nsight_launch_certificate)
+
+    nsight_verify_parser = subparsers.add_parser("nsight-launch-verify", help="Verify an Nsight launch certificate's integrity and internal claims")
+    nsight_verify_parser.add_argument("certificate", type=Path)
+    nsight_verify_parser.set_defaults(handler=command_nsight_launch_verify)
 
     nsight_parser = subparsers.add_parser("cuda-nsight-permission", help="Probe permission for launch-specific Nsight Compute evidence")
     nsight_parser.add_argument("--output", type=Path)
