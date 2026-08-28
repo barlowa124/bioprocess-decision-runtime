@@ -33,6 +33,10 @@ The central question is not whether a second model can invent a convincing expla
 - Deterministic greedy token-prefix prediction with full logits commitments
 - Hash-chained leaf-module and dispatched ATen operation provenance
 - Verification that manual prediction matches a separate `transformers.generate` invocation
+- An independently orchestrated eager Gemma forward path using frozen weights and explicit equations
+- Fixed-input, zero-tolerance equivalence certificates across 19 model boundaries and vocabulary logits
+- Comparison between explicit eager arithmetic and the deployed SDPA attention path
+- Architecture-defined coordinate semantics separated from empirical biological interpretations
 
 ## What this does not demonstrate
 
@@ -47,7 +51,7 @@ The central question is not whether a second model can invent a convincing expla
 - That a linearly separable activation direction has stable human semantics
 - That Gemma 3 270M findings transfer to the operational Gemma 4 31B checkpoint
 - That an accepted decision program explains every internal cause of Gemma's token selection
-- A formally verified independent Gemma interpreter or proof that each deployed kernel matches a separate mathematical specification
+- A universal equivalence proof over all token sequences or an independently verified implementation of every primitive CUDA/PyTorch kernel
 - Semantic meaning from tensor hashes or operation records alone
 
 ## Architecture
@@ -280,7 +284,54 @@ For each predicted token, the report contains:
 
 The checked-in result is [`results/gemma3_270m_operational_semantics_summary.json`](results/gemma3_270m_operational_semantics_summary.json). For a 30-token oxygen prompt, the prototype predicted token `10784` (`Yes`) with logit `33.0`, versus token `3771` (`No`) with logit `29.0`. The module trace contains 257 verified records; the ATen trace contains 2,511 verified records. Manual greedy prediction exactly matched `transformers.generate`.
 
-This is a direct execution recorder, not yet an independently formalized interpreter. The tensor and chain hashes establish what bytes and dispatched operations were observed under this runtime. They do not yet prove that each CUDA or ATen kernel implements a separately specified equation, and fused kernels may hide lower-level arithmetic. Full reports remain excluded from Git because the ATen trace is several megabytes even for one token.
+This direct recorder establishes what logical tensor values and dispatched operations were observed under one runtime. Full reports remain excluded from Git because the ATen trace is several megabytes even for one token.
+
+### Independent reference and fixed-input equivalence
+
+The reference path does not call Hugging Face embedding, normalization, rotary, attention, decoder-layer, MLP, model, or language-model `forward()` methods. It independently orchestrates the frozen weights using explicit PyTorch equations for:
+
+- Scaled embedding lookup
+- RMS normalization
+- Global and local RoPE
+- Grouped-query key/value repetition
+- Causal and sliding-window masks
+- Scaled attention, stable float32 softmax, and value aggregation
+- Attention output projection and residual paths
+- GELU-tanh gated MLP and residual paths
+- Final normalization and tied vocabulary projection
+
+Create and verify a fixed-input equivalence certificate:
+
+```powershell
+python -m bioprocess_runtime gemma-reference-compare --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --absolute-tolerance 0 --output artifacts/reference_equivalence.json
+python -m bioprocess_runtime reference-verify artifacts/reference_equivalence.json
+```
+
+Run separate scalar-equation examples and produce the architecture coordinate registry:
+
+```powershell
+python -m bioprocess_runtime operator-conformance --output artifacts/operator_conformance.json
+python -m bioprocess_runtime gemma-coordinate-registry --output artifacts/coordinate_registry.json
+```
+
+Regenerate the checked result:
+
+```powershell
+python -m bioprocess_runtime gemma-reference-summary --certificate artifacts/reference_equivalence.json --conformance artifacts/operator_conformance.json --coordinates artifacts/coordinate_registry.json --output results/gemma3_270m_reference_equivalence_summary.json
+```
+
+The checked result is [`results/gemma3_270m_reference_equivalence_summary.json`](results/gemma3_270m_reference_equivalence_summary.json):
+
+- Independent eager orchestration exactly matched all 19 Hugging Face eager boundaries with zero tolerance.
+- All vocabulary logits matched exactly; both paths selected the same token.
+- The 20-record boundary certificate and the 295-record named reference-execution trace both verified.
+- Four fixed-vector scalar-equation checks had maximum absolute error `5.87e-8`.
+- The deployed SDPA path selected the same token but diverged numerically beginning at layer 0.
+- Against the explicit eager reference, SDPA reached maximum hidden-boundary error `448.0`, final-normalized-state error `30.0`, and full-sequence maximum logit error `7.125`.
+
+This establishes exact fixed-input equivalence between two orchestration paths that share PyTorch primitive kernels. It is not a universal proof over every token sequence and does not independently verify CUDA kernel arithmetic. The SDPA divergence demonstrates that attention implementation and numerical reduction behavior are part of the operational rationale even when the selected token remains unchanged.
+
+The coordinate registry assigns exact architecture-defined meanings to axes such as token ID, position, query head, key/value head, MLP neuron, and vocabulary logit. Learned hidden coordinates remain numerically identifiable but do not receive unsupported biological labels.
 
 ## Objective B: force Gemma through an executable language
 

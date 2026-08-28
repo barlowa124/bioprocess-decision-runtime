@@ -303,6 +303,71 @@ def command_semantics_summary(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_reference_compare(args: argparse.Namespace) -> int:
+    from .interpretability import _model_device, _tokenize, load_local_gemma
+    from .reference_gemma import fixed_input_equivalence_certificate, verify_fixed_input_certificate
+
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    model, tokenizer = load_local_gemma(args.model_path)
+    input_ids = _tokenize(tokenizer, prompt, _model_device(model))["input_ids"]
+    certificate = fixed_input_equivalence_certificate(model, input_ids, args.absolute_tolerance)
+    verification = verify_fixed_input_certificate(certificate)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(certificate, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    deployed = certificate["deployed_path"]
+    summary = {
+        "certificate": str(args.output),
+        "certificate_sha256": certificate["certificate_sha256"],
+        "certificate_valid": verification["valid"],
+        "reference_vs_eager_logits_exact": certificate["logits"]["exact_equal"],
+        "reference_vs_eager_max_error": certificate["logits"]["max_absolute_error"],
+        "deployed_attention_implementation": deployed["attention_implementation"],
+        "reference_vs_deployed_logits_exact": deployed["logits"]["exact_equal"],
+        "reference_vs_deployed_max_logit_error": deployed["logits"]["max_absolute_error"],
+        "deployed_selected_token_matches_reference": deployed["selected_token_matches_reference"],
+    }
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_reference_verify(args: argparse.Namespace) -> int:
+    from .reference_gemma import verify_fixed_input_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_fixed_input_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_operator_conformance(args: argparse.Namespace) -> int:
+    from .reference_gemma import operator_equation_conformance
+
+    report = operator_equation_conformance()
+    _write_json(args.output, report)
+    return 0
+
+
+def command_coordinate_registry(args: argparse.Namespace) -> int:
+    from .interpretability import load_local_gemma
+    from .reference_gemma import semantic_coordinate_registry
+
+    model, tokenizer = load_local_gemma(args.model_path)
+    registry = semantic_coordinate_registry(model, tokenizer)
+    _write_json(args.output, registry)
+    return 0
+
+
+def command_reference_summary(args: argparse.Namespace) -> int:
+    from .reference_gemma import summarize_reference_evidence
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    conformance = json.loads(args.conformance.read_text(encoding="utf-8"))
+    coordinates = json.loads(args.coordinates.read_text(encoding="utf-8"))
+    summary = summarize_reference_evidence(certificate, conformance, coordinates)
+    _write_json(args.output, summary)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bioprocess-runtime",
@@ -401,6 +466,35 @@ def build_parser() -> argparse.ArgumentParser:
     summary_parser.add_argument("--model-label", default="unsloth/gemma-3-270m-it")
     summary_parser.add_argument("--output", type=Path, required=True)
     summary_parser.set_defaults(handler=command_semantics_summary)
+
+    reference_parser = subparsers.add_parser("gemma-reference-compare", help="Compare independent Python orchestration with Hugging Face eager and deployed attention paths")
+    reference_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    reference_prompt = reference_parser.add_mutually_exclusive_group(required=True)
+    reference_prompt.add_argument("--prompt")
+    reference_prompt.add_argument("--prompt-file", type=Path)
+    reference_parser.add_argument("--absolute-tolerance", type=float, default=0.0)
+    reference_parser.add_argument("--output", type=Path, required=True)
+    reference_parser.set_defaults(handler=command_reference_compare)
+
+    reference_verify_parser = subparsers.add_parser("reference-verify", help="Verify a fixed-input reference equivalence certificate")
+    reference_verify_parser.add_argument("certificate", type=Path)
+    reference_verify_parser.set_defaults(handler=command_reference_verify)
+
+    conformance_parser = subparsers.add_parser("operator-conformance", help="Compare operator implementations with separate scalar equations")
+    conformance_parser.add_argument("--output", type=Path)
+    conformance_parser.set_defaults(handler=command_operator_conformance)
+
+    coordinate_parser = subparsers.add_parser("gemma-coordinate-registry", help="Describe architecture-defined tensor coordinate roles")
+    coordinate_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    coordinate_parser.add_argument("--output", type=Path)
+    coordinate_parser.set_defaults(handler=command_coordinate_registry)
+
+    reference_summary_parser = subparsers.add_parser("gemma-reference-summary", help="Build a compact summary from reference proof artifacts")
+    reference_summary_parser.add_argument("--certificate", type=Path, required=True)
+    reference_summary_parser.add_argument("--conformance", type=Path, required=True)
+    reference_summary_parser.add_argument("--coordinates", type=Path, required=True)
+    reference_summary_parser.add_argument("--output", type=Path, required=True)
+    reference_summary_parser.set_defaults(handler=command_reference_summary)
     return parser
 
 

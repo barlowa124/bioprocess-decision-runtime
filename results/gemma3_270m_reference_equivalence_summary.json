@@ -1,0 +1,59 @@
+{
+  "coordinate_semantics": {
+    "exact_by_construction": [
+      "tensor role",
+      "axis role",
+      "token ID to tokenizer text",
+      "operator dependency"
+    ],
+    "requires_additional_evidence": [
+      "biological concept assigned to a hidden coordinate",
+      "causal sufficiency of a coordinate set",
+      "scientific correctness of a learned association"
+    ],
+    "sha256": "fd3dd395416c30cf6d9bab9ebd1fbd8b038b40e27b545ebe839e9f514ec94c13"
+  },
+  "input_ids_sha256": "16c5db8095c6ee039efb8c801921171eb873fa87f3affbd54a7c1f54697ad016",
+  "interpretation": "The independently orchestrated eager equations exactly reproduce every checked Hugging Face eager boundary and vocabulary logit for this input. The deployed SDPA path selects the same token but diverges numerically beginning at layer 0, showing that implementation choice is part of the model's operational rationale.",
+  "limitations": [
+    "The equivalence certificate covers one fixed input and does not prove equality for all token sequences.",
+    "Both implementations ultimately use PyTorch tensor kernels; orchestration is independent, primitive kernels are not.",
+    "Fixed-vector scalar equation checks are conformance examples rather than universal kernel proofs.",
+    "SDPA may contain fused CUDA arithmetic not exposed by the eager reference trace.",
+    "Architecture-defined coordinate roles do not assign biological meaning to learned hidden coordinates.",
+    "No GMP, biological, clinical, product-quality, or patient-safety conclusion is supported."
+  ],
+  "operator_equation_conformance": {
+    "case_count": 4,
+    "maximum_absolute_error": 5.86883244224623e-08,
+    "scope": "Fixed-vector equation conformance checks against separate Python scalar equations; not a proof for all values or CUDA kernels.",
+    "sha256": "bb8c490751822db173b0d09bd8a420e10d4f3c898654ccb988c23b76a075c7b2"
+  },
+  "reference_certificate": {
+    "chain_verified": true,
+    "record_count": 20,
+    "reference_execution_trace_chain_verified": true,
+    "reference_execution_trace_record_count": 295,
+    "reference_execution_trace_root_sha256": "0ae6a064767a0515f6fae4a70943d8b943f8c6066449b5d8fe85cc435ab06fdf",
+    "root_sha256": "1f7f3c6291e649c1cf6abdbcd25f4209d410c67f8ab0b9c96e2ce0330d67b772",
+    "sha256": "ddb14030015479675440b53ccc22b0599449ad61be95f7866f0062ecee8a0433"
+  },
+  "reference_vs_deployed_path": {
+    "attention_implementation": "sdpa",
+    "final_norm_maximum_error": 30.0,
+    "first_diverging_boundary": "layer_0",
+    "full_sequence_logits_exact": false,
+    "full_sequence_maximum_logit_error": 7.125,
+    "full_sequence_mean_logit_error": 0.5346024036407471,
+    "maximum_boundary_error": 448.0,
+    "selected_token_matches_reference": true
+  },
+  "reference_vs_huggingface_eager": {
+    "all_boundaries_exact": true,
+    "checked_boundaries": 19,
+    "logits_exact": true,
+    "maximum_logit_error": 0.0,
+    "selected_token_exact_match": true
+  },
+  "scope": "Fixed-input machine-checked equivalence evidence for an independent Python orchestration; not a universal proof over all inputs or a proof of CUDA kernel internals."
+}
