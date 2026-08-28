@@ -1,0 +1,82 @@
+{
+  "aten_trace": {
+    "chain_verified": true,
+    "most_frequent_operators": {
+      "aten._to_copy.default": 336,
+      "aten._unsafe_view.default": 129,
+      "aten.add.Tensor": 290,
+      "aten.mean.dim": 109,
+      "aten.mm.default": 127,
+      "aten.mul.Tensor": 314,
+      "aten.pow.Tensor_Scalar": 109,
+      "aten.slice.Tensor": 225,
+      "aten.t.default": 127,
+      "aten.view.default": 240
+    },
+    "record_count": 2511,
+    "root_sha256": "8150b6c244c635aa19d83c6ad926b827167ca66327f41ed464c92df61fad63d2"
+  },
+  "input": {
+    "prompt": "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No.",
+    "prompt_utf8_sha256": "7f153e763230925ddd607cc1cf7c431a8fe53938d4e67bf52efae03771c9bc71",
+    "token_count": 30,
+    "token_ids_sha256": "16c5db8095c6ee039efb8c801921171eb873fa87f3affbd54a7c1f54697ad016"
+  },
+  "interpretation": "The prototype predicts a finite output prefix by directly executing the frozen model, commits logits and intermediate logical tensor values, and hash-chains module or ATen records. Activation-direction experiments remain separate evidence rather than the complete rationale.",
+  "limitations": [
+    "The predictor and transformers.generate comparison use the same model implementation and are not independent implementations.",
+    "The trace records observed PyTorch execution; a separate formally specified reference interpreter and proof of equivalence do not yet exist.",
+    "ATen tracing may represent a fused kernel as one dispatched operation rather than exposing its internal arithmetic instructions.",
+    "Hash-chain verification detects record modification but does not prove that each operator implemented an independently specified equation.",
+    "Logical-value tensor hashes do not preserve original strides, storage offsets, device byte order, or semantic meaning.",
+    "Results are scoped to the recorded checkpoint, prompt, runtime, dtype, device, and decoding path.",
+    "No GMP, biological, clinical, product-quality, or patient-safety conclusion is supported."
+  ],
+  "model": {
+    "attention_heads": 4,
+    "buffer_tensors": 3,
+    "class": "Gemma3ForCausalLM",
+    "dtype": "bfloat16",
+    "head_dimension": 256,
+    "hidden_size": 640,
+    "layers": 18,
+    "listed_parameter_bindings": 237,
+    "manifest_sha256": "ecdd8e573eaa913c723d3d43ad9760a68e6ae5619f02c74deaec9e0a45b35875",
+    "mlp_intermediate_size": 2048,
+    "module_count": 314,
+    "repository": "unsloth/gemma-3-270m-it",
+    "snapshot_sha256": "b736debd207a627057268cb50981e0f2dac07c677a54f8ad322fc30afd9b79b3",
+    "tied_parameters": [
+      "model.embed_tokens.weight",
+      "lm_head.weight"
+    ],
+    "unique_parameter_tensors": 236,
+    "unique_parameters": 268098176,
+    "vocabulary_size": 262144
+  },
+  "module_trace": {
+    "chain_verified": true,
+    "record_count": 257,
+    "root_sha256": "15279acf29d66d1714d92ac0bf9a735ec797cb33639af5c98f2e6f4fe1885199"
+  },
+  "prediction": {
+    "logits_tensor_sha256": "0a95ff9255c633f4b899b4341060a396e3daca33f75eb1bdcc8eb2c113962c84",
+    "output_commitment_sha256": "dc8f80cd89fde68d64591a7b329fcfb82d680f73a2308e10ed14c33f94ab15ba",
+    "requested_output_prefix_tokens": 1,
+    "runner_up_logit": 29.0,
+    "runner_up_text": "No",
+    "runner_up_token_id": 3771,
+    "selected_logit": 33.0,
+    "selected_text": "Yes",
+    "selected_token_id": 10784,
+    "transformers_generate_exact_match": true,
+    "winning_margin": 4.0
+  },
+  "runtime": {
+    "device": "NVIDIA GeForce RTX 4090",
+    "manual_decode": "full-context recomputation with use_cache=False and torch.argmax",
+    "torch": "2.7.1+cu128",
+    "transformers": "4.53.3"
+  },
+  "scope": "Operational-semantics execution-recording prototype using deterministic logical-value hashes after contiguous CPU canonicalization; not original-storage hashing or an independently formalized proof."
+}

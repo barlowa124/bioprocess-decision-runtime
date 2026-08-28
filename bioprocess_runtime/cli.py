@@ -232,6 +232,77 @@ def command_gemma_program_suite(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_gemma_deconstruct(args: argparse.Namespace) -> int:
+    from .interpretability import load_local_gemma
+    from .operational_semantics import build_architecture_manifest
+
+    model, tokenizer = load_local_gemma(args.model_path)
+    manifest = build_architecture_manifest(model, tokenizer, args.model_path)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "model_class": manifest["model"]["class"],
+        "unique_parameter_count": manifest["model"]["unique_parameter_count"],
+        "module_count": len(manifest["modules"]),
+        "manifest_sha256": manifest["manifest_sha256"],
+        "full_manifest": str(args.output),
+    }, indent=2, sort_keys=True))
+    return 0
+
+
+def command_gemma_trace(args: argparse.Namespace) -> int:
+    from .interpretability import load_local_gemma
+    from .operational_semantics import predict_with_provenance
+
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    model, tokenizer = load_local_gemma(args.model_path)
+    report = predict_with_provenance(
+        model,
+        tokenizer,
+        args.model_path,
+        prompt,
+        max_new_tokens=args.max_new_tokens,
+        trace_level=args.trace_level,
+    )
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    summary = {
+        "generated_text": report["prediction"]["generated_text"],
+        "generated_token_ids": report["prediction"]["generated_token_ids"],
+        "output_commitment_sha256": report["prediction"]["output_commitment_sha256"],
+        "trace_level": report["trace"]["level"],
+        "trace_record_count": report["trace"]["record_count"],
+        "trace_root_sha256": report["trace"]["root_sha256"],
+        "trace_chain_valid": report["trace"]["chain_verification"]["valid"],
+        "reference_generate_exact_match": report["reference_generate_comparison"]["exact_match"],
+        "full_report": str(args.output) if args.output else None,
+    }
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0 if summary["trace_chain_valid"] and summary["reference_generate_exact_match"] else 1
+
+
+def command_trace_verify(args: argparse.Namespace) -> int:
+    from .operational_semantics import verify_trace_chain
+
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    trace = report.get("trace", {})
+    verification = verify_trace_chain(trace.get("records", []), trace.get("root_sha256"))
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_semantics_summary(args: argparse.Namespace) -> int:
+    from .operational_semantics import summarize_operational_evidence
+
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    module_report = json.loads(args.module_trace.read_text(encoding="utf-8"))
+    aten_report = json.loads(args.aten_trace.read_text(encoding="utf-8"))
+    summary = summarize_operational_evidence(manifest, module_report, aten_report, args.model_label)
+    _write_json(args.output, summary)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bioprocess-runtime",
@@ -303,6 +374,33 @@ def build_parser() -> argparse.ArgumentParser:
     gemma_suite_parser.add_argument("--timeout", type=int, default=300)
     gemma_suite_parser.add_argument("--output", type=Path)
     gemma_suite_parser.set_defaults(handler=command_gemma_program_suite)
+
+    deconstruct_parser = subparsers.add_parser("gemma-deconstruct", help="Write a static architecture and parameter-byte manifest")
+    deconstruct_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    deconstruct_parser.add_argument("--output", type=Path, required=True)
+    deconstruct_parser.set_defaults(handler=command_gemma_deconstruct)
+
+    trace_parser = subparsers.add_parser("gemma-trace", help="Predict greedy tokens with module or ATen operation provenance")
+    trace_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    prompt_group = trace_parser.add_mutually_exclusive_group(required=True)
+    prompt_group.add_argument("--prompt")
+    prompt_group.add_argument("--prompt-file", type=Path)
+    trace_parser.add_argument("--max-new-tokens", type=int, default=1)
+    trace_parser.add_argument("--trace-level", choices=("module", "aten"), default="module")
+    trace_parser.add_argument("--output", type=Path, required=True)
+    trace_parser.set_defaults(handler=command_gemma_trace)
+
+    trace_verify_parser = subparsers.add_parser("trace-verify", help="Verify an operation trace hash chain")
+    trace_verify_parser.add_argument("report", type=Path)
+    trace_verify_parser.set_defaults(handler=command_trace_verify)
+
+    summary_parser = subparsers.add_parser("gemma-semantics-summary", help="Build a compact reproducible summary from full provenance artifacts")
+    summary_parser.add_argument("--manifest", type=Path, required=True)
+    summary_parser.add_argument("--module-trace", type=Path, required=True)
+    summary_parser.add_argument("--aten-trace", type=Path, required=True)
+    summary_parser.add_argument("--model-label", default="unsloth/gemma-3-270m-it")
+    summary_parser.add_argument("--output", type=Path, required=True)
+    summary_parser.set_defaults(handler=command_semantics_summary)
     return parser
 
 
