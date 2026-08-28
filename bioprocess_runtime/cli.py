@@ -560,12 +560,20 @@ def command_nsight_target(args: argparse.Namespace) -> int:
     prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
     model, tokenizer = load_local_gemma(args.model_path)
     inputs = _tokenize(tokenizer, prompt, _model_device(model))
+    module_capture = None
+    if args.module_nvtx_pattern:
+        from .module_invocation import ModuleNvtxCapture
+
+        module_capture = ModuleNvtxCapture(model, tuple(args.module_nvtx_pattern))
+        module_capture.__enter__()
     torch.cuda.nvtx.range_push("gemma_bound_forward")
     try:
         with torch.no_grad():
             output = model(**inputs, use_cache=False, logits_to_keep=1)
         torch.cuda.synchronize()
     finally:
+        if module_capture is not None:
+            module_capture.__exit__(*sys.exc_info())
         torch.cuda.nvtx.range_pop()
     binding = {
         "scope": "Execution binding emitted by the Nsight target process; the report must independently match its process ID and NVTX-filtered kernel.",
@@ -575,6 +583,7 @@ def command_nsight_target(args: argparse.Namespace) -> int:
         "output_logits_tensor": tensor_descriptor(output.logits),
         "selected_token_id": int(torch.argmax(output.logits[0, -1]).item()),
         "nvtx_range": "gemma_bound_forward",
+        "module_invocation_report": module_capture.report() if module_capture is not None else None,
     }
     binding["binding_sha256"] = hashlib.sha256(canonical_json(binding).encode("utf-8")).hexdigest()
     _write_json(args.output, binding)
@@ -592,6 +601,7 @@ def command_nsight_capture(args: argparse.Namespace) -> int:
         args.report_base,
         args.binding,
         args.request,
+        tuple(args.module_nvtx_pattern),
     )
     print(json.dumps(request, indent=2, sort_keys=True))
     return 0
@@ -641,6 +651,46 @@ def command_nsight_kernel_suite_verify(args: argparse.Namespace) -> int:
     suite = json.loads(args.suite.read_text(encoding="utf-8"))
     cupti_report = json.loads(args.cupti_report.read_text(encoding="utf-8")) if args.cupti_report else None
     verification = verify_nsight_kernel_suite(suite, args.certificate_directory, cupti_report)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_module_invocation_certificate(args: argparse.Namespace) -> int:
+    from .module_invocation import build_module_invocation_certificate
+
+    certificate = build_module_invocation_certificate(
+        args.report,
+        args.binding,
+        args.launch_certificate,
+        args.expected_innermost_module,
+    )
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_module_invocation_verify(args: argparse.Namespace) -> int:
+    from .module_invocation import verify_module_invocation_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_module_invocation_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_module_invocation_summary(args: argparse.Namespace) -> int:
+    from .module_invocation import build_module_invocation_summary
+
+    certificates = [json.loads(path.read_text(encoding="utf-8")) for path in args.certificates]
+    summary = build_module_invocation_summary(certificates)
+    _write_json(args.output, summary)
+    return 0 if summary["complete"] else 1
+
+
+def command_module_invocation_summary_verify(args: argparse.Namespace) -> int:
+    from .module_invocation import verify_module_invocation_summary
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_module_invocation_summary(summary)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -884,6 +934,7 @@ def build_parser() -> argparse.ArgumentParser:
     nsight_target_prompt = nsight_target_parser.add_mutually_exclusive_group(required=True)
     nsight_target_prompt.add_argument("--prompt")
     nsight_target_prompt.add_argument("--prompt-file", type=Path)
+    nsight_target_parser.add_argument("--module-nvtx-pattern", action="append", default=[])
     nsight_target_parser.add_argument("--output", type=Path, required=True)
     nsight_target_parser.set_defaults(handler=command_nsight_target)
 
@@ -896,6 +947,7 @@ def build_parser() -> argparse.ArgumentParser:
     nsight_capture_parser.add_argument("--report-base", type=Path, required=True)
     nsight_capture_parser.add_argument("--binding", type=Path, required=True)
     nsight_capture_parser.add_argument("--request", type=Path, required=True)
+    nsight_capture_parser.add_argument("--module-nvtx-pattern", action="append", default=[])
     nsight_capture_parser.set_defaults(handler=command_nsight_capture)
 
     nsight_certificate_parser = subparsers.add_parser("nsight-launch-certificate", help="Bind an Nsight launch SASS view to Gemma execution and CUPTI cubin evidence")
@@ -926,6 +978,27 @@ def build_parser() -> argparse.ArgumentParser:
     nsight_suite_verify_parser.add_argument("--certificate-directory", type=Path)
     nsight_suite_verify_parser.add_argument("--cupti-report", type=Path)
     nsight_suite_verify_parser.set_defaults(handler=command_nsight_kernel_suite_verify)
+
+    module_certificate_parser = subparsers.add_parser("module-invocation-certificate", help="Bind an Nsight launch to a qualified module NVTX stack and tensor commitments")
+    module_certificate_parser.add_argument("--report", type=Path, required=True)
+    module_certificate_parser.add_argument("--binding", type=Path, required=True)
+    module_certificate_parser.add_argument("--launch-certificate", type=Path, required=True)
+    module_certificate_parser.add_argument("--expected-innermost-module", required=True)
+    module_certificate_parser.add_argument("--output", type=Path, required=True)
+    module_certificate_parser.set_defaults(handler=command_module_invocation_certificate)
+
+    module_verify_parser = subparsers.add_parser("module-invocation-verify", help="Verify a module invocation certificate")
+    module_verify_parser.add_argument("certificate", type=Path)
+    module_verify_parser.set_defaults(handler=command_module_invocation_verify)
+
+    module_summary_parser = subparsers.add_parser("module-invocation-summary", help="Build a compact summary from module invocation certificates")
+    module_summary_parser.add_argument("certificates", type=Path, nargs="+")
+    module_summary_parser.add_argument("--output", type=Path, required=True)
+    module_summary_parser.set_defaults(handler=command_module_invocation_summary)
+
+    module_summary_verify_parser = subparsers.add_parser("module-invocation-summary-verify", help="Verify a module invocation summary")
+    module_summary_verify_parser.add_argument("summary", type=Path)
+    module_summary_verify_parser.set_defaults(handler=command_module_invocation_summary_verify)
 
     nsight_parser = subparsers.add_parser("cuda-nsight-permission", help="Probe permission for launch-specific Nsight Compute evidence")
     nsight_parser.add_argument("--output", type=Path)

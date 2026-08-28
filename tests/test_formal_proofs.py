@@ -14,6 +14,7 @@ from bioprocess_runtime.serialization import canonical_json
 
 
 Z3_AVAILABLE = importlib.util.find_spec("z3") is not None
+TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 
 
 @unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")
@@ -114,6 +115,94 @@ class CuptiAttestationTests(unittest.TestCase):
         damaged = copy.deepcopy(report)
         damaged["module_load_events"] = 2
         self.assertFalse(verify_cupti_module_capture(damaged)["valid"])
+
+
+class ModuleInvocationTests(unittest.TestCase):
+    @unittest.skipUnless(TORCH_AVAILABLE, "Torch is not installed")
+    def test_module_nvtx_capture_balances_normal_and_exception_paths(self) -> None:
+        import torch
+
+        from bioprocess_runtime.module_invocation import ModuleNvtxCapture
+
+        class Child(torch.nn.Module):
+            def __init__(self, fail: bool = False) -> None:
+                super().__init__()
+                self.fail = fail
+
+            def forward(self, value: torch.Tensor) -> torch.Tensor:
+                if self.fail:
+                    raise RuntimeError("expected")
+                return value + 1
+
+        class Parent(torch.nn.Module):
+            def __init__(self, fail: bool = False) -> None:
+                super().__init__()
+                self.child = Child(fail)
+
+            def forward(self, value: torch.Tensor) -> torch.Tensor:
+                return self.child(value)
+
+        for fail in (False, True):
+            model = Parent(fail)
+            with (
+                patch("bioprocess_runtime.module_invocation.torch.cuda.is_available", return_value=True),
+                patch("bioprocess_runtime.module_invocation.torch.cuda.nvtx.range_push") as push,
+                patch("bioprocess_runtime.module_invocation.torch.cuda.nvtx.range_pop") as pop,
+            ):
+                capture = ModuleNvtxCapture(model, ("child",))
+                if fail:
+                    with self.assertRaisesRegex(RuntimeError, "expected"):
+                        with capture:
+                            model(torch.tensor([1.0]))
+                else:
+                    with capture:
+                        model(torch.tensor([1.0]))
+                    self.assertTrue(capture.report()["invocations"])
+                self.assertEqual(push.call_count, pop.call_count)
+                self.assertFalse(capture.open_stack)
+                self.assertFalse(capture.lifecycle_errors)
+
+    def test_raw_nvtx_identity_extracts_qualified_module_stack(self) -> None:
+        from bioprocess_runtime.module_invocation import _raw_nvtx_identity
+
+        column = "thread Domain:Push/Pop_Range:PL_Type:PL_Value:CLR_Type:Color:Msg_Type:Msg"
+        output = (
+            f'"Process ID","Kernel Name","{column}"\n'
+            '"42","kernel","1  ""<default domain>:gemma_bound_forward:none:none:none:none:none:none""  ""<default domain>:gemma_module:model.layers.0.self_attn:none:none:none:none:none:none"" "\n'
+        )
+        identity = _raw_nvtx_identity(output)
+        self.assertEqual(identity["process_id"], 42)
+        self.assertEqual(identity["qualified_modules"], ["model.layers.0.self_attn"])
+
+    def test_module_invocation_integrity_and_semantic_boundary(self) -> None:
+        from bioprocess_runtime.module_invocation import (
+            build_module_invocation_summary,
+            verify_module_invocation_certificate,
+            verify_module_invocation_report,
+            verify_module_invocation_summary,
+        )
+
+        invocation = {"module": "module", "inputs": [{"sha256": "in"}], "outputs": [{"sha256": "out"}]}
+        invocation["invocation_sha256"] = hashlib.sha256(canonical_json(invocation).encode("utf-8")).hexdigest()
+        report = {"patterns": ["module"], "invocations": [invocation]}
+        report["report_sha256"] = hashlib.sha256(canonical_json(report).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_module_invocation_report(report)["valid"])
+        certificate = {
+            "checks": {"bound": True},
+            "all_checks_pass": True,
+            "raw_identity": {"kernel_name": "kernel", "qualified_modules": ["module"]},
+            "expected_innermost_module": "module",
+            "matched_module_invocations": [invocation],
+        }
+        certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_module_invocation_certificate(certificate)["valid"])
+        summary = build_module_invocation_summary([certificate])
+        self.assertTrue(summary["complete"])
+        self.assertFalse(summary["full_kernel_argument_binding_established"])
+        self.assertTrue(verify_module_invocation_summary(summary)["valid"])
+        damaged_summary = copy.deepcopy(summary)
+        damaged_summary["full_kernel_argument_binding_established"] = True
+        self.assertFalse(verify_module_invocation_summary(damaged_summary)["valid"])
 
 
 class NsightAttestationTests(unittest.TestCase):

@@ -164,6 +164,7 @@ def capture_nsight_launch(
     report_base: Path,
     binding_path: Path,
     request_path: Path,
+    module_patterns: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     ncu = shutil.which("ncu")
     if ncu is None:
@@ -178,6 +179,7 @@ def capture_nsight_launch(
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
         "report_name": report_base.name,
         "binding_name": binding_path.name,
+        "module_nvtx_patterns": list(module_patterns),
     }
     request["request_sha256"] = hashlib.sha256(canonical_json(request).encode("utf-8")).hexdigest()
     request_path.parent.mkdir(parents=True, exist_ok=True)
@@ -211,6 +213,8 @@ def capture_nsight_launch(
         "--output",
         str(binding_path),
     ]
+    for pattern in module_patterns:
+        command.extend(("--module-nvtx-pattern", pattern))
     completed = subprocess.run(command, capture_output=True, text=True, timeout=280)
     if completed.returncode != 0:
         raise RuntimeError(f"Nsight capture failed with return code {completed.returncode}")

@@ -1,0 +1,60 @@
+{
+  "complete": true,
+  "entries": [
+    {
+      "certificate_sha256": "6caf7eede95266548bdb9a4e729aaa20901f0c216360163f45630a8a9cbb9e8e",
+      "innermost_module": "model.layers.0.self_attn",
+      "input_tensor_count": 5,
+      "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+      "module_invocation_sha256": "95bc276d2ce6d2d581d14a29b8b6eacb32f378aaeabdb816a62437d11efbeefb",
+      "output_tensor_count": 1,
+      "qualified_modules": [
+        "model.layers.0.self_attn"
+      ],
+      "valid": true
+    },
+    {
+      "certificate_sha256": "23f59acc004a12b5cbc4dfe4eb15a79a370773be50e3eb3aabe12736fbe18ab4",
+      "innermost_module": "model.layers.0.self_attn.q_proj",
+      "input_tensor_count": 1,
+      "kernel_name": "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE",
+      "module_invocation_sha256": "966841848669d1fc705e1cae0398e4457c145b0bf17bb8da14270a9482cfcf37",
+      "output_tensor_count": 1,
+      "qualified_modules": [
+        "model.layers.0.self_attn",
+        "model.layers.0.self_attn.q_proj"
+      ],
+      "valid": true
+    },
+    {
+      "certificate_sha256": "056c747e1328461ee678a832474477f283edcc837eb73ae1dbe152cd647606dc",
+      "innermost_module": "model.layers.0.input_layernorm",
+      "input_tensor_count": 1,
+      "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "module_invocation_sha256": "653e9839b18754f2e2fd7ca9d4f85e236b0cfd1d7c834b3048f6b81bd1c623cb",
+      "output_tensor_count": 1,
+      "qualified_modules": [
+        "model.layers.0.input_layernorm"
+      ],
+      "valid": true
+    },
+    {
+      "certificate_sha256": "866234e288cf7b093354b193db2e3661a8d9058463f60aa93186b52943bc7eb7",
+      "innermost_module": "model.layers.0.mlp.act_fn",
+      "input_tensor_count": 1,
+      "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_",
+      "module_invocation_sha256": "cfc5a46670858e27ae3c92d2e1c65fa921d3f05e92cf5d7abb0aa33929b7d7bd",
+      "output_tensor_count": 1,
+      "qualified_modules": [
+        "model.layers.0.mlp",
+        "model.layers.0.mlp.act_fn"
+      ],
+      "valid": true
+    }
+  ],
+  "full_kernel_argument_binding_established": false,
+  "scope": "Representative layer-0 module invocation bindings for attention, projection, RMS normalization, and GELU; not complete per-launch argument binding.",
+  "summary_sha256": "013d7eb5e9fee78e38fc8b2c355d48e32b140e43d726d9bdf2b3ffeda2e67165",
+  "total_entries": 4,
+  "valid_entries": 4
+}

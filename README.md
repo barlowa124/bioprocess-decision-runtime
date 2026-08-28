@@ -497,6 +497,31 @@ python -m bioprocess_runtime operator-correspondence-verify results/gemma3_270m_
 
 The checked [`results/gemma3_270m_operator_correspondence.json`](results/gemma3_270m_operator_correspondence.json) finds attested symbol patterns for embedding lookup, RMS normalization, rotary embedding, linear projections, fused SDPA, gated GELU MLP, residual addition, and mask/index construction. Every structural pattern is present, but every stage deliberately retains `semantic_equivalence_established: false`, and the aggregate retains `full_operator_semantic_equivalence_established: false`. Symbol occurrence does not identify each repeated invocation's layer, bind launch arguments to exact tensor coordinates, or prove that composed instruction semantics equal the independent Gemma equations.
 
+### Qualified module invocation bindings
+
+Nested NVTX hooks now mark selected modules with deterministic qualified names while retaining their framework input and output tensors until after the forward pass. Deferred records commit each logical tensor value, shape, dtype, stride, storage offset, and a hash of its device pointer without injecting tensor-copy kernels into the marked module range. Nsight's raw page independently reports the active NVTX stack for each selected launch.
+
+A capture request can add one or more `--module-nvtx-pattern` expressions; its launch certificate is then used to build a module certificate:
+
+```powershell
+python -m bioprocess_runtime module-invocation-certificate --report artifacts/nsight_suite/module_gemm.ncu-rep --binding artifacts/nsight_suite/module_gemm_binding.json --launch-certificate artifacts/nsight_suite/module_gemm_launch_certificate.json --expected-innermost-module model.layers.0.self_attn.q_proj --output artifacts/nsight_suite/module_gemm_module_certificate.json
+python -m bioprocess_runtime module-invocation-verify artifacts/nsight_suite/module_gemm_module_certificate.json
+python -m bioprocess_runtime module-invocation-summary-verify results/gemma3_270m_module_invocation_summary.json
+```
+
+The checked [`results/gemma3_270m_module_invocation_summary.json`](results/gemma3_270m_module_invocation_summary.json) contains four valid layer-0 bindings:
+
+| Kernel role | Innermost qualified module | Inputs | Outputs |
+|---|---|---:|---:|
+| Fused attention | `model.layers.0.self_attn` | 5 | 1 |
+| Q projection GEMM | `model.layers.0.self_attn.q_proj` | 1 | 1 |
+| RMS mean reduction | `model.layers.0.input_layernorm` | 1 | 1 |
+| GELU | `model.layers.0.mlp.act_fn` | 1 | 1 |
+
+For the projection and GELU launches, Nsight reports both parent and child module ranges in nesting order. Each certificate verifies the process ID, exact kernel, outer forward range, expected innermost module, every reported module invocation hash, and presence of module-boundary tensor commitments.
+
+This establishes which qualified framework module enclosed each representative launch and commits that module's boundary tensors. It does not decode CUDA parameter memory, prove that a particular device pointer was passed as a kernel argument, expose intermediate tensors inside fused modules, or cover every repeated invocation and layer. Accordingly, the summary retains `full_kernel_argument_binding_established: false`.
+
 ## Objective B: force Gemma through an executable language
 
 The decision program contains no coefficients or process limits. It can only:
