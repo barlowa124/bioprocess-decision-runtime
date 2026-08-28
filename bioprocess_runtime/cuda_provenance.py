@@ -4,6 +4,7 @@ import hashlib
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from collections import Counter
 from pathlib import Path
@@ -246,7 +247,46 @@ def build_cuda_provenance_manifest(
     return body
 
 
+def probe_nsight_compute_permission() -> dict[str, Any]:
+    _require_cuda()
+    ncu = shutil.which("ncu")
+    if ncu is None:
+        raise RuntimeError("Nsight Compute CLI was not found")
+    command = [
+        ncu,
+        "--target-processes",
+        "all",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        sys.executable,
+        "-c",
+        "import torch; x=torch.arange(1024,device='cuda'); y=x+1; torch.cuda.synchronize()",
+    ]
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=120)
+    output = (completed.stdout or "") + (completed.stderr or "")
+    error_codes = sorted(set(re.findall(r"ERR_[A-Z0-9_]+", output)))
+    permission_granted = completed.returncode == 0 and "ERR_NVGPUCTRPERM" not in error_codes
+    body = {
+        "scope": "Environment capability probe for launch-specific Nsight Compute evidence; not a Gemma-kernel attestation.",
+        "tool": _tool_version(ncu),
+        "attempted": True,
+        "returncode": completed.returncode,
+        "permission_granted": permission_granted,
+        "error_codes": error_codes,
+        "output_sha256": hashlib.sha256(output.encode("utf-8")).hexdigest(),
+        "impact": None
+        if permission_granted
+        else "Launch-specific Nsight SASS capture remains blocked; static compatible-image evidence is retained.",
+    }
+    body["record_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    return body
+
+
 def summarize_cuda_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
+    from .sass_semantics import sass_image_coverage
+
     counts = manifest["profile"]["kernel_launch_counts"]
     families: dict[str, dict[str, int]] = {}
     for name, launches in counts.items():
@@ -291,6 +331,7 @@ def summarize_cuda_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
             "nvdisasm_output_sha256": disassembly.get("nvdisasm_output_sha256"),
             "binding": disassembly.get("binding"),
         },
+        "proposed_sass_semantics_coverage": sass_image_coverage(disassembly.get("image_opcode_histogram", {})),
         "unresolved": manifest["unresolved"],
     }
 

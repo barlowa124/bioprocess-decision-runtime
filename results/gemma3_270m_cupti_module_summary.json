@@ -1,0 +1,196 @@
+{
+  "captured_modules": [
+    {
+      "cubin_sha256": "16d1c289d7cec008ede9f03c03f317bd7081e30aebbd11149cd25158f1b2340f",
+      "cubin_size": 1928192,
+      "module_id": 20
+    },
+    {
+      "cubin_sha256": "27d20432686cc2cb55f735ab0edd92aba0571516d5cdf853e856f912badd9b03",
+      "cubin_size": 22687184,
+      "module_id": 21
+    },
+    {
+      "cubin_sha256": "c650167a7204b4df55991819960f580a2c385ae4a113966d106935731404616a",
+      "cubin_size": 3484992,
+      "module_id": 22
+    },
+    {
+      "cubin_sha256": "3949b944ab52524a69bbeb042dad349dcf53f01e6c15a3ddbbbdd2f42e0e7b8f",
+      "cubin_size": 638280,
+      "module_id": 23
+    },
+    {
+      "cubin_sha256": "68f820f7860180858b1a86c21de8c10b0ca3f0bce64547867e74e170b8461d0c",
+      "cubin_size": 4605232,
+      "module_id": 24
+    },
+    {
+      "cubin_sha256": "dd2a3832e0a9908d57f26cc53781902a08bcb5c250d20ef9479d26b4013ada74",
+      "cubin_size": 5603808,
+      "module_id": 25
+    },
+    {
+      "cubin_sha256": "c75a39f19a5899ac3911f381e99093356b5aaa7e15f07a2103a1262437e22780",
+      "cubin_size": 8784,
+      "module_id": 26
+    },
+    {
+      "cubin_sha256": "3541637c3d032b710aa935a1bf8448d2e43046dbf852c7ce67f1a2d502562241",
+      "cubin_size": 1160608,
+      "module_id": 27
+    },
+    {
+      "cubin_sha256": "51389c39fd3f7ffef556807f5d3933f8b51c8988f9fde239ae7a8b45852f784b",
+      "cubin_size": 1261664,
+      "module_id": 28
+    },
+    {
+      "cubin_sha256": "4f6ed0b448fa2fd6cf5305e4980642524ef43f8b7c41876ace3dff957fea188d",
+      "cubin_size": 836328,
+      "module_id": 29
+    },
+    {
+      "cubin_sha256": "80d9f2a1afbc5fb4100e33f9e86ab028f64f69c04d2328e10db68c9dca2eb626",
+      "cubin_size": 830824,
+      "module_id": 30
+    },
+    {
+      "cubin_sha256": "23db132d6082726a3352b050f6a1ddd7b1558bfed553bf2a1914e88d9880f746",
+      "cubin_size": 16813928,
+      "module_id": 31
+    },
+    {
+      "cubin_sha256": "e8cae39d1fbfdc946dabf5a392df879920276efc044e6988730038460bc5865b",
+      "cubin_size": 4387424,
+      "module_id": 32
+    },
+    {
+      "cubin_sha256": "90240102e359ba42c189079a665c0e9941e660c40eb04b20d496e89c296359c8",
+      "cubin_size": 5338368,
+      "module_id": 33
+    },
+    {
+      "cubin_sha256": "dc570b8ffccb460e72d43ae79edaa4943c9c1d728e034a0fd3559f29f7d9197f",
+      "cubin_size": 8469672,
+      "module_id": 34
+    },
+    {
+      "cubin_sha256": "ed95d9920ecf50d7a50a5f94e1986fec41a2555c683fabbe148bc36de40d01f5",
+      "cubin_size": 5857056,
+      "module_id": 35
+    },
+    {
+      "cubin_sha256": "bcdca8aa9847ce539c6856e275bdbcb509561d8913b5eeac0198d1af0a9f81e5",
+      "cubin_size": 5810448,
+      "module_id": 36
+    },
+    {
+      "cubin_sha256": "c1ca8db71001178d04f1b83d7c55883107fa122927e10d41020672678fff2c86",
+      "cubin_size": 6601808,
+      "module_id": 37
+    },
+    {
+      "cubin_sha256": "c3361a22db27ce017fec90a46f66c508cad5d668d606070b214b0351b3cf9588",
+      "cubin_size": 6422224,
+      "module_id": 38
+    },
+    {
+      "cubin_sha256": "0661b7f77d822cda201988c3655a6082959057c59ef8c7339677441884fe4824",
+      "cubin_size": 6555600,
+      "module_id": 39
+    },
+    {
+      "cubin_sha256": "6ab9468c2d21b9b24c66fbb4380efca47a9057ddcc6adb4eb83997460986a83e",
+      "cubin_size": 6352608,
+      "module_id": 40
+    },
+    {
+      "cubin_sha256": "b0ddb21d5b657acf1bb6cfaaff3444be7db85d98135048d3b220e5e3ce46420d",
+      "cubin_size": 1428640,
+      "module_id": 41
+    },
+    {
+      "cubin_sha256": "d2163c53a705c36f4a0cb76b001049f452ca07a480ee561e0ad2975e36755bee",
+      "cubin_size": 4238880,
+      "module_id": 42
+    },
+    {
+      "cubin_sha256": "210d712baccb1e623400cfccbf57fc46b45ee509a4e2d3897e030a0b11eb4fb8",
+      "cubin_size": 5064128,
+      "module_id": 43
+    },
+    {
+      "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
+      "cubin_size": 383264,
+      "module_id": 44
+    },
+    {
+      "cubin_sha256": "01a39b5c4357f098f6d3308592b745be8544d0bbb012199a5ecf5f454f690f78",
+      "cubin_size": 2927808,
+      "module_id": 45
+    },
+    {
+      "cubin_sha256": "40aaa96f5857a0ff3e13744669459cebb6cd80c220aac4648edf71593a995e96",
+      "cubin_size": 5273248,
+      "module_id": 46
+    },
+    {
+      "cubin_sha256": "41f7c9161ebd6381729f8a678f6d047d5d6c6420ce699a4c40d21ef764324d28",
+      "cubin_size": 2774720,
+      "module_id": 47
+    }
+  ],
+  "cupti_library": "cupti64_2025.2.1.dll",
+  "execution_binding": {
+    "input_ids_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.int64",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 30,
+      "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+      "shape": [
+        1,
+        30
+      ]
+    },
+    "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
+    "output_logits_tensor": {
+      "device": "cuda:0",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 262144,
+      "sha256": "c03fb1d6dbf5fa3e05321c63c3fae24f64bab46014bfd5875512515daa71c6c5",
+      "shape": [
+        1,
+        1,
+        262144
+      ]
+    },
+    "selected_token_id": 10784
+  },
+  "limitations": [
+    "Modules loaded before subscription are not captured.",
+    "A module-load callback does not prove which function or cubin image served each kernel launch.",
+    "Captured cubin bytes are local artifacts and are not committed to Git."
+  ],
+  "module_load_events": 28,
+  "profiled_static_image_binding": {
+    "claim": "The statically disassembled compatible image value was presented in a CUDA module-load callback during the bound Gemma execution; per-launch function-to-module correlation remains unproved.",
+    "matched": true,
+    "matching_module_loads": [
+      {
+        "cubin_sha256": "16d1c289d7cec008ede9f03c03f317bd7081e30aebbd11149cd25158f1b2340f",
+        "cubin_size": 1928192,
+        "module_id": 20
+      }
+    ],
+    "profiled_kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLy1EEEEviT0_T1_",
+    "static_image_sha256": "16d1c289d7cec008ede9f03c03f317bd7081e30aebbd11149cd25158f1b2340f"
+  },
+  "record_sha256": "c692e1765bb22136d2dff05830fbcd8f514e7430573c935928d8bbff6d7f9f91",
+  "scope": "CUPTI resource-callback capture of cubin values presented during CUDA module-load events; not per-launch function-to-module correlation.",
+  "unique_cubins": 28
+}

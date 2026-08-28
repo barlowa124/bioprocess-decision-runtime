@@ -116,6 +116,19 @@
     "selection": "Highest-launch-count observed PyTorch-native symbol matching the optional filter with extractable compatible SASS.",
     "unique_opcodes": 92
   },
+  "proposed_sass_semantics_coverage": {
+    "coverage_fraction": 0.27102129195236374,
+    "covered_instruction_lines": 20277,
+    "exact_covered_opcodes_present": [
+      "IADD3",
+      "IMAD",
+      "LOP3.LUT",
+      "MOV",
+      "SEL"
+    ],
+    "scope": "Syntactic exact-base-opcode coverage only; no modifier folding or hardware-semantic claim.",
+    "total_instruction_lines": 74817
+  },
   "runtime": {
     "compatible_embedded_architecture_examined": "sm_86",
     "device_capability": [

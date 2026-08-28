@@ -1,0 +1,103 @@
+{
+  "certificate_sha256": "bdfbe354bb54181a4efe8eb6388dc720c3cc3dacbe03cb98c0cfa1e0fe7c998e",
+  "covered_base_opcodes": [
+    "MOV",
+    "IADD3",
+    "IMAD",
+    "LOP3.LUT",
+    "SEL",
+    "ISETP.GE.U32"
+  ],
+  "excluded": [
+    "Opcode modifiers not explicitly named in each obligation",
+    "register width and type variants beyond the stated formulas",
+    "predication, condition-code, carry, memory, barrier, warp, and control-flow semantics",
+    "NVIDIA hardware conformance to these proposed equations"
+  ],
+  "proofs": [
+    {
+      "counterexample": null,
+      "name": "mov_is_identity",
+      "proved": true,
+      "scope": {
+        "input": "all 8-bit values",
+        "opcode": "MOV"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "iadd3_matches_ripple_carry_sum",
+      "proved": true,
+      "scope": {
+        "flags": "carry and predicate outputs excluded",
+        "input": "all triples of 8-bit values",
+        "opcode": "IADD3"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_matches_shift_add_multiply_accumulate",
+      "proved": true,
+      "scope": {
+        "flags": "base modular form only",
+        "input": "all triples of 8-bit unsigned values",
+        "opcode": "IMAD"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lop3_lut_0x96_is_three_input_xor",
+      "proved": true,
+      "scope": {
+        "extension": "bitwise and therefore width-independent",
+        "input": "all triples of 8-bit values",
+        "lut": "0x96",
+        "opcode": "LOP3.LUT"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lop3_lut_0xe8_is_three_input_majority",
+      "proved": true,
+      "scope": {
+        "extension": "bitwise and therefore width-independent",
+        "input": "all triples of 8-bit values",
+        "lut": "0xe8",
+        "opcode": "LOP3.LUT"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "sel_obeys_predicate",
+      "proved": true,
+      "scope": {
+        "input": "all pairs of 8-bit values and both predicate values",
+        "opcode": "SEL"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "isetp_ge_u32_matches_unsigned_order",
+      "proved": true,
+      "scope": {
+        "extension": "unsigned-order identity is width-independent",
+        "input": "all pairs of 8-bit values",
+        "opcode": "ISETP.GE.U32"
+      },
+      "solver_result": "unsat"
+    }
+  ],
+  "proved": 7,
+  "scope": "Proposed bitvector operational semantics for a small base-opcode subset observed in the extracted CUDA image; not NVIDIA-certified SASS semantics.",
+  "solver": {
+    "name": "Z3",
+    "version": "4.15.3"
+  },
+  "total": 7
+}

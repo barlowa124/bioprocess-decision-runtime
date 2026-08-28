@@ -6,7 +6,7 @@
 - Preserve advisory-only behavior; do not add equipment actuation without an explicit project-scope decision.
 - Treat activation directions as experimental hypotheses requiring held-out and causal tests, not semantic proof.
 - Describe operational traces as observed execution provenance. Describe reference certificates as fixed-input machine-checked equivalence, and bounded-domain certificates as exhaustive only over their declared canonical states; neither is a universal proof or independent primitive-kernel verification.
-- Limit universal-proof claims to the exact SMT formulas, widths, and domains recorded in each obligation. Describe CUDA manifests as launch and binary provenance, not instruction-level semantic verification.
+- Limit universal-proof claims to the exact SMT formulas, widths, domains, and explicit premises recorded in each obligation. Describe CUDA manifests as launch and binary provenance and SASS equations as proposed subset semantics, not hardware or instruction-level verification.
 - Never allow an LLM to create or modify approved policy rules, coefficients, limits, or execution authority.
 - Keep model checkpoints and full generated artifacts out of Git.
 - Install `.[gemma]` before full operational-semantics verification and `.[proof]` before SMT verification; optional tests skip when their dependencies are absent.

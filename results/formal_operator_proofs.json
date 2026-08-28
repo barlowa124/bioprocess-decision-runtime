@@ -1,5 +1,30 @@
 {
-  "certificate_sha256": "6e1237c280dd0bc0d7ed5ffe965688193c06ea6d5a9ba937844af9a817540aed",
+  "certificate_sha256": "d968d7781a4a7b899af2eefd5a3605cca19475285d5c9a3c05f1c90b013cd1ed",
+  "counterexamples": [
+    {
+      "counterexample_found": true,
+      "method": "SMT witness search against a proposed universal equality",
+      "name": "bfloat16_addition_is_not_associative",
+      "scope": {
+        "importance": "Reduction order cannot be ignored when comparing eager and fused kernels.",
+        "input": "finite non-NaN bfloat16 triples with non-NaN intermediate results"
+      },
+      "solver_result": "sat",
+      "witness": "[second_bfloat = -1.8828125*(2**-34),\n third_bfloat = -1.609375*(2**-34),\n bfloat_value = 1.4921875*(2**-27),\n fp.to_ieee_bv = [else -> fp.to_ieee_bv(Var(0))]]"
+    },
+    {
+      "counterexample_found": true,
+      "method": "SMT witness search against a proposed universal equality",
+      "name": "bfloat16_fused_multiply_add_can_differ_from_separate_operations",
+      "scope": {
+        "importance": "Fused and unfused implementation paths are not universally interchangeable.",
+        "input": "finite non-NaN bfloat16 triples with non-NaN results"
+      },
+      "solver_result": "sat",
+      "witness": "[second_bfloat = 1.78125*(2**64),\n third_bfloat = 1.5625*(2**61),\n bfloat_value = 1.8515625*(2**-2),\n fp.to_ieee_bv = [else -> fp.to_ieee_bv(Var(0))]]"
+    }
+  ],
+  "counterexamples_found": 2,
   "proofs": [
     {
       "counterexample": null,
@@ -113,27 +138,169 @@
     {
       "counterexample": null,
       "method": "counterexample search for negated universally quantified property",
+      "name": "bfloat16_addition_is_bit_commutative_when_result_is_not_nan",
+      "proved": true,
+      "scope": {
+        "input": "all non-NaN IEEE-754 bfloat16 pairs whose sum is not NaN",
+        "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+        "rounding": "round to nearest, ties to even"
+      },
+      "smt2_sha256": "7691d9bbb369d41b84bdc17fc6894d40df66d313c8181aa67cce06b55d064e57",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "bfloat16_multiplication_is_bit_commutative_when_result_is_not_nan",
+      "proved": true,
+      "scope": {
+        "input": "all non-NaN IEEE-754 bfloat16 pairs whose product is not NaN",
+        "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+        "rounding": "round to nearest, ties to even"
+      },
+      "smt2_sha256": "4b98a9f58e2b2d45749b519bf683f6e00da2be8d79ec1cbb57bd31bd33b21267",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "bfloat16_double_negation_preserves_all_bits",
+      "proved": true,
+      "scope": {
+        "input": "all IEEE-754 bfloat16 bit patterns, including infinities, signed zeros, and NaNs",
+        "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim."
+      },
+      "smt2_sha256": "92319c09261c75b106f65d3309cf93a09356707e5b456a4d7645231fc84b8788",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "gemma_layer_composition_is_equal_if_every_stage_is_extensionally_equal",
+      "proved": true,
+      "scope": {
+        "boundary": "Conditional architecture-level congruence; it does not prove the stage premises or arbitrary-layer induction.",
+        "conclusion": "One complete attention-plus-MLP decoder layer is extensionally equal.",
+        "condition": "Every named Gemma stage and residual operator is extensionally equal across implementations.",
+        "input": "all values of an abstract tensor sort"
+      },
+      "smt2_sha256": "1dd5cf816c9a3431f89ed000b51a10fda6a771d9858a8006ba7a62b16b72c515",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "layerwise_equivalence_induction_step_is_valid_for_every_layer_index",
+      "proved": true,
+      "scope": {
+        "boundary": "Proves the induction step; base equality and every concrete transition premise must still be discharged.",
+        "conclusion": "Equality of incoming states implies equality after the indexed layer.",
+        "condition": "Reference and deployed layer transitions are pointwise equal at every index.",
+        "input": "all abstract hidden states and integer layer indices"
+      },
+      "smt2_sha256": "125ed7d5ee8e9eadef79c2a95ae0199b59b2c515efc726f1b3366f1dc019ec5f",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "gemma_final_normalization_and_lm_head_compose_under_extensional_equality",
+      "proved": true,
+      "scope": {
+        "boundary": "Does not prove either operator premise or deployed argmax implementation.",
+        "conclusion": "The complete vocabulary-logit outputs are equal.",
+        "condition": "Final normalization and vocabulary projection are each extensionally equal.",
+        "input": "all values of an abstract final-hidden-state sort"
+      },
+      "smt2_sha256": "5263ad2aa03eeeb8220bc84b3c7a02302619e4f8bd47b8135424d9c97a04bcf1",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "abstract_three_way_softmax_is_positive_normalized_and_bounded",
+      "proved": true,
+      "scope": {
+        "boundary": "Proves normalization algebra, not exp implementation, overflow handling, or floating-point reduction.",
+        "condition": "Exponentiation is abstracted to positive values.",
+        "input": "all triples of positive exact-real exponential outputs"
+      },
+      "smt2_sha256": "f1b7ddc7080d9b1a2be70c093674e25ccb1f767dda913d28ea697fdde64f34a2",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "abstract_softmax_is_invariant_to_common_positive_exponential_scale",
+      "proved": true,
+      "scope": {
+        "boundary": "The exponential identity and floating-point implementation are premises, not proved here.",
+        "connection": "Models exact-real softmax invariance under an additive logit shift when exp(x+c)=exp(c)exp(x).",
+        "input": "all triples of positive exact-real exponential outputs and positive common scales"
+      },
+      "smt2_sha256": "f67ea3328492e68407f3180f98089a7460fc770c6af2e79f27d1cd1193d46cc2",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "abstract_rms_normalization_has_mean_square_below_one_with_positive_epsilon",
+      "proved": true,
+      "scope": {
+        "boundary": "Proves an exact-real invariant, not rsqrt approximation, casting, weighting, or kernel rounding.",
+        "input": "all pairs of exact-real coordinates and positive epsilon/root satisfying the RMS equation"
+      },
+      "smt2_sha256": "1281a2e9158d6d56151ef497ecec318de04d1c1eff5cf057f2d4baa36244ec1a",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "abstract_gelu_tanh_factor_bounds_output_by_input_and_zero",
+      "proved": true,
+      "scope": {
+        "boundary": "Proves the gating bound, not the tanh approximation or floating-point implementation.",
+        "input": "all exact-real inputs and abstract tanh outputs in [-1,1]"
+      },
+      "smt2_sha256": "6730706b4fb2d086bfbfb7092ac8ed610a020632e6aa7dc3aca2bc1b7564b5d1",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
+      "name": "abstract_rope_pair_preserves_squared_norm_under_trigonometric_identity",
+      "proved": true,
+      "scope": {
+        "boundary": "Proves rotation algebra, not sin/cos evaluation, scaling, casting, or kernel rounding.",
+        "input": "all exact-real coordinate pairs and sine/cosine values satisfying cos^2+sin^2=1"
+      },
+      "smt2_sha256": "eb096d97e1674c4e36800a268374ad20bea16298d76ed2979a38df5ef4ce5722",
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "method": "counterexample search for negated universally quantified property",
       "name": "verified_primitives_compose",
       "proved": true,
       "scope": {
         "input": "all 8-bit bitvectors",
         "program": "((x + 7) * 3) + 5 modulo 2^8"
       },
-      "smt2_sha256": "73a138756549fc2e895d954a741a562779de861be71d8dcba716b724b44b7806",
+      "smt2_sha256": "d35f89153021f6e86b8439e609a89d72eafc4482ebe76a3d605ebe6e74a4745a",
       "solver_result": "unsat"
     }
   ],
-  "proved": 10,
-  "scope": "Universal SMT proofs over explicitly stated bitvector, integer, and selected IEEE-754 bfloat16 formulas; not complete softmax, GELU, RMSNorm, or full-transformer proofs.",
+  "proved": 21,
+  "scope": "Universal SMT proofs over explicitly stated bitvector, integer, selected IEEE-754 bfloat16, and conditional architecture-composition formulas; not complete transcendental or full-transformer implementation proofs.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 10,
+  "total": 21,
   "unresolved": [
     "Complete IEEE-754 and bfloat16 operator equivalence beyond the proved properties",
     "Transcendental softmax, GELU, trigonometric RoPE, and reciprocal-square-root semantics",
-    "full Gemma equivalence for unbounded token sequences",
+    "Discharge of every layer-stage premise and induction across arbitrary layers and token sequences",
     "CUDA SASS instruction-level semantic equivalence"
   ]
 }

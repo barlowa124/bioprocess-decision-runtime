@@ -368,20 +368,18 @@ python -m bioprocess_runtime formal-proofs --output results/formal_operator_proo
 python -m bioprocess_runtime formal-proofs-verify results/formal_operator_proofs.json
 ```
 
-The checked certificate is [`results/formal_operator_proofs.json`](results/formal_operator_proofs.json). All 10 properties re-verified:
+The checked certificate is [`results/formal_operator_proofs.json`](results/formal_operator_proofs.json). All 21 properties re-verified:
 
-- Ripple-carry addition equals modular addition for every pair of 8-bit bitvectors.
-- Shift-add multiplication equals direct multiplication for every pair of 4-bit unsigned bitvectors.
-- A three-term shift-add dot product equals its direct modular form for all six assignments of 3-bit inputs and weights.
-- Three-way argmax always returns a maximal value and uses the first index on ties for all 8-bit unsigned logits.
-- Sliding causal-mask formulations are equivalent for all positive sequence lengths and windows and all valid integer positions.
-- Grouped-query head mapping is total, partitioned, and in range for all positive head/group counts.
-- The algebraic SMT encoding of the two-coordinate `rotate_half` mapping has the expected double-application/negation identity for all 8-bit coordinates; this is an encoding sanity check, not circuit verification.
-- In SMT-LIB's abstract IEEE-754 theory, widening every non-NaN bfloat16 value to float32 and narrowing with round-to-nearest-even preserves its bits.
-- In the same abstract theory, multiplying every non-NaN bfloat16 value by exactly one preserves its bits.
-- Independently expressed modular primitives compose equivalently for every 8-bit input to the checked arithmetic program.
+- Six complete finite-domain lemmas cover modular addition, multiplication, a three-term dot product, stable argmax, sliding causal masks, and grouped-query head mapping.
+- One algebraic encoding check covers the double-application identity of `rotate_half`.
+- Five SMT-LIB IEEE-754 bfloat16 lemmas cover widening/narrowing, multiplication by one, commutativity of valid addition and multiplication, and double negation.
+- Three conditional architecture theorems prove complete decoder-layer composition, the layerwise induction step for every integer layer index, and final-normalization/language-head composition whenever every constituent operator is extensionally equal.
+- Five exact-real conditional theorems establish abstract softmax normalization and shift invariance, an RMS-normalization bound, a GELU-tanh gating bound, and RoPE pair-norm preservation.
+- One theorem checks composition of independently encoded modular primitives.
 
-These are universal proofs for the formulas and widths stated in each obligation. They are not a universal proof of Gemma, unrestricted natural language, arbitrary tensor dimensions, or the transcendental implementations used by softmax, GELU, RoPE, and RMSNorm. Solver-generated SMT-LIB identifiers are not stable across repeated constructions in one process, so verification requires certificate integrity plus equality of re-executed claims rather than identical regenerated JSON.
+The solver also produced concrete witnesses disproving two tempting universal assumptions: bfloat16 addition is not associative, and fused multiply-add can differ from separately rounded multiplication and addition. These counterexamples formally explain why reduction order and fusion choices cannot be omitted from a Gemma equivalence claim.
+
+The architecture results close the composition-logic gap conditionally: if every stage is pointwise equivalent, equal hidden states remain equal through each layer and through the final vocabulary projection. They do not establish those premises. A full Gemma theorem still requires proofs for every actual tensor operator, cast, shape rule, constant, mask, transcendental approximation, and deployed implementation. Solver-generated SMT-LIB identifiers and satisfying witness choices are not stable across repeated constructions, so verification requires certificate integrity plus equality of re-executed claims rather than identical regenerated JSON. Each stored `smt2_sha256` commits the original query text but is not compared with the regenerated query hash; the verifier instead rebuilds the formula from controlled source and rechecks its scoped result.
 
 ### CUDA launch and binary provenance
 
@@ -406,7 +404,42 @@ The checked summary is [`results/gemma3_270m_cuda_provenance_summary.json`](resu
 - SHA-256 values cryptographically commit the extracted image and complete `nvdisasm` output; a heuristic fingerprint counted 74,817 instruction lines across 92 opcode forms in the complete image.
 - Re-hashing the local distribution binaries matched the manifest.
 
-This records an important provenance step but is not yet instruction-level verification. The RTX 4090 reports compute capability 8.9 while `torch.cuda.get_arch_list()` does not advertise an exact `sm_89` target for this build; the analysis therefore examines a compatible `sm_86` image. The driver has not attested that this exact image was selected for each launch. Vendor-library internals, JIT-generated code, formal SASS semantics, and a proof connecting every instruction to IEEE-754/bfloat16 equations remain unresolved.
+This records an important provenance step but is not yet instruction-level verification. The RTX 4090 reports compute capability 8.9 while `torch.cuda.get_arch_list()` does not advertise an exact `sm_89` target for this build; the analysis therefore examines a compatible `sm_86` image. The driver has not attested that this exact image was selected for each launch.
+
+### Proposed SASS subset semantics
+
+A separate Z3 certificate defines and rechecks a small bitvector operational semantics:
+
+```powershell
+python -m bioprocess_runtime sass-semantics --output results/sass_semantics_proofs.json
+python -m bioprocess_runtime sass-semantics-verify results/sass_semantics_proofs.json
+```
+
+The checked [`results/sass_semantics_proofs.json`](results/sass_semantics_proofs.json) proves seven properties for base forms of `MOV`, `IADD3`, `IMAD`, `LOP3.LUT`, `SEL`, and `ISETP.GE.U32`. Five of those base opcodes—`MOV`, `IADD3`, `IMAD`, `LOP3.LUT`, and `SEL`—occur exactly in the extracted image and cover 20,277 of 74,817 heuristic instruction lines (`27.10%`); `ISETP.GE.U32` does not occur without modifiers. Modifier variants, registers wider than the stated obligations, memory operations, predication, condition codes, barriers, warps, and control flow are excluded. These are proposed equations checked for internal consistency—not NVIDIA-certified semantics and not proof that hardware implements them.
+
+### Driver module-load capture
+
+A CUPTI resource callback is installed before Gemma initializes CUDA. It copies and hashes the cubin value supplied for every subsequent module-load event:
+
+```powershell
+python -m bioprocess_runtime cupti-module-capture --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --artifact-directory artifacts/cupti_modules --output artifacts/cupti_module_capture.json
+python -m bioprocess_runtime cupti-module-verify artifacts/cupti_module_capture.json --artifact-directory artifacts/cupti_modules
+python -m bioprocess_runtime cupti-module-summary artifacts/cupti_module_capture.json --cuda-summary results/gemma3_270m_cuda_provenance_summary.json --output results/gemma3_270m_cupti_module_summary.json
+```
+
+The checked [`results/gemma3_270m_cupti_module_summary.json`](results/gemma3_270m_cupti_module_summary.json) records 28 module-load events and 28 unique cubin values with no callback errors. All local cubin sizes and hashes verified. The statically extracted and disassembled image hash `16d1c289...f1b2340f` exactly matched CUPTI module ID 20 during the checkpoint/input/output-bound Gemma execution.
+
+This is stronger than inferring runtime use from a distribution binary: it proves that the exact disassembled cubin value was presented at a driver module-load callback in the same bound execution. It still does not prove that the profiled function launch resolved to module 20; function-to-module launch correlation remains required.
+
+### Launch-specific profiler attestation
+
+The installed Nsight Compute tool was invoked to obtain launch-specific evidence:
+
+```powershell
+python -m bioprocess_runtime cuda-nsight-permission --output results/gemma3_270m_nsight_attestation_status.json
+```
+
+The checked status records `ERR_NVGPUCTRPERM`. NVIDIA performance-counter permission is disabled for the current user, so Nsight could not produce a launch-specific report or SASS view. The command records this as a failed capability probe, not a successful Gemma attestation. Enabling that system permission is a user-controlled environment change; until then, driver-selected cubin identity, vendor-library internals, JIT-generated code, complete formal SASS semantics, and instruction-to-IEEE-754 equivalence remain unresolved.
 
 ## Objective B: force Gemma through an executable language
 
@@ -439,13 +472,11 @@ Evaluate a saved program without an LLM:
 python -m bioprocess_runtime program-evaluate examples/low_oxygen.program --scenario low_oxygen
 ```
 
-On this machine, the existing Gemma 4 31B profile exposes a local API at port 5000:
+With a local OpenAI-compatible Gemma API running on the default loopback endpoint:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File D:\ailm\stack_entrypoint.ps1 start -Profile gemma31b -TimeoutSeconds 240
-python -m bioprocess_runtime gemma-program --scenario low_oxygen --output artifacts/gemma_program.json
-python -m bioprocess_runtime gemma-program-suite --output artifacts/gemma_program_suite.json
-powershell -NoProfile -ExecutionPolicy Bypass -File D:\ailm\stack_entrypoint.ps1 stop -Profile gemma31b
+python -m bioprocess_runtime gemma-program --scenario low_oxygen --base-url http://127.0.0.1:5000/v1 --output artifacts/gemma_program.json
+python -m bioprocess_runtime gemma-program-suite --base-url http://127.0.0.1:5000/v1 --output artifacts/gemma_program_suite.json
 ```
 
 Generation is constrained with a dynamically built llama.cpp GBNF grammar. The grammar permits only the exact policy hash, complete identity bindings, approved model and rule names, defined statuses, and syntactically valid proposals. Grammar compliance establishes structure, not correctness.

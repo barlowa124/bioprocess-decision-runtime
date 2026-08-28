@@ -51,9 +51,24 @@ def _proof(name: str, proposition: Any, scope: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def _counterexample(name: str, equality: Any, scope: dict[str, Any]) -> dict[str, Any]:
+    solver = z3.Solver()
+    solver.add(z3.Not(equality))
+    result = solver.check()
+    return {
+        "name": name,
+        "method": "SMT witness search against a proposed universal equality",
+        "solver_result": str(result),
+        "counterexample_found": result == z3.sat,
+        "scope": scope,
+        "witness": str(solver.model()) if result == z3.sat else None,
+    }
+
+
 def build_formal_proof_certificate() -> dict[str, Any]:
     _require_z3()
     proofs = []
+    counterexamples = []
 
     width = 8
     left = z3.BitVec("add_left", width)
@@ -223,6 +238,271 @@ def build_formal_proof_certificate() -> dict[str, Any]:
         )
     )
 
+    second_bfloat = z3.FP("second_bfloat", bfloat16)
+    bfloat_inputs_valid = z3.And(z3.Not(z3.fpIsNaN(bfloat_value)), z3.Not(z3.fpIsNaN(second_bfloat)))
+    add_forward = z3.fpAdd(z3.RNE(), bfloat_value, second_bfloat)
+    add_reverse = z3.fpAdd(z3.RNE(), second_bfloat, bfloat_value)
+    proofs.append(
+        _proof(
+            "bfloat16_addition_is_bit_commutative_when_result_is_not_nan",
+            z3.Implies(
+                z3.And(bfloat_inputs_valid, z3.Not(z3.fpIsNaN(add_forward))),
+                z3.fpToIEEEBV(add_forward) == z3.fpToIEEEBV(add_reverse),
+            ),
+            {
+                "input": "all non-NaN IEEE-754 bfloat16 pairs whose sum is not NaN",
+                "rounding": "round to nearest, ties to even",
+                "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+            },
+        )
+    )
+    multiply_forward = z3.fpMul(z3.RNE(), bfloat_value, second_bfloat)
+    multiply_reverse = z3.fpMul(z3.RNE(), second_bfloat, bfloat_value)
+    proofs.append(
+        _proof(
+            "bfloat16_multiplication_is_bit_commutative_when_result_is_not_nan",
+            z3.Implies(
+                z3.And(bfloat_inputs_valid, z3.Not(z3.fpIsNaN(multiply_forward))),
+                z3.fpToIEEEBV(multiply_forward) == z3.fpToIEEEBV(multiply_reverse),
+            ),
+            {
+                "input": "all non-NaN IEEE-754 bfloat16 pairs whose product is not NaN",
+                "rounding": "round to nearest, ties to even",
+                "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+            },
+        )
+    )
+    negated_twice = z3.fpNeg(z3.fpNeg(bfloat_value))
+    proofs.append(
+        _proof(
+            "bfloat16_double_negation_preserves_all_bits",
+            z3.fpToIEEEBV(negated_twice) == z3.fpToIEEEBV(bfloat_value),
+            {
+                "input": "all IEEE-754 bfloat16 bit patterns, including infinities, signed zeros, and NaNs",
+                "model": "SMT-LIB IEEE-754 abstract theory, not a PyTorch or CUDA kernel claim.",
+            },
+        )
+    )
+
+    tensor = z3.DeclareSort("AbstractTensor")
+    stage_names = (
+        "input_norm",
+        "qkv_projection",
+        "qk_norm",
+        "rotary",
+        "repeat_kv",
+        "attention_scores",
+        "causal_mask",
+        "softmax",
+        "value_aggregation",
+        "attention_output_projection",
+        "pre_feedforward_norm",
+        "gated_gelu_mlp",
+    )
+    reference_stages = {name: z3.Function(f"reference_{name}", tensor, tensor) for name in stage_names}
+    deployed_stages = {name: z3.Function(f"deployed_{name}", tensor, tensor) for name in stage_names}
+    reference_residual = z3.Function("reference_residual", tensor, tensor, tensor)
+    deployed_residual = z3.Function("deployed_residual", tensor, tensor, tensor)
+    stage_value = z3.Const("stage_value", tensor)
+    residual_left = z3.Const("residual_left", tensor)
+    residual_right = z3.Const("residual_right", tensor)
+    stage_axioms = [
+        z3.ForAll([stage_value], reference_stages[name](stage_value) == deployed_stages[name](stage_value))
+        for name in stage_names
+    ]
+    stage_axioms.append(
+        z3.ForAll(
+            [residual_left, residual_right],
+            reference_residual(residual_left, residual_right)
+            == deployed_residual(residual_left, residual_right),
+        )
+    )
+
+    def layer_expression(stages: dict[str, Any], residual: Any, value: Any) -> Any:
+        attention = stages["input_norm"](value)
+        for name in stage_names[1:10]:
+            attention = stages[name](attention)
+        post_attention = residual(value, attention)
+        feedforward = stages["pre_feedforward_norm"](post_attention)
+        feedforward = stages["gated_gelu_mlp"](feedforward)
+        return residual(post_attention, feedforward)
+
+    layer_input = z3.Const("layer_input", tensor)
+    reference_layer = layer_expression(reference_stages, reference_residual, layer_input)
+    deployed_layer = layer_expression(deployed_stages, deployed_residual, layer_input)
+    proofs.append(
+        _proof(
+            "gemma_layer_composition_is_equal_if_every_stage_is_extensionally_equal",
+            z3.Implies(z3.And(stage_axioms), z3.ForAll([layer_input], reference_layer == deployed_layer)),
+            {
+                "input": "all values of an abstract tensor sort",
+                "condition": "Every named Gemma stage and residual operator is extensionally equal across implementations.",
+                "conclusion": "One complete attention-plus-MLP decoder layer is extensionally equal.",
+                "boundary": "Conditional architecture-level congruence; it does not prove the stage premises or arbitrary-layer induction.",
+            },
+        )
+    )
+
+    layer_index = z3.Int("layer_index")
+    reference_transition = z3.Function("reference_layer_transition", tensor, z3.IntSort(), tensor)
+    deployed_transition = z3.Function("deployed_layer_transition", tensor, z3.IntSort(), tensor)
+    induction_reference_state = z3.Const("induction_reference_state", tensor)
+    induction_deployed_state = z3.Const("induction_deployed_state", tensor)
+    transition_premise = z3.ForAll(
+        [stage_value, layer_index],
+        reference_transition(stage_value, layer_index) == deployed_transition(stage_value, layer_index),
+    )
+    induction_step = z3.ForAll(
+        [induction_reference_state, induction_deployed_state, layer_index],
+        z3.Implies(
+            induction_reference_state == induction_deployed_state,
+            reference_transition(induction_reference_state, layer_index)
+            == deployed_transition(induction_deployed_state, layer_index),
+        ),
+    )
+    proofs.append(
+        _proof(
+            "layerwise_equivalence_induction_step_is_valid_for_every_layer_index",
+            z3.Implies(transition_premise, induction_step),
+            {
+                "input": "all abstract hidden states and integer layer indices",
+                "condition": "Reference and deployed layer transitions are pointwise equal at every index.",
+                "conclusion": "Equality of incoming states implies equality after the indexed layer.",
+                "boundary": "Proves the induction step; base equality and every concrete transition premise must still be discharged.",
+            },
+        )
+    )
+
+    reference_final_norm = z3.Function("reference_final_norm", tensor, tensor)
+    deployed_final_norm = z3.Function("deployed_final_norm", tensor, tensor)
+    reference_lm_head = z3.Function("reference_lm_head", tensor, tensor)
+    deployed_lm_head = z3.Function("deployed_lm_head", tensor, tensor)
+    final_hidden = z3.Const("final_hidden", tensor)
+    finalization_premise = z3.And(
+        z3.ForAll([stage_value], reference_final_norm(stage_value) == deployed_final_norm(stage_value)),
+        z3.ForAll([stage_value], reference_lm_head(stage_value) == deployed_lm_head(stage_value)),
+    )
+    proofs.append(
+        _proof(
+            "gemma_final_normalization_and_lm_head_compose_under_extensional_equality",
+            z3.Implies(
+                finalization_premise,
+                z3.ForAll(
+                    [final_hidden],
+                    reference_lm_head(reference_final_norm(final_hidden))
+                    == deployed_lm_head(deployed_final_norm(final_hidden)),
+                ),
+            ),
+            {
+                "input": "all values of an abstract final-hidden-state sort",
+                "condition": "Final normalization and vocabulary projection are each extensionally equal.",
+                "conclusion": "The complete vocabulary-logit outputs are equal.",
+                "boundary": "Does not prove either operator premise or deployed argmax implementation.",
+            },
+        )
+    )
+
+    exponential_values = [z3.Real(f"exp_value_{index}") for index in range(3)]
+    exponential_total = sum(exponential_values)
+    probabilities = [value / exponential_total for value in exponential_values]
+    positive_exponentials = z3.And(*(value > 0 for value in exponential_values))
+    proofs.append(
+        _proof(
+            "abstract_three_way_softmax_is_positive_normalized_and_bounded",
+            z3.Implies(
+                positive_exponentials,
+                z3.And(
+                    sum(probabilities) == 1,
+                    *(probability > 0 for probability in probabilities),
+                    *(probability < 1 for probability in probabilities),
+                ),
+            ),
+            {
+                "input": "all triples of positive exact-real exponential outputs",
+                "condition": "Exponentiation is abstracted to positive values.",
+                "boundary": "Proves normalization algebra, not exp implementation, overflow handling, or floating-point reduction.",
+            },
+        )
+    )
+    shift_scale = z3.Real("softmax_shift_scale")
+    shifted_total = sum(shift_scale * value for value in exponential_values)
+    shifted_probabilities = [shift_scale * value / shifted_total for value in exponential_values]
+    proofs.append(
+        _proof(
+            "abstract_softmax_is_invariant_to_common_positive_exponential_scale",
+            z3.Implies(
+                z3.And(positive_exponentials, shift_scale > 0),
+                z3.And(*(left == right for left, right in zip(probabilities, shifted_probabilities))),
+            ),
+            {
+                "input": "all triples of positive exact-real exponential outputs and positive common scales",
+                "connection": "Models exact-real softmax invariance under an additive logit shift when exp(x+c)=exp(c)exp(x).",
+                "boundary": "The exponential identity and floating-point implementation are premises, not proved here.",
+            },
+        )
+    )
+
+    rms_first = z3.Real("rms_first")
+    rms_second = z3.Real("rms_second")
+    rms_epsilon = z3.Real("rms_epsilon")
+    rms_root = z3.Real("rms_root")
+    mean_square = (rms_first * rms_first + rms_second * rms_second) / 2
+    normalized_mean_square = mean_square / (rms_root * rms_root)
+    proofs.append(
+        _proof(
+            "abstract_rms_normalization_has_mean_square_below_one_with_positive_epsilon",
+            z3.Implies(
+                z3.And(rms_epsilon > 0, rms_root > 0, rms_root * rms_root == mean_square + rms_epsilon),
+                z3.And(normalized_mean_square >= 0, normalized_mean_square < 1),
+            ),
+            {
+                "input": "all pairs of exact-real coordinates and positive epsilon/root satisfying the RMS equation",
+                "boundary": "Proves an exact-real invariant, not rsqrt approximation, casting, weighting, or kernel rounding.",
+            },
+        )
+    )
+
+    gelu_input = z3.Real("gelu_input")
+    tanh_value = z3.Real("gelu_tanh_value")
+    abstract_gelu = gelu_input * (1 + tanh_value) / 2
+    proofs.append(
+        _proof(
+            "abstract_gelu_tanh_factor_bounds_output_by_input_and_zero",
+            z3.Implies(
+                z3.And(tanh_value >= -1, tanh_value <= 1),
+                z3.And(
+                    z3.Implies(gelu_input >= 0, z3.And(abstract_gelu >= 0, abstract_gelu <= gelu_input)),
+                    z3.Implies(gelu_input <= 0, z3.And(abstract_gelu <= 0, abstract_gelu >= gelu_input)),
+                ),
+            ),
+            {
+                "input": "all exact-real inputs and abstract tanh outputs in [-1,1]",
+                "boundary": "Proves the gating bound, not the tanh approximation or floating-point implementation.",
+            },
+        )
+    )
+
+    rope_first = z3.Real("rope_first")
+    rope_second = z3.Real("rope_second")
+    rope_cosine = z3.Real("rope_cosine")
+    rope_sine = z3.Real("rope_sine")
+    rotated_first = rope_first * rope_cosine - rope_second * rope_sine
+    rotated_second = rope_first * rope_sine + rope_second * rope_cosine
+    proofs.append(
+        _proof(
+            "abstract_rope_pair_preserves_squared_norm_under_trigonometric_identity",
+            z3.Implies(
+                rope_cosine * rope_cosine + rope_sine * rope_sine == 1,
+                rotated_first * rotated_first + rotated_second * rotated_second
+                == rope_first * rope_first + rope_second * rope_second,
+            ),
+            {
+                "input": "all exact-real coordinate pairs and sine/cosine values satisfying cos^2+sin^2=1",
+                "boundary": "Proves rotation algebra, not sin/cos evaluation, scaling, casting, or kernel rounding.",
+            },
+        )
+    )
+
     composition_input = z3.BitVec("composition_input", 8)
     direct_composition = (composition_input + z3.BitVecVal(7, 8)) * z3.BitVecVal(3, 8) + z3.BitVecVal(5, 8)
     first_stage = _ripple_add(composition_input, z3.BitVecVal(7, 8), 8)
@@ -236,16 +516,62 @@ def build_formal_proof_certificate() -> dict[str, Any]:
         )
     )
 
+    third_bfloat = z3.FP("third_bfloat", bfloat16)
+    left_associated = z3.fpAdd(z3.RNE(), z3.fpAdd(z3.RNE(), bfloat_value, second_bfloat), third_bfloat)
+    right_associated = z3.fpAdd(z3.RNE(), bfloat_value, z3.fpAdd(z3.RNE(), second_bfloat, third_bfloat))
+    finite_three = z3.And(
+        z3.Not(z3.fpIsNaN(bfloat_value)),
+        z3.Not(z3.fpIsNaN(second_bfloat)),
+        z3.Not(z3.fpIsNaN(third_bfloat)),
+        z3.Not(z3.fpIsInf(bfloat_value)),
+        z3.Not(z3.fpIsInf(second_bfloat)),
+        z3.Not(z3.fpIsInf(third_bfloat)),
+        z3.Not(z3.fpIsNaN(left_associated)),
+        z3.Not(z3.fpIsNaN(right_associated)),
+    )
+    counterexamples.append(
+        _counterexample(
+            "bfloat16_addition_is_not_associative",
+            z3.Implies(
+                finite_three,
+                z3.fpToIEEEBV(left_associated) == z3.fpToIEEEBV(right_associated),
+            ),
+            {
+                "input": "finite non-NaN bfloat16 triples with non-NaN intermediate results",
+                "importance": "Reduction order cannot be ignored when comparing eager and fused kernels.",
+            },
+        )
+    )
+    fused = z3.fpFMA(z3.RNE(), bfloat_value, second_bfloat, third_bfloat)
+    unfused = z3.fpAdd(z3.RNE(), z3.fpMul(z3.RNE(), bfloat_value, second_bfloat), third_bfloat)
+    finite_fma = z3.And(
+        finite_three,
+        z3.Not(z3.fpIsNaN(fused)),
+        z3.Not(z3.fpIsNaN(unfused)),
+    )
+    counterexamples.append(
+        _counterexample(
+            "bfloat16_fused_multiply_add_can_differ_from_separate_operations",
+            z3.Implies(finite_fma, z3.fpToIEEEBV(fused) == z3.fpToIEEEBV(unfused)),
+            {
+                "input": "finite non-NaN bfloat16 triples with non-NaN results",
+                "importance": "Fused and unfused implementation paths are not universally interchangeable.",
+            },
+        )
+    )
+
     body = {
-        "scope": "Universal SMT proofs over explicitly stated bitvector, integer, and selected IEEE-754 bfloat16 formulas; not complete softmax, GELU, RMSNorm, or full-transformer proofs.",
+        "scope": "Universal SMT proofs over explicitly stated bitvector, integer, selected IEEE-754 bfloat16, and conditional architecture-composition formulas; not complete transcendental or full-transformer implementation proofs.",
         "solver": {"name": "Z3", "version": z3.get_version_string()},
         "proofs": proofs,
         "proved": sum(proof["proved"] for proof in proofs),
         "total": len(proofs),
+        "counterexamples": counterexamples,
+        "counterexamples_found": sum(item["counterexample_found"] for item in counterexamples),
         "unresolved": [
             "Complete IEEE-754 and bfloat16 operator equivalence beyond the proved properties",
             "Transcendental softmax, GELU, trigonometric RoPE, and reciprocal-square-root semantics",
-            "full Gemma equivalence for unbounded token sequences",
+            "Discharge of every layer-stage premise and induction across arbitrary layers and token sequences",
             "CUDA SASS instruction-level semantic equivalence",
         ],
     }
@@ -263,17 +589,30 @@ def verify_formal_proof_certificate(certificate: dict[str, Any]) -> dict[str, An
     recorded_claims = [{key: proof[key] for key in claim_fields} for proof in certificate.get("proofs", [])]
     recomputed_claims = [{key: proof[key] for key in claim_fields} for proof in recomputed["proofs"]]
     claims_match = recorded_claims == recomputed_claims
-    metadata_fields = ("scope", "solver", "proved", "total", "unresolved")
+    counterexample_fields = ("name", "method", "solver_result", "counterexample_found", "scope")
+    recorded_counterexamples = [
+        {key: item[key] for key in counterexample_fields} for item in certificate.get("counterexamples", [])
+    ]
+    recomputed_counterexamples = [
+        {key: item[key] for key in counterexample_fields} for item in recomputed["counterexamples"]
+    ]
+    counterexamples_match = recorded_counterexamples == recomputed_counterexamples
+    metadata_fields = ("scope", "solver", "proved", "total", "counterexamples_found", "unresolved")
     metadata_match = all(certificate.get(key) == recomputed[key] for key in metadata_fields)
     return {
         "valid": bool(
-            integrity_valid and claims_match and metadata_match and recomputed["proved"] == recomputed["total"]
+            integrity_valid
+            and claims_match
+            and counterexamples_match
+            and metadata_match
+            and recomputed["proved"] == recomputed["total"]
         ),
         "integrity_valid": integrity_valid,
         "reexecution_claims_match": claims_match,
+        "reexecution_counterexamples_match": counterexamples_match,
         "reexecution_metadata_match": metadata_match,
         "exact_serialization_expected": False,
-        "exact_serialization_reason": "Z3-generated SMT-LIB identifiers are not stable across constructions in one process.",
+        "exact_serialization_reason": "Z3-generated identifiers and satisfying witness models are not stable across constructions.",
         "proved": recomputed["proved"],
         "total": recomputed["total"],
         "recomputed_certificate_sha256": recomputed["certificate_sha256"],

@@ -1,0 +1,13 @@
+{
+  "attempted": true,
+  "error_codes": [
+    "ERR_NVGPUCTRPERM"
+  ],
+  "impact": "Launch-specific Nsight SASS capture remains blocked; static compatible-image evidence is retained.",
+  "output_sha256": "75f313c764c3f253b1e3ffacbd2ab37ce0a04fc50ecf893ee27bccb1a350219a",
+  "permission_granted": false,
+  "record_sha256": "8e96be363b5b175b8cf37c59ac958cde7b7ef7e831e7311da7b8fc9e8615a266",
+  "returncode": 1,
+  "scope": "Environment capability probe for launch-specific Nsight Compute evidence; not a Gemma-kernel attestation.",
+  "tool": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2025 NVIDIA Corporation\nVersion 2025.2.1.0 (build 35987062) (public-release)"
+}

@@ -462,6 +462,81 @@ def command_formal_proofs_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_sass_semantics(args: argparse.Namespace) -> int:
+    from .sass_semantics import build_sass_semantics_certificate
+
+    certificate = build_sass_semantics_certificate()
+    _write_json(args.output, certificate)
+    return 0 if certificate["proved"] == certificate["total"] else 1
+
+
+def command_sass_semantics_verify(args: argparse.Namespace) -> int:
+    from .sass_semantics import verify_sass_semantics_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_sass_semantics_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_cupti_module_capture(args: argparse.Namespace) -> int:
+    from .cupti_attestation import CuptiModuleCapture
+
+    capture = CuptiModuleCapture(args.artifact_directory)
+    capture.start()
+    try:
+        import torch
+
+        from .interpretability import _model_device, _tokenize, load_local_gemma
+        from .operational_semantics import tensor_descriptor
+        from .reference_gemma import model_state_sha256
+
+        prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+        model, tokenizer = load_local_gemma(args.model_path)
+        inputs = _tokenize(tokenizer, prompt, _model_device(model))
+        with torch.no_grad():
+            output = model(**inputs, use_cache=False, logits_to_keep=1)
+        torch.cuda.synchronize()
+        binding = {
+            "model_state_sha256": model_state_sha256(model),
+            "input_ids_tensor": tensor_descriptor(inputs["input_ids"]),
+            "output_logits_tensor": tensor_descriptor(output.logits),
+            "selected_token_id": int(torch.argmax(output.logits[0, -1]).item()),
+        }
+    finally:
+        capture.stop()
+    report = capture.report(binding)
+    _write_json(args.output, report)
+    return 0 if report["module_load_events"] > 0 and not report["callback_errors"] else 1
+
+
+def command_cupti_module_verify(args: argparse.Namespace) -> int:
+    from .cupti_attestation import verify_cupti_module_capture
+
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    verification = verify_cupti_module_capture(report, args.artifact_directory)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_cupti_module_summary(args: argparse.Namespace) -> int:
+    from .cupti_attestation import summarize_cupti_module_capture
+
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    cuda_summary = json.loads(args.cuda_summary.read_text(encoding="utf-8"))
+    summary = summarize_cupti_module_capture(report, cuda_summary)
+    _write_json(args.output, summary)
+    return 0 if summary["profiled_static_image_binding"]["matched"] else 1
+
+
+def command_nsight_permission(args: argparse.Namespace) -> int:
+    from .cuda_provenance import probe_nsight_compute_permission
+
+    record = probe_nsight_compute_permission()
+    _write_json(args.output, record)
+    return 0 if record["permission_granted"] else 1
+
+
 def command_cuda_provenance(args: argparse.Namespace) -> int:
     from .cuda_provenance import build_cuda_provenance_manifest
     from .interpretability import _model_device, _tokenize, load_local_gemma
@@ -650,6 +725,38 @@ def build_parser() -> argparse.ArgumentParser:
     formal_verify_parser = subparsers.add_parser("formal-proofs-verify", help="Re-execute an SMT proof certificate")
     formal_verify_parser.add_argument("certificate", type=Path)
     formal_verify_parser.set_defaults(handler=command_formal_proofs_verify)
+
+    sass_parser = subparsers.add_parser("sass-semantics", help="Check a proposed bitvector semantics for a small SASS subset; not NVIDIA-certified")
+    sass_parser.add_argument("--output", type=Path)
+    sass_parser.set_defaults(handler=command_sass_semantics)
+
+    sass_verify_parser = subparsers.add_parser("sass-semantics-verify", help="Re-execute a proposed SASS-semantics certificate")
+    sass_verify_parser.add_argument("certificate", type=Path)
+    sass_verify_parser.set_defaults(handler=command_sass_semantics_verify)
+
+    cupti_parser = subparsers.add_parser("cupti-module-capture", help="Capture cubins presented during CUDA module-load callbacks")
+    cupti_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    cupti_prompt = cupti_parser.add_mutually_exclusive_group(required=True)
+    cupti_prompt.add_argument("--prompt")
+    cupti_prompt.add_argument("--prompt-file", type=Path)
+    cupti_parser.add_argument("--artifact-directory", type=Path, default=Path("artifacts/cupti_modules"))
+    cupti_parser.add_argument("--output", type=Path, required=True)
+    cupti_parser.set_defaults(handler=command_cupti_module_capture)
+
+    cupti_verify_parser = subparsers.add_parser("cupti-module-verify", help="Verify CUPTI module-capture integrity and optional local cubins")
+    cupti_verify_parser.add_argument("report", type=Path)
+    cupti_verify_parser.add_argument("--artifact-directory", type=Path)
+    cupti_verify_parser.set_defaults(handler=command_cupti_module_verify)
+
+    cupti_summary_parser = subparsers.add_parser("cupti-module-summary", help="Bind a CUPTI module capture to the statically disassembled image")
+    cupti_summary_parser.add_argument("report", type=Path)
+    cupti_summary_parser.add_argument("--cuda-summary", type=Path, required=True)
+    cupti_summary_parser.add_argument("--output", type=Path, required=True)
+    cupti_summary_parser.set_defaults(handler=command_cupti_module_summary)
+
+    nsight_parser = subparsers.add_parser("cuda-nsight-permission", help="Probe permission for launch-specific Nsight Compute evidence")
+    nsight_parser.add_argument("--output", type=Path)
+    nsight_parser.set_defaults(handler=command_nsight_permission)
 
     cuda_parser = subparsers.add_parser("cuda-provenance", help="Profile CUDA launches and fingerprint compatible embedded device code")
     cuda_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

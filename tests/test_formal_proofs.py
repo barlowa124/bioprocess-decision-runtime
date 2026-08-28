@@ -24,6 +24,9 @@ class FormalProofTests(unittest.TestCase):
         self.assertEqual(certificate["proved"], certificate["total"])
         self.assertTrue(all(proof["solver_result"] == "unsat" for proof in certificate["proofs"]))
         self.assertIn("selected IEEE-754 bfloat16", certificate["scope"])
+        self.assertIn("conditional architecture-composition", certificate["scope"])
+        self.assertEqual(certificate["counterexamples_found"], 2)
+        self.assertTrue(all(item["solver_result"] == "sat" for item in certificate["counterexamples"]))
         self.assertIn("CUDA SASS instruction-level semantic equivalence", certificate["unresolved"])
 
     def test_proof_certificate_is_reexecuted_and_tampering_is_detected(self) -> None:
@@ -45,6 +48,69 @@ class FormalProofTests(unittest.TestCase):
         damaged_query = copy.deepcopy(certificate)
         damaged_query["proofs"][0]["smt2_sha256"] = "0" * 64
         self.assertFalse(verify_formal_proof_certificate(damaged_query)["valid"])
+
+
+@unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")
+class SassSemanticsTests(unittest.TestCase):
+    def test_declared_sass_subset_reexecutes(self) -> None:
+        from bioprocess_runtime.sass_semantics import build_sass_semantics_certificate, verify_sass_semantics_certificate
+
+        certificate = build_sass_semantics_certificate()
+        self.assertEqual(certificate["proved"], certificate["total"])
+        self.assertTrue(verify_sass_semantics_certificate(certificate)["valid"])
+        self.assertIn("not NVIDIA-certified", certificate["scope"])
+
+    def test_sass_certificate_tampering_is_detected(self) -> None:
+        from bioprocess_runtime.sass_semantics import build_sass_semantics_certificate, verify_sass_semantics_certificate
+
+        certificate = build_sass_semantics_certificate()
+        damaged = copy.deepcopy(certificate)
+        damaged["proofs"][0]["proved"] = False
+        self.assertFalse(verify_sass_semantics_certificate(damaged)["valid"])
+
+    def test_sass_image_coverage_counts_only_exact_base_opcodes(self) -> None:
+        from bioprocess_runtime.sass_semantics import sass_image_coverage
+
+        coverage = sass_image_coverage({"MOV": 3, "IADD3": 2, "IADD3.X": 7, "BRA": 5})
+        self.assertEqual(coverage["covered_instruction_lines"], 5)
+        self.assertEqual(coverage["total_instruction_lines"], 17)
+        self.assertIn("Syntactic", coverage["scope"])
+
+
+class CuptiAttestationTests(unittest.TestCase):
+    def test_module_capture_integrity_and_static_image_binding(self) -> None:
+        from bioprocess_runtime.cupti_attestation import summarize_cupti_module_capture, verify_cupti_module_capture
+
+        cubin_hash = hashlib.sha256(b"abc").hexdigest()
+        report = {
+            "scope": "module capture",
+            "cupti_library": "cupti",
+            "module_load_events": 1,
+            "unique_cubins": 1,
+            "modules": [{"module_id": 7, "cubin_size": 3, "cubin_sha256": cubin_hash, "artifact": "module.cubin"}],
+            "callback_errors": [],
+            "execution_binding": {"selected_token_id": 1},
+            "limitations": ["not per-launch"],
+        }
+        report["record_sha256"] = hashlib.sha256(canonical_json(report).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_cupti_module_capture(report)["valid"])
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "module.cubin").write_bytes(b"abc")
+            verification = verify_cupti_module_capture(report, Path(directory))
+            self.assertTrue(verification["local_artifacts_match"])
+            self.assertTrue(verification["valid"])
+        cuda_summary = {
+            "profiled_symbol_disassembly": {
+                "profiled_kernel_name": "kernel",
+                "embedded_image_sha256": cubin_hash,
+            }
+        }
+        summary = summarize_cupti_module_capture(report, cuda_summary)
+        self.assertTrue(summary["profiled_static_image_binding"]["matched"])
+        self.assertEqual(summary["profiled_static_image_binding"]["matching_module_loads"][0]["module_id"], 7)
+        damaged = copy.deepcopy(report)
+        damaged["module_load_events"] = 2
+        self.assertFalse(verify_cupti_module_capture(damaged)["valid"])
 
 
 class CudaProvenanceTests(unittest.TestCase):
@@ -88,6 +154,21 @@ class CudaProvenanceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "Invalid --kernel"):
             _disassemble_profiled_function("cuobjdump", "nvdisasm", Path("torch_cuda"), {}, "sm_86", "", "(")
+
+    def test_nsight_permission_probe_records_counter_permission_failure(self) -> None:
+        from bioprocess_runtime.cuda_provenance import probe_nsight_compute_permission
+
+        completed = SimpleNamespace(returncode=1, stdout="ERR_NVGPUCTRPERM", stderr="")
+        with (
+            patch("bioprocess_runtime.cuda_provenance._require_cuda"),
+            patch("bioprocess_runtime.cuda_provenance.shutil.which", return_value="ncu"),
+            patch("bioprocess_runtime.cuda_provenance.subprocess.run", return_value=completed),
+            patch("bioprocess_runtime.cuda_provenance._tool_version", return_value="ncu test"),
+        ):
+            record = probe_nsight_compute_permission()
+        self.assertFalse(record["permission_granted"])
+        self.assertEqual(record["error_codes"], ["ERR_NVGPUCTRPERM"])
+        self.assertIn("blocked", record["impact"])
 
     def test_cuda_command_fails_when_no_profiled_symbol_is_bound(self) -> None:
         from bioprocess_runtime.cli import command_cuda_provenance
@@ -157,3 +238,4 @@ class CudaProvenanceTests(unittest.TestCase):
         self.assertEqual(summary["profile"]["families"]["pytorch_native"]["launches"], 2)
         self.assertIn("not instruction-level", summary["scope"])
         self.assertEqual(summary["profiled_symbol_disassembly"]["unique_opcodes"], 1)
+        self.assertEqual(summary["proposed_sass_semantics_coverage"]["coverage_fraction"], 1.0)
