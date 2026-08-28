@@ -1,0 +1,49 @@
+{
+  "attention_implementations": {
+    "deployed": "sdpa",
+    "eager_comparator": "eager",
+    "reference": "explicit_eager"
+  },
+  "certificate_sha256": "e22c0fc36e8be723f211f7a47277dc8c8efea9eee79964b7be25e174876c90ba",
+  "chain_verified": true,
+  "domain": {
+    "canonical_prompt_template": "Dissolved oxygen: {oxygen_percent} percent. Slope: {slope_percent_per_minute} percent per minute. Sensor agreement: {sensor_agreement}. Does this require review? Answer Yes or No.",
+    "numeric_format": "Python format(value, 'g')",
+    "oxygen_percent": [
+      25.0,
+      35.0,
+      45.0
+    ],
+    "sensor_agreement": [
+      false,
+      true
+    ],
+    "slope_percent_per_minute": [
+      -1.0,
+      0.0,
+      1.0
+    ],
+    "state_count": 18
+  },
+  "interpretation": "The independent reference and Hugging Face eager paths were exactly equal for every enumerated canonical state. The deployed SDPA path selected the same token for every state despite nonzero logit differences.",
+  "limitations": [
+    "Coverage is exhaustive only for the explicitly listed values and one canonical prompt template.",
+    "The certificate does not cover paraphrases, intermediate numeric values, or unrestricted natural language.",
+    "Token agreement does not imply equality of logits or internal states.",
+    "The finite grid is expandable through CLI axes but is not a universal symbolic proof.",
+    "No GMP, biological, clinical, product-quality, or patient-safety conclusion is supported."
+  ],
+  "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
+  "reference_output_token_counts": {
+    "10784": 18
+  },
+  "root_sha256": "45e729cf4e7856cbf4d39d8a23a8bc19aa04967d8fc01c72d2f92a0642e421df",
+  "scope": "Exhaustive fixed-template verification over the explicitly enumerated finite state grid; not unrestricted natural-language equivalence.",
+  "summary": {
+    "maximum_reference_deployed_error": 2.25,
+    "maximum_reference_eager_error": 0.0,
+    "reference_deployed_token_match_states": 18,
+    "reference_eager_exact_states": 18,
+    "reference_eager_token_match_states": 18
+  }
+}

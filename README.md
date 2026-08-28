@@ -37,6 +37,8 @@ The central question is not whether a second model can invent a convincing expla
 - Fixed-input, zero-tolerance equivalence certificates across 19 model boundaries and vocabulary logits
 - Comparison between explicit eager arithmetic and the deployed SDPA attention path
 - Architecture-defined coordinate semantics separated from empirical biological interpretations
+- Per-layer explicit-attention versus SDPA comparisons using identical Q/K/V tensors and masks for non-softcapped attention; softcapped configurations are rejected because SDPA cannot reproduce the score transform
+- Exhaustive reference/eager/deployed checks over caller-declared finite canonical input grids
 
 ## What this does not demonstrate
 
@@ -304,8 +306,10 @@ Create and verify a fixed-input equivalence certificate:
 
 ```powershell
 python -m bioprocess_runtime gemma-reference-compare --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --absolute-tolerance 0 --output artifacts/reference_equivalence.json
-python -m bioprocess_runtime reference-verify artifacts/reference_equivalence.json
+python -m bioprocess_runtime reference-verify artifacts/reference_equivalence.json --model-path .models/gemma-3-270m-it
 ```
+
+Verification reloads the model and re-executes the recorded input. Without `--model-path`, the command reports integrity checks only and deliberately does not mark the computation verified.
 
 Run separate scalar-equation examples and produce the architecture coordinate registry:
 
@@ -324,14 +328,36 @@ The checked result is [`results/gemma3_270m_reference_equivalence_summary.json`]
 
 - Independent eager orchestration exactly matched all 19 Hugging Face eager boundaries with zero tolerance.
 - All vocabulary logits matched exactly; both paths selected the same token.
+- The certificate is bound to an in-memory checkpoint-state hash; a fresh model load reproduced the complete certificate exactly.
 - The 20-record boundary certificate and the 295-record named reference-execution trace both verified.
-- Four fixed-vector scalar-equation checks had maximum absolute error `5.87e-8`.
+- Four fixed-vector scalar-equation checks against both CPU and CUDA implementations had maximum absolute error `5.87e-8`.
+- Explicit eager attention and SDPA were compared from identical Q/K/V tensors and masks at all 18 layers; no layer was byte-exact, maximum attention-output error was `0.5`, and the mean of layer mean errors was `0.00354`.
 - The deployed SDPA path selected the same token but diverged numerically beginning at layer 0.
 - Against the explicit eager reference, SDPA reached maximum hidden-boundary error `448.0`, final-normalized-state error `30.0`, and full-sequence maximum logit error `7.125`.
 
 This establishes exact fixed-input equivalence between two orchestration paths that share PyTorch primitive kernels. It is not a universal proof over every token sequence and does not independently verify CUDA kernel arithmetic. The SDPA divergence demonstrates that attention implementation and numerical reduction behavior are part of the operational rationale even when the selected token remains unchanged.
 
 The coordinate registry assigns exact architecture-defined meanings to axes such as token ID, position, query head, key/value head, MLP neuron, and vocabulary logit. Learned hidden coordinates remain numerically identifiable but do not receive unsupported biological labels.
+
+### Expandable bounded-domain verification
+
+The bounded-domain command exhaustively verifies every state in caller-supplied axes under one canonical prompt template:
+
+```powershell
+python -m bioprocess_runtime gemma-bounded-domain --oxygen-values "25,35,45" --slope-values=-1,0,1 --sensor-agreement "false,true" --output artifacts/bounded_domain.json
+python -m bioprocess_runtime bounded-domain-verify artifacts/bounded_domain.json --model-path .models/gemma-3-270m-it
+python -m bioprocess_runtime bounded-domain-summary artifacts/bounded_domain.json --output results/gemma3_270m_bounded_domain_summary.json
+```
+
+The checked 18-state result is [`results/gemma3_270m_bounded_domain_summary.json`](results/gemma3_270m_bounded_domain_summary.json):
+
+- Independent reference and Hugging Face eager logits were byte-exact for all 18 states.
+- Reference and eager selected the same token for all 18 states.
+- SDPA selected the same token as the reference for all 18 states despite logit errors up to `2.25`.
+- Gemma selected token `10784` (`Yes`) for every state in the grid.
+- The complete 18-record state chain verified, and a fresh model load reproduced the full certificate exactly.
+
+The axes are expandable, but the proof remains exhaustive only for the explicitly listed values and canonical serialization. It does not cover intermediate values, paraphrases, other templates, or unrestricted natural language unless those states are added to the declared domain.
 
 ## Objective B: force Gemma through an executable language
 

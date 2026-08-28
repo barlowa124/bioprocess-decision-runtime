@@ -43,6 +43,7 @@ class ReferenceGemmaTests(unittest.TestCase):
         self.assertTrue(certificate["selected_token_exact_match"])
         self.assertTrue(certificate["logits"]["exact_equal"])
         self.assertTrue(all(boundary["exact_equal"] for boundary in certificate["boundaries"]))
+        self.assertEqual(len(certificate["attention_kernel_comparisons"]), 2)
 
     def test_reference_matches_eager_beyond_sliding_window(self) -> None:
         from bioprocess_runtime.reference_gemma import fixed_input_equivalence_certificate
@@ -50,6 +51,16 @@ class ReferenceGemmaTests(unittest.TestCase):
         long_input = (self.torch.arange(12, dtype=self.torch.long) % 30).unsqueeze(0)
         certificate = fixed_input_equivalence_certificate(self.model, long_input, absolute_tolerance=0.0)
         self.assertTrue(certificate["all_boundaries_within_tolerance"])
+
+    def test_sdpa_comparison_rejects_attention_softcapping(self) -> None:
+        from bioprocess_runtime.reference_gemma import reference_gemma_forward
+
+        for layer in self.model.model.layers:
+            layer.self_attn.attn_logit_softcapping = 50.0
+        with self.assertRaisesRegex(ValueError, "softcapped"):
+            reference_gemma_forward(self.model, self.input_ids, compare_attention_kernels=True)
+        output = reference_gemma_forward(self.model, self.input_ids, compare_attention_kernels=False)
+        self.assertEqual(output.logits.shape[-1], 32)
 
     def test_reference_trace_names_intermediate_computations(self) -> None:
         from bioprocess_runtime.reference_gemma import reference_gemma_forward
@@ -59,10 +70,15 @@ class ReferenceGemmaTests(unittest.TestCase):
         self.assertTrue({"query", "key", "value", "attention_probability", "mlp_gate", "mlp_intermediate_product", "vocabulary_logits"}.issubset(stages))
 
     def test_certificate_verifier_detects_changes(self) -> None:
-        from bioprocess_runtime.reference_gemma import fixed_input_equivalence_certificate, verify_fixed_input_certificate
+        from bioprocess_runtime.reference_gemma import (
+            fixed_input_equivalence_certificate,
+            recompute_fixed_input_certificate,
+            verify_fixed_input_certificate,
+        )
 
         certificate = fixed_input_equivalence_certificate(self.model, self.input_ids, absolute_tolerance=0.0)
         self.assertTrue(verify_fixed_input_certificate(certificate)["valid"])
+        self.assertTrue(recompute_fixed_input_certificate(self.model, certificate)["valid"])
         damaged = copy.deepcopy(certificate)
         damaged["reference_selected_token_id"] += 1
         self.assertFalse(verify_fixed_input_certificate(damaged)["valid"])
@@ -81,6 +97,8 @@ class ReferenceGemmaTests(unittest.TestCase):
         report = operator_equation_conformance()
         self.assertLess(report["maximum_absolute_error"], 1e-6)
         self.assertEqual({case["operator"] for case in report["cases"]}, {"linear", "rms_norm", "gelu_tanh", "stable_softmax"})
+        if self.torch.cuda.is_available():
+            self.assertTrue(all("cuda" in case for case in report["cases"]))
 
     def test_coordinate_registry_separates_structural_and_domain_meaning(self) -> None:
         from bioprocess_runtime.reference_gemma import semantic_coordinate_registry
@@ -107,6 +125,50 @@ class ReferenceGemmaTests(unittest.TestCase):
         summary = summarize_reference_evidence(certificate, operator_equation_conformance(), registry)
         self.assertTrue(summary["reference_vs_huggingface_eager"]["all_boundaries_exact"])
         self.assertTrue(summary["reference_vs_deployed_path"]["selected_token_matches_reference"])
+
+    def test_bounded_domain_certificate_exhausts_declared_grid(self) -> None:
+        from bioprocess_runtime.reference_gemma import (
+            bounded_domain_equivalence_certificate,
+            recompute_bounded_domain_certificate,
+            summarize_bounded_domain,
+            verify_bounded_domain_certificate,
+        )
+
+        torch = self.torch
+
+        class GridTokenizer:
+            chat_template = None
+
+            def __call__(self, prompt, return_tensors="pt"):
+                checksum = sum(prompt.encode("utf-8")) % 29 + 3
+                ids = torch.tensor([[2, checksum]], dtype=torch.long)
+                return {"input_ids": ids, "attention_mask": torch.ones_like(ids)}
+
+        tokenizer = GridTokenizer()
+        certificate = bounded_domain_equivalence_certificate(
+            self.model,
+            tokenizer,
+            oxygen_values=(25.0, 45.0),
+            slope_values=(-1.0, 0.0),
+            sensor_agreement_values=(False, True),
+        )
+        verification = verify_bounded_domain_certificate(certificate)
+        self.assertTrue(verification["valid"])
+        self.assertTrue(recompute_bounded_domain_certificate(self.model, tokenizer, certificate)["valid"])
+        self.assertEqual(verification["verified_state_count"], 8)
+        self.assertEqual(certificate["summary"]["reference_eager_exact_states"], 8)
+        summary = summarize_bounded_domain(certificate)
+        self.assertEqual(sum(summary["reference_output_token_counts"].values()), 8)
+        incomplete = copy.deepcopy(certificate)
+        incomplete["states"].pop()
+        self.assertFalse(verify_bounded_domain_certificate(incomplete)["valid"])
+        with self.assertRaises(ValueError):
+            bounded_domain_equivalence_certificate(
+                self.model,
+                GridTokenizer(),
+                oxygen_values=(25.0, 25.0),
+                slope_values=(0.0,),
+            )
 
     def test_sliding_mask_excludes_distant_and_future_positions(self) -> None:
         from bioprocess_runtime.reference_gemma import reference_causal_mask

@@ -13,6 +13,140 @@
     ],
     "sha256": "fd3dd395416c30cf6d9bab9ebd1fbd8b038b40e27b545ebe839e9f514ec94c13"
   },
+  "explicit_attention_vs_sdpa_same_inputs": {
+    "exact_layers": 0,
+    "layer_count": 18,
+    "layers": [
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 0,
+        "max_absolute_error": 0.5,
+        "mean_absolute_error": 0.012340032495558262
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 1,
+        "max_absolute_error": 0.5,
+        "mean_absolute_error": 0.005238829646259546
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 2,
+        "max_absolute_error": 0.078125,
+        "mean_absolute_error": 0.002291703363880515
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 3,
+        "max_absolute_error": 0.078125,
+        "mean_absolute_error": 0.0026383199729025364
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 4,
+        "max_absolute_error": 0.03515625,
+        "mean_absolute_error": 0.0014459834201261401
+      },
+      {
+        "attention_type": "full_attention",
+        "exact_equal": false,
+        "layer": 5,
+        "max_absolute_error": 0.140625,
+        "mean_absolute_error": 0.0014354358427226543
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 6,
+        "max_absolute_error": 0.03125,
+        "mean_absolute_error": 0.001726176356896758
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 7,
+        "max_absolute_error": 0.09375,
+        "mean_absolute_error": 0.004310745745897293
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 8,
+        "max_absolute_error": 0.09375,
+        "mean_absolute_error": 0.003213057992979884
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 9,
+        "max_absolute_error": 0.078125,
+        "mean_absolute_error": 0.003186363261193037
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 10,
+        "max_absolute_error": 0.09375,
+        "mean_absolute_error": 0.003048219019547105
+      },
+      {
+        "attention_type": "full_attention",
+        "exact_equal": false,
+        "layer": 11,
+        "max_absolute_error": 0.01953125,
+        "mean_absolute_error": 0.0006776662194170058
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 12,
+        "max_absolute_error": 0.0625,
+        "mean_absolute_error": 0.0023582368157804012
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 13,
+        "max_absolute_error": 0.0625,
+        "mean_absolute_error": 0.0016860108589753509
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 14,
+        "max_absolute_error": 0.078125,
+        "mean_absolute_error": 0.003960599657148123
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 15,
+        "max_absolute_error": 0.09375,
+        "mean_absolute_error": 0.005549718160182238
+      },
+      {
+        "attention_type": "sliding_attention",
+        "exact_equal": false,
+        "layer": 16,
+        "max_absolute_error": 0.21875,
+        "mean_absolute_error": 0.005957390181720257
+      },
+      {
+        "attention_type": "full_attention",
+        "exact_equal": false,
+        "layer": 17,
+        "max_absolute_error": 0.0517578125,
+        "mean_absolute_error": 0.002643467392772436
+      }
+    ],
+    "maximum_absolute_error": 0.5,
+    "mean_of_layer_mean_absolute_errors": 0.0035393309113310855
+  },
   "input_ids_sha256": "16c5db8095c6ee039efb8c801921171eb873fa87f3affbd54a7c1f54697ad016",
   "interpretation": "The independently orchestrated eager equations exactly reproduce every checked Hugging Face eager boundary and vocabulary logit for this input. The deployed SDPA path selects the same token but diverges numerically beginning at layer 0, showing that implementation choice is part of the model's operational rationale.",
   "limitations": [
@@ -23,11 +157,12 @@
     "Architecture-defined coordinate roles do not assign biological meaning to learned hidden coordinates.",
     "No GMP, biological, clinical, product-quality, or patient-safety conclusion is supported."
   ],
+  "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
   "operator_equation_conformance": {
     "case_count": 4,
     "maximum_absolute_error": 5.86883244224623e-08,
-    "scope": "Fixed-vector equation conformance checks against separate Python scalar equations; not a proof for all values or CUDA kernels.",
-    "sha256": "bb8c490751822db173b0d09bd8a420e10d4f3c898654ccb988c23b76a075c7b2"
+    "scope": "Fixed-vector CPU and available CUDA conformance checks against separate Python scalar equations; not a proof for all values or kernel instructions.",
+    "sha256": "483f3108fc1a334caa2b9f8db05730fd6ff3440c0f9812e69f36e8bc3c456112"
   },
   "reference_certificate": {
     "chain_verified": true,
@@ -36,7 +171,7 @@
     "reference_execution_trace_record_count": 295,
     "reference_execution_trace_root_sha256": "0ae6a064767a0515f6fae4a70943d8b943f8c6066449b5d8fe85cc435ab06fdf",
     "root_sha256": "1f7f3c6291e649c1cf6abdbcd25f4209d410c67f8ab0b9c96e2ce0330d67b772",
-    "sha256": "ddb14030015479675440b53ccc22b0599449ad61be95f7866f0062ecee8a0433"
+    "sha256": "3d74f0334409196446e3be28635a345b92867bf62579c6ab309102c9fbf5eb4b"
   },
   "reference_vs_deployed_path": {
     "attention_implementation": "sdpa",

@@ -331,10 +331,23 @@ def command_reference_compare(args: argparse.Namespace) -> int:
 
 
 def command_reference_verify(args: argparse.Namespace) -> int:
-    from .reference_gemma import verify_fixed_input_certificate
+    from .reference_gemma import recompute_fixed_input_certificate, verify_fixed_input_certificate
 
     certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
-    verification = verify_fixed_input_certificate(certificate)
+    if args.model_path:
+        from .interpretability import load_local_gemma
+
+        model, _ = load_local_gemma(args.model_path)
+        verification = recompute_fixed_input_certificate(model, certificate)
+    else:
+        integrity = verify_fixed_input_certificate(certificate)
+        verification = {
+            "valid": integrity["valid"],
+            "mode": "integrity_only",
+            "reexecution_performed": False,
+            "integrity": integrity,
+            "reason": "Supply --model-path to re-execute the computation",
+        }
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -365,6 +378,70 @@ def command_reference_summary(args: argparse.Namespace) -> int:
     coordinates = json.loads(args.coordinates.read_text(encoding="utf-8"))
     summary = summarize_reference_evidence(certificate, conformance, coordinates)
     _write_json(args.output, summary)
+    return 0
+
+
+def _float_axis(value: str) -> tuple[float, ...]:
+    return tuple(float(item.strip()) for item in value.split(",") if item.strip())
+
+
+def _boolean_axis(value: str) -> tuple[bool, ...]:
+    mapping = {"true": True, "false": False}
+    try:
+        return tuple(mapping[item.strip().lower()] for item in value.split(",") if item.strip())
+    except KeyError as exc:
+        raise ValueError("Boolean axes accept only true and false") from exc
+
+
+def command_bounded_domain(args: argparse.Namespace) -> int:
+    from .interpretability import load_local_gemma
+    from .reference_gemma import bounded_domain_equivalence_certificate, verify_bounded_domain_certificate
+
+    model, tokenizer = load_local_gemma(args.model_path)
+    certificate = bounded_domain_equivalence_certificate(
+        model,
+        tokenizer,
+        _float_axis(args.oxygen_values),
+        _float_axis(args.slope_values),
+        _boolean_axis(args.sensor_agreement),
+    )
+    verification = verify_bounded_domain_certificate(certificate)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(certificate, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps({"certificate": str(args.output), **verification, "summary": certificate["summary"]}, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_bounded_domain_verify(args: argparse.Namespace) -> int:
+    from .reference_gemma import recompute_bounded_domain_certificate, verify_bounded_domain_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    if args.model_path:
+        from .interpretability import load_local_gemma
+
+        model, tokenizer = load_local_gemma(args.model_path)
+        verification = recompute_bounded_domain_certificate(model, tokenizer, certificate)
+    else:
+        integrity = verify_bounded_domain_certificate(certificate)
+        verification = {
+            "valid": integrity["valid"],
+            "mode": "integrity_only",
+            "reexecution_performed": False,
+            "integrity": integrity,
+            "reason": "Supply --model-path to re-execute the domain",
+        }
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_bounded_domain_summary(args: argparse.Namespace) -> int:
+    from .reference_gemma import summarize_bounded_domain, verify_bounded_domain_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_bounded_domain_certificate(certificate)
+    if not verification["valid"]:
+        raise ValueError("Cannot summarize an invalid bounded-domain certificate")
+    _write_json(args.output, summarize_bounded_domain(certificate))
     return 0
 
 
@@ -476,8 +553,9 @@ def build_parser() -> argparse.ArgumentParser:
     reference_parser.add_argument("--output", type=Path, required=True)
     reference_parser.set_defaults(handler=command_reference_compare)
 
-    reference_verify_parser = subparsers.add_parser("reference-verify", help="Verify a fixed-input reference equivalence certificate")
+    reference_verify_parser = subparsers.add_parser("reference-verify", help="Re-execute and verify a fixed-input reference equivalence certificate")
     reference_verify_parser.add_argument("certificate", type=Path)
+    reference_verify_parser.add_argument("--model-path", type=Path)
     reference_verify_parser.set_defaults(handler=command_reference_verify)
 
     conformance_parser = subparsers.add_parser("operator-conformance", help="Compare operator implementations with separate scalar equations")
@@ -495,6 +573,24 @@ def build_parser() -> argparse.ArgumentParser:
     reference_summary_parser.add_argument("--coordinates", type=Path, required=True)
     reference_summary_parser.add_argument("--output", type=Path, required=True)
     reference_summary_parser.set_defaults(handler=command_reference_summary)
+
+    domain_parser = subparsers.add_parser("gemma-bounded-domain", help="Exhaustively verify a declared canonical oxygen-state grid")
+    domain_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    domain_parser.add_argument("--oxygen-values", default="25,35,45")
+    domain_parser.add_argument("--slope-values", default="-1,0,1")
+    domain_parser.add_argument("--sensor-agreement", default="false,true")
+    domain_parser.add_argument("--output", type=Path, required=True)
+    domain_parser.set_defaults(handler=command_bounded_domain)
+
+    domain_verify_parser = subparsers.add_parser("bounded-domain-verify", help="Re-execute and verify a bounded-domain equivalence certificate")
+    domain_verify_parser.add_argument("certificate", type=Path)
+    domain_verify_parser.add_argument("--model-path", type=Path)
+    domain_verify_parser.set_defaults(handler=command_bounded_domain_verify)
+
+    domain_summary_parser = subparsers.add_parser("bounded-domain-summary", help="Build a compact summary from a verified bounded-domain certificate")
+    domain_summary_parser.add_argument("certificate", type=Path)
+    domain_summary_parser.add_argument("--output", type=Path, required=True)
+    domain_summary_parser.set_defaults(handler=command_bounded_domain_summary)
     return parser
 
 
