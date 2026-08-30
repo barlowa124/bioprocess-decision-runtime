@@ -87,6 +87,54 @@ def sass_exit() -> Any:
     return z3.BoolVal(True)
 
 
+def sass_memory_load_little_endian(memory: Any, address: Any, byte_count: int) -> Any:
+    return z3.Concat(
+        *[
+            z3.Select(memory, address + z3.BitVecVal(index, address.size()))
+            for index in reversed(range(byte_count))
+        ]
+    )
+
+
+def sass_memory_store_little_endian(memory: Any, address: Any, value: Any, byte_count: int) -> Any:
+    result = memory
+    for index in range(byte_count):
+        result = z3.Store(
+            result,
+            address + z3.BitVecVal(index, address.size()),
+            z3.Extract(index * 8 + 7, index * 8, value),
+        )
+    return result
+
+
+def sass_uldc64(constant_memory: Any, address: Any) -> Any:
+    return sass_memory_load_little_endian(constant_memory, address, 8)
+
+
+def sass_ldg32(global_memory: Any, address: Any) -> Any:
+    return sass_memory_load_little_endian(global_memory, address, 4)
+
+
+def sass_ldg32_transition(global_memory: Any, address: Any) -> tuple[Any, Any]:
+    return global_memory, sass_ldg32(global_memory, address)
+
+
+def sass_stg32(global_memory: Any, address: Any, value: Any) -> Any:
+    return sass_memory_store_little_endian(global_memory, address, value, 4)
+
+
+def sass_ldgsts128(global_memory: Any, shared_memory: Any, global_address: Any, shared_address: Any) -> tuple[Any, Any]:
+    value = sass_memory_load_little_endian(global_memory, global_address, 16)
+    return global_memory, sass_memory_store_little_endian(shared_memory, shared_address, value, 16)
+
+
+PROPOSED_MEMORY_OPERAND_ROLES = {
+    "LDG": [["candidate_read", "global"]],
+    "STG": [["candidate_write", "global"]],
+    "LDGSTS": [["candidate_write", "shared"], ["candidate_read", "global"]],
+}
+
+
 PROPOSED_SEMANTICS_OPCODES = {
     "BRA",
     "BRA.U",
@@ -110,11 +158,15 @@ PROPOSED_SEMANTICS_OPCODES = {
     "ISETP.LT.AND",
     "ISETP.LT.U32.AND",
     "ISETP.NE.AND",
+    "LDG",
+    "LDGSTS",
     "LOP3.LUT",
     "MOV",
     "NOP",
     "SEL",
     "SHF.R.U32.HI",
+    "STG",
+    "ULDC.64",
 }
 
 
@@ -340,17 +392,101 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
         )
     )
 
+    address_width = 8
+    address = z3.BitVec("sass_memory_address", address_width)
+    other_address = z3.BitVec("sass_other_memory_address", address_width)
+    constant_memory = z3.Array("sass_constant_memory", z3.BitVecSort(address_width), z3.BitVecSort(8))
+    global_memory = z3.Array("sass_global_memory", z3.BitVecSort(address_width), z3.BitVecSort(8))
+    shared_memory = z3.Array("sass_shared_memory", z3.BitVecSort(address_width), z3.BitVecSort(8))
+    value32 = z3.BitVec("sass_memory_value32", 32)
+    explicit_uldc64 = z3.Concat(
+        *[
+            z3.Select(constant_memory, address + z3.BitVecVal(index, address_width))
+            for index in reversed(range(8))
+        ]
+    )
+    proofs.append(
+        _prove(
+            "uldc64_matches_little_endian_constant_memory_read",
+            sass_uldc64(constant_memory, address) == explicit_uldc64,
+            {
+                "opcode": "ULDC.64",
+                "input": "all 8-bit abstract addresses and byte-array constant memories",
+                "boundary": "Proposed 64-bit little-endian read only; constant-bank selection, alignment, faults, caching, and hardware behavior excluded.",
+            },
+        )
+    )
+    ldg_memory, ldg_value = sass_ldg32_transition(global_memory, address)
+    proofs.append(
+        _prove(
+            "ldg32_reads_little_endian_and_preserves_abstract_global_memory",
+            z3.And(ldg_memory == global_memory, ldg_value == sass_memory_load_little_endian(global_memory, address, 4)),
+            {
+                "opcode": "LDG",
+                "input": "all 8-bit abstract addresses and byte-array global memories",
+                "boundary": "Proposed 32-bit read transition only; modifiers, alignment, faults, caching, ordering, and hardware behavior excluded.",
+            },
+        )
+    )
+    stored_global = sass_stg32(global_memory, address, value32)
+    proofs.append(
+        _prove(
+            "stg32_then_ldg32_at_same_address_returns_stored_bits",
+            sass_ldg32(stored_global, address) == value32,
+            {
+                "opcodes": ["STG", "LDG"],
+                "input": "all 8-bit abstract addresses, 32-bit values, and byte-array global memories",
+                "boundary": "Sequential proposed little-endian byte-array model; concurrency, alignment, faults, caches, ordering, and hardware behavior excluded.",
+            },
+        )
+    )
+    nonoverlap = z3.And(
+        *[
+            other_address != address + z3.BitVecVal(index, address_width)
+            for index in range(4)
+        ]
+    )
+    proofs.append(
+        _prove(
+            "stg32_preserves_nonoverlapping_abstract_global_byte",
+            z3.Implies(nonoverlap, z3.Select(stored_global, other_address) == z3.Select(global_memory, other_address)),
+            {
+                "opcode": "STG",
+                "input": "all 8-bit abstract addresses, nonoverlapping byte addresses, 32-bit values, and global memories",
+                "boundary": "Single-threaded proposed byte-array update only; concurrency and hardware behavior excluded.",
+            },
+        )
+    )
+    unchanged_global, copied_shared = sass_ldgsts128(global_memory, shared_memory, address, other_address)
+    proofs.append(
+        _prove(
+            "ldgsts128_preserves_global_and_copies_128_bits_to_shared",
+            z3.And(
+                unchanged_global == global_memory,
+                sass_memory_load_little_endian(copied_shared, other_address, 16)
+                == sass_memory_load_little_endian(global_memory, address, 16),
+            ),
+            {
+                "opcode": "LDGSTS",
+                "input": "all 8-bit abstract global/shared addresses and byte-array memories",
+                "boundary": "Proposed sequential 128-bit global-read/shared-write equation; async behavior, predicates, barriers, alignment, faults, ordering, and hardware behavior excluded.",
+            },
+        )
+    )
+
     body = {
-        "scope": "Proposed bitvector, abstract IEEE-754, and abstract control semantics for selected exact opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
+        "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
         "solver": {"name": "Z3", "version": z3.get_version_string()},
         "proofs": proofs,
         "proved": sum(item["proved"] for item in proofs),
         "total": len(proofs),
         "covered_base_opcodes": sorted(PROPOSED_SEMANTICS_OPCODES),
+        "proposed_memory_operand_roles": PROPOSED_MEMORY_OPERAND_ROLES,
         "excluded": [
             "Opcode modifiers not explicitly named in each obligation",
             "register width and type variants beyond the stated formulas",
-            "Memory, barrier, warp, reconvergence, and complete control-flow semantics",
+            "Memory forms beyond the declared fixed-width abstract byte-array equations",
+            "Barrier, warp, reconvergence, and complete control-flow semantics",
             "NVIDIA hardware conformance to these proposed equations",
         ],
     }
@@ -377,7 +513,16 @@ def verify_sass_semantics_certificate(certificate: dict[str, Any]) -> dict[str, 
         "certificate_sha256"
     )
     recomputed = build_sass_semantics_certificate()
-    fields = ("scope", "solver", "proofs", "proved", "total", "covered_base_opcodes", "excluded")
+    fields = (
+        "scope",
+        "solver",
+        "proofs",
+        "proved",
+        "total",
+        "covered_base_opcodes",
+        "proposed_memory_operand_roles",
+        "excluded",
+    )
     claims_match = all(certificate.get(key) == recomputed[key] for key in fields)
     return {
         "valid": bool(integrity_valid and claims_match and recomputed["proved"] == recomputed["total"]),

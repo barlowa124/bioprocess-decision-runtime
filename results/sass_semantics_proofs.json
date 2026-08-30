@@ -1,5 +1,5 @@
 {
-  "certificate_sha256": "979e551a49d7a27d5c64400f9c67d98e2ba812c54682a6eee37dec8ffeb4fbef",
+  "certificate_sha256": "14229b1f73db04c736aecbcd7fcbb23ff349f91ff17cd854183ea3e2b64cce66",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -23,16 +23,21 @@
     "ISETP.LT.AND",
     "ISETP.LT.U32.AND",
     "ISETP.NE.AND",
+    "LDG",
+    "LDGSTS",
     "LOP3.LUT",
     "MOV",
     "NOP",
     "SEL",
-    "SHF.R.U32.HI"
+    "SHF.R.U32.HI",
+    "STG",
+    "ULDC.64"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
     "register width and type variants beyond the stated formulas",
-    "Memory, barrier, warp, reconvergence, and complete control-flow semantics",
+    "Memory forms beyond the declared fixed-width abstract byte-array equations",
+    "Barrier, warp, reconvergence, and complete control-flow semantics",
     "NVIDIA hardware conformance to these proposed equations"
   ],
   "proofs": [
@@ -312,13 +317,95 @@
         ]
       },
       "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uldc64_matches_little_endian_constant_memory_read",
+      "proved": true,
+      "scope": {
+        "boundary": "Proposed 64-bit little-endian read only; constant-bank selection, alignment, faults, caching, and hardware behavior excluded.",
+        "input": "all 8-bit abstract addresses and byte-array constant memories",
+        "opcode": "ULDC.64"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ldg32_reads_little_endian_and_preserves_abstract_global_memory",
+      "proved": true,
+      "scope": {
+        "boundary": "Proposed 32-bit read transition only; modifiers, alignment, faults, caching, ordering, and hardware behavior excluded.",
+        "input": "all 8-bit abstract addresses and byte-array global memories",
+        "opcode": "LDG"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "stg32_then_ldg32_at_same_address_returns_stored_bits",
+      "proved": true,
+      "scope": {
+        "boundary": "Sequential proposed little-endian byte-array model; concurrency, alignment, faults, caches, ordering, and hardware behavior excluded.",
+        "input": "all 8-bit abstract addresses, 32-bit values, and byte-array global memories",
+        "opcodes": [
+          "STG",
+          "LDG"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "stg32_preserves_nonoverlapping_abstract_global_byte",
+      "proved": true,
+      "scope": {
+        "boundary": "Single-threaded proposed byte-array update only; concurrency and hardware behavior excluded.",
+        "input": "all 8-bit abstract addresses, nonoverlapping byte addresses, 32-bit values, and global memories",
+        "opcode": "STG"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ldgsts128_preserves_global_and_copies_128_bits_to_shared",
+      "proved": true,
+      "scope": {
+        "boundary": "Proposed sequential 128-bit global-read/shared-write equation; async behavior, predicates, barriers, alignment, faults, ordering, and hardware behavior excluded.",
+        "input": "all 8-bit abstract global/shared addresses and byte-array memories",
+        "opcode": "LDGSTS"
+      },
+      "solver_result": "unsat"
     }
   ],
-  "proved": 24,
-  "scope": "Proposed bitvector, abstract IEEE-754, and abstract control semantics for selected exact opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
+  "proposed_memory_operand_roles": {
+    "LDG": [
+      [
+        "candidate_read",
+        "global"
+      ]
+    ],
+    "LDGSTS": [
+      [
+        "candidate_write",
+        "shared"
+      ],
+      [
+        "candidate_read",
+        "global"
+      ]
+    ],
+    "STG": [
+      [
+        "candidate_write",
+        "global"
+      ]
+    ]
+  },
+  "proved": 29,
+  "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 24
+  "total": 29
 }

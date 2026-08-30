@@ -663,7 +663,10 @@ def command_sass_memory(args: argparse.Namespace) -> int:
 
     nsight = json.loads(args.nsight.read_text(encoding="utf-8"))
     attention = json.loads(args.attention.read_text(encoding="utf-8"))
-    certificate = build_sass_memory_certificate(args.cuobjdump, args.cubin, args.kernel, nsight, attention)
+    semantics = json.loads(args.sass_semantics.read_text(encoding="utf-8"))
+    certificate = build_sass_memory_certificate(
+        args.cuobjdump, args.cubin, args.kernel, nsight, attention, semantics
+    )
     _write_json(args.output, certificate)
     return 0 if certificate["all_checks_pass"] else 1
 
@@ -674,8 +677,9 @@ def command_sass_memory_verify(args: argparse.Namespace) -> int:
     certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
     nsight = json.loads(args.nsight.read_text(encoding="utf-8"))
     attention = json.loads(args.attention.read_text(encoding="utf-8"))
+    semantics = json.loads(args.sass_semantics.read_text(encoding="utf-8"))
     verification = verify_sass_memory_certificate(
-        certificate, args.cuobjdump, args.cubin, nsight, attention
+        certificate, args.cuobjdump, args.cubin, nsight, attention, semantics
     )
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
@@ -1132,6 +1136,7 @@ def build_parser() -> argparse.ArgumentParser:
     sass_memory_parser.add_argument("--kernel", required=True)
     sass_memory_parser.add_argument("--nsight", type=Path, required=True)
     sass_memory_parser.add_argument("--attention", type=Path, required=True)
+    sass_memory_parser.add_argument("--sass-semantics", type=Path, required=True)
     sass_memory_parser.add_argument("--output", type=Path, required=True)
     sass_memory_parser.set_defaults(handler=command_sass_memory)
 
@@ -1141,6 +1146,7 @@ def build_parser() -> argparse.ArgumentParser:
     sass_memory_verify_parser.add_argument("--cubin", type=Path, required=True)
     sass_memory_verify_parser.add_argument("--nsight", type=Path, required=True)
     sass_memory_verify_parser.add_argument("--attention", type=Path, required=True)
+    sass_memory_verify_parser.add_argument("--sass-semantics", type=Path, required=True)
     sass_memory_verify_parser.set_defaults(handler=command_sass_memory_verify)
 
     attention_parameters_parser = subparsers.add_parser("attention-parameters", help="Validate decoded fused-attention parameters against Gemma expectations")

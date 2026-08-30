@@ -11,6 +11,7 @@ from typing import Any
 from .attention_parameters import verify_attention_parameter_certificate
 from .kernel_signatures import _AttentionParams, _layout
 from .nsight_attestation import _instruction_summary, _parse_cuobjdump_sass, verify_nsight_launch_certificate
+from .sass_semantics import PROPOSED_MEMORY_OPERAND_ROLES, verify_sass_semantics_certificate
 from .serialization import canonical_json
 
 
@@ -541,6 +542,7 @@ def build_sass_memory_certificate(
     kernel: str,
     nsight_certificate: dict[str, Any],
     attention_certificate: dict[str, Any],
+    sass_semantics_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     completed = subprocess.run(
         [cuobjdump, "--dump-sass", "--function", kernel, str(cubin)],
@@ -608,6 +610,25 @@ def build_sass_memory_certificate(
     )
     access_classification = _opcode_text_access_classification(call_string_slices)
     field_accesses = access_classification["parameter_field_links_by_class"]
+    real_role_records = []
+    for instruction in instructions:
+        base_opcode = _base_opcode(instruction["opcode"])
+        if base_opcode not in PROPOSED_MEMORY_OPERAND_ROLES:
+            continue
+        memories = re.findall(r"\[([^]]+)\]", instruction["operands"])
+        actual_roles = [list(role[:2]) for role in _address_operand_specs(instruction["opcode"], memories)]
+        expected_roles = PROPOSED_MEMORY_OPERAND_ROLES[base_opcode]
+        real_role_records.append(
+            {
+                "instruction_offset": instruction["offset"],
+                "opcode": instruction["opcode"],
+                "base_opcode": base_opcode,
+                "actual_roles": actual_roles,
+                "expected_roles": expected_roles,
+                "matches": actual_roles == expected_roles,
+            }
+        )
+    real_role_counts = Counter(record["base_opcode"] for record in real_role_records)
     checks = {
         "cubin_hash_matches_attestation": _file_sha256(cubin) == nsight_certificate["cupti_module"]["cubin_sha256"],
         "kernel_matches_attestation": kernel == nsight_certificate["details"]["kernel_name"],
@@ -617,6 +638,11 @@ def build_sass_memory_certificate(
         == nsight_certificate["loaded_cubin_function_sass"]["instruction_count"],
         "nsight_certificate_valid": verify_nsight_launch_certificate(nsight_certificate)["valid"],
         "attention_parameter_certificate_valid": verify_attention_parameter_certificate(attention_certificate)["valid"],
+        "sass_semantics_certificate_valid": verify_sass_semantics_certificate(sass_semantics_certificate)["valid"],
+        "real_opcode_operands_match_proposed_role_table": bool(real_role_records)
+        and all(record["matches"] for record in real_role_records)
+        and set(real_role_counts) == set(PROPOSED_MEMORY_OPERAND_ROLES)
+        and sass_semantics_certificate["proposed_memory_operand_roles"] == PROPOSED_MEMORY_OPERAND_ROLES,
         "parameter_base_unique": base["candidate_count"] == 1,
         "target_pointer_fields_loaded": all(target_loads.values()),
         "global_memory_operations_present": bool(memory_by_space["global_or_global_to_shared"]),
@@ -653,6 +679,14 @@ def build_sass_memory_certificate(
         "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
+        "sass_semantics_certificate_sha256": sass_semantics_certificate["certificate_sha256"],
+        "real_opcode_operand_role_check": {
+            "instruction_count": len(real_role_records),
+            "instruction_count_by_base_opcode": dict(sorted(real_role_counts.items())),
+            "mismatch_count": sum(not record["matches"] for record in real_role_records),
+            "mismatches": [record for record in real_role_records if not record["matches"]],
+            "proposed_role_table": PROPOSED_MEMORY_OPERAND_ROLES,
+        },
         "sass": summary,
         "parameter_layout_size_bytes": ctypes.sizeof(_AttentionParams),
         "parameter_base": base,
@@ -702,6 +736,7 @@ def build_sass_memory_certificate(
         "predicate_truth_modeled": False,
         "complete_control_flow_dataflow_established": False,
         "opcode_text_access_classification_established": True,
+        "real_opcode_operands_match_proposed_memory_role_table": True,
         "memory_access_direction_established": False,
         "memory_bounds_established": False,
         "sass_instruction_semantics_established": False,
@@ -717,6 +752,7 @@ def verify_sass_memory_certificate(
     cubin: Path | None = None,
     nsight_certificate: dict[str, Any] | None = None,
     attention_certificate: dict[str, Any] | None = None,
+    sass_semantics_certificate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     body = {key: value for key, value in certificate.items() if key != "certificate_sha256"}
     hash_valid = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == certificate.get(
@@ -736,6 +772,7 @@ def verify_sass_memory_certificate(
         and certificate.get("predicate_truth_modeled") is False
         and certificate.get("complete_control_flow_dataflow_established") is False
         and certificate.get("opcode_text_access_classification_established") is True
+        and certificate.get("real_opcode_operands_match_proposed_memory_role_table") is True
         and certificate.get("memory_access_direction_established") is False
         and certificate.get("memory_bounds_established") is False
         and certificate.get("sass_instruction_semantics_established") is False
@@ -752,17 +789,30 @@ def verify_sass_memory_certificate(
     )
     access = certificate.get("opcode_text_access_classification", {})
     access_labels = set(access.get("address_operand_count_by_class", {}))
+    role_check = certificate.get("real_opcode_operand_role_check", {})
     access_classification_valid = (
         access_labels <= {"candidate_read", "candidate_write", "candidate_read_write"}
         and all(
             field in access.get("parameter_field_links_by_class", {}) for field in TARGET_POINTER_FIELDS
         )
+        and role_check.get("mismatch_count") == 0
+        and role_check.get("mismatches") == []
+        and role_check.get("proposed_role_table") == PROPOSED_MEMORY_OPERAND_ROLES
+        and role_check.get("instruction_count")
+        == sum(role_check.get("instruction_count_by_base_opcode", {}).values())
     )
-    replay_available = all(value is not None for value in (cuobjdump, cubin, nsight_certificate, attention_certificate))
+    replay_available = all(
+        value is not None
+        for value in (cuobjdump, cubin, nsight_certificate, attention_certificate, sass_semantics_certificate)
+    )
     input_certificates_valid = False
     replay_matches = False
     if replay_available:
-        input_certificates_valid = verify_nsight_launch_certificate(nsight_certificate)["valid"] and verify_attention_parameter_certificate(attention_certificate)["valid"]
+        input_certificates_valid = (
+            verify_nsight_launch_certificate(nsight_certificate)["valid"]
+            and verify_attention_parameter_certificate(attention_certificate)["valid"]
+            and verify_sass_semantics_certificate(sass_semantics_certificate)["valid"]
+        )
     if replay_available:
         rebuilt = build_sass_memory_certificate(
             cuobjdump,
@@ -770,6 +820,7 @@ def verify_sass_memory_certificate(
             certificate["kernel_name"],
             nsight_certificate,
             attention_certificate,
+            sass_semantics_certificate,
         )
         replay_matches = rebuilt == certificate
     return {

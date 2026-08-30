@@ -49,7 +49,7 @@
   },
   "bounded_call_string_dataflow_established": true,
   "call_string_depth_overflow_free": false,
-  "certificate_sha256": "6e169ad706c3c94930a7b3b12ed093626ab650a46b79a2639e3861b3a4e51c00",
+  "certificate_sha256": "af5eaa1d8ef8e506b236ac04588f7920ab15224044b7a55fb04820aadbd1a071",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
@@ -71,7 +71,9 @@
     "output_fields_have_candidate_write_links": true,
     "parameter_base_unique": true,
     "qkv_have_read_only_opcode_text_links": true,
+    "real_opcode_operands_match_proposed_role_table": true,
     "sass_hash_matches_attestation": true,
+    "sass_semantics_certificate_valid": true,
     "target_fields_have_opcode_text_access_classes": true,
     "target_pointer_fields_loaded": true
   },
@@ -395,6 +397,41 @@
   "parameter_layout_size_bytes": 264,
   "parameter_load_count": 149,
   "predicate_truth_modeled": false,
+  "real_opcode_operand_role_check": {
+    "instruction_count": 113,
+    "instruction_count_by_base_opcode": {
+      "LDG": 27,
+      "LDGSTS": 52,
+      "STG": 34
+    },
+    "mismatch_count": 0,
+    "mismatches": [],
+    "proposed_role_table": {
+      "LDG": [
+        [
+          "candidate_read",
+          "global"
+        ]
+      ],
+      "LDGSTS": [
+        [
+          "candidate_write",
+          "shared"
+        ],
+        [
+          "candidate_read",
+          "global"
+        ]
+      ],
+      "STG": [
+        [
+          "candidate_write",
+          "global"
+        ]
+      ]
+    }
+  },
+  "real_opcode_operands_match_proposed_memory_role_table": true,
   "sass": {
     "canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
     "first_offset": 0,
@@ -551,6 +588,7 @@
     }
   },
   "sass_instruction_semantics_established": false,
+  "sass_semantics_certificate_sha256": "14229b1f73db04c736aecbcd7fcbb23ff349f91ff17cd854183ea3e2b64cce66",
   "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
   "target_pointer_loads": {
     "key_ptr": [

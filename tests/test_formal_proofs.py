@@ -62,8 +62,16 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 24)
-        self.assertTrue({"FFMA", "FMUL", "FADD", "SHF.R.U32.HI", "ISETP.NE.AND"}.issubset(certificate["covered_base_opcodes"]))
+        self.assertGreaterEqual(certificate["total"], 29)
+        self.assertTrue(
+            {"FFMA", "FMUL", "FADD", "SHF.R.U32.HI", "ISETP.NE.AND", "ULDC.64", "LDG", "STG", "LDGSTS"}.issubset(
+                certificate["covered_base_opcodes"]
+            )
+        )
+        self.assertEqual(
+            certificate["proposed_memory_operand_roles"]["LDGSTS"],
+            [["candidate_write", "shared"], ["candidate_read", "global"]],
+        )
         self.assertTrue(verify_sass_semantics_certificate(certificate)["valid"])
         self.assertIn("not NVIDIA-certified", certificate["scope"])
 
@@ -74,6 +82,14 @@ class SassSemanticsTests(unittest.TestCase):
         damaged = copy.deepcopy(certificate)
         damaged["proofs"][0]["proved"] = False
         self.assertFalse(verify_sass_semantics_certificate(damaged)["valid"])
+        forged_roles = copy.deepcopy(certificate)
+        forged_roles["proposed_memory_operand_roles"]["LDG"][0][0] = "candidate_write"
+        body = {key: value for key, value in forged_roles.items() if key != "certificate_sha256"}
+        forged_roles["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        verification = verify_sass_semantics_certificate(forged_roles)
+        self.assertTrue(verification["integrity_valid"])
+        self.assertFalse(verification["reexecution_claims_match"])
+        self.assertFalse(verification["valid"])
 
     def test_sass_image_coverage_counts_only_exact_base_opcodes(self) -> None:
         from bioprocess_runtime.sass_semantics import sass_image_coverage
