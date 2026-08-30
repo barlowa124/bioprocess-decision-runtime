@@ -302,6 +302,54 @@ class SassMemoryTests(unittest.TestCase):
         self.assertEqual(graph["unresolved_direct_targets"], 0)
         self.assertGreater(graph["basic_block_count"], 1)
 
+    def test_call_return_and_barrier_edges_are_conservative(self) -> None:
+        from bioprocess_runtime.sass_memory import _cfg_successors
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "CALL.REL.NOINC", "operands": "0x40"},
+            {"offset": 16, "predicate": None, "opcode": "EXIT", "operands": ""},
+            {"offset": 32, "predicate": None, "opcode": "NOP", "operands": ""},
+            {"offset": 48, "predicate": None, "opcode": "NOP", "operands": ""},
+            {"offset": 64, "predicate": None, "opcode": "BSSY", "operands": "B0,0x80"},
+            {"offset": 80, "predicate": "@P0", "opcode": "BREAK", "operands": "B0"},
+            {"offset": 96, "predicate": None, "opcode": "BSYNC", "operands": "B0"},
+            {"offset": 112, "predicate": None, "opcode": "RET.REL.NODEC", "operands": "R2,0x0"},
+            {"offset": 128, "predicate": None, "opcode": "EXIT", "operands": ""},
+        ]
+        successors, graph = _cfg_successors(instructions)
+        self.assertEqual(successors[0], [1, 4])
+        self.assertEqual(successors[5], [6, 8])
+        self.assertEqual(successors[6], [8])
+        self.assertEqual(successors[7], [1])
+        self.assertEqual(graph["context_insensitive_return_edges"], 1)
+        self.assertEqual(graph["lexically_matched_bssy_bsync"], 1)
+        self.assertEqual(graph["unmatched_barrier_controls"], 0)
+
+    def test_predicated_terminators_and_indirect_branches(self) -> None:
+        from bioprocess_runtime.sass_memory import _cfg_successors
+
+        instructions = [
+            {"offset": 0, "predicate": "@P0", "opcode": "RET.REL.NODEC", "operands": "R2,0x0"},
+            {"offset": 16, "predicate": None, "opcode": "NOP", "operands": ""},
+            {"offset": 32, "predicate": "@!P0", "opcode": "EXIT", "operands": ""},
+            {"offset": 48, "predicate": None, "opcode": "NOP", "operands": ""},
+            {"offset": 64, "predicate": None, "opcode": "BRX", "operands": "R2,0x0"},
+            {"offset": 80, "predicate": None, "opcode": "NOP", "operands": ""},
+        ]
+        successors, graph = _cfg_successors(instructions)
+        self.assertEqual(successors[0], [1])
+        self.assertEqual(successors[2], [3])
+        self.assertEqual(successors[4], [])
+        self.assertEqual(graph["unresolved_indirect_transfers"], 1)
+        final_call = [
+            {"offset": 0, "predicate": None, "opcode": "RET.REL.NODEC", "operands": "R2,0x0"},
+            {"offset": 16, "predicate": None, "opcode": "CALL.REL.NOINC", "operands": "0x0"},
+        ]
+        successors, graph = _cfg_successors(final_call)
+        self.assertEqual(graph["direct_calls"], 1)
+        self.assertEqual(graph["direct_call_fallthroughs"], 0)
+        self.assertEqual(graph["context_insensitive_return_edges"], 0)
+
 
 class AttentionParameterTests(unittest.TestCase):
     def test_attention_decoder_and_certificate_boundaries(self) -> None:

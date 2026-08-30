@@ -157,14 +157,52 @@ def _branch_target(instruction: dict[str, Any]) -> int | None:
     return int(targets[-1], 16) if targets else None
 
 
+def _barrier_register(instruction: dict[str, Any]) -> str | None:
+    match = re.search(r"\bB\d+\b", instruction["operands"])
+    return match.group(0) if match else None
+
+
 def _cfg_successors(instructions: list[dict[str, Any]]) -> tuple[list[list[int]], dict[str, int]]:
     offset_to_index = {instruction["offset"]: index for index, instruction in enumerate(instructions)}
+    barrier_stacks: dict[str, list[int]] = {}
+    reconvergence_targets: dict[int, int] = {}
+    break_targets: dict[int, int] = {}
+    matched_bssy_bsync = 0
+    unmatched_barrier_controls = 0
+    for index, instruction in enumerate(instructions):
+        base_opcode = _base_opcode(instruction["opcode"])
+        barrier = _barrier_register(instruction)
+        if base_opcode == "BSSY" and barrier:
+            target = _branch_target(instruction)
+            if target in offset_to_index:
+                barrier_stacks.setdefault(barrier, []).append(offset_to_index[target])
+            else:
+                unmatched_barrier_controls += 1
+        elif base_opcode == "BREAK" and barrier:
+            if barrier_stacks.get(barrier):
+                break_targets[index] = barrier_stacks[barrier][-1]
+            else:
+                unmatched_barrier_controls += 1
+        elif base_opcode == "BSYNC" and barrier:
+            if barrier_stacks.get(barrier):
+                reconvergence_targets[index] = barrier_stacks[barrier].pop()
+                matched_bssy_bsync += 1
+            else:
+                unmatched_barrier_controls += 1
+    call_fallthroughs = [
+        index + 1
+        for index, instruction in enumerate(instructions[:-1])
+        if _base_opcode(instruction["opcode"]) == "CALL"
+    ]
     successors: list[list[int]] = []
     unresolved_targets = 0
+    unresolved_indirect_transfers = 0
     direct_branches = 0
     direct_calls = 0
     returns = 0
-    reconvergence_instructions = 0
+    bssy_count = 0
+    bsync_count = 0
+    break_count = 0
     for index, instruction in enumerate(instructions):
         opcode = instruction["opcode"]
         next_index = index + 1 if index + 1 < len(instructions) else None
@@ -178,7 +216,7 @@ def _cfg_successors(instructions: list[dict[str, Any]]) -> tuple[list[list[int]]
                 unresolved_targets += 1
             if instruction.get("predicate") and next_index is not None:
                 edges.add(next_index)
-        elif opcode.startswith("CALL"):
+        elif _base_opcode(opcode) == "CALL":
             direct_calls += 1
             target = _branch_target(instruction)
             if target in offset_to_index:
@@ -187,20 +225,51 @@ def _cfg_successors(instructions: list[dict[str, Any]]) -> tuple[list[list[int]]
                 unresolved_targets += 1
             if next_index is not None:
                 edges.add(next_index)
-        elif opcode.startswith("RET") or opcode == "EXIT":
-            returns += opcode.startswith("RET")
+        elif _base_opcode(opcode) == "RET":
+            returns += 1
+            edges.update(call_fallthroughs)
+            if instruction.get("predicate") and next_index is not None:
+                edges.add(next_index)
+        elif opcode == "EXIT":
+            if instruction.get("predicate") and next_index is not None:
+                edges.add(next_index)
+        elif _base_opcode(opcode) == "BSSY":
+            bssy_count += 1
+            if next_index is not None:
+                edges.add(next_index)
+        elif _base_opcode(opcode) == "BSYNC":
+            bsync_count += 1
+            if index in reconvergence_targets:
+                edges.add(reconvergence_targets[index])
+            elif next_index is not None:
+                edges.add(next_index)
+        elif _base_opcode(opcode) == "BREAK":
+            break_count += 1
+            if index in break_targets:
+                edges.add(break_targets[index])
+            if instruction.get("predicate") and next_index is not None:
+                edges.add(next_index)
+        elif _base_opcode(opcode) == "BRX":
+            unresolved_indirect_transfers += 1
+            if instruction.get("predicate") and next_index is not None:
+                edges.add(next_index)
         else:
-            if opcode in {"BSSY", "BSYNC", "BREAK", "BRX"}:
-                reconvergence_instructions += 1
             if next_index is not None:
                 edges.add(next_index)
         successors.append(sorted(edges))
     return successors, {
         "direct_branches": direct_branches,
         "direct_calls": direct_calls,
+        "direct_call_fallthroughs": len(call_fallthroughs),
         "returns": returns,
+        "context_insensitive_return_edges": returns * len(call_fallthroughs),
+        "bssy_instructions": bssy_count,
+        "bsync_instructions": bsync_count,
+        "break_instructions": break_count,
+        "lexically_matched_bssy_bsync": matched_bssy_bsync,
+        "unmatched_barrier_controls": unmatched_barrier_controls,
         "unresolved_direct_targets": unresolved_targets,
-        "unmodeled_reconvergence_instructions": reconvergence_instructions,
+        "unresolved_indirect_transfers": unresolved_indirect_transfers,
         "edge_count": sum(len(edges) for edges in successors),
     }
 
@@ -359,9 +428,16 @@ def build_sass_memory_certificate(
         "linear_syntactic_address_links_present": all(linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
         "cfg_syntactic_address_links_present": all(cfg_linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
         "direct_branch_targets_resolved": cfg_graph["unresolved_direct_targets"] == 0,
+        "context_insensitive_return_edges_present": cfg_graph["context_insensitive_return_edges"]
+        == cfg_graph["returns"] * cfg_graph["direct_call_fallthroughs"],
+        "barrier_controls_lexically_matched": cfg_graph["lexically_matched_bssy_bsync"]
+        == cfg_graph["bssy_instructions"]
+        == cfg_graph["bsync_instructions"]
+        and cfg_graph["unmatched_barrier_controls"] == 0,
+        "no_indirect_transfers_observed": cfg_graph["unresolved_indirect_transfers"] == 0,
     }
     body = {
-        "scope": "Syntactic SASS parameter-to-address provenance with a linear baseline and fixed-point direct-branch CFG; calls, returns, reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
+        "scope": "Syntactic SASS parameter-to-address provenance with fixed-point direct branches, context-insensitive return over-approximation, and lexical barrier-token reconvergence edges; context-sensitive calls, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
         "sass": summary,
@@ -395,8 +471,10 @@ def build_sass_memory_certificate(
         "all_checks_pass": all(checks.values()),
         "linear_text_baseline_retained": True,
         "direct_branch_cfg_reaching_definitions_established": True,
-        "call_return_dataflow_established": False,
-        "reconvergence_dataflow_established": False,
+        "context_insensitive_call_return_edges_established": True,
+        "context_sensitive_call_return_dataflow_established": False,
+        "lexical_barrier_reconvergence_edges_established": True,
+        "hardware_reconvergence_semantics_established": False,
         "predicate_truth_modeled": False,
         "complete_control_flow_dataflow_established": False,
         "memory_access_direction_established": False,
@@ -423,8 +501,10 @@ def verify_sass_memory_certificate(
     boundaries_preserved = (
         certificate.get("linear_text_baseline_retained") is True
         and certificate.get("direct_branch_cfg_reaching_definitions_established") is True
-        and certificate.get("call_return_dataflow_established") is False
-        and certificate.get("reconvergence_dataflow_established") is False
+        and certificate.get("context_insensitive_call_return_edges_established") is True
+        and certificate.get("context_sensitive_call_return_dataflow_established") is False
+        and certificate.get("lexical_barrier_reconvergence_edges_established") is True
+        and certificate.get("hardware_reconvergence_semantics_established") is False
         and certificate.get("predicate_truth_modeled") is False
         and certificate.get("complete_control_flow_dataflow_established") is False
         and certificate.get("memory_access_direction_established") is False
