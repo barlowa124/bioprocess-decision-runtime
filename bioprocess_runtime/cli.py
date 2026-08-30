@@ -549,6 +549,95 @@ def command_cupti_module_summary(args: argparse.Namespace) -> int:
     return 0 if summary["profiled_static_image_binding"]["matched"] else 1
 
 
+def command_cuda_metadata(args: argparse.Namespace) -> int:
+    from .cuda_metadata import build_cuda_metadata_conformance
+
+    certificate = build_cuda_metadata_conformance()
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_cuda_metadata_verify(args: argparse.Namespace) -> int:
+    from .cuda_metadata import verify_cuda_metadata_conformance
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_cuda_metadata_conformance(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_launch_arguments(args: argparse.Namespace) -> int:
+    from .launch_arguments import CuptiLaunchArgumentCapture, redact_launch_argument_artifact
+
+    capture = CuptiLaunchArgumentCapture(args.kernel)
+    capture.start()
+    try:
+        import torch
+
+        from .interpretability import _model_device, _tokenize, load_local_gemma
+        from .module_invocation import ModuleNvtxCapture
+        from .operational_semantics import tensor_descriptor
+        from .reference_gemma import model_state_sha256
+        from .serialization import canonical_json
+
+        prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+        model, tokenizer = load_local_gemma(args.model_path)
+        inputs = _tokenize(tokenizer, prompt, _model_device(model))
+        module_capture = ModuleNvtxCapture(model, tuple(args.module_nvtx_pattern))
+        module_capture.__enter__()
+        capture.range_provider = lambda: [invocation["module"] for invocation in module_capture.open_stack]
+        torch.cuda.nvtx.range_push("gemma_bound_forward")
+        try:
+            with torch.no_grad():
+                output = model(**inputs, use_cache=False, logits_to_keep=1)
+            torch.cuda.synchronize()
+        finally:
+            module_capture.__exit__(*sys.exc_info())
+            torch.cuda.nvtx.range_pop()
+        module_report = module_capture.report()
+        launch_report = capture.report(module_report)
+        body = {
+            "scope": "CUPTI launch-parameter and qualified-module evidence for one exact kernel symbol; not a typed kernel-signature proof.",
+            "privacy": {"redacted": False},
+            "model_state_sha256": model_state_sha256(model),
+            "input_ids_tensor": tensor_descriptor(inputs["input_ids"]),
+            "output_logits_tensor": tensor_descriptor(output.logits),
+            "selected_token_id": int(torch.argmax(output.logits[0, -1]).item()),
+            "module_invocation_report": module_report,
+            "launch_argument_report": launch_report,
+        }
+        body["artifact_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    finally:
+        capture.stop()
+    if args.redact:
+        body = redact_launch_argument_artifact(body)
+    _write_json(args.output, body)
+    return 0 if launch_report["launches"] and not launch_report["callback_errors"] else 1
+
+
+def command_launch_argument_summary(args: argparse.Namespace) -> int:
+    from .launch_arguments import build_launch_argument_summary
+
+    artifacts = []
+    for value in args.artifact:
+        path, separator, module = value.partition("=")
+        if not separator or not path or not module:
+            raise ValueError("--artifact values must use PATH=QUALIFIED_MODULE")
+        artifacts.append((json.loads(Path(path).read_text(encoding="utf-8")), module))
+    summary = build_launch_argument_summary(artifacts)
+    _write_json(args.output, summary)
+    return 0 if summary["valid_entries"] == summary["total_entries"] else 1
+
+
+def command_launch_argument_summary_verify(args: argparse.Namespace) -> int:
+    from .launch_arguments import verify_launch_argument_summary
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_launch_argument_summary(summary)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_nsight_target(args: argparse.Namespace) -> int:
     import torch
 
@@ -928,6 +1017,34 @@ def build_parser() -> argparse.ArgumentParser:
     cupti_summary_parser.add_argument("--cuda-summary", type=Path, required=True)
     cupti_summary_parser.add_argument("--output", type=Path, required=True)
     cupti_summary_parser.set_defaults(handler=command_cupti_module_summary)
+
+    cuda_metadata_parser = subparsers.add_parser("cuda-metadata-conformance", help="Validate CUPTI IDs and ctypes layouts against local CUDA headers")
+    cuda_metadata_parser.add_argument("--output", type=Path)
+    cuda_metadata_parser.set_defaults(handler=command_cuda_metadata)
+
+    cuda_metadata_verify_parser = subparsers.add_parser("cuda-metadata-verify", help="Verify a CUDA metadata conformance certificate")
+    cuda_metadata_verify_parser.add_argument("certificate", type=Path)
+    cuda_metadata_verify_parser.set_defaults(handler=command_cuda_metadata_verify)
+
+    launch_arguments_parser = subparsers.add_parser("gemma-launch-arguments", help="Capture CUPTI launch parameter commitments for one exact kernel")
+    launch_arguments_parser.add_argument("--kernel", required=True)
+    launch_arguments_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    launch_arguments_prompt = launch_arguments_parser.add_mutually_exclusive_group(required=True)
+    launch_arguments_prompt.add_argument("--prompt")
+    launch_arguments_prompt.add_argument("--prompt-file", type=Path)
+    launch_arguments_parser.add_argument("--module-nvtx-pattern", action="append", required=True)
+    launch_arguments_parser.add_argument("--redact", action="store_true")
+    launch_arguments_parser.add_argument("--output", type=Path, required=True)
+    launch_arguments_parser.set_defaults(handler=command_launch_arguments)
+
+    launch_argument_summary_parser = subparsers.add_parser("launch-argument-summary", help="Summarize CUPTI argument-pointer evidence for qualified modules")
+    launch_argument_summary_parser.add_argument("--artifact", action="append", required=True, help="PATH=QUALIFIED_MODULE")
+    launch_argument_summary_parser.add_argument("--output", type=Path, required=True)
+    launch_argument_summary_parser.set_defaults(handler=command_launch_argument_summary)
+
+    launch_argument_verify_parser = subparsers.add_parser("launch-argument-summary-verify", help="Verify launch-argument summary integrity and boundaries")
+    launch_argument_verify_parser.add_argument("summary", type=Path)
+    launch_argument_verify_parser.set_defaults(handler=command_launch_argument_summary_verify)
 
     nsight_target_parser = subparsers.add_parser("gemma-nsight-target", help="Run one NVTX-bounded Gemma forward and emit an execution binding")
     nsight_target_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

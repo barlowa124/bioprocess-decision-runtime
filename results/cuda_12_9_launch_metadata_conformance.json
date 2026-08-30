@@ -1,0 +1,266 @@
+{
+  "all_checks_pass": true,
+  "callback_ids": {
+    "cuLaunchKernel": 307,
+    "cuLaunchKernelEx": 652,
+    "cuLaunchKernelEx_ptsz": 653,
+    "cuLaunchKernel_ptsz": 442
+  },
+  "certificate_sha256": "ee7d1e99a5b7b6238363676bf2bb87a9d15959870cdfd0200596862a9f0e563d",
+  "checks": {
+    "api_enter_matches": true,
+    "callback_ids_match": true,
+    "ctypes_x64_layouts_match": true,
+    "cupti_version_query_succeeded": true,
+    "driver_domain_matches": true,
+    "header_field_orders_match": true
+  },
+  "ctypes_layouts": {
+    "callback_data": {
+      "fields": [
+        {
+          "name": "callbackSite",
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "name": "functionName",
+          "offset": 8,
+          "size": 8
+        },
+        {
+          "name": "functionParams",
+          "offset": 16,
+          "size": 8
+        },
+        {
+          "name": "functionReturnValue",
+          "offset": 24,
+          "size": 8
+        },
+        {
+          "name": "symbolName",
+          "offset": 32,
+          "size": 8
+        },
+        {
+          "name": "context",
+          "offset": 40,
+          "size": 8
+        },
+        {
+          "name": "contextUid",
+          "offset": 48,
+          "size": 4
+        },
+        {
+          "name": "correlationData",
+          "offset": 56,
+          "size": 8
+        },
+        {
+          "name": "correlationId",
+          "offset": 64,
+          "size": 4
+        }
+      ],
+      "size": 72
+    },
+    "launch_config": {
+      "fields": [
+        {
+          "name": "grid_x",
+          "offset": 0,
+          "size": 4
+        },
+        {
+          "name": "grid_y",
+          "offset": 4,
+          "size": 4
+        },
+        {
+          "name": "grid_z",
+          "offset": 8,
+          "size": 4
+        },
+        {
+          "name": "block_x",
+          "offset": 12,
+          "size": 4
+        },
+        {
+          "name": "block_y",
+          "offset": 16,
+          "size": 4
+        },
+        {
+          "name": "block_z",
+          "offset": 20,
+          "size": 4
+        },
+        {
+          "name": "shared_memory_bytes",
+          "offset": 24,
+          "size": 4
+        },
+        {
+          "name": "stream",
+          "offset": 32,
+          "size": 8
+        },
+        {
+          "name": "attributes",
+          "offset": 40,
+          "size": 8
+        },
+        {
+          "name": "attribute_count",
+          "offset": 48,
+          "size": 4
+        }
+      ],
+      "size": 56
+    },
+    "launch_kernel": {
+      "fields": [
+        {
+          "name": "function",
+          "offset": 0,
+          "size": 8
+        },
+        {
+          "name": "grid_x",
+          "offset": 8,
+          "size": 4
+        },
+        {
+          "name": "grid_y",
+          "offset": 12,
+          "size": 4
+        },
+        {
+          "name": "grid_z",
+          "offset": 16,
+          "size": 4
+        },
+        {
+          "name": "block_x",
+          "offset": 20,
+          "size": 4
+        },
+        {
+          "name": "block_y",
+          "offset": 24,
+          "size": 4
+        },
+        {
+          "name": "block_z",
+          "offset": 28,
+          "size": 4
+        },
+        {
+          "name": "shared_memory_bytes",
+          "offset": 32,
+          "size": 4
+        },
+        {
+          "name": "stream",
+          "offset": 40,
+          "size": 8
+        },
+        {
+          "name": "kernel_params",
+          "offset": 48,
+          "size": 8
+        },
+        {
+          "name": "extra",
+          "offset": 56,
+          "size": 8
+        }
+      ],
+      "size": 64
+    },
+    "launch_kernel_ex": {
+      "fields": [
+        {
+          "name": "config",
+          "offset": 0,
+          "size": 8
+        },
+        {
+          "name": "function",
+          "offset": 8,
+          "size": 8
+        },
+        {
+          "name": "kernel_params",
+          "offset": 16,
+          "size": 8
+        },
+        {
+          "name": "extra",
+          "offset": 24,
+          "size": 8
+        }
+      ],
+      "size": 32
+    }
+  },
+  "header_sha256": {
+    "cuda.h": "fda3285d055a9f05e40cd76352f9f073d0ab45d42fb5bb0db4bb33b0df506d28",
+    "cupti_callbacks.h": "da47efc991e0d46c0ae1576eaa6f4c06935cf735d26c3d3566ddebfd162d5d51",
+    "cupti_driver_cbid.h": "87bda1c526285330d1837fbc08af504e4a69b247242f7dec3446b3e8237d051d",
+    "generated_cuda_meta.h": "d27bd2b6a7bd4989b75f6a0a29b4dbbdea0ba5000bc207664723b20bcb41a7b9"
+  },
+  "header_struct_fields": {
+    "CUlaunchConfig": [
+      "gridDimX",
+      "gridDimY",
+      "gridDimZ",
+      "blockDimX",
+      "blockDimY",
+      "blockDimZ",
+      "sharedMemBytes",
+      "hStream",
+      "attrs",
+      "numAttrs"
+    ],
+    "CUpti_CallbackData": [
+      "callbackSite",
+      "functionName",
+      "functionParams",
+      "functionReturnValue",
+      "symbolName",
+      "context",
+      "contextUid",
+      "correlationData",
+      "correlationId"
+    ],
+    "cuLaunchKernelEx_params": [
+      "config",
+      "f",
+      "kernelParams",
+      "extra"
+    ],
+    "cuLaunchKernel_params": [
+      "f",
+      "gridDimX",
+      "gridDimY",
+      "gridDimZ",
+      "blockDimX",
+      "blockDimY",
+      "blockDimZ",
+      "sharedMemBytes",
+      "hStream",
+      "kernelParams",
+      "extra"
+    ]
+  },
+  "scope": "Local CUDA/CUPTI header, callback-ID, selected-library, and x64 ctypes-layout conformance; not cross-toolkit portability proof.",
+  "selected_cupti_library": {
+    "name": "cupti64_2025.2.1.dll",
+    "reported_version": 28,
+    "sha256": "be1ecb387e14c1c0515b3b162b44c89b480c9a12f16c60f7b82eb8b1ebc35e74"
+  }
+}

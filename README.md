@@ -522,6 +522,35 @@ For the projection and GELU launches, Nsight reports both parent and child modul
 
 This establishes which qualified framework module enclosed each representative launch and commits that module's boundary tensors. It does not decode CUDA parameter memory, prove that a particular device pointer was passed as a kernel argument, expose intermediate tensors inside fused modules, or cover every repeated invocation and layer. Accordingly, the summary retains `full_kernel_argument_binding_established: false`.
 
+### CUPTI launch-parameter commitments
+
+Before capture, a conformance command reads the installed CUDA 12.9/CUPTI headers and selected CUPTI library, verifies the four launch callback IDs, checks driver-domain and entry-site constants, compares generated C struct field order, and validates every x64 ctypes size and offset:
+
+```powershell
+python -m bioprocess_runtime cuda-metadata-conformance --output results/cuda_12_9_launch_metadata_conformance.json
+python -m bioprocess_runtime cuda-metadata-verify results/cuda_12_9_launch_metadata_conformance.json
+```
+
+The checked [`results/cuda_12_9_launch_metadata_conformance.json`](results/cuda_12_9_launch_metadata_conformance.json) passes all six checks and commits the four local header values plus the selected `cupti64_2025.2.1.dll` value. This binds the hand-written ctypes definitions to the tested local metadata; it is not portability proof for another toolkit or ABI.
+
+A CUPTI driver-entry subscriber then captures exact-symbol `cuLaunchKernel` and `cuLaunchKernelEx` calls. `cuFuncGetParamInfo` supplies each parameter's device-layout offset and size, allowing callback-time parameter-byte hashing without guessing the parameter count. Aligned 64-bit windows in each parameter value are hashed as pointer candidates and compared with the active qualified module's boundary-pointer commitments:
+
+```powershell
+python -m bioprocess_runtime gemma-launch-arguments --kernel <exact-mangled-name> --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --module-nvtx-pattern "model\.layers\.0\.self_attn" --module-nvtx-pattern "model\.layers\.0\.self_attn\.q_proj" --output artifacts/q_proj_launch_arguments.json
+python -m bioprocess_runtime launch-argument-summary --artifact "artifacts/q_proj_launch_arguments.json=model.layers.0.self_attn.q_proj" --output results/gemma3_270m_launch_argument_summary.json
+python -m bioprocess_runtime launch-argument-summary-verify results/gemma3_270m_launch_argument_summary.json
+```
+
+The checked [`results/gemma3_270m_launch_argument_summary.json`](results/gemma3_270m_launch_argument_summary.json) reports:
+
+- The Q-projection GEMM receives one 360-byte packed parameter object. Candidate pointers at byte offset 280 match the committed module input; offsets 296 and 304 match the committed output.
+- The fused-attention kernel receives one 264-byte parameter object; offset 0 matches the enclosing attention output. Its Q/K/V intermediates are not module-boundary tensors, so no boundary-input match is claimed.
+- The RMS mean-reduction kernel receives one 1,048-byte parameter object; offset 984 matches the enclosing RMSNorm output. Its internal reduction input is not identified with the module input.
+- GELU receives parameters of 4, 1, and 16 bytes; aligned candidates in parameter 2 match both its committed input and output.
+- All four artifacts verify. Two have module-boundary input matches and all four have output matches.
+
+This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes. It still does not establish the C++ type of each field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
+
 ## Objective B: force Gemma through an executable language
 
 The decision program contains no coefficients or process limits. It can only:

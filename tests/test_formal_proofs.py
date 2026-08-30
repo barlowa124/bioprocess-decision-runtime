@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import copy
+import ctypes
 import hashlib
+import struct
 import importlib.util
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -115,6 +118,109 @@ class CuptiAttestationTests(unittest.TestCase):
         damaged = copy.deepcopy(report)
         damaged["module_load_events"] = 2
         self.assertFalse(verify_cupti_module_capture(damaged)["valid"])
+
+
+class LaunchArgumentTests(unittest.TestCase):
+    def test_packed_parameter_scanning_uses_driver_reported_size(self) -> None:
+        from bioprocess_runtime.launch_arguments import CuptiLaunchArgumentCapture, _handle_hash
+
+        class Driver:
+            @staticmethod
+            def cuFuncGetParamInfo(function: int, index: int, offset: object, size: object) -> int:
+                if index:
+                    return 1
+                ctypes.cast(offset, ctypes.POINTER(ctypes.c_size_t))[0] = 0
+                ctypes.cast(size, ctypes.POINTER(ctypes.c_size_t))[0] = 360
+                return 0
+
+        value = ctypes.create_string_buffer(360)
+        pointer = 0x1234567890
+        struct.pack_into("<Q", value, 280, pointer)
+        values = (ctypes.c_void_p * 1)(ctypes.addressof(value))
+        capture = object.__new__(CuptiLaunchArgumentCapture)
+        capture.driver = Driver()
+        parameters = capture._parameters(1, values)
+        self.assertEqual(parameters[0]["size_bytes"], 360)
+        candidate = next(item for item in parameters[0]["aligned_pointer_candidates"] if item["byte_offset"] == 280)
+        self.assertEqual(candidate["pointer_value_sha256"], _handle_hash(pointer))
+
+    def test_pointer_candidate_summary_preserves_type_and_access_boundaries(self) -> None:
+        from bioprocess_runtime.launch_arguments import (
+            build_launch_argument_summary,
+            redact_launch_argument_artifact,
+            verify_launch_argument_artifact,
+            verify_launch_argument_summary,
+        )
+
+        invocation = {
+            "module": "module",
+            "inputs": [{"data_pointer_sha256": "input_pointer", "sha256": "input"}],
+            "outputs": [{"data_pointer_sha256": "output_pointer", "sha256": "output"}],
+        }
+        invocation["invocation_sha256"] = hashlib.sha256(canonical_json(invocation).encode("utf-8")).hexdigest()
+        module_report = {"patterns": ["module"], "invocations": [invocation], "lifecycle_errors": []}
+        module_report["report_sha256"] = hashlib.sha256(canonical_json(module_report).encode("utf-8")).hexdigest()
+        launch = {
+            "qualified_module_stack": ["module"],
+            "callback": "cuLaunchKernel",
+            "correlation_id": 1,
+            "grid": [1, 1, 1],
+            "block": [32, 1, 1],
+            "shared_memory_bytes": 0,
+            "parameters": [
+                {
+                    "size_bytes": 16,
+                    "value_sha256": "value",
+                    "aligned_pointer_candidates": [
+                        {"byte_offset": 0, "pointer_value_sha256": "input_pointer"},
+                        {"byte_offset": 8, "pointer_value_sha256": "output_pointer"},
+                    ],
+                }
+            ],
+            "parameter_pointer_matches": [
+                {"parameter_index": 0, "parameter_byte_offset": 0, "matches": [{"module": "module", "role": "input", "tensor_sha256": "input"}]},
+                {"parameter_index": 0, "parameter_byte_offset": 8, "matches": [{"module": "module", "role": "output", "tensor_sha256": "output"}]},
+            ],
+        }
+        launch["launch_sha256"] = hashlib.sha256(canonical_json(launch).encode("utf-8")).hexdigest()
+        launch_report = {"kernel_name": "kernel", "launches": [launch], "callback_errors": [], "module_report_sha256": module_report["report_sha256"]}
+        launch_report["report_sha256"] = hashlib.sha256(canonical_json(launch_report).encode("utf-8")).hexdigest()
+        artifact = {
+            "privacy": {"redacted": False},
+            "model_state_sha256": "model",
+            "selected_token_id": 1,
+            "input_ids_tensor": {"sha256": "input_ids"},
+            "output_logits_tensor": {"sha256": "logits"},
+            "module_invocation_report": module_report,
+            "launch_argument_report": launch_report,
+        }
+        artifact["artifact_sha256"] = hashlib.sha256(canonical_json(artifact).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_launch_argument_artifact(artifact)["valid"])
+        redacted = redact_launch_argument_artifact(artifact)
+        self.assertTrue(verify_launch_argument_artifact(redacted)["valid"])
+        self.assertEqual(redacted["model_state_sha256"], "redacted")
+        self.assertEqual(
+            redacted["launch_argument_report"]["launches"][0]["parameters"][0]["value_sha256"],
+            "redacted",
+        )
+        summary = build_launch_argument_summary([(artifact, "module")])
+        self.assertEqual(summary["entries_with_input_boundary_match"], 1)
+        self.assertEqual(summary["entries_with_output_boundary_match"], 1)
+        self.assertFalse(summary["typed_kernel_signatures_established"])
+        self.assertFalse(summary["complete_argument_binding_established"])
+        self.assertTrue(verify_launch_argument_summary(summary)["valid"])
+
+
+@unittest.skipUnless(bool(os.environ.get("CUDA_PATH")), "CUDA toolkit is not installed")
+class CudaMetadataTests(unittest.TestCase):
+    def test_local_headers_and_ctypes_layouts_conform(self) -> None:
+        from bioprocess_runtime.cuda_metadata import build_cuda_metadata_conformance, verify_cuda_metadata_conformance
+
+        certificate = build_cuda_metadata_conformance()
+        self.assertTrue(certificate["all_checks_pass"])
+        self.assertEqual(certificate["callback_ids"]["cuLaunchKernel"], 307)
+        self.assertEqual(certificate["ctypes_layouts"]["launch_kernel"]["size"], 64)
+        self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
 class ModuleInvocationTests(unittest.TestCase):

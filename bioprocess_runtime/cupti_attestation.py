@@ -40,14 +40,16 @@ def _find_cupti_library() -> Path:
         Path(sys.prefix) / "lib" / f"python{sys.version_info.major}.{sys.version_info.minor}" / "site-packages" / "torch" / "lib",
     ]
     patterns = ("cupti64_*.dll", "libcupti.so*")
-    candidates = [path for root in torch_libraries for pattern in patterns for path in root.glob(pattern)]
+    bundled = [path for root in torch_libraries for pattern in patterns for path in root.glob(pattern)]
     cuda_path = os.environ.get("CUDA_PATH")
+    toolkit = []
     if cuda_path:
-        candidates.extend(
+        toolkit = [
             path
             for pattern in patterns
             for path in (Path(cuda_path) / "extras" / "CUPTI" / "lib64").glob(pattern)
-        )
+        ]
+    candidates = toolkit or bundled
     if not candidates:
         raise RuntimeError("CUPTI library was not found")
     return sorted({path.resolve() for path in candidates})[-1]
