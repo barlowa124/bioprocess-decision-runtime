@@ -599,6 +599,29 @@ The checked [`results/gemma3_270m_attention_parameters.json`](results/gemma3_270
 
 This establishes source-named Q/K/V pointer identity and logical tensor commitments for the selected layer-0 fused-attention launch. It also binds the source-named output field to dispatcher output 0. It does not prove how SASS instructions read or write those buffers, memory bounds, synchronization, or the fused attention equation; `kernel_read_write_semantics_established` and `memory_access_semantics_established` remain false.
 
+### SASS memory-address provenance
+
+The exact CUPTI-loaded attention cubin can be replay-disassembled and scanned for constant-space parameter loads and memory-address register dependencies:
+
+```powershell
+python -m bioprocess_runtime attention-sass-memory --cuobjdump <cuobjdump> --cubin <captured-cubin> --kernel <exact-mangled-name> --nsight artifacts/nsight_suite/attention_certificate.json --attention results/gemma3_270m_attention_parameters.json --output results/gemma3_270m_attention_sass_memory.json
+python -m bioprocess_runtime attention-sass-memory-verify results/gemma3_270m_attention_sass_memory.json --cuobjdump <cuobjdump> --cubin <captured-cubin> --nsight artifacts/nsight_suite/attention_certificate.json --attention results/gemma3_270m_attention_parameters.json
+```
+
+Under an explicit 16-byte parameter-base alignment assumption, `0x160` is the unique constant-space base with `ULDC.64` loads at all five source-reconstructed pointer offsets:
+
+| Field | Parameter offset | Constant-space offset | Uniform register |
+|---|---:|---:|---|
+| `query_ptr` | 0 | `0x160` | `UR14` |
+| `key_ptr` | 8 | `0x168` | `UR12` |
+| `value_ptr` | 16 | `0x170` | `UR10` |
+| `output_ptr` | 64 | `0x1a0` | `UR8` |
+| `output_accum_ptr` | 72 | `0x1a8` | `UR16` |
+
+The checked [`results/gemma3_270m_attention_sass_memory.json`](results/gemma3_270m_attention_sass_memory.json) replays against the exact cubin and reports 3,584 instructions, 364 classified memory instructions, 149 parameter-space references, 364 syntactic memory-address slices, and 123 slices with at least one parameter-field text dependency. The memory classification is split into 113 global or global-to-shared operations, 249 shared-memory operations, and two generic `ST.E` operations; `LDGDEPBAR` dependency barriers are explicitly excluded. Every target pointer field reaches at least one memory-address operand in the conservative linear scan.
+
+This is deliberately a syntactic over-approximation. It does not model branches, calls, reconvergence, register liveness across control-flow edges, instruction behavior, load-versus-store meaning for a particular field, bounds, aliasing, or hardware execution. Accordingly, `control_flow_dataflow_established`, `memory_access_direction_established`, `memory_bounds_established`, `sass_instruction_semantics_established`, and `hardware_conformance_established` all remain false.
+
 ## Objective B: force Gemma through an executable language
 
 The decision program contains no coefficients or process limits. It can only:

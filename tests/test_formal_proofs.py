@@ -233,6 +233,33 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
+class SassMemoryTests(unittest.TestCase):
+    def test_parameter_base_and_linear_address_taint(self) -> None:
+        from bioprocess_runtime.sass_memory import MEMORY_BASES, _address_taint_slices, _base_opcode, _derive_parameter_base
+
+        instructions = [
+            {"offset": 0, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "opcode": "ULDC.64", "operands": "UR4,c[0x0][0x168]"},
+            {"offset": 32, "opcode": "ULDC.64", "operands": "UR6,c[0x0][0x170]"},
+            {"offset": 48, "opcode": "ULDC.64", "operands": "UR8,c[0x0][0x1a0]"},
+            {"offset": 64, "opcode": "ULDC.64", "operands": "UR10,c[0x0][0x1a8]"},
+            {"offset": 80, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 96, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+            {"offset": 112, "opcode": "IMAD.WIDE", "operands": "R8,R6,0x4,RZ"},
+            {"offset": 128, "opcode": "STG.E", "operands": "[R8.64],R10"},
+            {"offset": 144, "opcode": "LDGDEPBAR", "operands": ""},
+        ]
+        base = _derive_parameter_base(instructions)
+        self.assertEqual(base["base_constant_offset"], 0x160)
+        slices = _address_taint_slices(instructions, base["base_constant_offset"])
+        self.assertEqual(slices[0]["source_parameter_fields"], ["query_ptr"])
+        self.assertEqual(slices[1]["source_parameter_fields"], [])
+        self.assertEqual(len(slices), 2)
+        self.assertNotIn(_base_opcode("LDGDEPBAR"), MEMORY_BASES)
+        self.assertIn(_base_opcode("LDGSTS.E.BYPASS.LTC128B.128"), MEMORY_BASES)
+        self.assertIn(_base_opcode("ST.E"), MEMORY_BASES)
+
+
 class AttentionParameterTests(unittest.TestCase):
     def test_attention_decoder_and_certificate_boundaries(self) -> None:
         from bioprocess_runtime.attention_parameters import verify_attention_parameter_certificate
