@@ -237,11 +237,13 @@ class SassMemoryTests(unittest.TestCase):
     def test_parameter_base_and_linear_address_taint(self) -> None:
         from bioprocess_runtime.sass_memory import (
             MEMORY_BASES,
+            _address_operand_specs,
             _address_taint_slices,
             _base_opcode,
             _cfg_address_taint_slices,
             _derive_parameter_base,
             _destination_register_count,
+            _memory_slice,
             _transfer_taint,
         )
 
@@ -283,6 +285,20 @@ class SassMemoryTests(unittest.TestCase):
             0x160,
         )
         self.assertTrue(all(not cleared[f"R{index}"] for index in range(4, 8)))
+        self.assertEqual(
+            _address_operand_specs("LDGSTS.E.BYPASS.LTC128B.128", ["R2", "R4.64"]),
+            [("candidate_write", "shared", "R2"), ("candidate_read", "global", "R4.64")],
+        )
+        memory_slice = _memory_slice(
+            {
+                "offset": 0,
+                "opcode": "LDGSTS.E.BYPASS.LTC128B.128",
+                "operands": "[R2],[R4.64],P0",
+            },
+            {"R2": {"output_ptr"}, "R4": {"query_ptr"}},
+        )
+        self.assertEqual(memory_slice["address_operands"][0]["source_parameter_fields"], ["output_ptr"])
+        self.assertEqual(memory_slice["address_operands"][1]["source_parameter_fields"], ["query_ptr"])
 
     def test_cfg_joins_direct_branch_reaching_fields(self) -> None:
         from bioprocess_runtime.sass_memory import _cfg_address_taint_slices

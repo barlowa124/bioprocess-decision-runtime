@@ -49,7 +49,7 @@
   },
   "bounded_call_string_dataflow_established": true,
   "call_string_depth_overflow_free": false,
-  "certificate_sha256": "3eb1a6bdfc4580a3be11bdb0812fc0f213fb654a3383d793607a9a964f76e54b",
+  "certificate_sha256": "6e169ad706c3c94930a7b3b12ed093626ab650a46b79a2639e3861b3a4e51c00",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
@@ -67,8 +67,12 @@
     "linear_syntactic_address_links_present": true,
     "no_indirect_transfers_observed": true,
     "nsight_certificate_valid": true,
+    "opcode_text_access_classes_bounded": true,
+    "output_fields_have_candidate_write_links": true,
     "parameter_base_unique": true,
+    "qkv_have_read_only_opcode_text_links": true,
     "sass_hash_matches_attestation": true,
+    "target_fields_have_opcode_text_access_classes": true,
     "target_pointer_fields_loaded": true
   },
   "complete_control_flow_dataflow_established": false,
@@ -230,6 +234,121 @@
       }
     }
   },
+  "opcode_text_access_classification": {
+    "address_operand_count_by_class": {
+      "candidate_read": 215,
+      "candidate_read_write": 8,
+      "candidate_write": 193
+    },
+    "parameter_field_links_by_class": {
+      "attn_bias_ptr": {
+        "candidate_read": 4
+      },
+      "bias_strideB": {
+        "candidate_read": 4
+      },
+      "bias_strideH": {
+        "candidate_read": 4
+      },
+      "bias_strideM": {
+        "candidate_read": 4
+      },
+      "causal_diagonal_offset": {
+        "candidate_read": 4,
+        "candidate_write": 4
+      },
+      "custom_mask_type": {
+        "candidate_read": 16,
+        "candidate_write": 16
+      },
+      "extragraph_offset": {
+        "candidate_write": 1
+      },
+      "head_dim": {
+        "candidate_read": 15
+      },
+      "head_dim_value": {
+        "candidate_read": 21,
+        "candidate_write": 32
+      },
+      "k_strideB": {
+        "candidate_read": 16
+      },
+      "k_strideH": {
+        "candidate_read": 52,
+        "candidate_write": 4
+      },
+      "k_strideM": {
+        "candidate_read": 16
+      },
+      "key_ptr": {
+        "candidate_read": 16
+      },
+      "logsumexp_ptr": {
+        "candidate_write": 2
+      },
+      "num_heads": {
+        "candidate_read": 20,
+        "candidate_write": 22
+      },
+      "num_queries": {
+        "candidate_read": 20,
+        "candidate_write": 38
+      },
+      "o_strideM": {
+        "candidate_read": 16,
+        "candidate_write": 32
+      },
+      "output_accum_ptr": {
+        "candidate_read": 16,
+        "candidate_write": 16
+      },
+      "output_ptr": {
+        "candidate_read": 16,
+        "candidate_write": 32
+      },
+      "q_strideB": {
+        "candidate_read": 4
+      },
+      "q_strideH": {
+        "candidate_read": 4
+      },
+      "q_strideM": {
+        "candidate_read": 20
+      },
+      "query_ptr": {
+        "candidate_read": 4
+      },
+      "rng_engine_inputs": {
+        "candidate_read": 2
+      },
+      "seed": {
+        "candidate_write": 1
+      },
+      "seqlen_k_ptr": {
+        "candidate_read": 1
+      },
+      "seqstart_k_ptr": {
+        "candidate_read": 6,
+        "candidate_write": 5
+      },
+      "seqstart_q_ptr": {
+        "candidate_read": 2
+      },
+      "v_strideB": {
+        "candidate_read": 32
+      },
+      "v_strideM": {
+        "candidate_read": 32
+      },
+      "value_ptr": {
+        "candidate_read": 32
+      }
+    },
+    "parameter_linked_address_operand_count": 128,
+    "scope": "Exact opcode-text operand classification only; labels do not establish NVIDIA instruction or access semantics."
+  },
+  "opcode_text_access_classification_established": true,
   "parameter_base": {
     "base_constant_offset": 352,
     "candidate_count": 1,

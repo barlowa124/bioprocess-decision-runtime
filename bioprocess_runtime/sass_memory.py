@@ -96,18 +96,57 @@ def _destination_register_count(opcode: str) -> int:
     return 1
 
 
+def _address_operand_specs(opcode: str, memories: list[str]) -> list[tuple[str, str, str]]:
+    base_opcode = _base_opcode(opcode)
+    if base_opcode == "LDGSTS" and len(memories) == 2:
+        return [
+            ("candidate_write", "shared", memories[0]),
+            ("candidate_read", "global", memories[1]),
+        ]
+    classifications = {
+        "LDG": ("candidate_read", "global"),
+        "LDS": ("candidate_read", "shared"),
+        "LDSM": ("candidate_read", "shared"),
+        "LD": ("candidate_read", "generic"),
+        "STG": ("candidate_write", "global"),
+        "STS": ("candidate_write", "shared"),
+        "ST": ("candidate_write", "generic"),
+        "ATOM": ("candidate_read_write", "global"),
+        "ATOMS": ("candidate_read_write", "shared"),
+        "RED": ("candidate_read_write", "global"),
+    }
+    access_class, memory_space = classifications[base_opcode]
+    return [(access_class, memory_space, memory) for memory in memories]
+
+
 def _memory_slice(instruction: dict[str, Any], taint: dict[str, set[str]]) -> dict[str, Any] | None:
     memories = re.findall(r"\[([^]]+)\]", instruction["operands"])
     if _base_opcode(instruction["opcode"]) not in MEMORY_BASES or not memories:
         return None
-    address_registers = sorted({register for memory in memories for register in _registers(memory)})
+    address_operands = [
+        {
+            "operand_index": index,
+            "access_class": access_class,
+            "memory_space": memory_space,
+            "address_registers": sorted(set(_registers(memory))),
+            "source_parameter_fields": sorted(
+                {field for register in _registers(memory) for field in taint.get(register, set())}
+            ),
+        }
+        for index, (access_class, memory_space, memory) in enumerate(
+            _address_operand_specs(instruction["opcode"], memories)
+        )
+    ]
     return {
         "instruction_offset": instruction["offset"],
         "opcode": instruction["opcode"],
-        "address_registers": address_registers,
-        "source_parameter_fields": sorted(
-            {field for register in address_registers for field in taint.get(register, set())}
+        "address_registers": sorted(
+            {register for operand in address_operands for register in operand["address_registers"]}
         ),
+        "source_parameter_fields": sorted(
+            {field for operand in address_operands for field in operand["source_parameter_fields"]}
+        ),
+        "address_operands": address_operands,
     }
 
 
@@ -438,12 +477,24 @@ def _call_string_address_taint_slices(
                     {
                         **memory_slice,
                         "source_parameter_fields": [],
+                        "address_operands": [
+                            {**operand, "source_parameter_fields": [], "call_context_count": 0}
+                            for operand in memory_slice["address_operands"]
+                        ],
                         "call_context_count": 0,
                     },
                 )
                 aggregate["source_parameter_fields"] = sorted(
                     set(aggregate["source_parameter_fields"]) | set(memory_slice["source_parameter_fields"])
                 )
+                for aggregate_operand, context_operand in zip(
+                    aggregate["address_operands"], memory_slice["address_operands"]
+                ):
+                    aggregate_operand["source_parameter_fields"] = sorted(
+                        set(aggregate_operand["source_parameter_fields"])
+                        | set(context_operand["source_parameter_fields"])
+                    )
+                    aggregate_operand["call_context_count"] += 1
                 aggregate["call_context_count"] += 1
             state = _transfer_taint(instructions[instruction_index], state, parameter_base)
     slices = list(slice_map.values())
@@ -459,6 +510,28 @@ def _call_string_address_taint_slices(
         "abstracted_call_overflow_count": truncated_calls,
         "call_overflow_abstraction": "Drop oldest return site and retain the newest at the fixed depth.",
         "unresolved_return_context_count": unresolved_returns,
+    }
+
+
+def _opcode_text_access_classification(slices: list[dict[str, Any]]) -> dict[str, Any]:
+    by_field: dict[str, Counter[str]] = {}
+    by_class: Counter[str] = Counter()
+    linked_operands = 0
+    for memory_slice in slices:
+        for operand in memory_slice["address_operands"]:
+            fields = operand["source_parameter_fields"]
+            if fields:
+                linked_operands += 1
+            by_class[operand["access_class"]] += 1
+            for field in fields:
+                by_field.setdefault(field, Counter())[operand["access_class"]] += 1
+    return {
+        "scope": "Exact opcode-text operand classification only; labels do not establish NVIDIA instruction or access semantics.",
+        "address_operand_count_by_class": dict(sorted(by_class.items())),
+        "parameter_linked_address_operand_count": linked_operands,
+        "parameter_field_links_by_class": {
+            field: dict(sorted(counts.items())) for field, counts in sorted(by_field.items())
+        },
     }
 
 
@@ -533,6 +606,8 @@ def build_sass_memory_certificate(
     call_string_linked_counts = Counter(
         field for item in call_string_slices for field in item["source_parameter_fields"]
     )
+    access_classification = _opcode_text_access_classification(call_string_slices)
+    field_accesses = access_classification["parameter_field_links_by_class"]
     checks = {
         "cubin_hash_matches_attestation": _file_sha256(cubin) == nsight_certificate["cupti_module"]["cubin_sha256"],
         "kernel_matches_attestation": kernel == nsight_certificate["details"]["kernel_name"],
@@ -554,6 +629,17 @@ def build_sass_memory_certificate(
         "call_string_overflow_abstraction_recorded": call_string_graph["call_overflow_abstraction"]
         == "Drop oldest return site and retain the newest at the fixed depth.",
         "call_string_returns_resolved": call_string_graph["unresolved_return_context_count"] == 0,
+        "target_fields_have_opcode_text_access_classes": all(field in field_accesses for field in TARGET_POINTER_FIELDS),
+        "qkv_have_read_only_opcode_text_links": all(
+            set(field_accesses[field]) == {"candidate_read"}
+            for field in ("query_ptr", "key_ptr", "value_ptr")
+        ),
+        "output_fields_have_candidate_write_links": all(
+            field_accesses[field].get("candidate_write", 0) > 0
+            for field in ("output_ptr", "output_accum_ptr")
+        ),
+        "opcode_text_access_classes_bounded": set(access_classification["address_operand_count_by_class"])
+        <= {"candidate_read", "candidate_write", "candidate_read_write"},
         "direct_branch_targets_resolved": cfg_graph["unresolved_direct_targets"] == 0,
         "context_insensitive_return_edges_present": cfg_graph["context_insensitive_return_edges"]
         == cfg_graph["returns"] * cfg_graph["direct_call_fallthroughs"],
@@ -602,6 +688,7 @@ def build_sass_memory_certificate(
             ),
             "syntactic_memory_links_by_field": dict(sorted(call_string_linked_counts.items())),
         },
+        "opcode_text_access_classification": access_classification,
         "checks": checks,
         "all_checks_pass": all(checks.values()),
         "linear_text_baseline_retained": True,
@@ -614,6 +701,7 @@ def build_sass_memory_certificate(
         "hardware_reconvergence_semantics_established": False,
         "predicate_truth_modeled": False,
         "complete_control_flow_dataflow_established": False,
+        "opcode_text_access_classification_established": True,
         "memory_access_direction_established": False,
         "memory_bounds_established": False,
         "sass_instruction_semantics_established": False,
@@ -647,6 +735,7 @@ def verify_sass_memory_certificate(
         and certificate.get("hardware_reconvergence_semantics_established") is False
         and certificate.get("predicate_truth_modeled") is False
         and certificate.get("complete_control_flow_dataflow_established") is False
+        and certificate.get("opcode_text_access_classification_established") is True
         and certificate.get("memory_access_direction_established") is False
         and certificate.get("memory_bounds_established") is False
         and certificate.get("sass_instruction_semantics_established") is False
@@ -660,6 +749,14 @@ def verify_sass_memory_certificate(
         and all(_base_opcode(opcode) != "LDGDEPBAR" for opcode in histogram)
         and sum(space.get("instruction_count", 0) for space in spaces.values())
         == certificate.get("memory_instruction_count")
+    )
+    access = certificate.get("opcode_text_access_classification", {})
+    access_labels = set(access.get("address_operand_count_by_class", {}))
+    access_classification_valid = (
+        access_labels <= {"candidate_read", "candidate_write", "candidate_read_write"}
+        and all(
+            field in access.get("parameter_field_links_by_class", {}) for field in TARGET_POINTER_FIELDS
+        )
     )
     replay_available = all(value is not None for value in (cuobjdump, cubin, nsight_certificate, attention_certificate))
     input_certificates_valid = False
@@ -682,6 +779,7 @@ def verify_sass_memory_certificate(
             and boundaries_preserved
             and certificate.get("all_checks_pass")
             and opcode_invariants_valid
+            and access_classification_valid
             and input_certificates_valid
             and replay_matches
         ),
@@ -689,6 +787,7 @@ def verify_sass_memory_certificate(
         "checks_consistent": checks_consistent,
         "boundaries_preserved": boundaries_preserved,
         "opcode_invariants_valid": opcode_invariants_valid,
+        "access_classification_valid": access_classification_valid,
         "input_certificates_valid": input_certificates_valid,
         "replay_available": replay_available,
         "replay_matches": replay_matches,
