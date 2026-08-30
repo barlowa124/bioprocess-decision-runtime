@@ -111,21 +111,70 @@ def sass_uldc64(constant_memory: Any, address: Any) -> Any:
     return sass_memory_load_little_endian(constant_memory, address, 8)
 
 
+def sass_ldg(global_memory: Any, address: Any, byte_count: int) -> Any:
+    return sass_memory_load_little_endian(global_memory, address, byte_count)
+
+
+def sass_ldg_transition(global_memory: Any, address: Any, byte_count: int) -> tuple[Any, Any]:
+    return global_memory, sass_ldg(global_memory, address, byte_count)
+
+
+def sass_stg(global_memory: Any, address: Any, value: Any, byte_count: int) -> Any:
+    return sass_memory_store_little_endian(global_memory, address, value, byte_count)
+
+
 def sass_ldg32(global_memory: Any, address: Any) -> Any:
-    return sass_memory_load_little_endian(global_memory, address, 4)
+    return sass_ldg(global_memory, address, 4)
 
 
 def sass_ldg32_transition(global_memory: Any, address: Any) -> tuple[Any, Any]:
-    return global_memory, sass_ldg32(global_memory, address)
+    return sass_ldg_transition(global_memory, address, 4)
 
 
 def sass_stg32(global_memory: Any, address: Any, value: Any) -> Any:
-    return sass_memory_store_little_endian(global_memory, address, value, 4)
+    return sass_stg(global_memory, address, value, 4)
+
+
+def sass_imad_wide_unsigned(first: Any, second: Any, addend: Any, input_width: int) -> Any:
+    output_width = input_width * 2
+    return z3.Extract(
+        output_width - 1,
+        0,
+        z3.ZeroExt(input_width, first) * z3.ZeroExt(input_width, second) + addend,
+    )
+
+
+def sass_wide_shift_add(base: Any, index: Any, shift: int, index_width: int) -> Any:
+    return z3.Extract(
+        base.size() - 1,
+        0,
+        base + (z3.ZeroExt(base.size() - index_width, index) << shift),
+    )
+
+
+def sass_ulea_low(base: Any, index: Any, shift: int, index_width: int) -> Any:
+    wide = sass_wide_shift_add(base, index, shift, index_width)
+    return z3.Extract(base.size() // 2 - 1, 0, wide)
+
+
+def sass_ulea_high_without_carry(base: Any, index: Any, shift: int, index_width: int) -> Any:
+    wide = sass_wide_shift_add(base, index, shift, index_width)
+    return z3.Extract(base.size() - 1, base.size() // 2, wide)
 
 
 def sass_ldgsts128(global_memory: Any, shared_memory: Any, global_address: Any, shared_address: Any) -> tuple[Any, Any]:
     value = sass_memory_load_little_endian(global_memory, global_address, 16)
     return global_memory, sass_memory_store_little_endian(shared_memory, shared_address, value, 16)
+
+
+PROPOSED_MEMORY_WIDTHS = {
+    "LDG.E": 4,
+    "LDG.E.64": 8,
+    "LDG.E.LTC128B.128": 16,
+    "STG.E.64": 8,
+    "STG.E.128": 16,
+    "LDGSTS.E.BYPASS.LTC128B.128": 16,
+}
 
 
 PROPOSED_MEMORY_OPERAND_ROLES = {
@@ -150,6 +199,7 @@ PROPOSED_SEMANTICS_OPCODES = {
     "IMAD.MOV.U32",
     "IMAD.SHL.U32",
     "IMAD.U32",
+    "IMAD.WIDE.U32",
     "ISETP.EQ.AND",
     "ISETP.GE.AND",
     "ISETP.GE.U32.AND",
@@ -159,14 +209,23 @@ PROPOSED_SEMANTICS_OPCODES = {
     "ISETP.LT.U32.AND",
     "ISETP.NE.AND",
     "LDG",
+    "LDG.E",
+    "LDG.E.64",
+    "LDG.E.LTC128B.128",
     "LDGSTS",
+    "LDGSTS.E.BYPASS.LTC128B.128",
     "LOP3.LUT",
     "MOV",
     "NOP",
     "SEL",
     "SHF.R.U32.HI",
     "STG",
+    "STG.E.64",
+    "STG.E.128",
+    "UIMAD.WIDE.U32",
     "ULDC.64",
+    "ULEA",
+    "ULEA.HI",
 }
 
 
@@ -473,6 +532,74 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             },
         )
     )
+    for byte_count, load_opcode, store_opcode in (
+        (8, "LDG.E.64", "STG.E.64"),
+        (16, "LDG.E.LTC128B.128", "STG.E.128"),
+    ):
+        value = z3.BitVec(f"sass_memory_value_{byte_count * 8}", byte_count * 8)
+        preserved_memory, loaded_value = sass_ldg_transition(global_memory, address, byte_count)
+        proofs.append(
+            _prove(
+                f"ldg_{byte_count * 8}_reads_little_endian_and_preserves_global_memory",
+                z3.And(
+                    preserved_memory == global_memory,
+                    loaded_value == sass_memory_load_little_endian(global_memory, address, byte_count),
+                ),
+                {
+                    "opcode": load_opcode,
+                    "input": f"all 8-bit abstract addresses and {byte_count * 8}-bit global-memory values",
+                    "boundary": "Width-specific proposed read equation; cache/eviction modifiers are uninterpreted premises and alignment, faults, ordering, concurrency, and hardware behavior are excluded.",
+                },
+            )
+        )
+        stored = sass_stg(global_memory, address, value, byte_count)
+        proofs.append(
+            _prove(
+                f"stg_{byte_count * 8}_then_matching_ldg_returns_stored_bits",
+                sass_ldg(stored, address, byte_count) == value,
+                {
+                    "opcodes": [store_opcode, load_opcode],
+                    "input": f"all 8-bit abstract addresses, {byte_count * 8}-bit values, and global memories",
+                    "boundary": "Sequential width-specific proposed byte-array equation; modifiers, alignment, faults, caches, ordering, concurrency, and hardware behavior are excluded.",
+                },
+            )
+        )
+
+    wide_input_width = 8
+    wide_first = z3.BitVec("sass_wide_first", wide_input_width)
+    wide_second = z3.BitVec("sass_wide_second", wide_input_width)
+    wide_addend = z3.BitVec("sass_wide_addend", wide_input_width * 2)
+    independent_wide_product = _shift_add_multiply(wide_first, wide_second, wide_input_width)
+    independent_wide_sum = _ripple_add(independent_wide_product, wide_addend, wide_input_width * 2)
+    proofs.append(
+        _prove(
+            "imad_wide_unsigned_matches_shift_add_widened_product",
+            sass_imad_wide_unsigned(wide_first, wide_second, wide_addend, wide_input_width)
+            == independent_wide_sum,
+            {
+                "opcodes": ["IMAD.WIDE.U32", "UIMAD.WIDE.U32"],
+                "input": "all pairs of 8-bit unsigned factors and 16-bit addends",
+                "boundary": "Reduced-width proposed unsigned multiply-add equation; signed forms, carry modifiers, register pairing, and hardware behavior excluded.",
+            },
+        )
+    )
+    wide_base = z3.BitVec("sass_wide_base", 16)
+    wide_index = z3.BitVec("sass_wide_index", 8)
+    proofs.append(
+        _prove(
+            "ulea_separate_low_and_high_results_recompose_wide_shift_add",
+            z3.Concat(
+                sass_ulea_high_without_carry(wide_base, wide_index, 3, 8),
+                sass_ulea_low(wide_base, wide_index, 3, 8),
+            )
+            == sass_wide_shift_add(wide_base, wide_index, 3, 8),
+            {
+                "opcodes": ["ULEA", "ULEA.HI"],
+                "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three",
+                "boundary": "Reduced-width proposed separate low/high result equations; .X predicate carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+            },
+        )
+    )
 
     body = {
         "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
@@ -482,6 +609,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
         "total": len(proofs),
         "covered_base_opcodes": sorted(PROPOSED_SEMANTICS_OPCODES),
         "proposed_memory_operand_roles": PROPOSED_MEMORY_OPERAND_ROLES,
+        "proposed_memory_widths_bytes": PROPOSED_MEMORY_WIDTHS,
         "excluded": [
             "Opcode modifiers not explicitly named in each obligation",
             "register width and type variants beyond the stated formulas",
@@ -521,6 +649,7 @@ def verify_sass_semantics_certificate(certificate: dict[str, Any]) -> dict[str, 
         "total",
         "covered_base_opcodes",
         "proposed_memory_operand_roles",
+        "proposed_memory_widths_bytes",
         "excluded",
     )
     claims_match = all(certificate.get(key) == recomputed[key] for key in fields)

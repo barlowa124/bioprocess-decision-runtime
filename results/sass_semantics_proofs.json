@@ -1,5 +1,5 @@
 {
-  "certificate_sha256": "14229b1f73db04c736aecbcd7fcbb23ff349f91ff17cd854183ea3e2b64cce66",
+  "certificate_sha256": "9d62b8b776245e7fa5fef9c6b06c9c101978da9cb41f14c5b8e9783c5d5e8663",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -15,6 +15,7 @@
     "IMAD.MOV.U32",
     "IMAD.SHL.U32",
     "IMAD.U32",
+    "IMAD.WIDE.U32",
     "ISETP.EQ.AND",
     "ISETP.GE.AND",
     "ISETP.GE.U32.AND",
@@ -24,14 +25,23 @@
     "ISETP.LT.U32.AND",
     "ISETP.NE.AND",
     "LDG",
+    "LDG.E",
+    "LDG.E.64",
+    "LDG.E.LTC128B.128",
     "LDGSTS",
+    "LDGSTS.E.BYPASS.LTC128B.128",
     "LOP3.LUT",
     "MOV",
     "NOP",
     "SEL",
     "SHF.R.U32.HI",
     "STG",
-    "ULDC.64"
+    "STG.E.128",
+    "STG.E.64",
+    "UIMAD.WIDE.U32",
+    "ULDC.64",
+    "ULEA",
+    "ULEA.HI"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
@@ -375,6 +385,84 @@
         "opcode": "LDGSTS"
       },
       "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ldg_64_reads_little_endian_and_preserves_global_memory",
+      "proved": true,
+      "scope": {
+        "boundary": "Width-specific proposed read equation; cache/eviction modifiers are uninterpreted premises and alignment, faults, ordering, concurrency, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract addresses and 64-bit global-memory values",
+        "opcode": "LDG.E.64"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "stg_64_then_matching_ldg_returns_stored_bits",
+      "proved": true,
+      "scope": {
+        "boundary": "Sequential width-specific proposed byte-array equation; modifiers, alignment, faults, caches, ordering, concurrency, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract addresses, 64-bit values, and global memories",
+        "opcodes": [
+          "STG.E.64",
+          "LDG.E.64"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ldg_128_reads_little_endian_and_preserves_global_memory",
+      "proved": true,
+      "scope": {
+        "boundary": "Width-specific proposed read equation; cache/eviction modifiers are uninterpreted premises and alignment, faults, ordering, concurrency, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract addresses and 128-bit global-memory values",
+        "opcode": "LDG.E.LTC128B.128"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "stg_128_then_matching_ldg_returns_stored_bits",
+      "proved": true,
+      "scope": {
+        "boundary": "Sequential width-specific proposed byte-array equation; modifiers, alignment, faults, caches, ordering, concurrency, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract addresses, 128-bit values, and global memories",
+        "opcodes": [
+          "STG.E.128",
+          "LDG.E.LTC128B.128"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_wide_unsigned_matches_shift_add_widened_product",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed unsigned multiply-add equation; signed forms, carry modifiers, register pairing, and hardware behavior excluded.",
+        "input": "all pairs of 8-bit unsigned factors and 16-bit addends",
+        "opcodes": [
+          "IMAD.WIDE.U32",
+          "UIMAD.WIDE.U32"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ulea_separate_low_and_high_results_recompose_wide_shift_add",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed separate low/high result equations; .X predicate carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+        "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three",
+        "opcodes": [
+          "ULEA",
+          "ULEA.HI"
+        ]
+      },
+      "solver_result": "unsat"
     }
   ],
   "proposed_memory_operand_roles": {
@@ -401,11 +489,19 @@
       ]
     ]
   },
-  "proved": 29,
+  "proposed_memory_widths_bytes": {
+    "LDG.E": 4,
+    "LDG.E.64": 8,
+    "LDG.E.LTC128B.128": 16,
+    "LDGSTS.E.BYPASS.LTC128B.128": 16,
+    "STG.E.128": 16,
+    "STG.E.64": 8
+  },
+  "proved": 35,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 29
+  "total": 35
 }

@@ -11,7 +11,11 @@ from typing import Any
 from .attention_parameters import verify_attention_parameter_certificate
 from .kernel_signatures import _AttentionParams, _layout
 from .nsight_attestation import _instruction_summary, _parse_cuobjdump_sass, verify_nsight_launch_certificate
-from .sass_semantics import PROPOSED_MEMORY_OPERAND_ROLES, verify_sass_semantics_certificate
+from .sass_semantics import (
+    PROPOSED_MEMORY_OPERAND_ROLES,
+    PROPOSED_MEMORY_WIDTHS,
+    verify_sass_semantics_certificate,
+)
 from .serialization import canonical_json
 
 
@@ -83,6 +87,16 @@ def _registers(value: str) -> list[str]:
 def _next_register(register: str, increment: int = 1) -> str:
     prefix = "UR" if register.startswith("UR") else "R"
     return f"{prefix}{int(register[len(prefix):]) + increment}"
+
+
+def _memory_width_bytes(opcode: str) -> int:
+    if re.search(r"(?:^|\.)128(?:\.|$)", opcode):
+        return 16
+    if re.search(r"(?:^|\.)64(?:\.|$)", opcode):
+        return 8
+    if re.search(r"(?:^|\.)U16(?:\.|$)", opcode):
+        return 2
+    return 4
 
 
 def _destination_register_count(opcode: str) -> int:
@@ -629,6 +643,19 @@ def build_sass_memory_certificate(
             }
         )
     real_role_counts = Counter(record["base_opcode"] for record in real_role_records)
+    real_width_records = [
+        {
+            "opcode": instruction["opcode"],
+            "instruction_offset": instruction["offset"],
+            "decoded_width_bytes": _memory_width_bytes(instruction["opcode"]),
+            "proposed_width_bytes": PROPOSED_MEMORY_WIDTHS[instruction["opcode"]],
+            "matches": _memory_width_bytes(instruction["opcode"])
+            == PROPOSED_MEMORY_WIDTHS[instruction["opcode"]],
+        }
+        for instruction in instructions
+        if instruction["opcode"] in PROPOSED_MEMORY_WIDTHS
+    ]
+    real_width_counts = Counter(record["opcode"] for record in real_width_records)
     checks = {
         "cubin_hash_matches_attestation": _file_sha256(cubin) == nsight_certificate["cupti_module"]["cubin_sha256"],
         "kernel_matches_attestation": kernel == nsight_certificate["details"]["kernel_name"],
@@ -643,6 +670,10 @@ def build_sass_memory_certificate(
         and all(record["matches"] for record in real_role_records)
         and set(real_role_counts) == set(PROPOSED_MEMORY_OPERAND_ROLES)
         and sass_semantics_certificate["proposed_memory_operand_roles"] == PROPOSED_MEMORY_OPERAND_ROLES,
+        "real_opcode_widths_match_proposed_width_table": bool(real_width_records)
+        and all(record["matches"] for record in real_width_records)
+        and set(real_width_counts) == set(PROPOSED_MEMORY_WIDTHS)
+        and sass_semantics_certificate["proposed_memory_widths_bytes"] == PROPOSED_MEMORY_WIDTHS,
         "parameter_base_unique": base["candidate_count"] == 1,
         "target_pointer_fields_loaded": all(target_loads.values()),
         "global_memory_operations_present": bool(memory_by_space["global_or_global_to_shared"]),
@@ -680,6 +711,13 @@ def build_sass_memory_certificate(
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
         "sass_semantics_certificate_sha256": sass_semantics_certificate["certificate_sha256"],
+        "real_opcode_width_check": {
+            "instruction_count": len(real_width_records),
+            "instruction_count_by_opcode": dict(sorted(real_width_counts.items())),
+            "mismatch_count": sum(not record["matches"] for record in real_width_records),
+            "mismatches": [record for record in real_width_records if not record["matches"]],
+            "proposed_width_table_bytes": PROPOSED_MEMORY_WIDTHS,
+        },
         "real_opcode_operand_role_check": {
             "instruction_count": len(real_role_records),
             "instruction_count_by_base_opcode": dict(sorted(real_role_counts.items())),
@@ -737,6 +775,7 @@ def build_sass_memory_certificate(
         "complete_control_flow_dataflow_established": False,
         "opcode_text_access_classification_established": True,
         "real_opcode_operands_match_proposed_memory_role_table": True,
+        "real_opcode_widths_match_proposed_memory_width_table": True,
         "memory_access_direction_established": False,
         "memory_bounds_established": False,
         "sass_instruction_semantics_established": False,
@@ -773,6 +812,7 @@ def verify_sass_memory_certificate(
         and certificate.get("complete_control_flow_dataflow_established") is False
         and certificate.get("opcode_text_access_classification_established") is True
         and certificate.get("real_opcode_operands_match_proposed_memory_role_table") is True
+        and certificate.get("real_opcode_widths_match_proposed_memory_width_table") is True
         and certificate.get("memory_access_direction_established") is False
         and certificate.get("memory_bounds_established") is False
         and certificate.get("sass_instruction_semantics_established") is False
@@ -790,6 +830,7 @@ def verify_sass_memory_certificate(
     access = certificate.get("opcode_text_access_classification", {})
     access_labels = set(access.get("address_operand_count_by_class", {}))
     role_check = certificate.get("real_opcode_operand_role_check", {})
+    width_check = certificate.get("real_opcode_width_check", {})
     access_classification_valid = (
         access_labels <= {"candidate_read", "candidate_write", "candidate_read_write"}
         and all(
@@ -800,6 +841,11 @@ def verify_sass_memory_certificate(
         and role_check.get("proposed_role_table") == PROPOSED_MEMORY_OPERAND_ROLES
         and role_check.get("instruction_count")
         == sum(role_check.get("instruction_count_by_base_opcode", {}).values())
+        and width_check.get("mismatch_count") == 0
+        and width_check.get("mismatches") == []
+        and width_check.get("proposed_width_table_bytes") == PROPOSED_MEMORY_WIDTHS
+        and width_check.get("instruction_count")
+        == sum(width_check.get("instruction_count_by_opcode", {}).values())
     )
     replay_available = all(
         value is not None

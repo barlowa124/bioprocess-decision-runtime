@@ -62,9 +62,23 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 29)
+        self.assertGreaterEqual(certificate["total"], 35)
         self.assertTrue(
-            {"FFMA", "FMUL", "FADD", "SHF.R.U32.HI", "ISETP.NE.AND", "ULDC.64", "LDG", "STG", "LDGSTS"}.issubset(
+            {
+                "FFMA",
+                "FMUL",
+                "FADD",
+                "SHF.R.U32.HI",
+                "ISETP.NE.AND",
+                "ULDC.64",
+                "LDG.E.64",
+                "LDG.E.LTC128B.128",
+                "STG.E.64",
+                "STG.E.128",
+                "LDGSTS.E.BYPASS.LTC128B.128",
+                "IMAD.WIDE.U32",
+                "ULEA",
+            }.issubset(
                 certificate["covered_base_opcodes"]
             )
         )
@@ -260,6 +274,7 @@ class SassMemoryTests(unittest.TestCase):
             _derive_parameter_base,
             _destination_register_count,
             _memory_slice,
+            _memory_width_bytes,
             _transfer_taint,
         )
 
@@ -284,6 +299,9 @@ class SassMemoryTests(unittest.TestCase):
         self.assertNotIn(_base_opcode("LDGDEPBAR"), MEMORY_BASES)
         self.assertIn(_base_opcode("LDGSTS.E.BYPASS.LTC128B.128"), MEMORY_BASES)
         self.assertIn(_base_opcode("ST.E"), MEMORY_BASES)
+        self.assertEqual(_memory_width_bytes("LDG.E"), 4)
+        self.assertEqual(_memory_width_bytes("LDG.E.64"), 8)
+        self.assertEqual(_memory_width_bytes("LDG.E.LTC128B.128"), 16)
         cfg_slices, graph = _cfg_address_taint_slices(instructions, base["base_constant_offset"])
         self.assertEqual(cfg_slices, slices)
         self.assertEqual(graph["unresolved_direct_targets"], 0)
