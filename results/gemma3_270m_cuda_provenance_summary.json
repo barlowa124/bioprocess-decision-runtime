@@ -167,8 +167,8 @@
   ],
   "scope": "Observed CUDA launch names plus binary and compatible-image fingerprints; not instruction-level semantic verification.",
   "syntactic_proposed_semantics_opcode_coverage": {
-    "coverage_fraction": 0.7534250237245546,
-    "covered_instruction_lines": 56369,
+    "coverage_fraction": 0.7539863934667255,
+    "covered_instruction_lines": 56411,
     "exact_covered_opcodes_present": [
       "BRA",
       "EXIT",
@@ -181,6 +181,7 @@
       "IMAD.MOV.U32",
       "IMAD.SHL.U32",
       "IMAD.U32",
+      "IMAD.WIDE",
       "IMAD.WIDE.U32",
       "ISETP.GE.AND",
       "ISETP.GE.U32.AND",

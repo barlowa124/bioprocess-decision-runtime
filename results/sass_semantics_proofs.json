@@ -1,5 +1,5 @@
 {
-  "certificate_sha256": "9d62b8b776245e7fa5fef9c6b06c9c101978da9cb41f14c5b8e9783c5d5e8663",
+  "certificate_sha256": "3f14db1c41325a9d9ae7a4789ea8fc38c72cb810017c319c9a778cffa7e37c47",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -15,6 +15,7 @@
     "IMAD.MOV.U32",
     "IMAD.SHL.U32",
     "IMAD.U32",
+    "IMAD.WIDE",
     "IMAD.WIDE.U32",
     "ISETP.EQ.AND",
     "ISETP.GE.AND",
@@ -38,10 +39,12 @@
     "STG",
     "STG.E.128",
     "STG.E.64",
+    "UIMAD.WIDE",
     "UIMAD.WIDE.U32",
     "ULDC.64",
     "ULEA",
-    "ULEA.HI"
+    "ULEA.HI",
+    "ULEA.HI.X"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
@@ -452,14 +455,42 @@
     },
     {
       "counterexample": null,
-      "name": "ulea_separate_low_and_high_results_recompose_wide_shift_add",
+      "name": "imad_wide_signed_matches_twos_complement_shift_add_product",
       "proved": true,
       "scope": {
-        "boundary": "Reduced-width proposed separate low/high result equations; .X predicate carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
-        "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three",
+        "boundary": "Reduced-width proposed signed multiply-add equation; unsigned forms, carry modifiers, register pairing, and hardware behavior excluded.",
+        "input": "all pairs of 8-bit two's-complement factors and 16-bit addends",
+        "opcodes": [
+          "IMAD.WIDE",
+          "UIMAD.WIDE"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ulea_no_carry_low_and_high_results_recompose_when_low_carry_is_zero",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed separate no-carry low/high equations; .X carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+        "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three under zero low-half carry",
         "opcodes": [
           "ULEA",
           "ULEA.HI"
+        ]
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "ulea_x_carry_low_and_high_results_recompose_wide_shift_add",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed carry-consuming high-half equation; predicate production/encoding, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+        "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three with generated low-half carry",
+        "opcodes": [
+          "ULEA",
+          "ULEA.HI.X"
         ]
       },
       "solver_result": "unsat"
@@ -497,11 +528,11 @@
     "STG.E.128": 16,
     "STG.E.64": 8
   },
-  "proved": 35,
+  "proved": 37,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 35
+  "total": 37
 }

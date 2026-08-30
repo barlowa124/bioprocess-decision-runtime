@@ -62,7 +62,7 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 35)
+        self.assertGreaterEqual(certificate["total"], 37)
         self.assertTrue(
             {
                 "FFMA",
@@ -76,8 +76,10 @@ class SassSemanticsTests(unittest.TestCase):
                 "STG.E.64",
                 "STG.E.128",
                 "LDGSTS.E.BYPASS.LTC128B.128",
+                "IMAD.WIDE",
                 "IMAD.WIDE.U32",
                 "ULEA",
+                "ULEA.HI.X",
             }.issubset(
                 certificate["covered_base_opcodes"]
             )

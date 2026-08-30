@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from functools import lru_cache
 from typing import Any
 
 from .formal_proofs import _require_z3, _ripple_add, _shift_add_multiply
@@ -144,6 +145,29 @@ def sass_imad_wide_unsigned(first: Any, second: Any, addend: Any, input_width: i
     )
 
 
+def sass_imad_wide_signed(first: Any, second: Any, addend: Any, input_width: int) -> Any:
+    output_width = input_width * 2
+    return z3.Extract(
+        output_width - 1,
+        0,
+        z3.SignExt(input_width, first) * z3.SignExt(input_width, second) + addend,
+    )
+
+
+def independent_signed_shift_add_multiply(first: Any, second: Any, input_width: int) -> Any:
+    output_width = input_width * 2
+    first_negative = z3.Extract(input_width - 1, input_width - 1, first) == 1
+    second_negative = z3.Extract(input_width - 1, input_width - 1, second) == 1
+    first_magnitude = z3.If(first_negative, -first, first)
+    second_magnitude = z3.If(second_negative, -second, second)
+    magnitude_product = _shift_add_multiply(first_magnitude, second_magnitude, input_width)
+    return z3.If(
+        z3.Xor(first_negative, second_negative),
+        z3.Extract(output_width - 1, 0, -magnitude_product),
+        magnitude_product,
+    )
+
+
 def sass_wide_shift_add(base: Any, index: Any, shift: int, index_width: int) -> Any:
     return z3.Extract(
         base.size() - 1,
@@ -152,14 +176,34 @@ def sass_wide_shift_add(base: Any, index: Any, shift: int, index_width: int) -> 
     )
 
 
-def sass_ulea_low(base: Any, index: Any, shift: int, index_width: int) -> Any:
-    wide = sass_wide_shift_add(base, index, shift, index_width)
-    return z3.Extract(base.size() // 2 - 1, 0, wide)
+def sass_ulea_low_and_carry(base: Any, index: Any, shift: int, index_width: int) -> tuple[Any, Any]:
+    half_width = base.size() // 2
+    addend = z3.Extract(base.size() - 1, 0, z3.ZeroExt(base.size() - index_width, index) << shift)
+    low_sum = z3.ZeroExt(1, z3.Extract(half_width - 1, 0, base)) + z3.ZeroExt(
+        1, z3.Extract(half_width - 1, 0, addend)
+    )
+    return z3.Extract(half_width - 1, 0, low_sum), z3.Extract(half_width, half_width, low_sum)
 
 
 def sass_ulea_high_without_carry(base: Any, index: Any, shift: int, index_width: int) -> Any:
-    wide = sass_wide_shift_add(base, index, shift, index_width)
-    return z3.Extract(base.size() - 1, base.size() // 2, wide)
+    half_width = base.size() // 2
+    addend = z3.Extract(base.size() - 1, 0, z3.ZeroExt(base.size() - index_width, index) << shift)
+    return z3.Extract(
+        half_width - 1,
+        0,
+        z3.Extract(base.size() - 1, half_width, base)
+        + z3.Extract(base.size() - 1, half_width, addend),
+    )
+
+
+def sass_ulea_high_with_carry(base: Any, index: Any, shift: int, index_width: int, carry: Any) -> Any:
+    half_width = base.size() // 2
+    high_without_carry = sass_ulea_high_without_carry(base, index, shift, index_width)
+    return z3.Extract(
+        half_width - 1,
+        0,
+        high_without_carry + z3.ZeroExt(half_width - 1, carry),
+    )
 
 
 def sass_ldgsts128(global_memory: Any, shared_memory: Any, global_address: Any, shared_address: Any) -> tuple[Any, Any]:
@@ -199,6 +243,7 @@ PROPOSED_SEMANTICS_OPCODES = {
     "IMAD.MOV.U32",
     "IMAD.SHL.U32",
     "IMAD.U32",
+    "IMAD.WIDE",
     "IMAD.WIDE.U32",
     "ISETP.EQ.AND",
     "ISETP.GE.AND",
@@ -222,10 +267,12 @@ PROPOSED_SEMANTICS_OPCODES = {
     "STG",
     "STG.E.64",
     "STG.E.128",
+    "UIMAD.WIDE",
     "UIMAD.WIDE.U32",
     "ULDC.64",
     "ULEA",
     "ULEA.HI",
+    "ULEA.HI.X",
 }
 
 
@@ -242,6 +289,7 @@ def _prove(name: str, equality: Any, scope: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@lru_cache(maxsize=1)
 def build_sass_semantics_certificate() -> dict[str, Any]:
     _require_z3()
     proofs = []
@@ -583,20 +631,57 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             },
         )
     )
-    wide_base = z3.BitVec("sass_wide_base", 16)
-    wide_index = z3.BitVec("sass_wide_index", 8)
+    independent_signed_product = independent_signed_shift_add_multiply(
+        wide_first, wide_second, wide_input_width
+    )
+    independent_signed_sum = _ripple_add(
+        independent_signed_product, wide_addend, wide_input_width * 2
+    )
     proofs.append(
         _prove(
-            "ulea_separate_low_and_high_results_recompose_wide_shift_add",
+            "imad_wide_signed_matches_twos_complement_shift_add_product",
+            sass_imad_wide_signed(wide_first, wide_second, wide_addend, wide_input_width)
+            == independent_signed_sum,
+            {
+                "opcodes": ["IMAD.WIDE", "UIMAD.WIDE"],
+                "input": "all pairs of 8-bit two's-complement factors and 16-bit addends",
+                "boundary": "Reduced-width proposed signed multiply-add equation; unsigned forms, carry modifiers, register pairing, and hardware behavior excluded.",
+            },
+        )
+    )
+    wide_base = z3.BitVec("sass_wide_base", 16)
+    wide_index = z3.BitVec("sass_wide_index", 8)
+    ule_low, ule_carry = sass_ulea_low_and_carry(wide_base, wide_index, 3, 8)
+    proofs.append(
+        _prove(
+            "ulea_no_carry_low_and_high_results_recompose_when_low_carry_is_zero",
+            z3.Implies(
+                ule_carry == 0,
+                z3.Concat(
+                    sass_ulea_high_without_carry(wide_base, wide_index, 3, 8),
+                    ule_low,
+                )
+                == sass_wide_shift_add(wide_base, wide_index, 3, 8),
+            ),
+            {
+                "opcodes": ["ULEA", "ULEA.HI"],
+                "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three under zero low-half carry",
+                "boundary": "Reduced-width proposed separate no-carry low/high equations; .X carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
+            "ulea_x_carry_low_and_high_results_recompose_wide_shift_add",
             z3.Concat(
-                sass_ulea_high_without_carry(wide_base, wide_index, 3, 8),
-                sass_ulea_low(wide_base, wide_index, 3, 8),
+                sass_ulea_high_with_carry(wide_base, wide_index, 3, 8, ule_carry),
+                ule_low,
             )
             == sass_wide_shift_add(wide_base, wide_index, 3, 8),
             {
-                "opcodes": ["ULEA", "ULEA.HI"],
-                "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three",
-                "boundary": "Reduced-width proposed separate low/high result equations; .X predicate carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+                "opcodes": ["ULEA", "ULEA.HI.X"],
+                "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three with generated low-half carry",
+                "boundary": "Reduced-width proposed carry-consuming high-half equation; predicate production/encoding, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
             },
         )
     )
