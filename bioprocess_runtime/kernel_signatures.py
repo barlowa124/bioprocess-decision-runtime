@@ -154,6 +154,57 @@ class _AttentionParams(ctypes.Structure):
     ]
 
 
+def decode_attention_params(value: bytes) -> dict[str, Any]:
+    if len(value) != ctypes.sizeof(_AttentionParams):
+        raise ValueError(f"Expected {ctypes.sizeof(_AttentionParams)} attention parameter bytes")
+    parameters = _AttentionParams.from_buffer_copy(value)
+    pointer_fields = {
+        name: hashlib.sha256(str(getattr(parameters, name) or 0).encode("ascii")).hexdigest()
+        for name, field_type in _AttentionParams._fields_
+        if field_type is ctypes.c_void_p
+    }
+    scalar_names = (
+        "causal_diagonal_offset",
+        "window_size",
+        "scale",
+        "head_dim",
+        "head_dim_value",
+        "num_queries",
+        "num_keys",
+        "num_keys_absolute",
+        "custom_mask_type",
+        "q_strideM",
+        "k_strideM",
+        "v_strideM",
+        "bias_strideM",
+        "o_strideM",
+        "q_strideH",
+        "k_strideH",
+        "v_strideH",
+        "bias_strideH",
+        "q_strideB",
+        "k_strideB",
+        "v_strideB",
+        "bias_strideB",
+        "num_batches",
+        "num_heads",
+        "use_dropout",
+        "dropout_batch_head_rng_offset",
+        "dropout_prob",
+    )
+    return {
+        "schema": "PyTorchMemEffAttention::AttentionKernel::Params",
+        "source_commit": PYTORCH_COMMIT,
+        "source_blob_sha1": ATTENTION_SOURCE_BLOB,
+        "size_bytes": len(value),
+        "pointer_field_sha256": pointer_fields,
+        "scalars": {name: getattr(parameters, name) for name in scalar_names},
+        "rng_state_sha256": hashlib.sha256(
+            bytes(value[_AttentionParams.rng_engine_inputs.offset : _AttentionParams.rng_engine_inputs.offset + ctypes.sizeof(_PhiloxCudaState)])
+        ).hexdigest(),
+    }
+
+
 def _layout(structure: type[ctypes.Structure]) -> dict[str, Any]:
     return {
         "size_bytes": ctypes.sizeof(structure),

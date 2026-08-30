@@ -98,22 +98,14 @@
       "total_symbol_launches": 54
     },
     {
-      "artifact_sha256": "252663cfbf4a3a939a4c15c086b36f2683c9d806a900c944db0bb3d873ad9108",
+      "artifact_sha256": "8f467e62981c9713c8c5adc0bf34852700d21e5fbbce12130d12a01b32e9a740",
       "artifact_valid": true,
       "block": [
         32,
         4,
         1
       ],
-      "boundary_pointer_matches": [
-        {
-          "parameter_byte_offset": 0,
-          "parameter_index": 0,
-          "role": "output",
-          "temporal_status": "post_launch_retrospective",
-          "tensor_sha256": "302b52100eb6b618a91f9aa9a52b5665f0725a149d673766dfe08a859716b36b"
-        }
-      ],
+      "boundary_pointer_matches": [],
       "callback": "cuLaunchKernel",
       "correlation_id": 342,
       "expected_module": "model.layers.0.self_attn",
@@ -130,7 +122,7 @@
       "parameter_sizes": [
         264
       ],
-      "retrospective_output_address_match": true,
+      "retrospective_output_address_match": false,
       "shared_memory_bytes": 51200,
       "storage_range_matches": [
         {
@@ -138,9 +130,40 @@
           "module": "model.layers.0.self_attn",
           "parameter_byte_offset": 0,
           "parameter_index": 0,
-          "role": "output",
+          "role": "attention_dispatch_input_0",
           "storage_offset_bytes": 0,
-          "tensor_sha256": "302b52100eb6b618a91f9aa9a52b5665f0725a149d673766dfe08a859716b36b"
+          "temporal_status": "pre_launch_retained",
+          "tensor_sha256": "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn",
+          "parameter_byte_offset": 8,
+          "parameter_index": 0,
+          "role": "attention_dispatch_input_1",
+          "storage_offset_bytes": 0,
+          "temporal_status": "pre_launch_retained",
+          "tensor_sha256": "37eaa4ab6adf127617fdb2b16f59741be2f41aafe628659f7e0b3bbd8c6990fe"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn",
+          "parameter_byte_offset": 16,
+          "parameter_index": 0,
+          "role": "attention_dispatch_input_2",
+          "storage_offset_bytes": 0,
+          "temporal_status": "pre_launch_retained",
+          "tensor_sha256": "d8725260d3088eb7f26564e2d5b5f8ea3c6f01032ff63c860d0e49a130326b5b"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn",
+          "parameter_byte_offset": 64,
+          "parameter_index": 0,
+          "role": "attention_dispatch_output_0",
+          "storage_offset_bytes": 0,
+          "temporal_status": "post_launch_retrospective",
+          "tensor_sha256": "4f8183e0c22c56af63e5c134953135571870bade7944b46b92e62755ee4ee01d"
         }
       ],
       "total_symbol_launches": 18
@@ -262,7 +285,7 @@
   ],
   "entries_with_input_boundary_match": 2,
   "entries_with_parameter_boundary_match": 1,
-  "entries_with_retrospective_output_address_match": 4,
+  "entries_with_retrospective_output_address_match": 3,
   "limitations": [
     "Aligned 64-bit values inside packed parameters are pointer candidates until signatures are independently typed.",
     "Pointer equality or storage containment does not establish read/write direction, bounds of access, aliasing, or access behavior.",
@@ -270,8 +293,8 @@
     "Fused and reduction kernels can consume intermediates not present at the enclosing module boundary."
   ],
   "scope": "CUPTI driver-entry launch parameter commitments with pre-launch retained input/parameter matches and post-launch retrospective output-address matches; not typed signature or memory-access proof.",
-  "storage_range_match_count": 8,
-  "summary_sha256": "91f09ce9ba75b652001fbd86672f724f3a705d3dce9fe4537a2593718d4b6be0",
+  "storage_range_match_count": 11,
+  "summary_sha256": "a497318145f4f7800ecd0eebb768d8f4c2745349afaf610e9b70177505019775",
   "total_entries": 4,
   "typed_kernel_signatures_established": false,
   "valid_entries": 4

@@ -544,11 +544,11 @@ python -m bioprocess_runtime launch-argument-summary-verify results/gemma3_270m_
 The checked [`results/gemma3_270m_launch_argument_summary.json`](results/gemma3_270m_launch_argument_summary.json) reports:
 
 - The Q-projection GEMM receives one 360-byte packed parameter object. Pre-launch retained tensors match at offset 280 for the module input and 288 for the module-owned weight. Offsets 296 and 304 retrospectively equal the post-launch output address; their field roles remain untyped.
-- The fused-attention kernel receives one 264-byte parameter object. Offset 0 retrospectively equals the later enclosing-module output address, but exact source reconstruction identifies offset 0 as `query_ptr`; this equality is temporal address reuse or alias ambiguity, not an output-field binding.
+- The fused-attention kernel receives one 264-byte parameter object. Retaining the layer-local dispatcher inputs binds offsets 0, 8, and 16 to Q, K, and V and offset 64 to the dispatcher output. The earlier retrospective module-output alias at offset 0 disappears when Q/K/V lifetimes are retained, confirming it was allocator reuse rather than an output-field binding.
 - The RMS mean-reduction kernel receives one 1,048-byte parameter object. Offset 984 retrospectively equals the enclosing RMSNorm output address; the packed field and internal reduction input remain untyped.
 - GELU receives parameters of 4, 1, and 16 bytes; aligned candidates in parameter 2 match its retained input and retrospective output. The typed signature below resolves those fields as `data[1]` and `data[0]`, respectively.
-- All four artifacts verify. Two have pre-launch module-input matches, one has a pre-launch module-owned parameter match, and all four have retrospective output-address matches.
-- Eight launch values fall inside recorded module tensor storage ranges; in these checked cases every match equals the corresponding tensor data pointer at storage offset zero.
+- All four artifacts verify. Two have pre-launch module-input matches, one has a pre-launch module-owned parameter match, and three have retrospective module-output address matches.
+- Eleven launch values fall inside retained module or dispatcher tensor storage ranges; in these checked cases every match equals the corresponding tensor data pointer at storage offset zero.
 
 This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes, plus explicit storage-range containment checks. Input and parameter tensors are retained before launch; output addresses are captured retrospectively and can reflect allocator reuse unless an independent typed layout resolves the field. The evidence still does not generally establish the C++ type of each packed field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
 
@@ -573,9 +573,31 @@ python -m bioprocess_runtime kernel-signatures-verify results/gemma3_270m_kernel
 
 The wheel reports exact PyTorch commit `e2d141dbde55c2a4370fac5165b0561b6af4798b`; that tree pins CUTLASS gitlink `afa1772203677c5118fcd82537a9c8fefbcc7008`. Certificate generation and verification fetch the exact-commit `CUDALoops.cuh`, `kernel_forward.h`, and `Reduce.cuh`, recompute their Git blob IDs and SHA-256 values, verify the CUTLASS gitlink through GitHub's tree metadata, and require the installed `CUDALoops.cuh` content to match after line-ending normalization.
 
-The verified attention source defines 40 `Params` fields. Their parsed order must exactly equal the ctypes field order. Under recorded native Windows-x64 ABI assumptions, the reconstruction produces 264 bytes, exactly matching the driver parameter size, with `query_ptr` at offset 0, `output_ptr` at 64, dimensions at 96–112, strides at 120–184, dropout state at 200–247, and final pointers at 248 and 256. This layout has not yet been compiled against the full exact source dependency graph, so it is recorded as `source_layout_reconstructed`, not `typed_signature_established`. Its `query_ptr` identity also exposes why the retrospective offset-0 output-address match cannot be interpreted as an output field.
+The verified attention source defines 40 `Params` fields. Their parsed order must exactly equal the ctypes field order. Under recorded native Windows-x64 ABI assumptions, the reconstruction produces 264 bytes, exactly matching the driver parameter size, with `query_ptr` at offset 0, `output_ptr` at 64, dimensions at 96–112, strides at 120–184, dropout state at 200–247, and final pointers at 248 and 256. This layout has not yet been compiled against the full exact source dependency graph, so it is recorded as `source_layout_reconstructed`, not `typed_signature_established`. Its `query_ptr` identity exposed why the earlier retrospective offset-0 module-output address could not be interpreted as an output field. Retaining the dispatcher Q tensor prevents that allocator reuse in the current capture and directly binds offset 0 to Q.
 
 GELU has a partial launch-parameter schema, not a fully typed signature. Q-projection CUTLASS and reduction packed structs remain untyped. For all entries, functor internals, pointer access direction, scalar-value validation, memory bounds, and complete field semantics remain unproved, so `complete_field_semantics_established` remains false.
+
+### Decoded attention parameters and Q/K/V binding
+
+A layer-local `TorchDispatchMode` retains only the tensors entering and leaving `aten._scaled_dot_product_efficient_attention.default` while the qualified attention module is active. The typed 264-byte decoder is then compared directly with those tensor pointers and logical-value commitments:
+
+```powershell
+python -m bioprocess_runtime attention-parameters --artifact artifacts/attention_launch_arguments.json --signatures results/gemma3_270m_kernel_signatures.json --output results/gemma3_270m_attention_parameters.json
+python -m bioprocess_runtime attention-parameters-verify results/gemma3_270m_attention_parameters.json
+```
+
+The checked [`results/gemma3_270m_attention_parameters.json`](results/gemma3_270m_attention_parameters.json) passes all 24 checks:
+
+- `query_ptr`, `key_ptr`, and `value_ptr` exactly match retained dispatcher inputs with distinct logical-value hashes.
+- `output_ptr` at offset 64 exactly matches dispatcher output 0.
+- Q/K/V each have shape `[1,4,30,256]` and stride `[30720,7680,256,1]`.
+- Head dimensions are 256; queries and keys are 30; batch count is 1; head count is 4.
+- Q/K/V matrix, head, and batch strides match those tensors, and output row stride is 1,024.
+- Scale is `0.0625`, causal mask type is 1 with zero diagonal offset, and dropout is disabled.
+- Sequence-start, sequence-length, and bias pointers are null for this fixed-length no-bias execution.
+- The model configuration marks the layer as sliding-window attention with window 512; a zero kernel window field is consistent with the 30-token sequence being shorter than that limit, but does not prove the kernel enforces sliding-window behavior.
+
+This establishes source-named Q/K/V pointer identity and logical tensor commitments for the selected layer-0 fused-attention launch. It also binds the source-named output field to dispatcher output 0. It does not prove how SASS instructions read or write those buffers, memory bounds, synchronization, or the fused attention equation; `kernel_read_write_semantics_established` and `memory_access_semantics_established` remain false.
 
 ## Objective B: force Gemma through an executable language
 

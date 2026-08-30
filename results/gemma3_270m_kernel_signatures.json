@@ -1,6 +1,6 @@
 {
   "all_signatures_typed": false,
-  "certificate_sha256": "ba0b9b052191439a8c9b0fd76166cf1f584d99c711debfc8a0eccabf00706af5",
+  "certificate_sha256": "408fe3aeb71ba59a12c6a7cf70d99d90eb0d62d849eb9456fe5c19c1fcaa7f23",
   "complete_field_semantics_established": false,
   "entries": [
     {
@@ -26,15 +26,7 @@
       "expected_module": "model.layers.0.self_attn",
       "full_field_semantics_established": false,
       "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
-      "observed_role_conflicts": [
-        {
-          "interpretation": "Address equality is temporally ambiguous and is not used as a typed role binding.",
-          "parameter_byte_offset": 0,
-          "retrospective_boundary_role": "output",
-          "source_field": "query_ptr",
-          "temporal_status": "post_launch_retrospective"
-        }
-      ],
+      "observed_role_conflicts": [],
       "parameter_sizes": [
         264
       ],
@@ -443,7 +435,7 @@
     "wheel_revision_matches": true,
     "wheel_version": "2.7.1+cu128"
   },
-  "source_launch_argument_summary_sha256": "91f09ce9ba75b652001fbd86672f724f3a705d3dce9fe4537a2593718d4b6be0",
+  "source_launch_argument_summary_sha256": "a497318145f4f7800ecd0eebb768d8f4c2745349afaf610e9b70177505019775",
   "source_layout_reconstructed_entries": 1,
   "total_entries": 4,
   "typed_entries": 0

@@ -1,0 +1,131 @@
+{
+  "all_checks_pass": true,
+  "attention_dispatch_operation": {
+    "input_names": [
+      "query",
+      "key",
+      "value"
+    ],
+    "input_tensor_sha256": [
+      "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+      "37eaa4ab6adf127617fdb2b16f59741be2f41aafe628659f7e0b3bbd8c6990fe",
+      "d8725260d3088eb7f26564e2d5b5f8ea3c6f01032ff63c860d0e49a130326b5b"
+    ],
+    "operation": "aten._scaled_dot_product_efficient_attention.default",
+    "operation_sha256": "eaf5c3a6afce24d1822a097bdc2b173c9e7a6c6c92ebcdd5bcda86a82f991b7b",
+    "output_tensor_sha256": "4f8183e0c22c56af63e5c134953135571870bade7944b46b92e62755ee4ee01d",
+    "schema": "aten::_scaled_dot_product_efficient_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_bias, bool compute_log_sumexp, float dropout_p=0., bool is_causal=False, *, float? scale=None) -> (Tensor output, Tensor log_sumexp, Tensor philox_seed, Tensor philox_offset)"
+  },
+  "block": [
+    32,
+    4,
+    1
+  ],
+  "certificate_sha256": "0d0307ef8ce139f3fd2bd273d9a112e31e87f87bc421e934611a3074ae30bea8",
+  "checks": {
+    "batch_and_heads_match": true,
+    "causal_mask_matches": true,
+    "dispatch_operation_matches": true,
+    "dispatch_qkv_argument_names_match": true,
+    "dropout_disabled": true,
+    "fixed_length_pointers_null": true,
+    "head_dimensions_match": true,
+    "key_strides_match": true,
+    "launch_artifact_valid": true,
+    "output_pointer_field_matches_dispatch_output": true,
+    "output_stride_matches": true,
+    "parameter_size_matches": true,
+    "qkv_and_output_pointers_present": true,
+    "qkv_pointer_fields_match_dispatch_inputs": true,
+    "qkv_shapes_match": true,
+    "qkv_strides_match_dispatch": true,
+    "query_strides_match": true,
+    "scale_matches": true,
+    "sequence_dimensions_match": true,
+    "short_sequence_window_field_zero_consistent_with_config": true,
+    "signature_certificate_valid": true,
+    "source_blob_matches": true,
+    "source_commit_matches": true,
+    "value_strides_match": true
+  },
+  "compiled_layout_verified": false,
+  "decoded_scalars": {
+    "bias_strideB": 0,
+    "bias_strideH": 0,
+    "bias_strideM": 0,
+    "causal_diagonal_offset": 0,
+    "custom_mask_type": 1,
+    "dropout_batch_head_rng_offset": 0,
+    "dropout_prob": 0.0,
+    "head_dim": 256,
+    "head_dim_value": 256,
+    "k_strideB": 30720,
+    "k_strideH": 7680,
+    "k_strideM": 256,
+    "num_batches": 1,
+    "num_heads": 4,
+    "num_keys": 30,
+    "num_keys_absolute": 0,
+    "num_queries": 30,
+    "o_strideM": 1024,
+    "q_strideB": 30720,
+    "q_strideH": 7680,
+    "q_strideM": 256,
+    "scale": 0.0625,
+    "use_dropout": false,
+    "v_strideB": 30720,
+    "v_strideH": 7680,
+    "v_strideM": 256,
+    "window_size": 0
+  },
+  "expectations": {
+    "batch_size": 1,
+    "head_dim": 256,
+    "is_sliding": true,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 1,
+    "scaling": 0.0625,
+    "sequence_length": 30,
+    "sliding_window": 512
+  },
+  "grid": [
+    1,
+    4,
+    1
+  ],
+  "kernel_read_write_semantics_established": false,
+  "launch_artifact_sha256": "8f467e62981c9713c8c5adc0bf34852700d21e5fbbce12130d12a01b32e9a740",
+  "memory_access_semantics_established": false,
+  "pointer_field_sha256": {
+    "attn_bias_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "extragraph_offset": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "key_ptr": "36bc17076e953f761e6f48b8d46c8466a28c1caa17f2d456564f361818c09939",
+    "logsumexp_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "output_accum_ptr": "663863964c3fb3c82cd77d15efd8be46db88cc586c046c8e10fb05a506eeac82",
+    "output_ptr": "843045085cd348b7ce9385cf3803208776342980e90bb61ce910751234c6b273",
+    "query_ptr": "ac789c4af881e5ad87c6d1c520950e6523b7f6620b812a8ff5900a51db04e79f",
+    "seed": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "seqlen_k_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "seqstart_k_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "seqstart_q_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "value_ptr": "ddd0a36b1460a6f8cb91cec65de84b64256bed95f202b18b4a61f79819ad7fe2"
+  },
+  "qkv_pointer_and_logical_commitments_bound": true,
+  "qualified_module_stack": [
+    "model.layers.0.self_attn"
+  ],
+  "query_pointer_temporal_observation": {
+    "interpretation": "Retaining dispatcher tensors prevents allocator reuse from being mistaken for field identity.",
+    "later_module_output_address_equal": false,
+    "parameter_byte_offset": 0,
+    "resolved_as_dispatch_query_input": true,
+    "source_field": "query_ptr",
+    "typed_output_binding": false
+  },
+  "scope": "Decoded from a verified-source, source-reconstructed ctypes layout and bound to schema-named dispatcher tensors; not a compiled, hardware-verified, or fully typed kernel signature, and not a read/write or memory-access proof.",
+  "shared_memory_bytes": 51200,
+  "signature_certificate_sha256": "408fe3aeb71ba59a12c6a7cf70d99d90eb0d62d849eb9456fe5c19c1fcaa7f23",
+  "source_layout_reconstructed": true,
+  "source_named_dispatch_output_pointer_bound": true,
+  "typed_signature_established": false
+}

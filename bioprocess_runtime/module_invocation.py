@@ -16,8 +16,10 @@ from .serialization import canonical_json
 
 try:
     import torch
+    from torch.utils._python_dispatch import TorchDispatchMode
 except ModuleNotFoundError:
     torch = None
+    TorchDispatchMode = object
 
 
 def _tensor_values(value: Any) -> list[Any]:
@@ -38,6 +40,106 @@ def _invocation_tensor_record(tensor: Any) -> dict[str, Any]:
     descriptor["storage_offset"] = int(tensor.storage_offset())
     descriptor["data_pointer_sha256"] = hashlib.sha256(str(tensor.data_ptr()).encode("ascii")).hexdigest()
     return descriptor
+
+
+class AttentionDispatchCapture(TorchDispatchMode):
+    def __init__(self, module_capture: "ModuleNvtxCapture") -> None:
+        super().__init__()
+        self.module_capture = module_capture
+        self.operations: list[dict[str, Any]] = []
+
+    def __torch_dispatch__(self, function: Any, types: tuple[type, ...], arguments: tuple[Any, ...] = (), keyword_arguments: dict[str, Any] | None = None) -> Any:
+        keyword_arguments = keyword_arguments or {}
+        active_modules = [invocation["module"] for invocation in self.module_capture.open_stack]
+        selected = bool(active_modules) and "scaled_dot_product" in str(function)
+        schema = getattr(function, "_schema", None)
+        schema_arguments = list(schema.arguments) if schema is not None else []
+        input_tensors = []
+        input_names = []
+        if selected:
+            for index, argument in enumerate(arguments):
+                tensors = _tensor_values(argument)
+                input_tensors.extend(tensors)
+                name = schema_arguments[index].name if index < len(schema_arguments) else f"argument_{index}"
+                input_names.extend(name for tensor in tensors)
+            for name, argument in keyword_arguments.items():
+                tensors = _tensor_values(argument)
+                input_tensors.extend(tensors)
+                input_names.extend(name for tensor in tensors)
+        output = function(*arguments, **keyword_arguments)
+        if selected:
+            self.operations.append(
+                {
+                    "operation": str(function),
+                    "qualified_module_stack": active_modules,
+                    "schema": str(schema) if schema is not None else None,
+                    "input_names": input_names,
+                    "input_tensors": input_tensors,
+                    "output_tensors": _tensor_values(output),
+                }
+            )
+        return output
+
+    def tensor_storage_ranges(self) -> list[dict[str, Any]]:
+        ranges = []
+        for operation_index, operation in enumerate(self.operations):
+            for role, key in (("input", "input_tensors"), ("output", "output_tensors")):
+                for tensor_index, tensor in enumerate(operation[key]):
+                    storage = tensor.untyped_storage()
+                    ranges.append(
+                        {
+                            "module": operation["qualified_module_stack"][-1],
+                            "role": f"attention_dispatch_{role}_{tensor_index}",
+                            "tensor_sha256": tensor_descriptor(tensor)["sha256"],
+                            "storage_base": int(storage.data_ptr()),
+                            "storage_nbytes": int(storage.nbytes()),
+                            "tensor_data_pointer": int(tensor.data_ptr()),
+                            "operation_index": operation_index,
+                        }
+                    )
+        return ranges
+
+    def report(self) -> dict[str, Any]:
+        operations = []
+        for index, operation in enumerate(self.operations):
+            body = {
+                "index": index,
+                "operation": operation["operation"],
+                "schema": operation["schema"],
+                "qualified_module_stack": operation["qualified_module_stack"],
+                "input_names": operation["input_names"],
+                "inputs": [_invocation_tensor_record(tensor) for tensor in operation["input_tensors"]],
+                "outputs": [_invocation_tensor_record(tensor) for tensor in operation["output_tensors"]],
+            }
+            body["operation_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+            operations.append(body)
+        report = {
+            "scope": "Layer-local scaled-dot-product dispatcher input/output commitments; not proof of fused-kernel argument order.",
+            "operations": operations,
+        }
+        report["report_sha256"] = hashlib.sha256(canonical_json(report).encode("utf-8")).hexdigest()
+        return report
+
+
+def verify_attention_dispatch_report(report: dict[str, Any]) -> dict[str, Any]:
+    body = {key: value for key, value in report.items() if key != "report_sha256"}
+    report_hash_valid = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == report.get(
+        "report_sha256"
+    )
+    operation_hashes_valid = all(
+        hashlib.sha256(
+            canonical_json({key: value for key, value in operation.items() if key != "operation_sha256"}).encode(
+                "utf-8"
+            )
+        ).hexdigest()
+        == operation.get("operation_sha256")
+        for operation in report.get("operations", [])
+    )
+    return {
+        "valid": bool(report_hash_valid and operation_hashes_valid and report.get("operations")),
+        "report_hash_valid": report_hash_valid,
+        "operation_hashes_valid": operation_hashes_valid,
+    }
 
 
 class ModuleNvtxCapture(AbstractContextManager["ModuleNvtxCapture"]):

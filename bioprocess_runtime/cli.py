@@ -575,7 +575,7 @@ def command_launch_arguments(args: argparse.Namespace) -> int:
         import torch
 
         from .interpretability import _model_device, _tokenize, load_local_gemma
-        from .module_invocation import ModuleNvtxCapture
+        from .module_invocation import AttentionDispatchCapture, ModuleNvtxCapture
         from .operational_semantics import tensor_descriptor
         from .reference_gemma import model_state_sha256
         from .serialization import canonical_json
@@ -585,6 +585,9 @@ def command_launch_arguments(args: argparse.Namespace) -> int:
         inputs = _tokenize(tokenizer, prompt, _model_device(model))
         module_capture = ModuleNvtxCapture(model, tuple(args.module_nvtx_pattern))
         module_capture.__enter__()
+        attention_dispatch = AttentionDispatchCapture(module_capture) if "fmha_cutlass" in args.kernel else None
+        if attention_dispatch is not None:
+            attention_dispatch.__enter__()
         capture.range_provider = lambda: [invocation["module"] for invocation in module_capture.open_stack]
         torch.cuda.nvtx.range_push("gemma_bound_forward")
         try:
@@ -592,10 +595,15 @@ def command_launch_arguments(args: argparse.Namespace) -> int:
                 output = model(**inputs, use_cache=False, logits_to_keep=1)
             torch.cuda.synchronize()
         finally:
+            if attention_dispatch is not None:
+                attention_dispatch.__exit__(*sys.exc_info())
             module_capture.__exit__(*sys.exc_info())
             torch.cuda.nvtx.range_pop()
         tensor_storage_ranges = module_capture.tensor_storage_ranges()
+        if attention_dispatch is not None:
+            tensor_storage_ranges.extend(attention_dispatch.tensor_storage_ranges())
         module_report = module_capture.report()
+        attention_dispatch_report = attention_dispatch.report() if attention_dispatch is not None else None
         launch_report = capture.report(module_report, tensor_storage_ranges)
         body = {
             "scope": "CUPTI launch-parameter and qualified-module evidence for one exact kernel symbol; not a typed kernel-signature proof.",
@@ -604,7 +612,18 @@ def command_launch_arguments(args: argparse.Namespace) -> int:
             "input_ids_tensor": tensor_descriptor(inputs["input_ids"]),
             "output_logits_tensor": tensor_descriptor(output.logits),
             "selected_token_id": int(torch.argmax(output.logits[0, -1]).item()),
+            "attention_expectations": {
+                "batch_size": int(inputs["input_ids"].shape[0]),
+                "sequence_length": int(inputs["input_ids"].shape[1]),
+                "head_dim": int(model.config.head_dim),
+                "num_attention_heads": int(model.config.num_attention_heads),
+                "num_key_value_heads": int(model.config.num_key_value_heads),
+                "scaling": float(model.model.layers[0].self_attn.scaling),
+                "is_sliding": bool(model.model.layers[0].self_attn.is_sliding),
+                "sliding_window": int(model.config.sliding_window),
+            },
             "module_invocation_report": module_report,
+            "attention_dispatch_report": attention_dispatch_report,
             "launch_argument_report": launch_report,
         }
         body["artifact_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
@@ -635,6 +654,25 @@ def command_launch_argument_summary_verify(args: argparse.Namespace) -> int:
 
     summary = json.loads(args.summary.read_text(encoding="utf-8"))
     verification = verify_launch_argument_summary(summary)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_attention_parameters(args: argparse.Namespace) -> int:
+    from .attention_parameters import build_attention_parameter_certificate
+
+    artifact = json.loads(args.artifact.read_text(encoding="utf-8"))
+    signatures = json.loads(args.signatures.read_text(encoding="utf-8"))
+    certificate = build_attention_parameter_certificate(artifact, signatures)
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_attention_parameters_verify(args: argparse.Namespace) -> int:
+    from .attention_parameters import verify_attention_parameter_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_attention_parameter_certificate(certificate)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -1064,6 +1102,16 @@ def build_parser() -> argparse.ArgumentParser:
     launch_argument_verify_parser = subparsers.add_parser("launch-argument-summary-verify", help="Verify launch-argument summary integrity and boundaries")
     launch_argument_verify_parser.add_argument("summary", type=Path)
     launch_argument_verify_parser.set_defaults(handler=command_launch_argument_summary_verify)
+
+    attention_parameters_parser = subparsers.add_parser("attention-parameters", help="Validate decoded fused-attention parameters against Gemma expectations")
+    attention_parameters_parser.add_argument("--artifact", type=Path, required=True)
+    attention_parameters_parser.add_argument("--signatures", type=Path, required=True)
+    attention_parameters_parser.add_argument("--output", type=Path, required=True)
+    attention_parameters_parser.set_defaults(handler=command_attention_parameters)
+
+    attention_parameters_verify_parser = subparsers.add_parser("attention-parameters-verify", help="Verify a decoded attention-parameter certificate")
+    attention_parameters_verify_parser.add_argument("certificate", type=Path)
+    attention_parameters_verify_parser.set_defaults(handler=command_attention_parameters_verify)
 
     kernel_signature_parser = subparsers.add_parser("kernel-signatures", help="Derive partial typed signatures from installed headers and launch evidence")
     kernel_signature_parser.add_argument("--summary", type=Path, required=True)

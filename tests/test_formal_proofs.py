@@ -233,6 +233,48 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
+class AttentionParameterTests(unittest.TestCase):
+    def test_attention_decoder_and_certificate_boundaries(self) -> None:
+        from bioprocess_runtime.attention_parameters import verify_attention_parameter_certificate
+        from bioprocess_runtime.kernel_signatures import _AttentionParams, decode_attention_params
+
+        parameters = _AttentionParams()
+        parameters.query_ptr = 1
+        parameters.key_ptr = 2
+        parameters.value_ptr = 3
+        parameters.output_ptr = 4
+        parameters.head_dim = 256
+        parameters.num_queries = 30
+        parameters.scale = 0.0625
+        decoded = decode_attention_params(bytes(parameters))
+        self.assertEqual(decoded["size_bytes"], 264)
+        self.assertEqual(decoded["scalars"]["head_dim"], 256)
+        self.assertEqual(decoded["scalars"]["num_queries"], 30)
+        self.assertEqual(decoded["scalars"]["scale"], 0.0625)
+        certificate = {
+            "checks": {"decoded": True},
+            "all_checks_pass": True,
+            "source_layout_reconstructed": True,
+            "compiled_layout_verified": False,
+            "typed_signature_established": False,
+            "qkv_pointer_and_logical_commitments_bound": True,
+            "source_named_dispatch_output_pointer_bound": True,
+            "kernel_read_write_semantics_established": False,
+            "memory_access_semantics_established": False,
+            "query_pointer_temporal_observation": {
+                "typed_output_binding": False,
+                "resolved_as_dispatch_query_input": True,
+            },
+        }
+        certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
+        self.assertTrue(verify_attention_parameter_certificate(certificate)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["kernel_read_write_semantics_established"] = True
+        body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
+        damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_attention_parameter_certificate(damaged)["valid"])
+
+
 @unittest.skipUnless(TORCH_AVAILABLE, "Torch is not installed")
 class KernelSignatureTests(unittest.TestCase):
     def test_gelu_signature_is_partially_typed_from_installed_header(self) -> None:
@@ -339,6 +381,29 @@ class ModuleInvocationTests(unittest.TestCase):
                 self.assertEqual(push.call_count, pop.call_count)
                 self.assertFalse(capture.open_stack)
                 self.assertFalse(capture.lifecycle_errors)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "Torch is not installed")
+    def test_attention_dispatch_capture_retains_qkv_and_outputs(self) -> None:
+        import torch
+
+        from bioprocess_runtime.module_invocation import AttentionDispatchCapture, verify_attention_dispatch_report
+
+        class Function:
+            def __str__(self) -> str:
+                return "aten._scaled_dot_product_efficient_attention.default"
+
+            def __call__(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor) -> tuple[torch.Tensor]:
+                return (query + key + value,)
+
+        module_capture = SimpleNamespace(open_stack=[{"module": "model.layers.0.self_attn"}])
+        capture = AttentionDispatchCapture(module_capture)
+        tensors = tuple(torch.ones((1, 1, 2, 2)) * value for value in (1, 2, 3))
+        output = capture.__torch_dispatch__(Function(), (), tensors, {})
+        self.assertEqual(len(capture.operations), 1)
+        self.assertEqual([id(tensor) for tensor in capture.operations[0]["input_tensors"]], [id(tensor) for tensor in tensors])
+        self.assertEqual(capture.operations[0]["input_names"], ["argument_0", "argument_1", "argument_2"])
+        self.assertEqual(id(capture.operations[0]["output_tensors"][0]), id(output[0]))
+        self.assertTrue(verify_attention_dispatch_report(capture.report())["valid"])
 
     def test_raw_nvtx_identity_extracts_qualified_module_stack(self) -> None:
         from bioprocess_runtime.module_invocation import _raw_nvtx_identity

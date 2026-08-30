@@ -101,7 +101,7 @@ class CuptiLaunchArgumentCapture:
         self.driver.cuFuncGetParamInfo.restype = ctypes.c_int
         self.active = False
 
-    def _parameters(self, function: int, values: Any) -> list[dict[str, Any]]:
+    def _parameters(self, function: int, values: Any, symbol: str = "") -> list[dict[str, Any]]:
         if not values:
             return []
         records = []
@@ -137,6 +137,10 @@ class CuptiLaunchArgumentCapture:
                     for byte_offset in range(0, size.value - ctypes.sizeof(ctypes.c_void_p) + 1, ctypes.sizeof(ctypes.c_void_p))
                 ],
             }
+            if index == 0 and "fmha_cutlass" in symbol and size.value == 264:
+                from .kernel_signatures import decode_attention_params
+
+                record["typed_decoding"] = decode_attention_params(value)
             records.append(record)
         return records
 
@@ -176,7 +180,7 @@ class CuptiLaunchArgumentCapture:
                     "kernel_params_present": bool(kernel_params),
                     "extra_present": bool(extra),
                     "qualified_module_stack": self.range_provider(),
-                    "parameters": self._parameters(function, kernel_params),
+                    "parameters": self._parameters(function, kernel_params, symbol),
                 }
             )
         except Exception as exc:
@@ -233,6 +237,7 @@ class CuptiLaunchArgumentCapture:
                     "temporal_status": (
                         "post_launch_retrospective"
                         if tensor_range["role"] == "output"
+                        or tensor_range["role"].startswith("attention_dispatch_output_")
                         else "pre_launch_retained"
                     ),
                     "tensor_sha256": tensor_range["tensor_sha256"],
@@ -285,11 +290,27 @@ def redact_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
         invocation["invocation_sha256"] = hashlib.sha256(canonical_json(invocation_body).encode("utf-8")).hexdigest()
     module_body = {key: value for key, value in module_report.items() if key != "report_sha256"}
     module_report["report_sha256"] = hashlib.sha256(canonical_json(module_body).encode("utf-8")).hexdigest()
+    dispatch_report = redacted.get("attention_dispatch_report")
+    if dispatch_report is not None:
+        for operation in dispatch_report["operations"]:
+            for role in ("inputs", "outputs"):
+                for tensor in operation[role]:
+                    tensor["sha256"] = "redacted"
+                    tensor["data_pointer_sha256"] = "redacted"
+            operation_body = {key: value for key, value in operation.items() if key != "operation_sha256"}
+            operation["operation_sha256"] = hashlib.sha256(canonical_json(operation_body).encode("utf-8")).hexdigest()
+        dispatch_body = {key: value for key, value in dispatch_report.items() if key != "report_sha256"}
+        dispatch_report["report_sha256"] = hashlib.sha256(canonical_json(dispatch_body).encode("utf-8")).hexdigest()
     launch_report = redacted["launch_argument_report"]
     launch_report["module_report_sha256"] = module_report["report_sha256"]
     for launch in launch_report["launches"]:
         for parameter in launch["parameters"]:
             parameter["value_sha256"] = "redacted"
+            if parameter.get("typed_decoding"):
+                parameter["typed_decoding"]["pointer_field_sha256"] = {
+                    name: "redacted" for name in parameter["typed_decoding"]["pointer_field_sha256"]
+                }
+                parameter["typed_decoding"]["rng_state_sha256"] = "redacted"
             for candidate in parameter["aligned_pointer_candidates"]:
                 candidate["pointer_value_sha256"] = "redacted"
         for match in launch["parameter_pointer_matches"]:
@@ -311,14 +332,17 @@ def verify_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
     artifact_hash_valid = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == artifact.get(
         "artifact_sha256"
     )
-    from .module_invocation import verify_module_invocation_report
+    from .module_invocation import verify_attention_dispatch_report, verify_module_invocation_report
 
     module_valid = verify_module_invocation_report(artifact.get("module_invocation_report", {}))["valid"]
+    dispatch_report = artifact.get("attention_dispatch_report")
+    dispatch_valid = True if dispatch_report is None else verify_attention_dispatch_report(dispatch_report)["valid"]
     launch_valid = verify_launch_argument_report(artifact.get("launch_argument_report", {}))["valid"]
     return {
-        "valid": bool(artifact_hash_valid and module_valid and launch_valid),
+        "valid": bool(artifact_hash_valid and module_valid and dispatch_valid and launch_valid),
         "artifact_hash_valid": artifact_hash_valid,
         "module_report_valid": module_valid,
+        "attention_dispatch_report_valid": dispatch_valid,
         "launch_report_valid": launch_valid,
     }
 
