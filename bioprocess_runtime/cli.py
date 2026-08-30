@@ -645,7 +645,7 @@ def command_kernel_signatures(args: argparse.Namespace) -> int:
     summary = json.loads(args.summary.read_text(encoding="utf-8"))
     certificate = build_kernel_signature_certificate(summary)
     _write_json(args.output, certificate)
-    return 0 if certificate["typed_entries"] else 1
+    return 0 if certificate["partial_parameter_schema_entries"] or certificate["source_layout_reconstructed_entries"] else 1
 
 
 def command_kernel_signatures_verify(args: argparse.Namespace) -> int:

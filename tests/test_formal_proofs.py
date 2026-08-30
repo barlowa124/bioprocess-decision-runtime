@@ -213,7 +213,7 @@ class LaunchArgumentTests(unittest.TestCase):
         )
         summary = build_launch_argument_summary([(artifact, "module")])
         self.assertEqual(summary["entries_with_input_boundary_match"], 1)
-        self.assertEqual(summary["entries_with_output_boundary_match"], 1)
+        self.assertEqual(summary["entries_with_retrospective_output_address_match"], 1)
         self.assertEqual(summary["entries_with_parameter_boundary_match"], 1)
         self.assertEqual(summary["storage_range_match_count"], 3)
         self.assertFalse(summary["typed_kernel_signatures_established"])
@@ -252,15 +252,47 @@ class KernelSignatureTests(unittest.TestCase):
                         {"parameter_index": 2, "parameter_byte_offset": 0, "role": "output"},
                         {"parameter_index": 2, "parameter_byte_offset": 8, "role": "input"},
                     ],
-                }
+                },
+                {
+                    "kernel_name": "fmha_cutlass_AttentionKernel_Params",
+                    "expected_module": "model.layers.0.self_attn",
+                    "parameter_sizes": [264],
+                    "boundary_pointer_matches": [
+                        {"parameter_index": 0, "parameter_byte_offset": 0, "role": "output", "temporal_status": "post_launch_retrospective"},
+                        {"parameter_index": 0, "parameter_byte_offset": 0, "role": "input", "temporal_status": "pre_launch_retained"},
+                        {"parameter_index": 0, "parameter_byte_offset": 8, "role": "parameter", "temporal_status": "pre_launch_retained"},
+                    ],
+                },
             ],
         }
         certificate = build_kernel_signature_certificate(summary)
-        self.assertEqual(certificate["typed_entries"], 1)
-        self.assertTrue(certificate["all_signatures_typed"])
+        self.assertEqual(certificate["typed_entries"], 0)
+        self.assertEqual(certificate["partial_parameter_schema_entries"], 1)
+        self.assertEqual(certificate["source_layout_reconstructed_entries"], 1)
+        self.assertFalse(certificate["all_signatures_typed"])
+        self.assertTrue(certificate["source"]["wheel_revision_matches"])
         self.assertEqual(certificate["entries"][0]["typed_fields"][2]["observed_boundary_role"], "output")
+        self.assertEqual(certificate["entries"][1]["reconstructed_layout_size_bytes"], 264)
+        self.assertEqual(len(certificate["entries"][1]["observed_role_conflicts"]), 1)
+        self.assertEqual(certificate["entries"][1]["observed_role_conflicts"][0]["source_field"], "query_ptr")
         self.assertFalse(certificate["complete_field_semantics_established"])
         self.assertTrue(verify_kernel_signature_certificate(certificate)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["source"]["cutlass_gitlink_commit"] = "0" * 40
+        body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
+        damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        verification = verify_kernel_signature_certificate(damaged)
+        self.assertFalse(verification["source_identities_valid"])
+        self.assertFalse(verification["valid"])
+        forged_fields = copy.deepcopy(certificate)
+        forged_fields["source"]["attention_source_field_order"][0:2] = reversed(
+            forged_fields["source"]["attention_source_field_order"][0:2]
+        )
+        body = {key: value for key, value in forged_fields.items() if key != "certificate_sha256"}
+        forged_fields["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        verification = verify_kernel_signature_certificate(forged_fields)
+        self.assertFalse(verification["source_identities_valid"])
+        self.assertFalse(verification["valid"])
 
 
 class ModuleInvocationTests(unittest.TestCase):

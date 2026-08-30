@@ -543,22 +543,22 @@ python -m bioprocess_runtime launch-argument-summary-verify results/gemma3_270m_
 
 The checked [`results/gemma3_270m_launch_argument_summary.json`](results/gemma3_270m_launch_argument_summary.json) reports:
 
-- The Q-projection GEMM receives one 360-byte packed parameter object. Candidate pointers at byte offset 280 match the committed module input, offset 288 matches the module-owned weight parameter, and offsets 296 and 304 match the committed output.
-- The fused-attention kernel receives one 264-byte parameter object; offset 0 matches the enclosing attention output. Its Q/K/V intermediates are not module-boundary tensors, so no boundary-input match is claimed.
-- The RMS mean-reduction kernel receives one 1,048-byte parameter object; offset 984 matches the enclosing RMSNorm output. Its internal reduction input is not identified with the module input.
-- GELU receives parameters of 4, 1, and 16 bytes; aligned candidates in parameter 2 match both its committed input and output.
-- All four artifacts verify. Two have module-boundary input matches, one has a module-owned parameter match, and all four have output matches.
+- The Q-projection GEMM receives one 360-byte packed parameter object. Pre-launch retained tensors match at offset 280 for the module input and 288 for the module-owned weight. Offsets 296 and 304 retrospectively equal the post-launch output address; their field roles remain untyped.
+- The fused-attention kernel receives one 264-byte parameter object. Offset 0 retrospectively equals the later enclosing-module output address, but exact source reconstruction identifies offset 0 as `query_ptr`; this equality is temporal address reuse or alias ambiguity, not an output-field binding.
+- The RMS mean-reduction kernel receives one 1,048-byte parameter object. Offset 984 retrospectively equals the enclosing RMSNorm output address; the packed field and internal reduction input remain untyped.
+- GELU receives parameters of 4, 1, and 16 bytes; aligned candidates in parameter 2 match its retained input and retrospective output. The typed signature below resolves those fields as `data[1]` and `data[0]`, respectively.
+- All four artifacts verify. Two have pre-launch module-input matches, one has a pre-launch module-owned parameter match, and all four have retrospective output-address matches.
 - Eight launch values fall inside recorded module tensor storage ranges; in these checked cases every match equals the corresponding tensor data pointer at storage offset zero.
 
-This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes, plus explicit storage-range containment checks. It still does not generally establish the C++ type of each packed field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
+This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes, plus explicit storage-range containment checks. Input and parameter tensors are retained before launch; output addresses are captured retrospectively and can reflect allocator reuse unless an independent typed layout resolves the field. The evidence still does not generally establish the C++ type of each packed field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
 
 ### Partial typed kernel signatures
 
-The installed PyTorch wheel contains `ATen/native/cuda/CUDALoops.cuh`, which independently declares `vectorized_elementwise_kernel(int N, func_t f, array_t data)`. The GELU mangled symbol identifies `array_t` as `std::array<char*,2>`, and CUPTI reports parameter sizes `[4,1,16]`. Together these establish one partial typed signature:
+The installed PyTorch wheel contains `ATen/native/cuda/CUDALoops.cuh`, which independently declares `vectorized_elementwise_kernel(int N, func_t f, array_t data)`. The GELU mangled symbol identifies `array_t` as `std::array<char*,2>`, and CUPTI reports parameter sizes `[4,1,16]`. Together these establish one partial launch-parameter schema; the specialized closure type remains unresolved:
 
 ```text
 parameter 0: int N                 (4 bytes)
-parameter 1: func_t f              (1 byte in this specialization)
+parameter 1: unresolved func_t f   (1 byte in this specialization)
 parameter 2: char* data[2]         (16 bytes)
   data[0] at offset 0: observed output pointer
   data[1] at offset 8: observed input pointer
@@ -571,7 +571,11 @@ python -m bioprocess_runtime kernel-signatures --summary results/gemma3_270m_lau
 python -m bioprocess_runtime kernel-signatures-verify results/gemma3_270m_kernel_signatures.json
 ```
 
-The checked certificate commits the installed header value. GELU is typed at the launch-signature level; Q-projection CUTLASS, fused-attention, and reduction packed structs remain untyped because their defining sources are not present in the installed wheel. Even for GELU, functor internals, pointer access direction, element count consistency, memory bounds, and complete field semantics remain unproved, so `complete_field_semantics_established` remains false.
+The wheel reports exact PyTorch commit `e2d141dbde55c2a4370fac5165b0561b6af4798b`; that tree pins CUTLASS gitlink `afa1772203677c5118fcd82537a9c8fefbcc7008`. Certificate generation and verification fetch the exact-commit `CUDALoops.cuh`, `kernel_forward.h`, and `Reduce.cuh`, recompute their Git blob IDs and SHA-256 values, verify the CUTLASS gitlink through GitHub's tree metadata, and require the installed `CUDALoops.cuh` content to match after line-ending normalization.
+
+The verified attention source defines 40 `Params` fields. Their parsed order must exactly equal the ctypes field order. Under recorded native Windows-x64 ABI assumptions, the reconstruction produces 264 bytes, exactly matching the driver parameter size, with `query_ptr` at offset 0, `output_ptr` at 64, dimensions at 96–112, strides at 120–184, dropout state at 200–247, and final pointers at 248 and 256. This layout has not yet been compiled against the full exact source dependency graph, so it is recorded as `source_layout_reconstructed`, not `typed_signature_established`. Its `query_ptr` identity also exposes why the retrospective offset-0 output-address match cannot be interpreted as an output field.
+
+GELU has a partial launch-parameter schema, not a fully typed signature. Q-projection CUTLASS and reduction packed structs remain untyped. For all entries, functor internals, pointer access direction, scalar-value validation, memory bounds, and complete field semantics remain unproved, so `complete_field_semantics_established` remains false.
 
 ## Objective B: force Gemma through an executable language
 

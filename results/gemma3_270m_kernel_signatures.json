@@ -1,51 +1,284 @@
 {
   "all_signatures_typed": false,
-  "certificate_sha256": "13ecb50c1ebd39e16ac3e63694dc6106034e669fe049869ec51b185f735506f0",
+  "certificate_sha256": "ba0b9b052191439a8c9b0fd76166cf1f584d99c711debfc8a0eccabf00706af5",
   "complete_field_semantics_established": false,
   "entries": [
     {
-      "evidence": "No independently available local definition for the packed parameter type.",
+      "compiled_layout_verified": false,
+      "evidence": "No independently reconstructable local layout for the packed parameter type.",
       "expected_module": "model.layers.0.self_attn.q_proj",
       "full_field_semantics_established": false,
       "kernel_name": "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE",
+      "observed_role_conflicts": [],
       "parameter_sizes": [
         360
       ],
+      "partial_parameter_schema_established": false,
+      "reconstructed_fields": [],
+      "reconstructed_layout_size_bytes": null,
+      "source_layout_reconstructed": false,
       "typed_fields": [],
       "typed_signature_established": false
     },
     {
-      "evidence": "No independently available local definition for the packed parameter type.",
+      "compiled_layout_verified": false,
+      "evidence": "Exact PyTorch source field order, x64 ABI reconstruction, matching 264-byte driver size, and source-revision commitments.",
       "expected_module": "model.layers.0.self_attn",
       "full_field_semantics_established": false,
       "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+      "observed_role_conflicts": [
+        {
+          "interpretation": "Address equality is temporally ambiguous and is not used as a typed role binding.",
+          "parameter_byte_offset": 0,
+          "retrospective_boundary_role": "output",
+          "source_field": "query_ptr",
+          "temporal_status": "post_launch_retrospective"
+        }
+      ],
       "parameter_sizes": [
         264
       ],
+      "partial_parameter_schema_established": false,
+      "reconstructed_fields": [
+        {
+          "name": "query_ptr",
+          "offset": 0,
+          "size_bytes": 8
+        },
+        {
+          "name": "key_ptr",
+          "offset": 8,
+          "size_bytes": 8
+        },
+        {
+          "name": "value_ptr",
+          "offset": 16,
+          "size_bytes": 8
+        },
+        {
+          "name": "attn_bias_ptr",
+          "offset": 24,
+          "size_bytes": 8
+        },
+        {
+          "name": "seqstart_q_ptr",
+          "offset": 32,
+          "size_bytes": 8
+        },
+        {
+          "name": "seqstart_k_ptr",
+          "offset": 40,
+          "size_bytes": 8
+        },
+        {
+          "name": "seqlen_k_ptr",
+          "offset": 48,
+          "size_bytes": 8
+        },
+        {
+          "name": "causal_diagonal_offset",
+          "offset": 56,
+          "size_bytes": 4
+        },
+        {
+          "name": "output_ptr",
+          "offset": 64,
+          "size_bytes": 8
+        },
+        {
+          "name": "output_accum_ptr",
+          "offset": 72,
+          "size_bytes": 8
+        },
+        {
+          "name": "logsumexp_ptr",
+          "offset": 80,
+          "size_bytes": 8
+        },
+        {
+          "name": "window_size",
+          "offset": 88,
+          "size_bytes": 4
+        },
+        {
+          "name": "scale",
+          "offset": 92,
+          "size_bytes": 4
+        },
+        {
+          "name": "head_dim",
+          "offset": 96,
+          "size_bytes": 4
+        },
+        {
+          "name": "head_dim_value",
+          "offset": 100,
+          "size_bytes": 4
+        },
+        {
+          "name": "num_queries",
+          "offset": 104,
+          "size_bytes": 4
+        },
+        {
+          "name": "num_keys",
+          "offset": 108,
+          "size_bytes": 4
+        },
+        {
+          "name": "num_keys_absolute",
+          "offset": 112,
+          "size_bytes": 4
+        },
+        {
+          "name": "custom_mask_type",
+          "offset": 116,
+          "size_bytes": 1
+        },
+        {
+          "name": "q_strideM",
+          "offset": 120,
+          "size_bytes": 4
+        },
+        {
+          "name": "k_strideM",
+          "offset": 124,
+          "size_bytes": 4
+        },
+        {
+          "name": "v_strideM",
+          "offset": 128,
+          "size_bytes": 4
+        },
+        {
+          "name": "bias_strideM",
+          "offset": 132,
+          "size_bytes": 4
+        },
+        {
+          "name": "o_strideM",
+          "offset": 136,
+          "size_bytes": 4
+        },
+        {
+          "name": "q_strideH",
+          "offset": 140,
+          "size_bytes": 4
+        },
+        {
+          "name": "k_strideH",
+          "offset": 144,
+          "size_bytes": 4
+        },
+        {
+          "name": "v_strideH",
+          "offset": 148,
+          "size_bytes": 4
+        },
+        {
+          "name": "bias_strideH",
+          "offset": 152,
+          "size_bytes": 8
+        },
+        {
+          "name": "q_strideB",
+          "offset": 160,
+          "size_bytes": 8
+        },
+        {
+          "name": "k_strideB",
+          "offset": 168,
+          "size_bytes": 8
+        },
+        {
+          "name": "v_strideB",
+          "offset": 176,
+          "size_bytes": 8
+        },
+        {
+          "name": "bias_strideB",
+          "offset": 184,
+          "size_bytes": 8
+        },
+        {
+          "name": "num_batches",
+          "offset": 192,
+          "size_bytes": 4
+        },
+        {
+          "name": "num_heads",
+          "offset": 196,
+          "size_bytes": 4
+        },
+        {
+          "name": "use_dropout",
+          "offset": 200,
+          "size_bytes": 1
+        },
+        {
+          "name": "dropout_batch_head_rng_offset",
+          "offset": 208,
+          "size_bytes": 8
+        },
+        {
+          "name": "dropout_prob",
+          "offset": 216,
+          "size_bytes": 4
+        },
+        {
+          "name": "rng_engine_inputs",
+          "offset": 224,
+          "size_bytes": 24
+        },
+        {
+          "name": "extragraph_offset",
+          "offset": 248,
+          "size_bytes": 8
+        },
+        {
+          "name": "seed",
+          "offset": 256,
+          "size_bytes": 8
+        }
+      ],
+      "reconstructed_layout_size_bytes": 264,
+      "source_layout_reconstructed": true,
       "typed_fields": [],
       "typed_signature_established": false
     },
     {
-      "evidence": "No independently available local definition for the packed parameter type.",
+      "compiled_layout_verified": false,
+      "evidence": "No independently reconstructable local layout for the packed parameter type.",
       "expected_module": "model.layers.0.input_layernorm",
       "full_field_semantics_established": false,
       "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "observed_role_conflicts": [],
       "parameter_sizes": [
         1048
       ],
+      "partial_parameter_schema_established": false,
+      "reconstructed_fields": [],
+      "reconstructed_layout_size_bytes": null,
+      "source_layout_reconstructed": false,
       "typed_fields": [],
       "typed_signature_established": false
     },
     {
-      "evidence": "Installed CUDALoops.cuh signature, mangled std::array<char*,2> type, driver parameter sizes, and boundary pointer matches.",
+      "compiled_layout_verified": false,
+      "evidence": "Verified exact-commit CUDALoops.cuh signature, mangled std::array<char*,2> type, driver parameter sizes, and boundary pointer matches; closure type remains unresolved.",
       "expected_module": "model.layers.0.mlp.act_fn",
       "full_field_semantics_established": false,
       "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_",
+      "observed_role_conflicts": [],
       "parameter_sizes": [
         4,
         1,
         16
       ],
+      "partial_parameter_schema_established": true,
+      "reconstructed_fields": [],
+      "reconstructed_layout_size_bytes": null,
+      "source_layout_reconstructed": false,
       "typed_fields": [
         {
           "byte_offset": 0,
@@ -59,7 +292,7 @@
           "name": "f",
           "parameter_index": 1,
           "size_bytes": 1,
-          "type": "func_t"
+          "type": "unresolved func_t closure"
         },
         {
           "byte_offset": 0,
@@ -78,16 +311,140 @@
           "type": "char*"
         }
       ],
-      "typed_signature_established": true
+      "typed_signature_established": false
     }
   ],
+  "partial_parameter_schema_entries": 1,
   "scope": "Partial kernel-signature typing from installed PyTorch headers, mangled type identity, driver-reported sizes, and observed pointer matches; not full field or access semantics.",
   "source": {
-    "expected_signature_found": true,
-    "name": "ATen/native/cuda/CUDALoops.cuh",
-    "sha256": "d3277ec6b4562a2d09857e7644f9270a60cf2174330184c0bcb34d7068cc279f"
+    "abi_assumptions": {
+      "native_ctypes_alignment": true,
+      "platform": "Windows x64",
+      "pointer_size_bytes": 8
+    },
+    "all_source_identities_verified": true,
+    "attention_ctypes_field_order": [
+      "query_ptr",
+      "key_ptr",
+      "value_ptr",
+      "attn_bias_ptr",
+      "seqstart_q_ptr",
+      "seqstart_k_ptr",
+      "seqlen_k_ptr",
+      "causal_diagonal_offset",
+      "output_ptr",
+      "output_accum_ptr",
+      "logsumexp_ptr",
+      "window_size",
+      "scale",
+      "head_dim",
+      "head_dim_value",
+      "num_queries",
+      "num_keys",
+      "num_keys_absolute",
+      "custom_mask_type",
+      "q_strideM",
+      "k_strideM",
+      "v_strideM",
+      "bias_strideM",
+      "o_strideM",
+      "q_strideH",
+      "k_strideH",
+      "v_strideH",
+      "bias_strideH",
+      "q_strideB",
+      "k_strideB",
+      "v_strideB",
+      "bias_strideB",
+      "num_batches",
+      "num_heads",
+      "use_dropout",
+      "dropout_batch_head_rng_offset",
+      "dropout_prob",
+      "rng_engine_inputs",
+      "extragraph_offset",
+      "seed"
+    ],
+    "attention_field_order_verified": true,
+    "attention_source_field_order": [
+      "query_ptr",
+      "key_ptr",
+      "value_ptr",
+      "attn_bias_ptr",
+      "seqstart_q_ptr",
+      "seqstart_k_ptr",
+      "seqlen_k_ptr",
+      "causal_diagonal_offset",
+      "output_ptr",
+      "output_accum_ptr",
+      "logsumexp_ptr",
+      "window_size",
+      "scale",
+      "head_dim",
+      "head_dim_value",
+      "num_queries",
+      "num_keys",
+      "num_keys_absolute",
+      "custom_mask_type",
+      "q_strideM",
+      "k_strideM",
+      "v_strideM",
+      "bias_strideM",
+      "o_strideM",
+      "q_strideH",
+      "k_strideH",
+      "v_strideH",
+      "bias_strideH",
+      "q_strideB",
+      "k_strideB",
+      "v_strideB",
+      "bias_strideB",
+      "num_batches",
+      "num_heads",
+      "use_dropout",
+      "dropout_batch_head_rng_offset",
+      "dropout_prob",
+      "rng_engine_inputs",
+      "extragraph_offset",
+      "seed"
+    ],
+    "cutlass_gitlink_commit": "afa1772203677c5118fcd82537a9c8fefbcc7008",
+    "cutlass_gitlink_verified": true,
+    "expected_cutlass_gitlink_commit": "afa1772203677c5118fcd82537a9c8fefbcc7008",
+    "expected_gelu_signature_found": true,
+    "expected_pytorch_commit": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "files": [
+      {
+        "expected_git_blob_sha1": "92b77dfb6aeaf41d7b817df266bd5ba602be5dae",
+        "git_blob_sha1": "92b77dfb6aeaf41d7b817df266bd5ba602be5dae",
+        "git_blob_verified": true,
+        "installed_copy_matches": true,
+        "name": "aten/src/ATen/native/cuda/CUDALoops.cuh",
+        "sha256": "d3277ec6b4562a2d09857e7644f9270a60cf2174330184c0bcb34d7068cc279f"
+      },
+      {
+        "expected_git_blob_sha1": "d2e53e9dfadbf9103052c07e74b1fcda7be2692f",
+        "git_blob_sha1": "d2e53e9dfadbf9103052c07e74b1fcda7be2692f",
+        "git_blob_verified": true,
+        "installed_copy_matches": null,
+        "name": "aten/src/ATen/native/transformers/cuda/mem_eff_attention/kernel_forward.h",
+        "sha256": "6dcc1d40f6f0a92af3a3a3c260cac28a54b45c7ef67b67003ae51878dc412d37"
+      },
+      {
+        "expected_git_blob_sha1": "2c25c413ead2fb2b5f5f0c8c9f878ba08250654d",
+        "git_blob_sha1": "2c25c413ead2fb2b5f5f0c8c9f878ba08250654d",
+        "git_blob_verified": true,
+        "installed_copy_matches": null,
+        "name": "aten/src/ATen/native/cuda/Reduce.cuh",
+        "sha256": "afde4f3f5831bec60eacf9ebeaf2e4e0ac82e0a48b5fd8296520a67c9645a412"
+      }
+    ],
+    "wheel_git_commit": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "wheel_revision_matches": true,
+    "wheel_version": "2.7.1+cu128"
   },
-  "source_launch_argument_summary_sha256": "867adf448346e705d1312579a8e52f0c546943314d0d904c4bf56b75e6d0dfec",
+  "source_launch_argument_summary_sha256": "91f09ce9ba75b652001fbd86672f724f3a705d3dce9fe4537a2593718d4b6be0",
+  "source_layout_reconstructed_entries": 1,
   "total_entries": 4,
-  "typed_entries": 1
+  "typed_entries": 0
 }

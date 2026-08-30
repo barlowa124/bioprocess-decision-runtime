@@ -230,6 +230,11 @@ class CuptiLaunchArgumentCapture:
                     "parameter_byte_offset": candidate["byte_offset"],
                     "module": tensor_range["module"],
                     "role": tensor_range["role"],
+                    "temporal_status": (
+                        "post_launch_retrospective"
+                        if tensor_range["role"] == "output"
+                        else "pre_launch_retained"
+                    ),
                     "tensor_sha256": tensor_range["tensor_sha256"],
                     "storage_offset_bytes": candidate["pointer_value"] - tensor_range["storage_base"],
                     "equals_tensor_data_pointer": candidate["pointer_value"]
@@ -340,6 +345,11 @@ def build_launch_argument_summary(artifacts: list[tuple[dict[str, Any], str]]) -
                             "parameter_index": match["parameter_index"],
                             "parameter_byte_offset": match["parameter_byte_offset"],
                             "role": tensor["role"],
+                            "temporal_status": (
+                                "post_launch_retrospective"
+                                if tensor["role"] == "output"
+                                else "pre_launch_retained"
+                            ),
                             "tensor_sha256": tensor["tensor_sha256"],
                         }
                     )
@@ -363,25 +373,26 @@ def build_launch_argument_summary(artifacts: list[tuple[dict[str, Any], str]]) -
                 "storage_range_matches": range_matches,
                 "input_boundary_pointer_match": any(match["role"] == "input" for match in matches),
                 "parameter_boundary_pointer_match": any(match["role"] == "parameter" for match in matches),
-                "output_boundary_pointer_match": any(match["role"] == "output" for match in matches),
+                "retrospective_output_address_match": any(match["role"] == "output" for match in matches),
                 "artifact_sha256": artifact["artifact_sha256"],
                 "artifact_valid": verification["valid"],
             }
         )
     body = {
-        "scope": "CUPTI driver-entry launch parameter commitments and aligned pointer-candidate matches for four qualified layer-0 module invocations; not typed signature or memory-access proof.",
+        "scope": "CUPTI driver-entry launch parameter commitments with pre-launch retained input/parameter matches and post-launch retrospective output-address matches; not typed signature or memory-access proof.",
         "entries": entries,
         "valid_entries": sum(entry["artifact_valid"] for entry in entries),
         "total_entries": len(entries),
         "entries_with_input_boundary_match": sum(entry["input_boundary_pointer_match"] for entry in entries),
         "entries_with_parameter_boundary_match": sum(entry["parameter_boundary_pointer_match"] for entry in entries),
-        "entries_with_output_boundary_match": sum(entry["output_boundary_pointer_match"] for entry in entries),
+        "entries_with_retrospective_output_address_match": sum(entry["retrospective_output_address_match"] for entry in entries),
         "storage_range_match_count": sum(len(entry["storage_range_matches"]) for entry in entries),
         "typed_kernel_signatures_established": False,
         "complete_argument_binding_established": False,
         "limitations": [
             "Aligned 64-bit values inside packed parameters are pointer candidates until signatures are independently typed.",
             "Pointer equality or storage containment does not establish read/write direction, bounds of access, aliasing, or access behavior.",
+            "Post-launch output addresses can equal earlier internal allocations through allocator reuse until a typed field resolves the role.",
             "Fused and reduction kernels can consume intermediates not present at the enclosing module boundary.",
         ],
     }
@@ -400,8 +411,8 @@ def verify_launch_argument_summary(summary: dict[str, Any]) -> dict[str, Any]:
         == sum(entry.get("input_boundary_pointer_match", False) for entry in entries)
         and summary.get("entries_with_parameter_boundary_match")
         == sum(entry.get("parameter_boundary_pointer_match", False) for entry in entries)
-        and summary.get("entries_with_output_boundary_match")
-        == sum(entry.get("output_boundary_pointer_match", False) for entry in entries)
+        and summary.get("entries_with_retrospective_output_address_match")
+        == sum(entry.get("retrospective_output_address_match", False) for entry in entries)
         and summary.get("storage_range_match_count") == sum(len(entry.get("storage_range_matches", [])) for entry in entries)
     )
     boundaries_preserved = (
