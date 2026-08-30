@@ -4,7 +4,7 @@ import ctypes
 import hashlib
 import re
 import subprocess
-from collections import Counter
+from collections import Counter, deque
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ GLOBAL_MEMORY_BASES = {"LDG", "STG", "LDGSTS", "ATOM", "RED"}
 SHARED_MEMORY_BASES = {"LDS", "STS", "LDSM", "ATOMS"}
 GENERIC_MEMORY_BASES = {"LD", "ST"}
 MEMORY_BASES = GLOBAL_MEMORY_BASES | SHARED_MEMORY_BASES | GENERIC_MEMORY_BASES
-LOAD_BASES = {"LDG", "LDS", "LD"}
+LOAD_BASES = {"LDG", "LDS", "LDSM", "LD"}
 
 
 TARGET_POINTER_FIELDS = {
@@ -79,39 +79,51 @@ def _registers(value: str) -> list[str]:
     return re.findall(r"\b(?:UR|R)\d+\b", value)
 
 
-def _next_register(register: str) -> str:
+def _next_register(register: str, increment: int = 1) -> str:
     prefix = "UR" if register.startswith("UR") else "R"
-    return f"{prefix}{int(register[len(prefix):]) + 1}"
+    return f"{prefix}{int(register[len(prefix):]) + increment}"
 
 
-def _address_taint_slices(instructions: list[dict[str, Any]], parameter_base: int) -> list[dict[str, Any]]:
-    taint: dict[str, set[str]] = {}
-    slices = []
-    for instruction in instructions:
-        opcode = instruction["opcode"]
-        base_opcode = _base_opcode(opcode)
-        operands = instruction["operands"]
-        memories = re.findall(r"\[([^]]+)\]", operands)
-        if base_opcode in MEMORY_BASES and memories:
-            address_registers = sorted({register for memory in memories for register in _registers(memory)})
-            fields = sorted({field for register in address_registers for field in taint.get(register, set())})
-            slices.append(
-                {
-                    "instruction_offset": instruction["offset"],
-                    "opcode": opcode,
-                    "address_registers": address_registers,
-                    "source_parameter_fields": fields,
-                }
-            )
-        destination = re.match(r"((?:UR|R)\d+)\b", operands)
-        if not destination or base_opcode in {"ST", "STG", "STS", "ATOM", "ATOMS", "RED"} or opcode.startswith(("BRA", "CALL", "RET", "EXIT")):
-            continue
-        destination_register = destination.group(1)
-        if base_opcode in LOAD_BASES:
-            taint[destination_register] = set()
-            if ".64" in opcode:
-                taint[_next_register(destination_register)] = set()
-            continue
+def _destination_register_count(opcode: str) -> int:
+    if re.search(r"(?:^|\.)128(?:\.|$)", opcode):
+        return 4
+    if re.search(r"(?:^|\.)64(?:\.|$)", opcode):
+        return 2
+    if _base_opcode(opcode) == "LDSM":
+        matrices = re.search(r"\.(\d+)$", opcode)
+        if matrices:
+            return int(matrices.group(1))
+    return 1
+
+
+def _memory_slice(instruction: dict[str, Any], taint: dict[str, set[str]]) -> dict[str, Any] | None:
+    memories = re.findall(r"\[([^]]+)\]", instruction["operands"])
+    if _base_opcode(instruction["opcode"]) not in MEMORY_BASES or not memories:
+        return None
+    address_registers = sorted({register for memory in memories for register in _registers(memory)})
+    return {
+        "instruction_offset": instruction["offset"],
+        "opcode": instruction["opcode"],
+        "address_registers": address_registers,
+        "source_parameter_fields": sorted(
+            {field for register in address_registers for field in taint.get(register, set())}
+        ),
+    }
+
+
+def _transfer_taint(
+    instruction: dict[str, Any], taint: dict[str, set[str]], parameter_base: int
+) -> dict[str, set[str]]:
+    result = {register: set(fields) for register, fields in taint.items()}
+    opcode = instruction["opcode"]
+    base_opcode = _base_opcode(opcode)
+    operands = instruction["operands"]
+    destination = re.match(r"((?:UR|R)\d+)\b", operands)
+    if not destination or base_opcode in {"ST", "STG", "STS", "ATOM", "ATOMS", "RED"} or opcode.startswith(("BRA", "CALL", "RET", "EXIT")):
+        return result
+    destination_register = destination.group(1)
+    source_fields: set[str] = set()
+    if base_opcode not in LOAD_BASES:
         remaining = operands[destination.end() :]
         source_fields = {field for register in _registers(remaining) for field in taint.get(register, set())}
         for constant_offset in _constant_offsets(instruction):
@@ -120,10 +132,150 @@ def _address_taint_slices(instructions: list[dict[str, Any]], parameter_base: in
                 field = _field_for_offset(parameter_offset)
                 if field:
                     source_fields.add(field)
-        taint[destination_register] = source_fields
-        if ".64" in opcode:
-            taint[_next_register(destination_register)] = set(source_fields)
+    for increment in range(_destination_register_count(opcode)):
+        written_register = _next_register(destination_register, increment)
+        written_fields = set(source_fields)
+        if instruction.get("predicate"):
+            written_fields.update(taint.get(written_register, set()))
+        result[written_register] = written_fields
+    return result
+
+
+def _address_taint_slices(instructions: list[dict[str, Any]], parameter_base: int) -> list[dict[str, Any]]:
+    taint: dict[str, set[str]] = {}
+    slices = []
+    for instruction in instructions:
+        memory_slice = _memory_slice(instruction, taint)
+        if memory_slice:
+            slices.append(memory_slice)
+        taint = _transfer_taint(instruction, taint, parameter_base)
     return slices
+
+
+def _branch_target(instruction: dict[str, Any]) -> int | None:
+    targets = re.findall(r"0x([0-9a-fA-F]+)", instruction["operands"])
+    return int(targets[-1], 16) if targets else None
+
+
+def _cfg_successors(instructions: list[dict[str, Any]]) -> tuple[list[list[int]], dict[str, int]]:
+    offset_to_index = {instruction["offset"]: index for index, instruction in enumerate(instructions)}
+    successors: list[list[int]] = []
+    unresolved_targets = 0
+    direct_branches = 0
+    direct_calls = 0
+    returns = 0
+    reconvergence_instructions = 0
+    for index, instruction in enumerate(instructions):
+        opcode = instruction["opcode"]
+        next_index = index + 1 if index + 1 < len(instructions) else None
+        edges: set[int] = set()
+        if _base_opcode(opcode) == "BRA":
+            direct_branches += 1
+            target = _branch_target(instruction)
+            if target in offset_to_index:
+                edges.add(offset_to_index[target])
+            else:
+                unresolved_targets += 1
+            if instruction.get("predicate") and next_index is not None:
+                edges.add(next_index)
+        elif opcode.startswith("CALL"):
+            direct_calls += 1
+            target = _branch_target(instruction)
+            if target in offset_to_index:
+                edges.add(offset_to_index[target])
+            else:
+                unresolved_targets += 1
+            if next_index is not None:
+                edges.add(next_index)
+        elif opcode.startswith("RET") or opcode == "EXIT":
+            returns += opcode.startswith("RET")
+        else:
+            if opcode in {"BSSY", "BSYNC", "BREAK", "BRX"}:
+                reconvergence_instructions += 1
+            if next_index is not None:
+                edges.add(next_index)
+        successors.append(sorted(edges))
+    return successors, {
+        "direct_branches": direct_branches,
+        "direct_calls": direct_calls,
+        "returns": returns,
+        "unresolved_direct_targets": unresolved_targets,
+        "unmodeled_reconvergence_instructions": reconvergence_instructions,
+        "edge_count": sum(len(edges) for edges in successors),
+    }
+
+
+def _join_taint(left: dict[str, set[str]], right: dict[str, set[str]]) -> dict[str, set[str]]:
+    return {
+        register: set(left.get(register, set())) | set(right.get(register, set()))
+        for register in left.keys() | right.keys()
+    }
+
+
+def _cfg_address_taint_slices(
+    instructions: list[dict[str, Any]], parameter_base: int
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    instruction_successors, graph = _cfg_successors(instructions)
+    leaders = {0}
+    for index, successors in enumerate(instruction_successors):
+        if successors != ([index + 1] if index + 1 < len(instructions) else []):
+            if index + 1 < len(instructions):
+                leaders.add(index + 1)
+            leaders.update(successors)
+    starts = sorted(leaders)
+    blocks = [
+        list(range(start, starts[position + 1] if position + 1 < len(starts) else len(instructions)))
+        for position, start in enumerate(starts)
+    ]
+    instruction_to_block = {
+        instruction_index: block_index
+        for block_index, block in enumerate(blocks)
+        for instruction_index in block
+    }
+    block_successors = [
+        sorted({instruction_to_block[successor] for successor in instruction_successors[block[-1]]})
+        for block in blocks
+    ]
+    states: list[dict[str, set[str]] | None] = [None] * len(blocks)
+    states[0] = {}
+    queue = deque([0])
+    queued = {0}
+    iterations = 0
+    while queue:
+        block_index = queue.popleft()
+        queued.remove(block_index)
+        iterations += 1
+        output = states[block_index] or {}
+        for instruction_index in blocks[block_index]:
+            output = _transfer_taint(instructions[instruction_index], output, parameter_base)
+        for successor in block_successors[block_index]:
+            joined = output if states[successor] is None else _join_taint(states[successor] or {}, output)
+            if states[successor] != joined:
+                states[successor] = joined
+                if successor not in queued:
+                    queue.append(successor)
+                    queued.add(successor)
+    slices = []
+    for block_index, block in enumerate(blocks):
+        if states[block_index] is None:
+            continue
+        state = states[block_index] or {}
+        for instruction_index in block:
+            memory_slice = _memory_slice(instructions[instruction_index], state)
+            if memory_slice:
+                slices.append(memory_slice)
+            state = _transfer_taint(instructions[instruction_index], state, parameter_base)
+    graph.update(
+        {
+            "basic_block_count": len(blocks),
+            "reachable_basic_block_count": sum(state is not None for state in states),
+            "reachable_instruction_count": sum(
+                len(block) for block, state in zip(blocks, states) if state is not None
+            ),
+            "fixed_point_block_iterations": iterations,
+        }
+    )
+    return slices, graph
 
 
 def build_sass_memory_certificate(
@@ -180,6 +332,7 @@ def build_sass_memory_certificate(
         ],
     }
     slices = _address_taint_slices(instructions, base["base_constant_offset"])
+    cfg_slices, cfg_graph = _cfg_address_taint_slices(instructions, base["base_constant_offset"])
     target_loads = {
         field: [
             load
@@ -189,6 +342,7 @@ def build_sass_memory_certificate(
         for field, field_offset in TARGET_POINTER_FIELDS.items()
     }
     linked_counts = Counter(field for item in slices for field in item["source_parameter_fields"])
+    cfg_linked_counts = Counter(field for item in cfg_slices for field in item["source_parameter_fields"])
     checks = {
         "cubin_hash_matches_attestation": _file_sha256(cubin) == nsight_certificate["cupti_module"]["cubin_sha256"],
         "kernel_matches_attestation": kernel == nsight_certificate["details"]["kernel_name"],
@@ -202,10 +356,12 @@ def build_sass_memory_certificate(
         "target_pointer_fields_loaded": all(target_loads.values()),
         "global_memory_operations_present": bool(memory_by_space["global_or_global_to_shared"]),
         "dependency_barriers_excluded": all(_base_opcode(item["opcode"]) != "LDGDEPBAR" for item in memory_instructions),
-        "syntactic_address_links_present": all(linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
+        "linear_syntactic_address_links_present": all(linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
+        "cfg_syntactic_address_links_present": all(cfg_linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
+        "direct_branch_targets_resolved": cfg_graph["unresolved_direct_targets"] == 0,
     }
     body = {
-        "scope": "Syntactic SASS constant-space and register-text provenance from source-reconstructed attention parameter fields to memory address operands; not control-flow-complete dataflow, instruction semantics, access-direction, bounds, or hardware proof.",
+        "scope": "Syntactic SASS parameter-to-address provenance with a linear baseline and fixed-point direct-branch CFG; calls, returns, reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
         "sass": summary,
@@ -224,13 +380,25 @@ def build_sass_memory_certificate(
             }
             for name, items in memory_by_space.items()
         },
-        "syntactic_memory_address_slice_count": len(slices),
-        "address_slices_with_parameter_fields": sum(bool(item["source_parameter_fields"]) for item in slices),
-        "syntactic_memory_links_by_field": dict(sorted(linked_counts.items())),
+        "linear_analysis": {
+            "syntactic_memory_address_slice_count": len(slices),
+            "address_slices_with_parameter_fields": sum(bool(item["source_parameter_fields"]) for item in slices),
+            "syntactic_memory_links_by_field": dict(sorted(linked_counts.items())),
+        },
+        "direct_cfg_analysis": {
+            **cfg_graph,
+            "syntactic_memory_address_slice_count": len(cfg_slices),
+            "address_slices_with_parameter_fields": sum(bool(item["source_parameter_fields"]) for item in cfg_slices),
+            "syntactic_memory_links_by_field": dict(sorted(cfg_linked_counts.items())),
+        },
         "checks": checks,
         "all_checks_pass": all(checks.values()),
-        "linear_text_taint_only": True,
-        "control_flow_dataflow_established": False,
+        "linear_text_baseline_retained": True,
+        "direct_branch_cfg_reaching_definitions_established": True,
+        "call_return_dataflow_established": False,
+        "reconvergence_dataflow_established": False,
+        "predicate_truth_modeled": False,
+        "complete_control_flow_dataflow_established": False,
         "memory_access_direction_established": False,
         "memory_bounds_established": False,
         "sass_instruction_semantics_established": False,
@@ -253,8 +421,12 @@ def verify_sass_memory_certificate(
     )
     checks_consistent = certificate.get("all_checks_pass") == all(certificate.get("checks", {}).values())
     boundaries_preserved = (
-        certificate.get("linear_text_taint_only") is True
-        and certificate.get("control_flow_dataflow_established") is False
+        certificate.get("linear_text_baseline_retained") is True
+        and certificate.get("direct_branch_cfg_reaching_definitions_established") is True
+        and certificate.get("call_return_dataflow_established") is False
+        and certificate.get("reconvergence_dataflow_established") is False
+        and certificate.get("predicate_truth_modeled") is False
+        and certificate.get("complete_control_flow_dataflow_established") is False
         and certificate.get("memory_access_direction_established") is False
         and certificate.get("memory_bounds_established") is False
         and certificate.get("sass_instruction_semantics_established") is False

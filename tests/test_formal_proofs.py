@@ -235,7 +235,15 @@ class CudaMetadataTests(unittest.TestCase):
 
 class SassMemoryTests(unittest.TestCase):
     def test_parameter_base_and_linear_address_taint(self) -> None:
-        from bioprocess_runtime.sass_memory import MEMORY_BASES, _address_taint_slices, _base_opcode, _derive_parameter_base
+        from bioprocess_runtime.sass_memory import (
+            MEMORY_BASES,
+            _address_taint_slices,
+            _base_opcode,
+            _cfg_address_taint_slices,
+            _derive_parameter_base,
+            _destination_register_count,
+            _transfer_taint,
+        )
 
         instructions = [
             {"offset": 0, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
@@ -258,6 +266,41 @@ class SassMemoryTests(unittest.TestCase):
         self.assertNotIn(_base_opcode("LDGDEPBAR"), MEMORY_BASES)
         self.assertIn(_base_opcode("LDGSTS.E.BYPASS.LTC128B.128"), MEMORY_BASES)
         self.assertIn(_base_opcode("ST.E"), MEMORY_BASES)
+        cfg_slices, graph = _cfg_address_taint_slices(instructions, base["base_constant_offset"])
+        self.assertEqual(cfg_slices, slices)
+        self.assertEqual(graph["unresolved_direct_targets"], 0)
+        stale = {f"R{index}": {"query_ptr"} for index in range(4, 8)}
+        cleared = _transfer_taint(
+            {"offset": 0, "predicate": None, "opcode": "LDG.E.LTC128B.128", "operands": "R4,[R20.64]"},
+            stale,
+            0x160,
+        )
+        self.assertTrue(all(not cleared[f"R{index}"] for index in range(4, 8)))
+        self.assertEqual(_destination_register_count("LDSM.16.M88.4"), 4)
+        cleared = _transfer_taint(
+            {"offset": 0, "predicate": None, "opcode": "LDSM.16.M88.4", "operands": "R4,[R20]"},
+            stale,
+            0x160,
+        )
+        self.assertTrue(all(not cleared[f"R{index}"] for index in range(4, 8)))
+
+    def test_cfg_joins_direct_branch_reaching_fields(self) -> None:
+        from bioprocess_runtime.sass_memory import _cfg_address_taint_slices
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "predicate": "@P0", "opcode": "BRA.U", "operands": "0x40"},
+            {"offset": 32, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x168]"},
+            {"offset": 48, "predicate": None, "opcode": "BRA", "operands": "0x50"},
+            {"offset": 64, "predicate": None, "opcode": "MOV", "operands": "UR2,UR2"},
+            {"offset": 80, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 96, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+        ]
+        slices, graph = _cfg_address_taint_slices(instructions, 0x160)
+        self.assertEqual(slices[0]["source_parameter_fields"], ["key_ptr", "query_ptr"])
+        self.assertEqual(graph["direct_branches"], 2)
+        self.assertEqual(graph["unresolved_direct_targets"], 0)
+        self.assertGreater(graph["basic_block_count"], 1)
 
 
 class AttentionParameterTests(unittest.TestCase):
