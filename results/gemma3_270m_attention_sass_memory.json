@@ -1,9 +1,61 @@
 {
   "all_checks_pass": true,
-  "certificate_sha256": "a8ee0708487165c97f980d455887134bf026eb1d4683706817031ea34919dac1",
+  "bounded_call_string_analysis": {
+    "abstracted_call_overflow_count": 233,
+    "address_slices_with_parameter_fields": 128,
+    "call_context_count": 855,
+    "call_overflow_abstraction": "Drop oldest return site and retain the newest at the fixed depth.",
+    "context_transition_count": 29822,
+    "fixed_point_context_iterations": 20989,
+    "maximum_call_depth": 4,
+    "maximum_observed_call_depth": 4,
+    "reachable_basic_block_count": 161,
+    "reachable_instruction_count": 3570,
+    "syntactic_memory_address_slice_count": 364,
+    "syntactic_memory_links_by_field": {
+      "attn_bias_ptr": 4,
+      "bias_strideB": 4,
+      "bias_strideH": 4,
+      "bias_strideM": 4,
+      "causal_diagonal_offset": 8,
+      "custom_mask_type": 32,
+      "extragraph_offset": 1,
+      "head_dim": 15,
+      "head_dim_value": 53,
+      "k_strideB": 16,
+      "k_strideH": 56,
+      "k_strideM": 16,
+      "key_ptr": 16,
+      "logsumexp_ptr": 2,
+      "num_heads": 42,
+      "num_queries": 58,
+      "o_strideM": 48,
+      "output_accum_ptr": 32,
+      "output_ptr": 48,
+      "q_strideB": 4,
+      "q_strideH": 4,
+      "q_strideM": 20,
+      "query_ptr": 4,
+      "rng_engine_inputs": 2,
+      "seed": 1,
+      "seqlen_k_ptr": 1,
+      "seqstart_k_ptr": 11,
+      "seqstart_q_ptr": 2,
+      "v_strideB": 32,
+      "v_strideM": 32,
+      "value_ptr": 32
+    },
+    "unresolved_return_context_count": 0
+  },
+  "bounded_call_string_dataflow_established": true,
+  "call_string_depth_overflow_free": false,
+  "certificate_sha256": "3eb1a6bdfc4580a3be11bdb0812fc0f213fb654a3383d793607a9a964f76e54b",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
+    "call_string_overflow_abstraction_recorded": true,
+    "call_string_returns_resolved": true,
+    "call_string_syntactic_address_links_present": true,
     "cfg_syntactic_address_links_present": true,
     "context_insensitive_return_edges_present": true,
     "cubin_hash_matches_attestation": true,
@@ -21,7 +73,6 @@
   },
   "complete_control_flow_dataflow_established": false,
   "context_insensitive_call_return_edges_established": true,
-  "context_sensitive_call_return_dataflow_established": false,
   "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
   "direct_branch_cfg_reaching_definitions_established": true,
   "direct_cfg_analysis": {
@@ -381,7 +432,7 @@
     }
   },
   "sass_instruction_semantics_established": false,
-  "scope": "Syntactic SASS parameter-to-address provenance with fixed-point direct branches, context-insensitive return over-approximation, and lexical barrier-token reconvergence edges; context-sensitive calls, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
+  "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
   "target_pointer_loads": {
     "key_ptr": [
       {
@@ -493,5 +544,6 @@
         "source_field": "value_ptr"
       }
     ]
-  }
+  },
+  "unbounded_context_sensitive_call_return_dataflow_established": false
 }

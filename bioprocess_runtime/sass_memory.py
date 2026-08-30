@@ -281,10 +281,9 @@ def _join_taint(left: dict[str, set[str]], right: dict[str, set[str]]) -> dict[s
     }
 
 
-def _cfg_address_taint_slices(
-    instructions: list[dict[str, Any]], parameter_base: int
-) -> tuple[list[dict[str, Any]], dict[str, int]]:
-    instruction_successors, graph = _cfg_successors(instructions)
+def _basic_blocks(
+    instructions: list[dict[str, Any]], instruction_successors: list[list[int]]
+) -> tuple[list[list[int]], dict[int, int], list[list[int]]]:
     leaders = {0}
     for index, successors in enumerate(instruction_successors):
         if successors != ([index + 1] if index + 1 < len(instructions) else []):
@@ -305,6 +304,14 @@ def _cfg_address_taint_slices(
         sorted({instruction_to_block[successor] for successor in instruction_successors[block[-1]]})
         for block in blocks
     ]
+    return blocks, instruction_to_block, block_successors
+
+
+def _cfg_address_taint_slices(
+    instructions: list[dict[str, Any]], parameter_base: int
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    instruction_successors, graph = _cfg_successors(instructions)
+    blocks, instruction_to_block, block_successors = _basic_blocks(instructions, instruction_successors)
     states: list[dict[str, set[str]] | None] = [None] * len(blocks)
     states[0] = {}
     queue = deque([0])
@@ -345,6 +352,114 @@ def _cfg_address_taint_slices(
         }
     )
     return slices, graph
+
+
+def _call_string_address_taint_slices(
+    instructions: list[dict[str, Any]], parameter_base: int, maximum_call_depth: int = 4
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    instruction_successors, _ = _cfg_successors(instructions)
+    blocks, instruction_to_block, block_successors = _basic_blocks(instructions, instruction_successors)
+    offset_to_block = {
+        instructions[instruction_index]["offset"]: block_index
+        for block_index, block in enumerate(blocks)
+        for instruction_index in block
+    }
+    states: dict[tuple[int, tuple[int, ...]], dict[str, set[str]]] = {(0, ()): {}}
+    queue = deque([(0, ())])
+    queued = {(0, ())}
+    iterations = 0
+    transitions = 0
+    truncated_calls = 0
+    unresolved_returns = 0
+    maximum_observed_depth = 0
+    while queue:
+        context = queue.popleft()
+        queued.remove(context)
+        block_index, call_stack = context
+        iterations += 1
+        output = states[context]
+        for instruction_index in blocks[block_index]:
+            output = _transfer_taint(instructions[instruction_index], output, parameter_base)
+        terminator_index = blocks[block_index][-1]
+        terminator = instructions[terminator_index]
+        base_opcode = _base_opcode(terminator["opcode"])
+        next_block = (
+            instruction_to_block[terminator_index + 1]
+            if terminator_index + 1 < len(instructions)
+            else None
+        )
+        targets: set[tuple[int, tuple[int, ...]]] = set()
+        if base_opcode == "CALL":
+            target = _branch_target(terminator)
+            target_block = offset_to_block.get(target)
+            if target_block is not None and next_block is not None:
+                if len(call_stack) < maximum_call_depth:
+                    targets.add((target_block, (*call_stack, next_block)))
+                    maximum_observed_depth = max(maximum_observed_depth, len(call_stack) + 1)
+                else:
+                    truncated_calls += 1
+                    targets.add((target_block, (*call_stack[1:], next_block)))
+            if terminator.get("predicate") and next_block is not None:
+                targets.add((next_block, call_stack))
+        elif base_opcode == "RET":
+            if call_stack:
+                targets.add((call_stack[-1], call_stack[:-1]))
+            else:
+                unresolved_returns += 1
+            if terminator.get("predicate") and next_block is not None:
+                targets.add((next_block, call_stack))
+        else:
+            targets.update((successor, call_stack) for successor in block_successors[block_index])
+        transitions += len(targets)
+        for target_context in targets:
+            joined = (
+                output
+                if target_context not in states
+                else _join_taint(states[target_context], output)
+            )
+            if states.get(target_context) != joined:
+                states[target_context] = joined
+                if target_context not in queued:
+                    queue.append(target_context)
+                    queued.add(target_context)
+    slice_map: dict[tuple[int, str, tuple[str, ...]], dict[str, Any]] = {}
+    for (block_index, call_stack), entry_state in states.items():
+        state = entry_state
+        for instruction_index in blocks[block_index]:
+            memory_slice = _memory_slice(instructions[instruction_index], state)
+            if memory_slice:
+                key = (
+                    memory_slice["instruction_offset"],
+                    memory_slice["opcode"],
+                    tuple(memory_slice["address_registers"]),
+                )
+                aggregate = slice_map.setdefault(
+                    key,
+                    {
+                        **memory_slice,
+                        "source_parameter_fields": [],
+                        "call_context_count": 0,
+                    },
+                )
+                aggregate["source_parameter_fields"] = sorted(
+                    set(aggregate["source_parameter_fields"]) | set(memory_slice["source_parameter_fields"])
+                )
+                aggregate["call_context_count"] += 1
+            state = _transfer_taint(instructions[instruction_index], state, parameter_base)
+    slices = list(slice_map.values())
+    reachable_blocks = {block_index for block_index, call_stack in states}
+    return slices, {
+        "maximum_call_depth": maximum_call_depth,
+        "maximum_observed_call_depth": maximum_observed_depth,
+        "call_context_count": len(states),
+        "reachable_basic_block_count": len(reachable_blocks),
+        "reachable_instruction_count": sum(len(blocks[index]) for index in reachable_blocks),
+        "fixed_point_context_iterations": iterations,
+        "context_transition_count": transitions,
+        "abstracted_call_overflow_count": truncated_calls,
+        "call_overflow_abstraction": "Drop oldest return site and retain the newest at the fixed depth.",
+        "unresolved_return_context_count": unresolved_returns,
+    }
 
 
 def build_sass_memory_certificate(
@@ -402,6 +517,9 @@ def build_sass_memory_certificate(
     }
     slices = _address_taint_slices(instructions, base["base_constant_offset"])
     cfg_slices, cfg_graph = _cfg_address_taint_slices(instructions, base["base_constant_offset"])
+    call_string_slices, call_string_graph = _call_string_address_taint_slices(
+        instructions, base["base_constant_offset"]
+    )
     target_loads = {
         field: [
             load
@@ -412,6 +530,9 @@ def build_sass_memory_certificate(
     }
     linked_counts = Counter(field for item in slices for field in item["source_parameter_fields"])
     cfg_linked_counts = Counter(field for item in cfg_slices for field in item["source_parameter_fields"])
+    call_string_linked_counts = Counter(
+        field for item in call_string_slices for field in item["source_parameter_fields"]
+    )
     checks = {
         "cubin_hash_matches_attestation": _file_sha256(cubin) == nsight_certificate["cupti_module"]["cubin_sha256"],
         "kernel_matches_attestation": kernel == nsight_certificate["details"]["kernel_name"],
@@ -427,6 +548,12 @@ def build_sass_memory_certificate(
         "dependency_barriers_excluded": all(_base_opcode(item["opcode"]) != "LDGDEPBAR" for item in memory_instructions),
         "linear_syntactic_address_links_present": all(linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
         "cfg_syntactic_address_links_present": all(cfg_linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS),
+        "call_string_syntactic_address_links_present": all(
+            call_string_linked_counts[field] > 0 for field in TARGET_POINTER_FIELDS
+        ),
+        "call_string_overflow_abstraction_recorded": call_string_graph["call_overflow_abstraction"]
+        == "Drop oldest return site and retain the newest at the fixed depth.",
+        "call_string_returns_resolved": call_string_graph["unresolved_return_context_count"] == 0,
         "direct_branch_targets_resolved": cfg_graph["unresolved_direct_targets"] == 0,
         "context_insensitive_return_edges_present": cfg_graph["context_insensitive_return_edges"]
         == cfg_graph["returns"] * cfg_graph["direct_call_fallthroughs"],
@@ -437,7 +564,7 @@ def build_sass_memory_certificate(
         "no_indirect_transfers_observed": cfg_graph["unresolved_indirect_transfers"] == 0,
     }
     body = {
-        "scope": "Syntactic SASS parameter-to-address provenance with fixed-point direct branches, context-insensitive return over-approximation, and lexical barrier-token reconvergence edges; context-sensitive calls, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
+        "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
         "sass": summary,
@@ -467,12 +594,22 @@ def build_sass_memory_certificate(
             "address_slices_with_parameter_fields": sum(bool(item["source_parameter_fields"]) for item in cfg_slices),
             "syntactic_memory_links_by_field": dict(sorted(cfg_linked_counts.items())),
         },
+        "bounded_call_string_analysis": {
+            **call_string_graph,
+            "syntactic_memory_address_slice_count": len(call_string_slices),
+            "address_slices_with_parameter_fields": sum(
+                bool(item["source_parameter_fields"]) for item in call_string_slices
+            ),
+            "syntactic_memory_links_by_field": dict(sorted(call_string_linked_counts.items())),
+        },
         "checks": checks,
         "all_checks_pass": all(checks.values()),
         "linear_text_baseline_retained": True,
         "direct_branch_cfg_reaching_definitions_established": True,
         "context_insensitive_call_return_edges_established": True,
-        "context_sensitive_call_return_dataflow_established": False,
+        "bounded_call_string_dataflow_established": True,
+        "call_string_depth_overflow_free": call_string_graph["abstracted_call_overflow_count"] == 0,
+        "unbounded_context_sensitive_call_return_dataflow_established": False,
         "lexical_barrier_reconvergence_edges_established": True,
         "hardware_reconvergence_semantics_established": False,
         "predicate_truth_modeled": False,
@@ -502,7 +639,10 @@ def verify_sass_memory_certificate(
         certificate.get("linear_text_baseline_retained") is True
         and certificate.get("direct_branch_cfg_reaching_definitions_established") is True
         and certificate.get("context_insensitive_call_return_edges_established") is True
-        and certificate.get("context_sensitive_call_return_dataflow_established") is False
+        and certificate.get("bounded_call_string_dataflow_established") is True
+        and certificate.get("call_string_depth_overflow_free")
+        == (certificate.get("bounded_call_string_analysis", {}).get("abstracted_call_overflow_count") == 0)
+        and certificate.get("unbounded_context_sensitive_call_return_dataflow_established") is False
         and certificate.get("lexical_barrier_reconvergence_edges_established") is True
         and certificate.get("hardware_reconvergence_semantics_established") is False
         and certificate.get("predicate_truth_modeled") is False

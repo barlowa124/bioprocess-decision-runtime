@@ -325,6 +325,31 @@ class SassMemoryTests(unittest.TestCase):
         self.assertEqual(graph["lexically_matched_bssy_bsync"], 1)
         self.assertEqual(graph["unmatched_barrier_controls"], 0)
 
+    def test_bounded_call_string_returns_to_callsite(self) -> None:
+        from bioprocess_runtime.sass_memory import _call_string_address_taint_slices
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "predicate": None, "opcode": "CALL.REL.NOINC", "operands": "0x50"},
+            {"offset": 32, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 48, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+            {"offset": 64, "predicate": None, "opcode": "EXIT", "operands": ""},
+            {"offset": 80, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x168]"},
+            {"offset": 96, "predicate": None, "opcode": "RET.REL.NODEC", "operands": "R2,0x0"},
+        ]
+        slices, graph = _call_string_address_taint_slices(instructions, 0x160, maximum_call_depth=2)
+        self.assertEqual(slices[0]["source_parameter_fields"], ["key_ptr"])
+        self.assertEqual(graph["maximum_observed_call_depth"], 1)
+        self.assertEqual(graph["abstracted_call_overflow_count"], 0)
+        self.assertEqual(graph["unresolved_return_context_count"], 0)
+        recursive = [
+            {"offset": 0, "predicate": None, "opcode": "CALL.REL.NOINC", "operands": "0x0"},
+            {"offset": 16, "predicate": None, "opcode": "EXIT", "operands": ""},
+        ]
+        slices, graph = _call_string_address_taint_slices(recursive, 0x160, maximum_call_depth=1)
+        self.assertGreater(graph["abstracted_call_overflow_count"], 0)
+        self.assertEqual(graph["maximum_observed_call_depth"], 1)
+
     def test_predicated_terminators_and_indirect_branches(self) -> None:
         from bioprocess_runtime.sass_memory import _cfg_successors
 
