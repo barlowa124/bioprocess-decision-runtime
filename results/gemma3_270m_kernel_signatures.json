@@ -1,0 +1,93 @@
+{
+  "all_signatures_typed": false,
+  "certificate_sha256": "13ecb50c1ebd39e16ac3e63694dc6106034e669fe049869ec51b185f735506f0",
+  "complete_field_semantics_established": false,
+  "entries": [
+    {
+      "evidence": "No independently available local definition for the packed parameter type.",
+      "expected_module": "model.layers.0.self_attn.q_proj",
+      "full_field_semantics_established": false,
+      "kernel_name": "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE",
+      "parameter_sizes": [
+        360
+      ],
+      "typed_fields": [],
+      "typed_signature_established": false
+    },
+    {
+      "evidence": "No independently available local definition for the packed parameter type.",
+      "expected_module": "model.layers.0.self_attn",
+      "full_field_semantics_established": false,
+      "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+      "parameter_sizes": [
+        264
+      ],
+      "typed_fields": [],
+      "typed_signature_established": false
+    },
+    {
+      "evidence": "No independently available local definition for the packed parameter type.",
+      "expected_module": "model.layers.0.input_layernorm",
+      "full_field_semantics_established": false,
+      "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "parameter_sizes": [
+        1048
+      ],
+      "typed_fields": [],
+      "typed_signature_established": false
+    },
+    {
+      "evidence": "Installed CUDALoops.cuh signature, mangled std::array<char*,2> type, driver parameter sizes, and boundary pointer matches.",
+      "expected_module": "model.layers.0.mlp.act_fn",
+      "full_field_semantics_established": false,
+      "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_",
+      "parameter_sizes": [
+        4,
+        1,
+        16
+      ],
+      "typed_fields": [
+        {
+          "byte_offset": 0,
+          "name": "N",
+          "parameter_index": 0,
+          "size_bytes": 4,
+          "type": "int"
+        },
+        {
+          "byte_offset": 0,
+          "name": "f",
+          "parameter_index": 1,
+          "size_bytes": 1,
+          "type": "func_t"
+        },
+        {
+          "byte_offset": 0,
+          "name": "data[0]",
+          "observed_boundary_role": "output",
+          "parameter_index": 2,
+          "size_bytes": 8,
+          "type": "char*"
+        },
+        {
+          "byte_offset": 8,
+          "name": "data[1]",
+          "observed_boundary_role": "input",
+          "parameter_index": 2,
+          "size_bytes": 8,
+          "type": "char*"
+        }
+      ],
+      "typed_signature_established": true
+    }
+  ],
+  "scope": "Partial kernel-signature typing from installed PyTorch headers, mangled type identity, driver-reported sizes, and observed pointer matches; not full field or access semantics.",
+  "source": {
+    "expected_signature_found": true,
+    "name": "ATen/native/cuda/CUDALoops.cuh",
+    "sha256": "d3277ec6b4562a2d09857e7644f9270a60cf2174330184c0bcb34d7068cc279f"
+  },
+  "source_launch_argument_summary_sha256": "867adf448346e705d1312579a8e52f0c546943314d0d904c4bf56b75e6d0dfec",
+  "total_entries": 4,
+  "typed_entries": 1
+}

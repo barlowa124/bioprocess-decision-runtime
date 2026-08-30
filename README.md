@@ -543,13 +543,35 @@ python -m bioprocess_runtime launch-argument-summary-verify results/gemma3_270m_
 
 The checked [`results/gemma3_270m_launch_argument_summary.json`](results/gemma3_270m_launch_argument_summary.json) reports:
 
-- The Q-projection GEMM receives one 360-byte packed parameter object. Candidate pointers at byte offset 280 match the committed module input; offsets 296 and 304 match the committed output.
+- The Q-projection GEMM receives one 360-byte packed parameter object. Candidate pointers at byte offset 280 match the committed module input, offset 288 matches the module-owned weight parameter, and offsets 296 and 304 match the committed output.
 - The fused-attention kernel receives one 264-byte parameter object; offset 0 matches the enclosing attention output. Its Q/K/V intermediates are not module-boundary tensors, so no boundary-input match is claimed.
 - The RMS mean-reduction kernel receives one 1,048-byte parameter object; offset 984 matches the enclosing RMSNorm output. Its internal reduction input is not identified with the module input.
 - GELU receives parameters of 4, 1, and 16 bytes; aligned candidates in parameter 2 match both its committed input and output.
-- All four artifacts verify. Two have module-boundary input matches and all four have output matches.
+- All four artifacts verify. Two have module-boundary input matches, one has a module-owned parameter match, and all four have output matches.
+- Eight launch values fall inside recorded module tensor storage ranges; in these checked cases every match equals the corresponding tensor data pointer at storage offset zero.
 
-This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes. It still does not establish the C++ type of each field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
+This is direct equality between pointer-sized values present in driver launch parameters and framework tensor device addresses, represented through matching hashes, plus explicit storage-range containment checks. It still does not generally establish the C++ type of each packed field, distinguish a true pointer from an equal-width coincidental integer without a typed signature, prove read/write direction, bounds, aliasing, or memory access, or decode packed `extra` buffers. The result therefore retains both `typed_kernel_signatures_established: false` and `complete_argument_binding_established: false`. Full artifacts remain ignored; `gemma-launch-arguments --redact` additionally removes model, tensor, packed-parameter, pointer-candidate, and selected-token fingerprints while recomputing all nested integrity hashes.
+
+### Partial typed kernel signatures
+
+The installed PyTorch wheel contains `ATen/native/cuda/CUDALoops.cuh`, which independently declares `vectorized_elementwise_kernel(int N, func_t f, array_t data)`. The GELU mangled symbol identifies `array_t` as `std::array<char*,2>`, and CUPTI reports parameter sizes `[4,1,16]`. Together these establish one partial typed signature:
+
+```text
+parameter 0: int N                 (4 bytes)
+parameter 1: func_t f              (1 byte in this specialization)
+parameter 2: char* data[2]         (16 bytes)
+  data[0] at offset 0: observed output pointer
+  data[1] at offset 8: observed input pointer
+```
+
+Generate and verify the certificate:
+
+```powershell
+python -m bioprocess_runtime kernel-signatures --summary results/gemma3_270m_launch_argument_summary.json --output results/gemma3_270m_kernel_signatures.json
+python -m bioprocess_runtime kernel-signatures-verify results/gemma3_270m_kernel_signatures.json
+```
+
+The checked certificate commits the installed header value. GELU is typed at the launch-signature level; Q-projection CUTLASS, fused-attention, and reduction packed structs remain untyped because their defining sources are not present in the installed wheel. Even for GELU, functor internals, pointer access direction, element count consistency, memory bounds, and complete field semantics remain unproved, so `complete_field_semantics_established` remains false.
 
 ## Objective B: force Gemma through an executable language
 

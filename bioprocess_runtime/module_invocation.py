@@ -62,6 +62,7 @@ class ModuleNvtxCapture(AbstractContextManager["ModuleNvtxCapture"]):
                 "class": type(module).__name__,
                 "nvtx_range": f"gemma_module:{name}",
                 "input_tensors": _tensor_values((arguments, keyword_arguments)),
+                "parameter_tensors": list(module.parameters(recurse=False)),
             }
             torch.cuda.nvtx.range_push(invocation["nvtx_range"])
             self.pending.setdefault(name, []).append(invocation)
@@ -108,6 +109,24 @@ class ModuleNvtxCapture(AbstractContextManager["ModuleNvtxCapture"]):
                 pending.remove(invocation)
             torch.cuda.nvtx.range_pop()
 
+    def tensor_storage_ranges(self) -> list[dict[str, Any]]:
+        ranges = []
+        for invocation in self.invocations:
+            for role, key in (("input", "input_tensors"), ("parameter", "parameter_tensors"), ("output", "output_tensors")):
+                for tensor in invocation[key]:
+                    storage = tensor.untyped_storage()
+                    ranges.append(
+                        {
+                            "module": invocation["module"],
+                            "role": role,
+                            "tensor_sha256": tensor_descriptor(tensor)["sha256"],
+                            "storage_base": int(storage.data_ptr()),
+                            "storage_nbytes": int(storage.nbytes()),
+                            "tensor_data_pointer": int(tensor.data_ptr()),
+                        }
+                    )
+        return ranges
+
     def report(self) -> dict[str, Any]:
         records = []
         for index, invocation in enumerate(self.invocations):
@@ -117,6 +136,7 @@ class ModuleNvtxCapture(AbstractContextManager["ModuleNvtxCapture"]):
                 "class": invocation["class"],
                 "nvtx_range": invocation["nvtx_range"],
                 "inputs": [_invocation_tensor_record(tensor) for tensor in invocation["input_tensors"]],
+                "parameters": [_invocation_tensor_record(tensor) for tensor in invocation["parameter_tensors"]],
                 "outputs": [_invocation_tensor_record(tensor) for tensor in invocation["output_tensors"]],
             }
             body["invocation_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()

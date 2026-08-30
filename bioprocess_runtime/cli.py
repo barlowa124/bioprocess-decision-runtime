@@ -594,8 +594,9 @@ def command_launch_arguments(args: argparse.Namespace) -> int:
         finally:
             module_capture.__exit__(*sys.exc_info())
             torch.cuda.nvtx.range_pop()
+        tensor_storage_ranges = module_capture.tensor_storage_ranges()
         module_report = module_capture.report()
-        launch_report = capture.report(module_report)
+        launch_report = capture.report(module_report, tensor_storage_ranges)
         body = {
             "scope": "CUPTI launch-parameter and qualified-module evidence for one exact kernel symbol; not a typed kernel-signature proof.",
             "privacy": {"redacted": False},
@@ -634,6 +635,24 @@ def command_launch_argument_summary_verify(args: argparse.Namespace) -> int:
 
     summary = json.loads(args.summary.read_text(encoding="utf-8"))
     verification = verify_launch_argument_summary(summary)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_kernel_signatures(args: argparse.Namespace) -> int:
+    from .kernel_signatures import build_kernel_signature_certificate
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    certificate = build_kernel_signature_certificate(summary)
+    _write_json(args.output, certificate)
+    return 0 if certificate["typed_entries"] else 1
+
+
+def command_kernel_signatures_verify(args: argparse.Namespace) -> int:
+    from .kernel_signatures import verify_kernel_signature_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_kernel_signature_certificate(certificate)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -1045,6 +1064,15 @@ def build_parser() -> argparse.ArgumentParser:
     launch_argument_verify_parser = subparsers.add_parser("launch-argument-summary-verify", help="Verify launch-argument summary integrity and boundaries")
     launch_argument_verify_parser.add_argument("summary", type=Path)
     launch_argument_verify_parser.set_defaults(handler=command_launch_argument_summary_verify)
+
+    kernel_signature_parser = subparsers.add_parser("kernel-signatures", help="Derive partial typed signatures from installed headers and launch evidence")
+    kernel_signature_parser.add_argument("--summary", type=Path, required=True)
+    kernel_signature_parser.add_argument("--output", type=Path, required=True)
+    kernel_signature_parser.set_defaults(handler=command_kernel_signatures)
+
+    kernel_signature_verify_parser = subparsers.add_parser("kernel-signatures-verify", help="Verify a partial kernel-signature certificate")
+    kernel_signature_verify_parser.add_argument("certificate", type=Path)
+    kernel_signature_verify_parser.set_defaults(handler=command_kernel_signatures_verify)
 
     nsight_target_parser = subparsers.add_parser("gemma-nsight-target", help="Run one NVTX-bounded Gemma forward and emit an execution binding")
     nsight_target_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

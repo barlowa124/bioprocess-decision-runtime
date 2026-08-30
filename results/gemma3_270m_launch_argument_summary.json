@@ -2,7 +2,7 @@
   "complete_argument_binding_established": false,
   "entries": [
     {
-      "artifact_sha256": "09b7259eb750da4dd8cdf6c18ca7a9522048789fb6ff86f6c1007686c841a4f1",
+      "artifact_sha256": "8a9546206d1518e7c0ebfdbfaae81634805dadfc9aa7b4d11b0cd7cfedf10dbc",
       "artifact_valid": true,
       "block": [
         32,
@@ -15,6 +15,12 @@
           "parameter_index": 0,
           "role": "input",
           "tensor_sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7"
+        },
+        {
+          "parameter_byte_offset": 288,
+          "parameter_index": 0,
+          "role": "parameter",
+          "tensor_sha256": "302f4385a18dbb22515c0e99b651c61458738e742df05a71df59a4bf9aeb7c74"
         },
         {
           "parameter_byte_offset": 296,
@@ -41,15 +47,54 @@
       "kernel_name": "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE",
       "module_scoped_launches": 1,
       "output_boundary_pointer_match": true,
+      "parameter_boundary_pointer_match": true,
       "parameter_count": 1,
       "parameter_sizes": [
         360
       ],
       "shared_memory_bytes": 8704,
+      "storage_range_matches": [
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn.q_proj",
+          "parameter_byte_offset": 280,
+          "parameter_index": 0,
+          "role": "input",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn.q_proj",
+          "parameter_byte_offset": 288,
+          "parameter_index": 0,
+          "role": "parameter",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "302f4385a18dbb22515c0e99b651c61458738e742df05a71df59a4bf9aeb7c74"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn.q_proj",
+          "parameter_byte_offset": 296,
+          "parameter_index": 0,
+          "role": "output",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn.q_proj",
+          "parameter_byte_offset": 304,
+          "parameter_index": 0,
+          "role": "output",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c"
+        }
+      ],
       "total_symbol_launches": 54
     },
     {
-      "artifact_sha256": "501cf0a475c71dc61c8595af37b74c31ee01a4d4d18adf2a338bbae1cafb7bca",
+      "artifact_sha256": "252663cfbf4a3a939a4c15c086b36f2683c9d806a900c944db0bb3d873ad9108",
       "artifact_valid": true,
       "block": [
         32,
@@ -76,15 +121,27 @@
       "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
       "module_scoped_launches": 1,
       "output_boundary_pointer_match": true,
+      "parameter_boundary_pointer_match": false,
       "parameter_count": 1,
       "parameter_sizes": [
         264
       ],
       "shared_memory_bytes": 51200,
+      "storage_range_matches": [
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.self_attn",
+          "parameter_byte_offset": 0,
+          "parameter_index": 0,
+          "role": "output",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "302b52100eb6b618a91f9aa9a52b5665f0725a149d673766dfe08a859716b36b"
+        }
+      ],
       "total_symbol_launches": 18
     },
     {
-      "artifact_sha256": "f6af3442e92cee0073fbfeb529ddd28c165f23288fc373bc45d1dd7bf5d13e4e",
+      "artifact_sha256": "f55c4871dbbfbe6314ffeafa2906acc570326a837788419005a6f5d9ef2aa20f",
       "artifact_valid": true,
       "block": [
         32,
@@ -111,15 +168,27 @@
       "kernel_name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
       "module_scoped_launches": 1,
       "output_boundary_pointer_match": true,
+      "parameter_boundary_pointer_match": false,
       "parameter_count": 1,
       "parameter_sizes": [
         1048
       ],
       "shared_memory_bytes": 0,
+      "storage_range_matches": [
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.input_layernorm",
+          "parameter_byte_offset": 984,
+          "parameter_index": 0,
+          "role": "output",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7"
+        }
+      ],
       "total_symbol_launches": 109
     },
     {
-      "artifact_sha256": "405cdd69ac74209df36de141570cf167ccd4338be886ada377ebdb5b7ad5a249",
+      "artifact_sha256": "ce4b0d6ff1ebd3e2a0a479096f942ab386916001b535ded21a6ea4a1204d8508",
       "artifact_valid": true,
       "block": [
         128,
@@ -152,6 +221,7 @@
       "kernel_name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_",
       "module_scoped_launches": 1,
       "output_boundary_pointer_match": true,
+      "parameter_boundary_pointer_match": false,
       "parameter_count": 3,
       "parameter_sizes": [
         4,
@@ -159,18 +229,40 @@
         16
       ],
       "shared_memory_bytes": 0,
+      "storage_range_matches": [
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.mlp.act_fn",
+          "parameter_byte_offset": 0,
+          "parameter_index": 2,
+          "role": "output",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "24e038d0dfd515534413b859ab4d249a3acc0191bfe9bd11e6962619348acb5f"
+        },
+        {
+          "equals_tensor_data_pointer": true,
+          "module": "model.layers.0.mlp.act_fn",
+          "parameter_byte_offset": 8,
+          "parameter_index": 2,
+          "role": "input",
+          "storage_offset_bytes": 0,
+          "tensor_sha256": "48503cc81b62d83ad750af19c7b8a9507c60511d9bb453bb95035387c77a9380"
+        }
+      ],
       "total_symbol_launches": 18
     }
   ],
   "entries_with_input_boundary_match": 2,
   "entries_with_output_boundary_match": 4,
+  "entries_with_parameter_boundary_match": 1,
   "limitations": [
     "Aligned 64-bit values inside packed parameters are pointer candidates until signatures are independently typed.",
-    "Pointer equality does not establish read/write direction, bounds, aliasing, or access behavior.",
+    "Pointer equality or storage containment does not establish read/write direction, bounds of access, aliasing, or access behavior.",
     "Fused and reduction kernels can consume intermediates not present at the enclosing module boundary."
   ],
   "scope": "CUPTI driver-entry launch parameter commitments and aligned pointer-candidate matches for four qualified layer-0 module invocations; not typed signature or memory-access proof.",
-  "summary_sha256": "ebb2a63bc91c70eb43bd552251f3faaecf21c4dc51c43ee0cccf2ccfad3d6f7c",
+  "storage_range_match_count": 8,
+  "summary_sha256": "867adf448346e705d1312579a8e52f0c546943314d0d904c4bf56b75e6d0dfec",
   "total_entries": 4,
   "typed_kernel_signatures_established": false,
   "valid_entries": 4

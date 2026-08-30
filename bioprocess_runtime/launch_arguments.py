@@ -127,6 +127,9 @@ class CuptiLaunchArgumentCapture:
                 "aligned_pointer_candidates": [
                     {
                         "byte_offset": byte_offset,
+                        "pointer_value": int.from_bytes(
+                            value[byte_offset : byte_offset + ctypes.sizeof(ctypes.c_void_p)], "little"
+                        ),
                         "pointer_value_sha256": _handle_hash(
                             int.from_bytes(value[byte_offset : byte_offset + ctypes.sizeof(ctypes.c_void_p)], "little")
                         ),
@@ -197,17 +200,20 @@ class CuptiLaunchArgumentCapture:
             if result != 0:
                 raise RuntimeError(f"cuptiUnsubscribe failed with result {result}")
 
-    def report(self, module_report: dict[str, Any]) -> dict[str, Any]:
+    def report(
+        self, module_report: dict[str, Any], tensor_storage_ranges: list[dict[str, Any]] | None = None
+    ) -> dict[str, Any]:
         pointer_modules = {}
         for invocation in module_report.get("invocations", []):
-            for role in ("inputs", "outputs"):
+            for role in ("inputs", "parameters", "outputs"):
                 for tensor in invocation[role]:
                     pointer_modules.setdefault(tensor["data_pointer_sha256"], []).append(
                         {"module": invocation["module"], "role": role[:-1], "tensor_sha256": tensor["sha256"]}
                     )
+        ranges = tensor_storage_ranges or []
         records = []
         for launch in self.records:
-            body = dict(launch)
+            body = copy.deepcopy(launch)
             body["parameter_pointer_matches"] = [
                 {
                     "parameter_index": parameter["index"],
@@ -218,6 +224,27 @@ class CuptiLaunchArgumentCapture:
                 for candidate in parameter["aligned_pointer_candidates"]
                 if candidate["pointer_value_sha256"] in pointer_modules
             ]
+            body["parameter_storage_range_matches"] = [
+                {
+                    "parameter_index": parameter["index"],
+                    "parameter_byte_offset": candidate["byte_offset"],
+                    "module": tensor_range["module"],
+                    "role": tensor_range["role"],
+                    "tensor_sha256": tensor_range["tensor_sha256"],
+                    "storage_offset_bytes": candidate["pointer_value"] - tensor_range["storage_base"],
+                    "equals_tensor_data_pointer": candidate["pointer_value"]
+                    == tensor_range["tensor_data_pointer"],
+                }
+                for parameter in launch["parameters"]
+                for candidate in parameter["aligned_pointer_candidates"]
+                for tensor_range in ranges
+                if tensor_range["storage_base"]
+                <= candidate["pointer_value"]
+                < tensor_range["storage_base"] + tensor_range["storage_nbytes"]
+            ]
+            for parameter in body["parameters"]:
+                for candidate in parameter["aligned_pointer_candidates"]:
+                    candidate.pop("pointer_value", None)
             body["launch_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
             records.append(body)
         body = {
@@ -228,7 +255,7 @@ class CuptiLaunchArgumentCapture:
             "module_report_sha256": module_report["report_sha256"],
             "limitations": [
                 "Parameter bytes are hashed and aligned pointer-sized windows are treated only as pointer candidates.",
-                "A pointer hash match does not establish argument type, access direction, bounds, or aliasing semantics.",
+                "Pointer equality or storage-range containment does not establish argument type, access direction, bounds of access, or aliasing semantics.",
                 "Packed extra-parameter buffers are recorded as present but are not decoded.",
             ],
         }
@@ -245,7 +272,7 @@ def redact_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
         redacted[key]["sha256"] = "redacted"
     module_report = redacted["module_invocation_report"]
     for invocation in module_report["invocations"]:
-        for role in ("inputs", "outputs"):
+        for role in ("inputs", "parameters", "outputs"):
             for tensor in invocation[role]:
                 tensor["sha256"] = "redacted"
                 tensor["data_pointer_sha256"] = "redacted"
@@ -263,6 +290,8 @@ def redact_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
         for match in launch["parameter_pointer_matches"]:
             for tensor in match["matches"]:
                 tensor["tensor_sha256"] = "redacted"
+        for match in launch.get("parameter_storage_range_matches", []):
+            match["tensor_sha256"] = "redacted"
         launch_body = {key: value for key, value in launch.items() if key != "launch_sha256"}
         launch["launch_sha256"] = hashlib.sha256(canonical_json(launch_body).encode("utf-8")).hexdigest()
     launch_body = {key: value for key, value in launch_report.items() if key != "report_sha256"}
@@ -314,6 +343,9 @@ def build_launch_argument_summary(artifacts: list[tuple[dict[str, Any], str]]) -
                             "tensor_sha256": tensor["tensor_sha256"],
                         }
                     )
+        range_matches = [
+            match for match in launch.get("parameter_storage_range_matches", []) if match["module"] == expected_module
+        ]
         entries.append(
             {
                 "kernel_name": artifact["launch_argument_report"]["kernel_name"],
@@ -328,7 +360,9 @@ def build_launch_argument_summary(artifacts: list[tuple[dict[str, Any], str]]) -
                 "parameter_count": len(launch["parameters"]),
                 "parameter_sizes": [parameter["size_bytes"] for parameter in launch["parameters"]],
                 "boundary_pointer_matches": matches,
+                "storage_range_matches": range_matches,
                 "input_boundary_pointer_match": any(match["role"] == "input" for match in matches),
+                "parameter_boundary_pointer_match": any(match["role"] == "parameter" for match in matches),
                 "output_boundary_pointer_match": any(match["role"] == "output" for match in matches),
                 "artifact_sha256": artifact["artifact_sha256"],
                 "artifact_valid": verification["valid"],
@@ -340,12 +374,14 @@ def build_launch_argument_summary(artifacts: list[tuple[dict[str, Any], str]]) -
         "valid_entries": sum(entry["artifact_valid"] for entry in entries),
         "total_entries": len(entries),
         "entries_with_input_boundary_match": sum(entry["input_boundary_pointer_match"] for entry in entries),
+        "entries_with_parameter_boundary_match": sum(entry["parameter_boundary_pointer_match"] for entry in entries),
         "entries_with_output_boundary_match": sum(entry["output_boundary_pointer_match"] for entry in entries),
+        "storage_range_match_count": sum(len(entry["storage_range_matches"]) for entry in entries),
         "typed_kernel_signatures_established": False,
         "complete_argument_binding_established": False,
         "limitations": [
             "Aligned 64-bit values inside packed parameters are pointer candidates until signatures are independently typed.",
-            "Pointer equality does not establish read/write direction, bounds, aliasing, or access behavior.",
+            "Pointer equality or storage containment does not establish read/write direction, bounds of access, aliasing, or access behavior.",
             "Fused and reduction kernels can consume intermediates not present at the enclosing module boundary.",
         ],
     }
@@ -362,8 +398,11 @@ def verify_launch_argument_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("valid_entries") == sum(entry.get("artifact_valid", False) for entry in entries)
         and summary.get("entries_with_input_boundary_match")
         == sum(entry.get("input_boundary_pointer_match", False) for entry in entries)
+        and summary.get("entries_with_parameter_boundary_match")
+        == sum(entry.get("parameter_boundary_pointer_match", False) for entry in entries)
         and summary.get("entries_with_output_boundary_match")
         == sum(entry.get("output_boundary_pointer_match", False) for entry in entries)
+        and summary.get("storage_range_match_count") == sum(len(entry.get("storage_range_matches", [])) for entry in entries)
     )
     boundaries_preserved = (
         summary.get("typed_kernel_signatures_established") is False

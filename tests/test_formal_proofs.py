@@ -155,6 +155,7 @@ class LaunchArgumentTests(unittest.TestCase):
         invocation = {
             "module": "module",
             "inputs": [{"data_pointer_sha256": "input_pointer", "sha256": "input"}],
+            "parameters": [{"data_pointer_sha256": "weight_pointer", "sha256": "weight"}],
             "outputs": [{"data_pointer_sha256": "output_pointer", "sha256": "output"}],
         }
         invocation["invocation_sha256"] = hashlib.sha256(canonical_json(invocation).encode("utf-8")).hexdigest()
@@ -169,17 +170,24 @@ class LaunchArgumentTests(unittest.TestCase):
             "shared_memory_bytes": 0,
             "parameters": [
                 {
-                    "size_bytes": 16,
+                    "size_bytes": 24,
                     "value_sha256": "value",
                     "aligned_pointer_candidates": [
                         {"byte_offset": 0, "pointer_value_sha256": "input_pointer"},
                         {"byte_offset": 8, "pointer_value_sha256": "output_pointer"},
+                        {"byte_offset": 16, "pointer_value_sha256": "weight_pointer"},
                     ],
                 }
             ],
             "parameter_pointer_matches": [
                 {"parameter_index": 0, "parameter_byte_offset": 0, "matches": [{"module": "module", "role": "input", "tensor_sha256": "input"}]},
                 {"parameter_index": 0, "parameter_byte_offset": 8, "matches": [{"module": "module", "role": "output", "tensor_sha256": "output"}]},
+                {"parameter_index": 0, "parameter_byte_offset": 16, "matches": [{"module": "module", "role": "parameter", "tensor_sha256": "weight"}]},
+            ],
+            "parameter_storage_range_matches": [
+                {"parameter_index": 0, "parameter_byte_offset": 0, "module": "module", "role": "input", "tensor_sha256": "input", "storage_offset_bytes": 0, "equals_tensor_data_pointer": True},
+                {"parameter_index": 0, "parameter_byte_offset": 8, "module": "module", "role": "output", "tensor_sha256": "output", "storage_offset_bytes": 0, "equals_tensor_data_pointer": True},
+                {"parameter_index": 0, "parameter_byte_offset": 16, "module": "module", "role": "parameter", "tensor_sha256": "weight", "storage_offset_bytes": 0, "equals_tensor_data_pointer": True},
             ],
         }
         launch["launch_sha256"] = hashlib.sha256(canonical_json(launch).encode("utf-8")).hexdigest()
@@ -206,6 +214,8 @@ class LaunchArgumentTests(unittest.TestCase):
         summary = build_launch_argument_summary([(artifact, "module")])
         self.assertEqual(summary["entries_with_input_boundary_match"], 1)
         self.assertEqual(summary["entries_with_output_boundary_match"], 1)
+        self.assertEqual(summary["entries_with_parameter_boundary_match"], 1)
+        self.assertEqual(summary["storage_range_match_count"], 3)
         self.assertFalse(summary["typed_kernel_signatures_established"])
         self.assertFalse(summary["complete_argument_binding_established"])
         self.assertTrue(verify_launch_argument_summary(summary)["valid"])
@@ -221,6 +231,36 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertEqual(certificate["callback_ids"]["cuLaunchKernel"], 307)
         self.assertEqual(certificate["ctypes_layouts"]["launch_kernel"]["size"], 64)
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
+
+
+@unittest.skipUnless(TORCH_AVAILABLE, "Torch is not installed")
+class KernelSignatureTests(unittest.TestCase):
+    def test_gelu_signature_is_partially_typed_from_installed_header(self) -> None:
+        from bioprocess_runtime.kernel_signatures import (
+            build_kernel_signature_certificate,
+            verify_kernel_signature_certificate,
+        )
+
+        summary = {
+            "summary_sha256": "summary",
+            "entries": [
+                {
+                    "kernel_name": "vectorized_elementwise_kernel_GeluCUDAKernelImpl_St5arrayIPcLy2E",
+                    "expected_module": "model.layers.0.mlp.act_fn",
+                    "parameter_sizes": [4, 1, 16],
+                    "boundary_pointer_matches": [
+                        {"parameter_index": 2, "parameter_byte_offset": 0, "role": "output"},
+                        {"parameter_index": 2, "parameter_byte_offset": 8, "role": "input"},
+                    ],
+                }
+            ],
+        }
+        certificate = build_kernel_signature_certificate(summary)
+        self.assertEqual(certificate["typed_entries"], 1)
+        self.assertTrue(certificate["all_signatures_typed"])
+        self.assertEqual(certificate["entries"][0]["typed_fields"][2]["observed_boundary_role"], "output")
+        self.assertFalse(certificate["complete_field_semantics_established"])
+        self.assertTrue(verify_kernel_signature_certificate(certificate)["valid"])
 
 
 class ModuleInvocationTests(unittest.TestCase):
