@@ -1,5 +1,6 @@
 {
-  "certificate_sha256": "3f14db1c41325a9d9ae7a4789ea8fc38c72cb810017c319c9a778cffa7e37c47",
+  "abstract_memory_address_width_bits": 8,
+  "certificate_sha256": "d4329072b9bcb75062e510e3a56a221f5907debead8833ccc4628981a494f052",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -31,6 +32,11 @@
     "LDG.E.LTC128B.128",
     "LDGSTS",
     "LDGSTS.E.BYPASS.LTC128B.128",
+    "LEA",
+    "LEA.HI",
+    "LEA.HI.SX32",
+    "LEA.HI.X",
+    "LEA.HI.X.SX32",
     "LOP3.LUT",
     "MOV",
     "NOP",
@@ -44,12 +50,15 @@
     "ULDC.64",
     "ULEA",
     "ULEA.HI",
-    "ULEA.HI.X"
+    "ULEA.HI.SX32",
+    "ULEA.HI.X",
+    "ULEA.HI.X.SX32"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
     "register width and type variants beyond the stated formulas",
     "Memory forms beyond the declared fixed-width abstract byte-array equations",
+    "LEA versus ULEA uniform-register and warp-uniform behavior; shared arithmetic is an explicit premise",
     "Barrier, warp, reconvergence, and complete control-flow semantics",
     "NVIDIA hardware conformance to these proposed equations"
   ],
@@ -472,12 +481,19 @@
       "name": "ulea_no_carry_low_and_high_results_recompose_when_low_carry_is_zero",
       "proved": true,
       "scope": {
-        "boundary": "Reduced-width proposed separate no-carry low/high equations; .X carry, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+        "boundary": "Reduced-width proposed separate no-carry low/high equations; .X carry, sign extension, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
         "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three under zero low-half carry",
+        "modeled_widths": {
+          "address_bits": 16,
+          "index_bits": 8
+        },
         "opcodes": [
           "ULEA",
-          "ULEA.HI"
-        ]
+          "ULEA.HI",
+          "LEA",
+          "LEA.HI"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
       },
       "solver_result": "unsat"
     },
@@ -486,12 +502,61 @@
       "name": "ulea_x_carry_low_and_high_results_recompose_wide_shift_add",
       "proved": true,
       "scope": {
-        "boundary": "Reduced-width proposed carry-consuming high-half equation; predicate production/encoding, sign extension, arbitrary shifts, register encoding, and hardware behavior excluded.",
+        "boundary": "Reduced-width proposed carry-consuming high-half equation; predicate production/encoding, sign extension, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
         "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three with generated low-half carry",
+        "modeled_widths": {
+          "address_bits": 16,
+          "index_bits": 8
+        },
         "opcodes": [
           "ULEA",
-          "ULEA.HI.X"
-        ]
+          "ULEA.HI.X",
+          "LEA",
+          "LEA.HI.X"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_sx32_no_carry_low_and_high_recompose_signed_shift_add_when_carry_is_zero",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed signed-index no-carry equation; SX32 is represented by an 8-bit source proxy, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 16-bit bases and signed 8-bit indices for fixed shift three under zero low-half carry",
+        "modeled_widths": {
+          "SX32_source_proxy_bits": 8,
+          "address_bits": 16
+        },
+        "opcodes": [
+          "ULEA",
+          "ULEA.HI.SX32",
+          "LEA",
+          "LEA.HI.SX32"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_x_sx32_carry_low_and_high_recompose_signed_shift_add",
+      "proved": true,
+      "scope": {
+        "boundary": "Reduced-width proposed signed-index carry-consuming equation; SX32 is represented by an 8-bit source proxy, predicate encoding, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 16-bit bases and signed 8-bit indices for fixed shift three with generated low-half carry",
+        "modeled_widths": {
+          "SX32_source_proxy_bits": 8,
+          "address_bits": 16
+        },
+        "opcodes": [
+          "ULEA",
+          "ULEA.HI.X.SX32",
+          "LEA",
+          "LEA.HI.X.SX32"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
       },
       "solver_result": "unsat"
     }
@@ -528,11 +593,11 @@
     "STG.E.128": 16,
     "STG.E.64": 8
   },
-  "proved": 37,
+  "proved": 39,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 37
+  "total": 39
 }

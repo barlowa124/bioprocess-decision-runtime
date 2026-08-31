@@ -167,8 +167,8 @@
   ],
   "scope": "Observed CUDA launch names plus binary and compatible-image fingerprints; not instruction-level semantic verification.",
   "syntactic_proposed_semantics_opcode_coverage": {
-    "coverage_fraction": 0.7539863934667255,
-    "covered_instruction_lines": 56411,
+    "coverage_fraction": 0.7606827325340497,
+    "covered_instruction_lines": 56912,
     "exact_covered_opcodes_present": [
       "BRA",
       "EXIT",
@@ -188,6 +188,8 @@
       "ISETP.GT.AND",
       "ISETP.GT.U32.AND",
       "ISETP.NE.AND",
+      "LEA",
+      "LEA.HI",
       "LOP3.LUT",
       "MOV",
       "NOP",
