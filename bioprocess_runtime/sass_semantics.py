@@ -293,9 +293,12 @@ PROPOSED_SEMANTICS_OPCODES = {
     "STG",
     "STG.E.64",
     "STG.E.128",
+    "UIADD3",
+    "UIMAD",
     "UIMAD.WIDE",
     "UIMAD.WIDE.U32",
     "ULDC.64",
+    "UMOV",
     "ULEA",
     "ULEA.HI",
     "ULEA.HI.SX32",
@@ -349,6 +352,96 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             "imad_matches_shift_add_multiply_accumulate",
             sass_imad(first, second, third, width) == independent_imad,
             {"opcode": "IMAD", "input": "all triples of 8-bit unsigned values", "flags": "base modular form only"},
+        )
+    )
+    proofs.append(
+        _prove(
+            "uniform_move_shares_proposed_identity_equation",
+            sass_mov(first) == first,
+            {
+                "opcode": "UMOV",
+                "input": "all 8-bit values",
+                "premise": "MOV and UMOV share the modeled value equation; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Reduced-width identity within the proposed equation.",
+                "boundary": "Register selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
+            "uniform_iadd3_matches_ripple_carry_sum",
+            sass_iadd3(first, second, third, width) == independent_sum,
+            {
+                "opcode": "UIADD3",
+                "input": "all triples of 8-bit values",
+                "premise": "IADD3 and UIADD3 share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Independent reduced-width ripple-carry reference.",
+                "boundary": "Only the four-operand value form is modeled; carry and predicate outputs, .X forms, modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
+            "uniform_imad_matches_shift_add_multiply_accumulate",
+            sass_imad(first, second, third, width) == independent_imad,
+            {
+                "opcode": "UIMAD",
+                "input": "all triples of 8-bit unsigned values",
+                "premise": "IMAD and UIMAD share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Independent reduced-width shift-add reference.",
+                "boundary": "Only the four-operand low-word form is modeled; carry, high-word, signedness modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
+    uniform_full_first = z3.BitVec("sass_uniform_full_first", 32)
+    uniform_full_second = z3.BitVec("sass_uniform_full_second", 32)
+    uniform_full_third = z3.BitVec("sass_uniform_full_third", 32)
+    proofs.append(
+        _prove(
+            "uniform_iadd3_full_32bit_definition_instance",
+            sass_iadd3(
+                uniform_full_first,
+                uniform_full_second,
+                uniform_full_third,
+                32,
+            )
+            == z3.Extract(
+                31,
+                0,
+                uniform_full_first + uniform_full_second + uniform_full_third,
+            ),
+            {
+                "opcode": "UIADD3",
+                "input": "all triples of 32-bit values",
+                "modeled_widths": {"operand_bits": 32, "result_bits": 32},
+                "premise": "IADD3 and UIADD3 share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference.",
+                "boundary": "Only the four-operand value form is modeled; carry and predicate outputs, .X forms, modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
+            "uniform_imad_full_32bit_definition_instance",
+            sass_imad(
+                uniform_full_first,
+                uniform_full_second,
+                uniform_full_third,
+                32,
+            )
+            == z3.Extract(
+                31,
+                0,
+                uniform_full_first * uniform_full_second + uniform_full_third,
+            ),
+            {
+                "opcode": "UIMAD",
+                "input": "all triples of 32-bit values under low-word modular arithmetic",
+                "modeled_widths": {"operand_bits": 32, "result_bits": 32},
+                "premise": "IMAD and UIMAD share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference.",
+                "boundary": "Only the four-operand low-word form is modeled; carry, high-word, signedness modifiers, uniformity, and hardware behavior are excluded.",
+            },
         )
     )
     proofs.append(

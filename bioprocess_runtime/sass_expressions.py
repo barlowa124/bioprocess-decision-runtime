@@ -29,10 +29,19 @@ from .serialization import canonical_json
 
 EXPRESSION_OPCODE_SEMANTICS = {
     "MOV": ["mov_is_identity"],
+    "UMOV": ["uniform_move_shares_proposed_identity_equation"],
     "IADD3": ["iadd3_matches_ripple_carry_sum"],
+    "UIADD3": [
+        "uniform_iadd3_matches_ripple_carry_sum",
+        "uniform_iadd3_full_32bit_definition_instance",
+    ],
     "IMAD": ["imad_matches_shift_add_multiply_accumulate"],
     "IMAD.IADD": ["imad_iadd_and_u32_share_modular_multiply_add_core"],
     "IMAD.U32": ["imad_iadd_and_u32_share_modular_multiply_add_core"],
+    "UIMAD": [
+        "uniform_imad_matches_shift_add_multiply_accumulate",
+        "uniform_imad_full_32bit_definition_instance",
+    ],
     "IMAD.WIDE": [
         "imad_wide_signed_matches_twos_complement_shift_add_product",
         "imad_wide_signed_full_32x32_to_64_definition_instance",
@@ -59,10 +68,22 @@ CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS = {
 }
 
 
+UNIFORM_VALUE_OPCODES = {
+    "UMOV",
+    "UIADD3",
+    "UIMAD",
+    "UIMAD.WIDE",
+    "UIMAD.WIDE.U32",
+}
+
+
 EXPRESSION_OPCODE_OPERAND_COUNTS = {
     "MOV": 2,
+    "UMOV": 2,
     "IADD3": 4,
+    "UIADD3": 4,
     "IMAD": 4,
+    "UIMAD": 4,
     "IMAD.IADD": 4,
     "IMAD.U32": 4,
     "IMAD.WIDE": 4,
@@ -76,7 +97,17 @@ EXPRESSION_OPCODE_OPERAND_COUNTS = {
 def _semantic_requirement(opcode: str, operands: str) -> list[str] | None:
     tokens = [token.strip().lower() for token in operands.split(",")]
     if opcode in EXPRESSION_OPCODE_SEMANTICS:
-        if len(tokens) == EXPRESSION_OPCODE_OPERAND_COUNTS[opcode] and all(tokens):
+        shape_matches = len(tokens) == EXPRESSION_OPCODE_OPERAND_COUNTS[opcode] and all(tokens)
+        if opcode in UNIFORM_VALUE_OPCODES:
+            shape_matches = bool(
+                shape_matches
+                and re.fullmatch(r"ur\d+", tokens[0])
+                and all(
+                    re.fullmatch(r"(?:ur\d+|urz|-?(?:0x[0-9a-f]+|\d+))", token)
+                    for token in tokens[1:]
+                )
+            )
+        if shape_matches:
             return EXPRESSION_OPCODE_SEMANTICS[opcode]
         return None
     if opcode == "LOP3.LUT" and len(tokens) == 6:
@@ -138,6 +169,7 @@ def _build_expression_semantics_snapshot(
         "sass_semantics_certificate_sha256": certificate["certificate_sha256"],
         "exact_opcode_obligations": EXPRESSION_OPCODE_SEMANTICS,
         "exact_opcode_operand_counts": EXPRESSION_OPCODE_OPERAND_COUNTS,
+        "uniform_value_opcodes": sorted(UNIFORM_VALUE_OPCODES),
         "conditional_opcode_obligations": [
             {
                 "opcode": opcode,
@@ -195,6 +227,7 @@ def _verify_expression_semantics_snapshot(snapshot: dict[str, Any]) -> bool:
         snapshot.get("exact_opcode_obligations") == EXPRESSION_OPCODE_SEMANTICS
         and snapshot.get("exact_opcode_operand_counts")
         == EXPRESSION_OPCODE_OPERAND_COUNTS
+        and snapshot.get("uniform_value_opcodes") == sorted(UNIFORM_VALUE_OPCODES)
         and snapshot.get("conditional_opcode_obligations")
         == [
             {

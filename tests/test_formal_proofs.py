@@ -63,9 +63,9 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 45)
-        self.assertEqual(certificate["proof_strength_summary"]["independent_reduced_width_references"], 2)
-        self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 6)
+        self.assertGreaterEqual(certificate["total"], 50)
+        self.assertEqual(certificate["proof_strength_summary"]["independent_reduced_width_references"], 4)
+        self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 8)
         self.assertTrue(
             {
                 "FFMA",
@@ -81,6 +81,9 @@ class SassSemanticsTests(unittest.TestCase):
                 "LDGSTS.E.BYPASS.LTC128B.128",
                 "IMAD.WIDE",
                 "IMAD.WIDE.U32",
+                "UIADD3",
+                "UIMAD",
+                "UMOV",
                 "ULEA",
                 "ULEA.HI.X",
                 "ULEA.HI.X.SX32",
@@ -312,6 +315,28 @@ class SassExpressionTests(unittest.TestCase):
         )
         self.assertIsNone(_semantic_requirement("LOP3.LUT", "R4,0x96,!PT"))
         self.assertIsNone(_semantic_requirement("IMAD.U32", "R4,R5"))
+        self.assertIsNone(
+            _semantic_requirement("UIADD3", "UR8,UP1,UR11,UR8,URZ")
+        )
+        self.assertEqual(
+            _semantic_requirement("UIADD3", "UR4,UR35,UR4,URZ"),
+            [
+                "uniform_iadd3_matches_ripple_carry_sum",
+                "uniform_iadd3_full_32bit_definition_instance",
+            ],
+        )
+        self.assertIsNone(_semantic_requirement("UIMAD", "R27,R26,R9,R31"))
+        self.assertEqual(
+            _semantic_requirement("UIMAD", "UR27,UR26,UR9,UR31"),
+            [
+                "uniform_imad_matches_shift_add_multiply_accumulate",
+                "uniform_imad_full_32bit_definition_instance",
+            ],
+        )
+        self.assertEqual(
+            _semantic_requirement("UMOV", "UR41,URZ"),
+            ["uniform_move_shares_proposed_identity_equation"],
+        )
         self.assertEqual(
             _semantic_requirement("LOP3.LUT", "R4,R5,R6,RZ,0x96,!PT"),
             ["lop3_lut_0x96_is_three_input_xor"],

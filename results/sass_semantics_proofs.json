@@ -1,6 +1,6 @@
 {
   "abstract_memory_address_width_bits": 8,
-  "certificate_sha256": "c0dc0a85e8bb2abbd278c7a6ec0e0aa5c59b161b3060567dce09271e7b79546e",
+  "certificate_sha256": "d96079e65fe7b9934cb9a7a069bcb1b7351c89f4569a1b04f8fda931b16c1db6",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -45,6 +45,8 @@
     "STG",
     "STG.E.128",
     "STG.E.64",
+    "UIADD3",
+    "UIMAD",
     "UIMAD.WIDE",
     "UIMAD.WIDE.U32",
     "ULDC.64",
@@ -52,7 +54,8 @@
     "ULEA.HI",
     "ULEA.HI.SX32",
     "ULEA.HI.X",
-    "ULEA.HI.X.SX32"
+    "ULEA.HI.X.SX32",
+    "UMOV"
   ],
   "excluded": [
     "Opcode modifiers not explicitly named in each obligation",
@@ -63,8 +66,8 @@
     "NVIDIA hardware conformance to these proposed equations"
   ],
   "proof_strength_summary": {
-    "full_width_definitional_or_compositional_instances": 6,
-    "independent_reduced_width_references": 2
+    "full_width_definitional_or_compositional_instances": 8,
+    "independent_reduced_width_references": 4
   },
   "proofs": [
     {
@@ -96,6 +99,79 @@
         "flags": "base modular form only",
         "input": "all triples of 8-bit unsigned values",
         "opcode": "IMAD"
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uniform_move_shares_proposed_identity_equation",
+      "proved": true,
+      "scope": {
+        "boundary": "Register selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all 8-bit values",
+        "opcode": "UMOV",
+        "premise": "MOV and UMOV share the modeled value equation; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Reduced-width identity within the proposed equation."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uniform_iadd3_matches_ripple_carry_sum",
+      "proved": true,
+      "scope": {
+        "boundary": "Only the four-operand value form is modeled; carry and predicate outputs, .X forms, modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all triples of 8-bit values",
+        "opcode": "UIADD3",
+        "premise": "IADD3 and UIADD3 share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Independent reduced-width ripple-carry reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uniform_imad_matches_shift_add_multiply_accumulate",
+      "proved": true,
+      "scope": {
+        "boundary": "Only the four-operand low-word form is modeled; carry, high-word, signedness modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all triples of 8-bit unsigned values",
+        "opcode": "UIMAD",
+        "premise": "IMAD and UIMAD share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Independent reduced-width shift-add reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uniform_iadd3_full_32bit_definition_instance",
+      "proved": true,
+      "scope": {
+        "boundary": "Only the four-operand value form is modeled; carry and predicate outputs, .X forms, modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all triples of 32-bit values",
+        "modeled_widths": {
+          "operand_bits": 32,
+          "result_bits": 32
+        },
+        "opcode": "UIADD3",
+        "premise": "IADD3 and UIADD3 share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "uniform_imad_full_32bit_definition_instance",
+      "proved": true,
+      "scope": {
+        "boundary": "Only the four-operand low-word form is modeled; carry, high-word, signedness modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all triples of 32-bit values under low-word modular arithmetic",
+        "modeled_widths": {
+          "operand_bits": 32,
+          "result_bits": 32
+        },
+        "opcode": "UIMAD",
+        "premise": "IMAD and UIMAD share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
       },
       "solver_result": "unsat"
     },
@@ -729,11 +805,11 @@
     "STG.E.128": 16,
     "STG.E.64": 8
   },
-  "proved": 45,
+  "proved": 50,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 45
+  "total": 50
 }
