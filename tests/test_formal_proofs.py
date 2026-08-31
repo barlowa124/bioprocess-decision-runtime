@@ -63,9 +63,15 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 50)
+        self.assertGreaterEqual(certificate["total"], 52)
         self.assertEqual(certificate["proof_strength_summary"]["independent_reduced_width_references"], 4)
         self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 8)
+        self.assertTrue(
+            {
+                "uldc_matches_little_endian_constant_memory_read",
+                "uldc_u8_matches_little_endian_constant_memory_read",
+            }.issubset({proof["name"] for proof in certificate["proofs"]})
+        )
         self.assertTrue(
             {
                 "FFMA",
@@ -84,6 +90,8 @@ class SassSemanticsTests(unittest.TestCase):
                 "UIADD3",
                 "UIMAD",
                 "UMOV",
+                "ULDC",
+                "ULDC.U8",
                 "ULEA",
                 "ULEA.HI.X",
                 "ULEA.HI.X.SX32",
@@ -336,6 +344,15 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(
             _semantic_requirement("UMOV", "UR41,URZ"),
             ["uniform_move_shares_proposed_identity_equation"],
+        )
+        self.assertIsNone(_semantic_requirement("ULDC", "R4,c[0x0][0x1e8]"))
+        self.assertEqual(
+            _semantic_requirement("ULDC", "UR4,c[0x0][0x1e8]"),
+            ["uldc_matches_little_endian_constant_memory_read"],
+        )
+        self.assertEqual(
+            _semantic_requirement("ULDC.U8", "UR17,c[0x0][0x1d4]"),
+            ["uldc_u8_matches_little_endian_constant_memory_read"],
         )
         self.assertEqual(
             _semantic_requirement("LOP3.LUT", "R4,R5,R6,RZ,0x96,!PT"),

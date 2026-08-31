@@ -89,12 +89,11 @@ def sass_exit() -> Any:
 
 
 def sass_memory_load_little_endian(memory: Any, address: Any, byte_count: int) -> Any:
-    return z3.Concat(
-        *[
-            z3.Select(memory, address + z3.BitVecVal(index, address.size()))
-            for index in reversed(range(byte_count))
-        ]
-    )
+    values = [
+        z3.Select(memory, address + z3.BitVecVal(index, address.size()))
+        for index in reversed(range(byte_count))
+    ]
+    return values[0] if byte_count == 1 else z3.Concat(*values)
 
 
 def sass_memory_store_little_endian(memory: Any, address: Any, value: Any, byte_count: int) -> Any:
@@ -108,8 +107,12 @@ def sass_memory_store_little_endian(memory: Any, address: Any, value: Any, byte_
     return result
 
 
+def sass_uldc(constant_memory: Any, address: Any, byte_count: int) -> Any:
+    return sass_memory_load_little_endian(constant_memory, address, byte_count)
+
+
 def sass_uldc64(constant_memory: Any, address: Any) -> Any:
-    return sass_memory_load_little_endian(constant_memory, address, 8)
+    return sass_uldc(constant_memory, address, 8)
 
 
 def sass_ldg(global_memory: Any, address: Any, byte_count: int) -> Any:
@@ -297,7 +300,9 @@ PROPOSED_SEMANTICS_OPCODES = {
     "UIMAD",
     "UIMAD.WIDE",
     "UIMAD.WIDE.U32",
+    "ULDC",
     "ULDC.64",
+    "ULDC.U8",
     "UMOV",
     "ULEA",
     "ULEA.HI",
@@ -640,10 +645,38 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             {
                 "opcode": "ULDC.64",
                 "input": "all 8-bit abstract addresses and byte-array constant memories",
-                "boundary": "Proposed 64-bit little-endian read only; constant-bank selection, alignment, faults, caching, and hardware behavior excluded.",
+                "modeled_widths": {"result_bits": 64},
+                "proof_strength": "Width-specific definitional identity within the proposed byte-array equation.",
+                "boundary": "Proposed 64-bit little-endian read only; constant-bank selection, alignment, faults, caching, register-pair placement and encoding, and hardware behavior excluded.",
             },
         )
     )
+    for opcode, byte_count in (("ULDC", 4), ("ULDC.U8", 1)):
+        explicit_bytes = [
+            z3.Select(
+                constant_memory,
+                address + z3.BitVecVal(index, address_width),
+            )
+            for index in reversed(range(byte_count))
+        ]
+        explicit_value = (
+            explicit_bytes[0]
+            if byte_count == 1
+            else z3.Concat(*explicit_bytes)
+        )
+        proofs.append(
+            _prove(
+                f"{opcode.lower().replace('.', '_')}_matches_little_endian_constant_memory_read",
+                sass_uldc(constant_memory, address, byte_count) == explicit_value,
+                {
+                    "opcode": opcode,
+                    "input": "all 8-bit abstract addresses and byte-array constant memories",
+                    "modeled_widths": {"result_bits": byte_count * 8},
+                    "proof_strength": "Width-specific definitional identity within the proposed byte-array equation.",
+                    "boundary": f"Proposed {byte_count * 8}-bit little-endian read only; constant-bank selection, alignment, faults, caching, register extension, and hardware behavior excluded.",
+                },
+            )
+        )
     ldg_memory, ldg_value = sass_ldg32_transition(global_memory, address)
     proofs.append(
         _prove(

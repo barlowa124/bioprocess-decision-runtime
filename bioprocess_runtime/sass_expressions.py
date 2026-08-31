@@ -58,7 +58,9 @@ EXPRESSION_OPCODE_SEMANTICS = {
         "imad_wide_unsigned_matches_shift_add_widened_product",
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
     ],
+    "ULDC": ["uldc_matches_little_endian_constant_memory_read"],
     "ULDC.64": ["uldc64_matches_little_endian_constant_memory_read"],
+    "ULDC.U8": ["uldc_u8_matches_little_endian_constant_memory_read"],
 }
 
 
@@ -77,6 +79,9 @@ UNIFORM_VALUE_OPCODES = {
 }
 
 
+CONSTANT_LOAD_OPCODES = {"ULDC", "ULDC.64", "ULDC.U8"}
+
+
 EXPRESSION_OPCODE_OPERAND_COUNTS = {
     "MOV": 2,
     "UMOV": 2,
@@ -90,7 +95,9 @@ EXPRESSION_OPCODE_OPERAND_COUNTS = {
     "IMAD.WIDE.U32": 4,
     "UIMAD.WIDE": 4,
     "UIMAD.WIDE.U32": 4,
+    "ULDC": 2,
     "ULDC.64": 2,
+    "ULDC.U8": 2,
 }
 
 
@@ -106,6 +113,12 @@ def _semantic_requirement(opcode: str, operands: str) -> list[str] | None:
                     re.fullmatch(r"(?:ur\d+|urz|-?(?:0x[0-9a-f]+|\d+))", token)
                     for token in tokens[1:]
                 )
+            )
+        if opcode in CONSTANT_LOAD_OPCODES:
+            shape_matches = bool(
+                shape_matches
+                and re.fullmatch(r"ur\d+", tokens[0])
+                and re.fullmatch(r"c\[0x0\]\[0x[0-9a-f]+\]", tokens[1])
             )
         if shape_matches:
             return EXPRESSION_OPCODE_SEMANTICS[opcode]
@@ -170,6 +183,7 @@ def _build_expression_semantics_snapshot(
         "exact_opcode_obligations": EXPRESSION_OPCODE_SEMANTICS,
         "exact_opcode_operand_counts": EXPRESSION_OPCODE_OPERAND_COUNTS,
         "uniform_value_opcodes": sorted(UNIFORM_VALUE_OPCODES),
+        "constant_load_opcodes": sorted(CONSTANT_LOAD_OPCODES),
         "conditional_opcode_obligations": [
             {
                 "opcode": opcode,
@@ -228,6 +242,7 @@ def _verify_expression_semantics_snapshot(snapshot: dict[str, Any]) -> bool:
         and snapshot.get("exact_opcode_operand_counts")
         == EXPRESSION_OPCODE_OPERAND_COUNTS
         and snapshot.get("uniform_value_opcodes") == sorted(UNIFORM_VALUE_OPCODES)
+        and snapshot.get("constant_load_opcodes") == sorted(CONSTANT_LOAD_OPCODES)
         and snapshot.get("conditional_opcode_obligations")
         == [
             {

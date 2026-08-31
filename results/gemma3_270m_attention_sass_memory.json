@@ -50,7 +50,7 @@
   },
   "bounded_call_string_dataflow_established": true,
   "call_string_depth_overflow_free": false,
-  "certificate_sha256": "1fbc3df56f5f3c80bb47e3ef080f25dc9e24ba4260dfcd6659e76d048b18bdc3",
+  "certificate_sha256": "bd5cba8368e6bd2b400d75969c5af22a7ccfc183f7676c705600b421a7906e71",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
@@ -613,7 +613,7 @@
     }
   },
   "sass_instruction_semantics_established": false,
-  "sass_semantics_certificate_sha256": "d96079e65fe7b9934cb9a7a069bcb1b7351c89f4569a1b04f8fda931b16c1db6",
+  "sass_semantics_certificate_sha256": "dd429270a0c0993380067cdb46af3b44434051cac26b631229340a1978c4b516",
   "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
   "target_pointer_loads": {
     "key_ptr": [

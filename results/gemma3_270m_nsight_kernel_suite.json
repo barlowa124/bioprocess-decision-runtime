@@ -34,7 +34,7 @@
       "report_sha256": "4cdf42c755f84d09afeb94530423e491b89f7281b654860a1cf63b7c24ebc486",
       "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 2315
+      "syntactic_proposed_semantics_opcode_lines": 2346
     },
     {
       "capture_request_sha256": null,
@@ -49,7 +49,7 @@
       "report_sha256": "5835c503a72269d66af0a30dc5868409ab1b02fec48ff47dd23d65db37ada6c2",
       "sass_canonical_sha256": "9b1e2b41a4eea52bdfc3cc0eb22ae100d76ed80fe0a37b2f1e2ea859a87c38c0",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 2611
+      "syntactic_proposed_semantics_opcode_lines": 2624
     },
     {
       "capture_request_sha256": null,
@@ -64,7 +64,7 @@
       "report_sha256": "e95593e16361d60f2ff41fff05eb5e6a55a5ba98efdecf8cf106218dd87696c6",
       "sass_canonical_sha256": "67f47ce3dbfb91ac36111c2a8649517eb13a0ec9a9beb679c6b173222ca27a0e",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 2549
+      "syntactic_proposed_semantics_opcode_lines": 2559
     },
     {
       "capture_request_sha256": null,
@@ -154,7 +154,7 @@
       "report_sha256": "03e20aa0cba927ab879816f8af353a6679f41d0a03269111152e6030a56b83c2",
       "sass_canonical_sha256": "678f24b28ebfe4523e3417c1d8d06f70572a4c03bd868ee121298deb6bccf121",
       "session_exact_kernel_filter_value_visible": false,
-      "syntactic_proposed_semantics_opcode_lines": 1444
+      "syntactic_proposed_semantics_opcode_lines": 1452
     },
     {
       "capture_request_sha256": "5f14d64261836c7267010dcbf3fb686608410509538be9db5d88b43cc09a65a4",
@@ -169,7 +169,7 @@
       "report_sha256": "5203c0c9d0736ce04946455590c201bcdfdf201efda711f6db39b5866446a128",
       "sass_canonical_sha256": "f50e439565822d98711efa0043d973913d30fadb5a5b92d184b04f5470a02bb8",
       "session_exact_kernel_filter_value_visible": false,
-      "syntactic_proposed_semantics_opcode_lines": 1460
+      "syntactic_proposed_semantics_opcode_lines": 1468
     },
     {
       "capture_request_sha256": null,
@@ -184,7 +184,7 @@
       "report_sha256": "ca24302213c8c51a845e0079af124f09dd26113da8649ddc531fd570d68b7dd7",
       "sass_canonical_sha256": "85efbf773d239720494c042404e5cc6735d1b9f54bb6d1627504b63bd7a99301",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 91
+      "syntactic_proposed_semantics_opcode_lines": 99
     },
     {
       "capture_request_sha256": null,
@@ -199,7 +199,7 @@
       "report_sha256": "7bcd44a4faa1b81345e72d30f117596200ee5c77ed83e40a080a6f40050c1b0a",
       "sass_canonical_sha256": "5bfabe2fdd120eb5eae3941b2b09075c5372248eca800cff16d24fd8d2cfdd76",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 72
+      "syntactic_proposed_semantics_opcode_lines": 80
     },
     {
       "capture_request_sha256": null,
@@ -214,7 +214,7 @@
       "report_sha256": "c70cbb4f15c6dc69a9ce8fb12e27d546ac83968f8bb2280ca2719f72660bdb37",
       "sass_canonical_sha256": "c2a7a3f069cc631c2f1945c156cfbe177d5571b7b832f9d5d3823d26a17ee7da",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 98
+      "syntactic_proposed_semantics_opcode_lines": 106
     },
     {
       "capture_request_sha256": null,
@@ -229,7 +229,7 @@
       "report_sha256": "1c12a227b41e5b2bc2fb562988d55d79903e34384aaf90eaa3476aa65d9df7bc",
       "sass_canonical_sha256": "acd6a12e3828544f9ada145f0d8994548bbbaed6f1560dcfd92246d45903e627",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 75
+      "syntactic_proposed_semantics_opcode_lines": 83
     },
     {
       "capture_request_sha256": null,
@@ -244,7 +244,7 @@
       "report_sha256": "e8451eb08a10778642c3d298b61eb09a7591c642c4c70dd18a2c8bed336e9282",
       "sass_canonical_sha256": "6c5a6fe6e697528938947929de88fc0d47fd9890b917aa5370542f993c4de920",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 134
+      "syntactic_proposed_semantics_opcode_lines": 142
     },
     {
       "capture_request_sha256": null,
@@ -259,7 +259,7 @@
       "report_sha256": "b3fec6e70457c43abe3133b10bcacce3adaaa12655cf0a153f492600aeae77b7",
       "sass_canonical_sha256": "6a8dae508dcf18f42d5660c855c2e9a891546fb6da279b80565c7ee741040eae",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 141
+      "syntactic_proposed_semantics_opcode_lines": 149
     },
     {
       "capture_request_sha256": null,
@@ -274,7 +274,7 @@
       "report_sha256": "3ab77a116f88bb6b6157f9b4145fbc183a119e4da63fdd465812522fbbf5e8df",
       "sass_canonical_sha256": "9b671bd4770916e8c8dafdc7c5e3933d23b7ed4bce762b787a69eaa8bcc9e4f5",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 141
+      "syntactic_proposed_semantics_opcode_lines": 149
     },
     {
       "capture_request_sha256": null,
@@ -289,7 +289,7 @@
       "report_sha256": "afa8fbf985b31bd5e38f77d163fc2ebdcb20cfebe7e69057dc034aa5a3ec993c",
       "sass_canonical_sha256": "d97128ff72a6ad4e3fd9d282bad5452f2111e21783246b73b5794d3f1db8a2d6",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 134
+      "syntactic_proposed_semantics_opcode_lines": 142
     },
     {
       "capture_request_sha256": null,
@@ -304,7 +304,7 @@
       "report_sha256": "bbcc6182ff44ad19ab90eb0ccb1d7b46e3a24c9a221e7476f2c508dc0cb63be2",
       "sass_canonical_sha256": "d30563721f17911ceb9e5399f5643b05d2a63e47bdc3c09934e139794bbf49de",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 119
+      "syntactic_proposed_semantics_opcode_lines": 127
     },
     {
       "capture_request_sha256": null,
@@ -319,7 +319,7 @@
       "report_sha256": "cdcfc179478ba09a64af268be1a39177733db2b934b579c0d088f390a2601819",
       "sass_canonical_sha256": "afc15f37f03486be3e6ce10d51481874b9e7b799b957b449bc2b4dc9df397dcc",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 134
+      "syntactic_proposed_semantics_opcode_lines": 142
     },
     {
       "capture_request_sha256": null,
@@ -334,7 +334,7 @@
       "report_sha256": "8d633aa994ba2f11fddef9a35195f7065e8c9c077e1b64eec6629b5386a0b80a",
       "sass_canonical_sha256": "2578c068e4baa3d3311721c545af6433d246983306d53077bfad3923e93c239d",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 2016
+      "syntactic_proposed_semantics_opcode_lines": 2032
     },
     {
       "capture_request_sha256": null,
@@ -349,7 +349,7 @@
       "report_sha256": "21631ed1c097bfbe88190aec233f8d03f12c2911b113886f69d11bceafcb40f3",
       "sass_canonical_sha256": "0b398a60f2c89f4414a689bc6ae6499e7ba2ec47745d8d9c882f85b8810a943e",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 2008
+      "syntactic_proposed_semantics_opcode_lines": 2024
     },
     {
       "capture_request_sha256": null,
@@ -364,7 +364,7 @@
       "report_sha256": "8d8f6993d004258a67b3c3f437b9ab18b37d188d35fd137ef36b369a6abcb1a7",
       "sass_canonical_sha256": "9e7d2febb4f4ab41f654d23b910c1ec90b7289edea265a9b90d37982c246a0a9",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 157
+      "syntactic_proposed_semantics_opcode_lines": 165
     },
     {
       "capture_request_sha256": null,
@@ -379,7 +379,7 @@
       "report_sha256": "707f35b54d4d95e8d2d59e28e581f0c223c7da5d9f2ca87000cad40635a6cdf9",
       "sass_canonical_sha256": "7d3ea1829b3bf3d5e39386df49f12303bd1dc076eda078cbcc6885f43268fdd0",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 428
+      "syntactic_proposed_semantics_opcode_lines": 436
     },
     {
       "capture_request_sha256": null,
@@ -424,7 +424,7 @@
       "report_sha256": "e8a3456eb40b2875fc9081f4071c4a7ee238ae09cd856d876c62892ed6554f6a",
       "sass_canonical_sha256": "7151d250ed41eee2a200a6d1ccad41dc04fd714add176888c2b52a6d0f756f9e",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 104
+      "syntactic_proposed_semantics_opcode_lines": 108
     },
     {
       "capture_request_sha256": null,
@@ -469,7 +469,7 @@
       "report_sha256": "969e3b5d95701c3c9baf4aeab3d90b7a3c8f54231750c741e607f94d15e1fb55",
       "sass_canonical_sha256": "d38de663fad7e45d283d8d8437c888da612a7618cbfaab77d7bd9e82484a286a",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 380
+      "syntactic_proposed_semantics_opcode_lines": 387
     },
     {
       "capture_request_sha256": null,
@@ -484,7 +484,7 @@
       "report_sha256": "c34230aab2fc85faae0a1fa613dd6e1c4faf2065d15ca4b4337eb58c0b39a5d2",
       "sass_canonical_sha256": "4a5d4e6ed8582e1532b02a19beb86c67555962d8f7e1e0530ca33169a8a380b1",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 455
+      "syntactic_proposed_semantics_opcode_lines": 456
     },
     {
       "capture_request_sha256": null,
@@ -499,7 +499,7 @@
       "report_sha256": "6aafab49ad5c3e306e17adeda76ff18fe4a6d0e20fc2da9689ed34cc7a61bdcd",
       "sass_canonical_sha256": "96b8f48084be6e9080c0dd2c5b69cd336b3f8f90fae76433025e727e92eee631",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 284
+      "syntactic_proposed_semantics_opcode_lines": 285
     },
     {
       "capture_request_sha256": null,
@@ -514,7 +514,7 @@
       "report_sha256": "5ab618eda4a7649c85ca5eb1f7f6a0020364bee2b35fe4168ccc358fc9c32df8",
       "sass_canonical_sha256": "efadda0bf3784ff14b5d3cf2e16a8111c51b0357bad60762bb4a6de30c82e6ad",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 559
+      "syntactic_proposed_semantics_opcode_lines": 561
     },
     {
       "capture_request_sha256": null,
@@ -529,7 +529,7 @@
       "report_sha256": "99b238b0ccc3d680e7c69ea1b5b8e696c563e7ef4bd891fffb0986670d1b907a",
       "sass_canonical_sha256": "08d983d467d5ae5de3b99c6cf7e011ca9a778f422c2dad90f9dd4303e92acbe6",
       "session_exact_kernel_filter_value_visible": true,
-      "syntactic_proposed_semantics_opcode_lines": 430
+      "syntactic_proposed_semantics_opcode_lines": 434
     }
   ],
   "expected_distinct_kernels": 35,
@@ -578,7 +578,7 @@
   },
   "scope": "One NVTX-bounded launch certificate attempted for every distinct non-copy CUDA kernel symbol observed in the recorded Gemma forward; instruction identity is not semantic proof.",
   "session_exact_filter_value_kernels": 33,
-  "suite_sha256": "5e26f38586e07d3d9f4dfe947c8b434853f3552fac921950064a59b8111c766a",
-  "syntactic_proposed_semantics_opcode_fraction": 0.7565755377040684,
-  "syntactic_proposed_semantics_opcode_lines": 23357
+  "suite_sha256": "f8b0e2d990e386a6d8d6312fb484eeda0004f3a2559f129b23562492c8649251",
+  "syntactic_proposed_semantics_opcode_fraction": 0.7636045607670381,
+  "syntactic_proposed_semantics_opcode_lines": 23574
 }
