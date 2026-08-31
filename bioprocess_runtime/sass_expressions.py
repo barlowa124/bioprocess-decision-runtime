@@ -4,7 +4,7 @@ import ctypes
 import hashlib
 import re
 import subprocess
-from collections import deque
+from collections import Counter, deque
 from pathlib import Path
 from typing import Any
 
@@ -27,23 +27,212 @@ from .sass_memory import (
 from .serialization import canonical_json
 
 
-SUPPORTED_EXPRESSION_OPCODES = {
-    "MOV",
-    "IMAD",
-    "IMAD.WIDE",
-    "IMAD.WIDE.U32",
-    "IMAD.IADD",
-    "IMAD.SHL.U32",
-    "IADD3",
-    "LEA",
-    "LEA.HI",
-    "LEA.HI.X",
-    "ULEA",
-    "ULEA.HI",
-    "ULEA.HI.X",
-    "ULDC",
-    "ULDC.64",
+EXPRESSION_OPCODE_SEMANTICS = {
+    "MOV": ["mov_is_identity"],
+    "IADD3": ["iadd3_matches_ripple_carry_sum"],
+    "IMAD": ["imad_matches_shift_add_multiply_accumulate"],
+    "IMAD.IADD": ["imad_iadd_and_u32_share_modular_multiply_add_core"],
+    "IMAD.U32": ["imad_iadd_and_u32_share_modular_multiply_add_core"],
+    "IMAD.WIDE": [
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_signed_full_32x32_to_64_definition_instance",
+    ],
+    "IMAD.WIDE.U32": [
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+    ],
+    "UIMAD.WIDE": [
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_signed_full_32x32_to_64_definition_instance",
+    ],
+    "UIMAD.WIDE.U32": [
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+    ],
+    "ULDC.64": ["uldc64_matches_little_endian_constant_memory_read"],
 }
+
+
+CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS = {
+    ("LOP3.LUT", "0x96"): ["lop3_lut_0x96_is_three_input_xor"],
+    ("LOP3.LUT", "0xe8"): ["lop3_lut_0xe8_is_three_input_majority"],
+}
+
+
+EXPRESSION_OPCODE_OPERAND_COUNTS = {
+    "MOV": 2,
+    "IADD3": 4,
+    "IMAD": 4,
+    "IMAD.IADD": 4,
+    "IMAD.U32": 4,
+    "IMAD.WIDE": 4,
+    "IMAD.WIDE.U32": 4,
+    "UIMAD.WIDE": 4,
+    "UIMAD.WIDE.U32": 4,
+    "ULDC.64": 2,
+}
+
+
+def _semantic_requirement(opcode: str, operands: str) -> list[str] | None:
+    tokens = [token.strip().lower() for token in operands.split(",")]
+    if opcode in EXPRESSION_OPCODE_SEMANTICS:
+        if len(tokens) == EXPRESSION_OPCODE_OPERAND_COUNTS[opcode] and all(tokens):
+            return EXPRESSION_OPCODE_SEMANTICS[opcode]
+        return None
+    if opcode == "LOP3.LUT" and len(tokens) == 6:
+        literal = tokens[4]
+        predicate = tokens[5]
+        requirement = CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS.get((opcode, literal))
+        if requirement and re.fullmatch(r"!?p(?:t|\d+)", predicate):
+            return requirement
+    return None
+
+
+def _proof_record(record: dict[str, Any]) -> dict[str, Any]:
+    body = {
+        "name": record["name"],
+        "proved": record["proved"],
+        "solver_result": record["solver_result"],
+        "scope": record["scope"],
+    }
+    return {
+        **body,
+        "proof_record_sha256": hashlib.sha256(
+            canonical_json(body).encode("utf-8")
+        ).hexdigest(),
+    }
+
+
+def _build_expression_semantics_snapshot(
+    certificate: dict[str, Any]
+) -> dict[str, Any]:
+    certificate_body = {
+        key: value for key, value in certificate.items() if key != "certificate_sha256"
+    }
+    if hashlib.sha256(canonical_json(certificate_body).encode("utf-8")).hexdigest() != certificate.get(
+        "certificate_sha256"
+    ):
+        raise ValueError("Invalid SASS semantics certificate hash")
+    proof_by_name = {record["name"]: record for record in certificate["proofs"]}
+    obligation_names = sorted(
+        {
+            name
+            for names in (
+                list(EXPRESSION_OPCODE_SEMANTICS.values())
+                + list(CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS.values())
+            )
+            for name in names
+        }
+    )
+    if any(name not in proof_by_name for name in obligation_names):
+        raise ValueError("SASS semantics certificate lacks a required expression obligation")
+    if any(
+        proof_by_name[name].get("proved") is not True
+        or proof_by_name[name].get("solver_result") != "unsat"
+        for name in obligation_names
+    ):
+        raise ValueError("Required expression semantics obligations are not proved")
+    obligations = [_proof_record(proof_by_name[name]) for name in obligation_names]
+    body = {
+        "registry_version": 1,
+        "sass_semantics_certificate_sha256": certificate["certificate_sha256"],
+        "exact_opcode_obligations": EXPRESSION_OPCODE_SEMANTICS,
+        "exact_opcode_operand_counts": EXPRESSION_OPCODE_OPERAND_COUNTS,
+        "conditional_opcode_obligations": [
+            {
+                "opcode": opcode,
+                "operand_literal": literal,
+                "obligation_names": names,
+            }
+            for (opcode, literal), names in sorted(
+                CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS.items()
+            )
+        ],
+        "obligations": obligations,
+    }
+    body["snapshot_sha256"] = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def _verify_expression_semantics_snapshot(snapshot: dict[str, Any]) -> bool:
+    body = {key: value for key, value in snapshot.items() if key != "snapshot_sha256"}
+    hash_valid = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == snapshot.get(
+        "snapshot_sha256"
+    )
+    obligation_by_name = {
+        record.get("name"): record for record in snapshot.get("obligations", [])
+    }
+    expected_names = {
+        name
+        for names in (
+            list(EXPRESSION_OPCODE_SEMANTICS.values())
+            + list(CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS.values())
+        )
+        for name in names
+    }
+    records_valid = (
+        len(snapshot.get("obligations", [])) == len(expected_names)
+        and set(obligation_by_name) == expected_names
+        and all(
+            record.get("proved") is True
+            and record.get("solver_result") == "unsat"
+            and record.get("proof_record_sha256")
+            == hashlib.sha256(
+                canonical_json(
+                    {
+                        key: value
+                        for key, value in record.items()
+                        if key != "proof_record_sha256"
+                    }
+                ).encode("utf-8")
+            ).hexdigest()
+            for record in obligation_by_name.values()
+        )
+    )
+    registry_valid = (
+        snapshot.get("exact_opcode_obligations") == EXPRESSION_OPCODE_SEMANTICS
+        and snapshot.get("exact_opcode_operand_counts")
+        == EXPRESSION_OPCODE_OPERAND_COUNTS
+        and snapshot.get("conditional_opcode_obligations")
+        == [
+            {
+                "opcode": opcode,
+                "operand_literal": literal,
+                "obligation_names": names,
+            }
+            for (opcode, literal), names in sorted(
+                CONDITIONAL_EXPRESSION_OPCODE_SEMANTICS.items()
+            )
+        ]
+    )
+    return bool(hash_valid and records_valid and registry_valid)
+
+
+def _instruction_semantic_binding(
+    opcode: str, operands: str, snapshot: dict[str, Any] | None
+) -> dict[str, Any] | None:
+    obligation_names = _semantic_requirement(opcode, operands)
+    if not obligation_names or not snapshot:
+        return None
+    proof_by_name = {
+        record["name"]: record for record in snapshot["obligations"]
+    }
+    return {
+        "opcode": opcode,
+        "obligation_names": obligation_names,
+        "proof_record_sha256": [
+            proof_by_name[name]["proof_record_sha256"] for name in obligation_names
+        ],
+        "sass_semantics_certificate_sha256": snapshot[
+            "sass_semantics_certificate_sha256"
+        ],
+        "snapshot_sha256": snapshot["snapshot_sha256"],
+        "binding_scope": "Proposed-semantics proof-record reference only.",
+        "proof_premises_established_for_instruction": False,
+        "hardware_instruction_semantics_established": False,
+    }
 
 
 DESIRED_ACCESS = {
@@ -172,8 +361,13 @@ def _context_targets(
 
 
 def _call_string_expression_snapshots(
-    instructions: list[dict[str, Any]], parameter_base: int, maximum_call_depth: int = 4
+    instructions: list[dict[str, Any]],
+    parameter_base: int,
+    maximum_call_depth: int = 4,
+    semantics_snapshot: dict[str, Any] | None = None,
 ) -> tuple[dict[int, list[dict[str, Any]]], _NodeRegistry, dict[str, Any]]:
+    if semantics_snapshot and not _verify_expression_semantics_snapshot(semantics_snapshot):
+        raise ValueError("Invalid expression semantics snapshot")
     instruction_successors, _ = _cfg_successors(instructions)
     blocks, instruction_to_block, block_successors = _basic_blocks(
         instructions, instruction_successors
@@ -338,6 +532,11 @@ def _call_string_expression_snapshots(
                 "source_registers": sorted(spec["source_definitions"]),
                 "source_nodes": source_nodes,
                 "parameter_fields": sorted(set(parameter_fields)),
+                "semantic_binding": _instruction_semantic_binding(
+                    spec["opcode"],
+                    instructions[spec["instruction_index"]]["operands"],
+                    semantics_snapshot,
+                ),
             }
         )
         output_node = registry.add(
@@ -410,7 +609,7 @@ def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str,
         }
         or (
             node["kind"] == "instruction_definition"
-            and node["opcode"] not in SUPPORTED_EXPRESSION_OPCODES
+            and node.get("semantic_binding") is None
         )
     ]
 
@@ -421,6 +620,7 @@ def build_sass_expression_certificate(
     kernel: str,
     sass_memory_certificate: dict[str, Any],
     logical_bounds_certificate: dict[str, Any],
+    sass_semantics_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     completed = subprocess.run(
         [cuobjdump, "--dump-sass", "--function", kernel, str(cubin)],
@@ -433,9 +633,12 @@ def build_sass_expression_certificate(
     instructions = _parse_cuobjdump_sass(completed.stdout)
     summary = _instruction_summary(instructions)
     parameter_base = _derive_parameter_base(instructions)["base_constant_offset"]
+    semantics_snapshot = _build_expression_semantics_snapshot(
+        sass_semantics_certificate
+    )
     slices, call_graph = _call_string_address_taint_slices(instructions, parameter_base)
     snapshots, registry, expression_graph = _call_string_expression_snapshots(
-        instructions, parameter_base
+        instructions, parameter_base, semantics_snapshot=semantics_snapshot
     )
     selections = []
     for field, access_class in DESIRED_ACCESS.items():
@@ -481,6 +684,17 @@ def build_sass_expression_certificate(
                     }
                 )
                 unsupported_nodes = _unsupported_expression_nodes(nodes)
+                instruction_nodes = [
+                    node for node in nodes if node["kind"] == "instruction_definition"
+                ]
+                proof_backed_nodes = [
+                    node for node in instruction_nodes if node.get("semantic_binding")
+                ]
+                unmodeled_opcodes = Counter(
+                    node["opcode"]
+                    for node in instruction_nodes
+                    if not node.get("semantic_binding")
+                )
                 candidate_selection = {
                     "field": field,
                     "available": True,
@@ -500,6 +714,18 @@ def build_sass_expression_certificate(
                     ),
                     "cyclic_reaching_definition_node_count": sum(
                         node["kind"] == "cyclic_reaching_definition" for node in nodes
+                    ),
+                    "instruction_definition_node_count": len(instruction_nodes),
+                    "proof_backed_instruction_node_count": len(proof_backed_nodes),
+                    "unmodeled_instruction_node_count": len(instruction_nodes)
+                    - len(proof_backed_nodes),
+                    "unmodeled_opcode_histogram": dict(sorted(unmodeled_opcodes.items())),
+                    "referenced_semantics_obligations": sorted(
+                        {
+                            name
+                            for node in proof_backed_nodes
+                            for name in node["semantic_binding"]["obligation_names"]
+                        }
                     ),
                     "represented_parameter_fields": represented_fields,
                     "target_field_represented": field in represented_fields,
@@ -538,6 +764,30 @@ def build_sass_expression_certificate(
         "sass_memory_certificate_checks_pass": sass_memory_certificate.get("all_checks_pass")
         is True
         and all(sass_memory_certificate.get("checks", {}).values()),
+        "sass_semantics_certificate_hash_valid": hashlib.sha256(
+            canonical_json(
+                {
+                    key: value
+                    for key, value in sass_semantics_certificate.items()
+                    if key != "certificate_sha256"
+                }
+            ).encode("utf-8")
+        ).hexdigest()
+        == sass_semantics_certificate.get("certificate_sha256"),
+        "sass_semantics_certificate_claims_all_proved": sass_semantics_certificate.get("proved")
+        == sass_semantics_certificate.get("total")
+        == len(sass_semantics_certificate.get("proofs", []))
+        and all(
+            proof.get("proved") is True and proof.get("solver_result") == "unsat"
+            for proof in sass_semantics_certificate.get("proofs", [])
+        ),
+        "sass_semantics_hash_matches_sass_memory": sass_semantics_certificate.get(
+            "certificate_sha256"
+        )
+        == sass_memory_certificate.get("sass_semantics_certificate_sha256"),
+        "expression_semantics_snapshot_valid": _verify_expression_semantics_snapshot(
+            semantics_snapshot
+        ),
         "logical_bounds_certificate_valid": verify_attention_logical_bounds_certificate(
             logical_bounds_certificate
         )["valid"],
@@ -551,24 +801,41 @@ def build_sass_expression_certificate(
         ),
     }
     body = {
-        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Record binding does not establish each proof premise, NVIDIA instruction semantics, or hardware conformance. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
         "kernel_name": kernel,
         "cubin_sha256": hashlib.sha256(cubin.read_bytes()).hexdigest(),
         "sass_canonical_sha256": summary["canonical_sha256"],
         "sass_memory_certificate_sha256": sass_memory_certificate["certificate_sha256"],
+        "sass_semantics_certificate_sha256": sass_semantics_certificate[
+            "certificate_sha256"
+        ],
+        "expression_opcode_semantics": semantics_snapshot,
         "logical_bounds_certificate_sha256": logical_bounds_certificate["certificate_sha256"],
         "call_string_context_summary": call_graph,
         "expression_reaching_definition_summary": expression_graph,
         "selections": selections,
         "checks": checks,
         "all_checks_pass": all(checks.values()),
-        "selected_sass_address_expression_dags_established": True,
+        "selected_sass_address_expression_dags_established": all(
+            selection.get("available") and selection.get("target_field_represented")
+            for selection in selections
+        ),
         "bounded_call_string_expression_reaching_definitions_established": True,
+        "proposed_semantics_proof_bindings_established": any(
+            selection.get("proof_backed_instruction_node_count", 0) > 0
+            for selection in selections
+        ),
+        "proof_premises_established_for_bound_instructions": False,
+        "all_expression_instruction_semantics_bound": all(
+            selection.get("unmodeled_instruction_node_count") == 0
+            for selection in selections
+        ),
         "expression_call_string_depth_overflow_free": expression_graph[
             "abstracted_call_overflow_count"
         ]
         == 0,
         "unbounded_context_sensitive_expression_reaching_definitions_established": False,
+        "hardware_instruction_semantics_established": False,
         "closed_supported_sass_formulas_established": all(
             selection.get("closed_supported_formula", False) for selection in selections
         ),
@@ -605,6 +872,10 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "cubin_sha256": certificate["cubin_sha256"],
         "sass_canonical_sha256": certificate["sass_canonical_sha256"],
         "sass_memory_certificate_sha256": certificate["sass_memory_certificate_sha256"],
+        "sass_semantics_certificate_sha256": certificate[
+            "sass_semantics_certificate_sha256"
+        ],
+        "expression_opcode_semantics": certificate["expression_opcode_semantics"],
         "logical_bounds_certificate_sha256": certificate["logical_bounds_certificate_sha256"],
         "expression_reaching_definition_summary": certificate[
             "expression_reaching_definition_summary"
@@ -615,14 +886,24 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "closed_supported_formulas": sum(
             selection.get("closed_supported_formula", False) for selection in selections
         ),
-        "selected_sass_address_expression_dags_established": True,
+        "selected_sass_address_expression_dags_established": certificate[
+            "selected_sass_address_expression_dags_established"
+        ],
         "bounded_call_string_expression_reaching_definitions_established": certificate[
             "bounded_call_string_expression_reaching_definitions_established"
+        ],
+        "proposed_semantics_proof_bindings_established": certificate[
+            "proposed_semantics_proof_bindings_established"
+        ],
+        "proof_premises_established_for_bound_instructions": False,
+        "all_expression_instruction_semantics_bound": certificate[
+            "all_expression_instruction_semantics_bound"
         ],
         "expression_call_string_depth_overflow_free": certificate[
             "expression_call_string_depth_overflow_free"
         ],
         "unbounded_context_sensitive_expression_reaching_definitions_established": False,
+        "hardware_instruction_semantics_established": False,
         "closed_supported_sass_formulas_established": certificate[
             "closed_supported_sass_formulas_established"
         ],
@@ -651,12 +932,43 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and all(
             selection.get("closed_supported_formula")
             == (selection.get("unsupported_or_entry_node_count") == 0)
+            and selection.get("instruction_definition_node_count")
+            == selection.get("proof_backed_instruction_node_count")
+            + selection.get("unmodeled_instruction_node_count")
+            and selection.get("unmodeled_instruction_node_count")
+            == sum(selection.get("unmodeled_opcode_histogram", {}).values())
             for selection in selections
+        )
+        and summary.get("all_expression_instruction_semantics_bound")
+        == all(
+            selection.get("unmodeled_instruction_node_count") == 0
+            for selection in selections
+        )
+        and summary.get("proposed_semantics_proof_bindings_established")
+        == any(
+            selection.get("proof_backed_instruction_node_count", 0) > 0
+            for selection in selections
+        )
+        and summary.get("selected_sass_address_expression_dags_established")
+        == all(
+            selection.get("available")
+            and selection.get("target_field_represented")
+            for selection in selections
+        )
+        and _verify_expression_semantics_snapshot(
+            summary.get("expression_opcode_semantics", {})
+        )
+        and summary.get("sass_semantics_certificate_sha256")
+        == summary.get("expression_opcode_semantics", {}).get(
+            "sass_semantics_certificate_sha256"
         )
     )
     boundaries_preserved = (
         summary.get("selected_sass_address_expression_dags_established") is True
         and summary.get("bounded_call_string_expression_reaching_definitions_established") is True
+        and summary.get("proposed_semantics_proof_bindings_established") is True
+        and summary.get("proof_premises_established_for_bound_instructions") is False
+        and summary.get("hardware_instruction_semantics_established") is False
         and summary.get("expression_call_string_depth_overflow_free")
         == (summary.get("expression_reaching_definition_summary", {}).get("abstracted_call_overflow_count") == 0)
         and summary.get("unbounded_context_sensitive_expression_reaching_definitions_established") is False
@@ -673,7 +985,38 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _selection_graph_consistent(selection: dict[str, Any]) -> bool:
+def _semantic_binding_consistent(
+    node: dict[str, Any], snapshot: dict[str, Any]
+) -> bool:
+    requirement = _semantic_requirement(node.get("opcode", ""), node.get("operands", ""))
+    binding = node.get("semantic_binding")
+    if requirement is None:
+        return binding is None
+    if not binding:
+        return False
+    proof_by_name = {
+        record["name"]: record for record in snapshot.get("obligations", [])
+    }
+    if any(name not in proof_by_name for name in requirement):
+        return False
+    return (
+        binding.get("opcode") == node.get("opcode")
+        and binding.get("obligation_names") == requirement
+        and binding.get("proof_record_sha256")
+        == [proof_by_name[name]["proof_record_sha256"] for name in requirement]
+        and binding.get("sass_semantics_certificate_sha256")
+        == snapshot.get("sass_semantics_certificate_sha256")
+        and binding.get("snapshot_sha256") == snapshot.get("snapshot_sha256")
+        and binding.get("binding_scope")
+        == "Proposed-semantics proof-record reference only."
+        and binding.get("proof_premises_established_for_instruction") is False
+        and binding.get("hardware_instruction_semantics_established") is False
+    )
+
+
+def _selection_graph_consistent(
+    selection: dict[str, Any], snapshot: dict[str, Any]
+) -> bool:
     nodes = selection.get("expression_nodes", [])
     identifiers = {node.get("node_sha256") for node in nodes}
     references = {
@@ -691,6 +1034,20 @@ def _selection_graph_consistent(selection: dict[str, Any]) -> bool:
             for field in node.get("parameter_fields", [])
         }
     )
+    instruction_nodes = [
+        node for node in nodes if node.get("kind") == "instruction_definition"
+    ]
+    proof_backed_nodes = [node for node in instruction_nodes if node.get("semantic_binding")]
+    unmodeled_opcodes = Counter(
+        node["opcode"] for node in instruction_nodes if not node.get("semantic_binding")
+    )
+    referenced_obligations = sorted(
+        {
+            name
+            for node in proof_backed_nodes
+            for name in node["semantic_binding"]["obligation_names"]
+        }
+    )
     return bool(
         selection.get("available")
         and selection.get("node_count") == len(nodes)
@@ -703,6 +1060,17 @@ def _selection_graph_consistent(selection: dict[str, Any]) -> bool:
         == sum(node.get("kind") == "reaching_definition_join" for node in nodes)
         and selection.get("cyclic_reaching_definition_node_count")
         == sum(node.get("kind") == "cyclic_reaching_definition" for node in nodes)
+        and selection.get("instruction_definition_node_count") == len(instruction_nodes)
+        and selection.get("proof_backed_instruction_node_count") == len(proof_backed_nodes)
+        and selection.get("unmodeled_instruction_node_count")
+        == len(instruction_nodes) - len(proof_backed_nodes)
+        and selection.get("unmodeled_opcode_histogram")
+        == dict(sorted(unmodeled_opcodes.items()))
+        and selection.get("referenced_semantics_obligations")
+        == referenced_obligations
+        and all(
+            _semantic_binding_consistent(node, snapshot) for node in instruction_nodes
+        )
     )
 
 
@@ -712,9 +1080,18 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         "certificate_sha256"
     )
     checks_consistent = certificate.get("all_checks_pass") == all(certificate.get("checks", {}).values())
+    semantics_snapshot = certificate.get("expression_opcode_semantics", {})
+    semantics_snapshot_valid = _verify_expression_semantics_snapshot(
+        semantics_snapshot
+    ) and certificate.get("sass_semantics_certificate_sha256") == semantics_snapshot.get(
+        "sass_semantics_certificate_sha256"
+    )
     boundaries_preserved = (
         certificate.get("selected_sass_address_expression_dags_established") is True
         and certificate.get("bounded_call_string_expression_reaching_definitions_established") is True
+        and certificate.get("proposed_semantics_proof_bindings_established") is True
+        and certificate.get("proof_premises_established_for_bound_instructions") is False
+        and certificate.get("hardware_instruction_semantics_established") is False
         and certificate.get("expression_call_string_depth_overflow_free")
         == (
             certificate.get("expression_reaching_definition_summary", {}).get(
@@ -738,9 +1115,28 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         selection.get("closed_supported_formula", False)
         for selection in certificate.get("selections", [])
     )
-    selection_graphs_consistent = all(
-        _selection_graph_consistent(selection)
-        for selection in certificate.get("selections", [])
+    selections = certificate.get("selections", [])
+    selection_graphs_consistent = (
+        all(
+            _selection_graph_consistent(selection, semantics_snapshot)
+            for selection in selections
+        )
+        and certificate.get("all_expression_instruction_semantics_bound")
+        == all(
+            selection.get("unmodeled_instruction_node_count") == 0
+            for selection in selections
+        )
+        and certificate.get("proposed_semantics_proof_bindings_established")
+        == any(
+            selection.get("proof_backed_instruction_node_count", 0) > 0
+            for selection in selections
+        )
+        and certificate.get("selected_sass_address_expression_dags_established")
+        == all(
+            selection.get("available")
+            and selection.get("target_field_represented")
+            for selection in selections
+        )
     )
     node_hashes_valid = all(
         node["node_sha256"]
@@ -755,6 +1151,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
             hash_valid
             and checks_consistent
             and boundaries_preserved
+            and semantics_snapshot_valid
             and closed_formulas_consistent
             and selection_graphs_consistent
             and node_hashes_valid
@@ -763,6 +1160,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         "certificate_hash_valid": hash_valid,
         "checks_consistent": checks_consistent,
         "boundaries_preserved": boundaries_preserved,
+        "semantics_snapshot_valid": semantics_snapshot_valid,
         "closed_formulas_consistent": closed_formulas_consistent,
         "selection_graphs_consistent": selection_graphs_consistent,
         "node_hashes_valid": node_hashes_valid,

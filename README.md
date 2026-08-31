@@ -617,24 +617,26 @@ The checked [`results/gemma3_270m_attention_logical_bounds.json`](results/gemma3
 A fixed-point reaching-definition pass builds hash-consed instruction DAGs separately for each bounded call-string context. Predicated definitions preserve old and new alternatives; control-flow joins and loop recurrences remain explicit nodes rather than being collapsed to lexical last definitions. Full node graphs remain generated artifacts; a compact summary commits each root, graph hash, selected context and instruction, represented parameter fields, and unresolved-node count:
 
 ```powershell
-python -m bioprocess_runtime attention-sass-expressions --cuobjdump <cuobjdump> --cubin <captured-cubin> --kernel <exact-mangled-name> --sass-memory results/gemma3_270m_attention_sass_memory.json --logical-bounds results/gemma3_270m_attention_logical_bounds.json --output artifacts/gemma3_270m_attention_sass_expressions.json
+python -m bioprocess_runtime attention-sass-expressions --cuobjdump <cuobjdump> --cubin <captured-cubin> --kernel <exact-mangled-name> --sass-memory results/gemma3_270m_attention_sass_memory.json --sass-semantics results/sass_semantics_proofs.json --logical-bounds results/gemma3_270m_attention_logical_bounds.json --output artifacts/gemma3_270m_attention_sass_expressions.json
 python -m bioprocess_runtime attention-sass-expression-summary artifacts/gemma3_270m_attention_sass_expressions.json --output results/gemma3_270m_attention_sass_expressions.json
 python -m bioprocess_runtime attention-sass-expression-summary-verify results/gemma3_270m_attention_sass_expressions.json
 ```
 
 The checked summary selects one operand for each target:
 
-| Field | SASS offset | Memory opcode | DAG nodes | Ambiguous joins | Cyclic leaves | Unsupported/unresolved nodes |
-|---|---:|---|---:|---:|---:|---:|
-| `query_ptr` | `0x20f0` | `LDGSTS.E.BYPASS.LTC128B.128` | 128 | 5 | 0 | 40 |
-| `key_ptr` | `0x2140` | `LDGSTS.E.BYPASS.LTC128B.128` | 146 | 6 | 1 | 47 |
-| `value_ptr` | `0x35e0` | `LDGSTS.E.BYPASS.LTC128B.128` | 140 | 6 | 1 | 45 |
-| `output_ptr` | `0xa990` | `STG.E.64` | 167 | 7 | 1 | 51 |
-| `output_accum_ptr` | `0xb7e0` | `STG.E.128` | 236 | 11 | 1 | 74 |
+| Field | SASS offset | DAG nodes | Proof-record-bound instructions | Unbound instructions | Joins | Cycles | Unsupported/unresolved nodes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `query_ptr` | `0x20f0` | 128 | 13/58 | 45 | 5 | 0 | 50 |
+| `key_ptr` | `0x2140` | 146 | 19/66 | 47 | 6 | 1 | 54 |
+| `value_ptr` | `0x35e0` | 140 | 16/63 | 47 | 6 | 1 | 54 |
+| `output_ptr` | `0xa990` | 167 | 20/76 | 56 | 7 | 1 | 64 |
+| `output_accum_ptr` | `0xb7e0` | 236 | 25/106 | 81 | 11 | 1 | 93 |
 
 The expression fixed point visits the same 855 bounded block/call-stack contexts and 161 reachable blocks as the taint analysis. Its state lattice converges separately after 10,522 context iterations and records 12 distinct overflow contexts, 230 hash-consed ambiguous-join nodes, and 65 cyclic-definition leaves across materialized contexts. Consequently `expression_call_string_depth_overflow_free` and `unbounded_context_sensitive_expression_reaching_definitions_established` are false. Selection minimizes aggregate source-field count before instruction offset, then chooses the first bounded context containing the target field.
 
-Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory certificate, and logical-bounds certificate. None is closed over the currently supported operations, joins, recurrences, or entry symbols. Therefore `bounded_call_string_expression_reaching_definitions_established` and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
+An exact-opcode registry binds selected `MOV`, `IADD3`, `IMAD`, `IMAD.IADD`, `IMAD.U32`, signed/unsigned `IMAD.WIDE` and `UIMAD.WIDE`, and `ULDC.64` nodes to named proved records and retained scopes from the exact SASS-semantics certificate. A node binds only when both its exact opcode and expected operand-token count match; `LOP3.LUT` additionally requires the standard six-token form with LUT literal `0x96` or `0xe8`. The expression verifiers recompute every node binding, proof-record hash, per-selection bound/unbound count, and unbound-opcode histogram, but remain integrity/consistency checks over retained records; `sass-semantics-verify` is the re-execution check for the underlying obligations. These are proposed-semantics record references: `proof_premises_established_for_bound_instructions`, `all_expression_instruction_semantics_bound`, and `hardware_instruction_semantics_established` remain false.
+
+Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory, SASS-semantics, and logical-bounds certificates. None is closed over the currently record-bound operations, unbound instructions, joins, recurrences, or entry symbols. Therefore `proposed_semantics_proof_bindings_established`, `bounded_call_string_expression_reaching_definitions_established`, and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 
 ### SASS memory-address provenance
 

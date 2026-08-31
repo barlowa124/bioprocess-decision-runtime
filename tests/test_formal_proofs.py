@@ -274,8 +274,10 @@ class CudaMetadataTests(unittest.TestCase):
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
+            _build_expression_semantics_snapshot,
             _call_string_expression_snapshots,
             _reachable_nodes,
+            _semantic_requirement,
             _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
@@ -283,12 +285,45 @@ class SassExpressionTests(unittest.TestCase):
             verify_sass_expression_summary,
         )
 
+        semantics = json.loads(
+            (Path(__file__).parents[1] / "results" / "sass_semantics_proofs.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        semantics_snapshot = _build_expression_semantics_snapshot(semantics)
+        missing_obligation = copy.deepcopy(semantics)
+        missing_obligation["proofs"] = [
+            proof
+            for proof in missing_obligation["proofs"]
+            if proof["name"] != "mov_is_identity"
+        ]
+        missing_body = {
+            key: value
+            for key, value in missing_obligation.items()
+            if key != "certificate_sha256"
+        }
+        missing_obligation["certificate_sha256"] = hashlib.sha256(
+            canonical_json(missing_body).encode("utf-8")
+        ).hexdigest()
+        with self.assertRaises(ValueError):
+            _build_expression_semantics_snapshot(missing_obligation)
+        self.assertIsNone(
+            _semantic_requirement("LOP3.LUT", "R4,R5,0x96,RZ,0xc0,!PT")
+        )
+        self.assertIsNone(_semantic_requirement("LOP3.LUT", "R4,0x96,!PT"))
+        self.assertIsNone(_semantic_requirement("IMAD.U32", "R4,R5"))
+        self.assertEqual(
+            _semantic_requirement("LOP3.LUT", "R4,R5,R6,RZ,0x96,!PT"),
+            ["lop3_lut_0x96_is_three_input_xor"],
+        )
         instructions = [
             {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
             {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
             {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
         ]
-        snapshots, registry, graph = _call_string_expression_snapshots(instructions, 0x160)
+        snapshots, registry, graph = _call_string_expression_snapshots(
+            instructions, 0x160, semantics_snapshot=semantics_snapshot
+        )
         roots = [
             snapshots[32][0]["definitions"]["R4"][0],
             snapshots[32][0]["definitions"]["R5"][0],
@@ -317,6 +352,8 @@ class SassExpressionTests(unittest.TestCase):
             "cubin_sha256": "cubin",
             "sass_canonical_sha256": "sass",
             "sass_memory_certificate_sha256": "memory",
+            "sass_semantics_certificate_sha256": semantics["certificate_sha256"],
+            "expression_opcode_semantics": semantics_snapshot,
             "logical_bounds_certificate_sha256": "bounds",
             "expression_reaching_definition_summary": graph,
             "selections": [
@@ -331,6 +368,14 @@ class SassExpressionTests(unittest.TestCase):
                     "target_field_represented": True,
                     "ambiguous_reaching_definition_node_count": 0,
                     "cyclic_reaching_definition_node_count": 0,
+                    "instruction_definition_node_count": 2,
+                    "proof_backed_instruction_node_count": 2,
+                    "unmodeled_instruction_node_count": 0,
+                    "unmodeled_opcode_histogram": {},
+                    "referenced_semantics_obligations": [
+                        "mov_is_identity",
+                        "uldc64_matches_little_endian_constant_memory_read",
+                    ],
                     "unsupported_or_entry_node_count": len(_unsupported_expression_nodes(nodes)),
                 }
             ],
@@ -338,8 +383,12 @@ class SassExpressionTests(unittest.TestCase):
             "all_checks_pass": True,
             "selected_sass_address_expression_dags_established": True,
             "bounded_call_string_expression_reaching_definitions_established": True,
+            "proposed_semantics_proof_bindings_established": True,
+            "proof_premises_established_for_bound_instructions": False,
+            "all_expression_instruction_semantics_bound": True,
             "expression_call_string_depth_overflow_free": True,
             "unbounded_context_sensitive_expression_reaching_definitions_established": False,
+            "hardware_instruction_semantics_established": False,
             "closed_supported_sass_formulas_established": False,
             "sass_effective_address_formula_bound": False,
             "sass_to_logical_stride_correspondence_established": False,
@@ -358,6 +407,29 @@ class SassExpressionTests(unittest.TestCase):
         self.assertFalse(verify_sass_expression_certificate(damaged)["valid"])
         with self.assertRaises(ValueError):
             build_sass_expression_summary(damaged)
+        forged_semantics = copy.deepcopy(certificate)
+        proof = forged_semantics["expression_opcode_semantics"]["obligations"][0]
+        proof["proved"] = False
+        proof_body = {
+            key: value for key, value in proof.items() if key != "proof_record_sha256"
+        }
+        proof["proof_record_sha256"] = hashlib.sha256(
+            canonical_json(proof_body).encode("utf-8")
+        ).hexdigest()
+        snapshot = forged_semantics["expression_opcode_semantics"]
+        snapshot_body = {
+            key: value for key, value in snapshot.items() if key != "snapshot_sha256"
+        }
+        snapshot["snapshot_sha256"] = hashlib.sha256(
+            canonical_json(snapshot_body).encode("utf-8")
+        ).hexdigest()
+        forged_body = {
+            key: value for key, value in forged_semantics.items() if key != "certificate_sha256"
+        }
+        forged_semantics["certificate_sha256"] = hashlib.sha256(
+            canonical_json(forged_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_certificate(forged_semantics)["valid"])
 
     def test_expression_reaching_definitions_preserve_branch_ambiguity(self) -> None:
         from bioprocess_runtime.sass_expressions import (

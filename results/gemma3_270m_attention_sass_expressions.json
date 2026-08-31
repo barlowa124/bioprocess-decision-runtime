@@ -1,10 +1,231 @@
 {
+  "all_expression_instruction_semantics_bound": false,
   "available_selections": 5,
   "bounded_call_string_expression_reaching_definitions_established": true,
   "closed_supported_formulas": 0,
   "closed_supported_sass_formulas_established": false,
   "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
   "expression_call_string_depth_overflow_free": false,
+  "expression_opcode_semantics": {
+    "conditional_opcode_obligations": [
+      {
+        "obligation_names": [
+          "lop3_lut_0x96_is_three_input_xor"
+        ],
+        "opcode": "LOP3.LUT",
+        "operand_literal": "0x96"
+      },
+      {
+        "obligation_names": [
+          "lop3_lut_0xe8_is_three_input_majority"
+        ],
+        "opcode": "LOP3.LUT",
+        "operand_literal": "0xe8"
+      }
+    ],
+    "exact_opcode_obligations": {
+      "IADD3": [
+        "iadd3_matches_ripple_carry_sum"
+      ],
+      "IMAD": [
+        "imad_matches_shift_add_multiply_accumulate"
+      ],
+      "IMAD.IADD": [
+        "imad_iadd_and_u32_share_modular_multiply_add_core"
+      ],
+      "IMAD.U32": [
+        "imad_iadd_and_u32_share_modular_multiply_add_core"
+      ],
+      "IMAD.WIDE": [
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_signed_full_32x32_to_64_definition_instance"
+      ],
+      "IMAD.WIDE.U32": [
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance"
+      ],
+      "MOV": [
+        "mov_is_identity"
+      ],
+      "UIMAD.WIDE": [
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_signed_full_32x32_to_64_definition_instance"
+      ],
+      "UIMAD.WIDE.U32": [
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance"
+      ],
+      "ULDC.64": [
+        "uldc64_matches_little_endian_constant_memory_read"
+      ]
+    },
+    "exact_opcode_operand_counts": {
+      "IADD3": 4,
+      "IMAD": 4,
+      "IMAD.IADD": 4,
+      "IMAD.U32": 4,
+      "IMAD.WIDE": 4,
+      "IMAD.WIDE.U32": 4,
+      "MOV": 2,
+      "UIMAD.WIDE": 4,
+      "UIMAD.WIDE.U32": 4,
+      "ULDC.64": 2
+    },
+    "obligations": [
+      {
+        "name": "iadd3_matches_ripple_carry_sum",
+        "proof_record_sha256": "2b97c9e4a86708f41f16180ebc373db81d03fd9ab7215b8de034a3e919b2166d",
+        "proved": true,
+        "scope": {
+          "flags": "carry and predicate outputs excluded",
+          "input": "all triples of 8-bit values",
+          "opcode": "IADD3"
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "proof_record_sha256": "ba88b0740d7746800cbf4b60cca0452d6cc0a887756c173cc44d941f17e906f0",
+        "proved": true,
+        "scope": {
+          "boundary": "Core low-word equation only; high-word, carry, sign-extension, and modifiers are excluded.",
+          "input": "all triples of 8-bit values",
+          "opcodes": [
+            "IMAD.IADD",
+            "IMAD.U32"
+          ]
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_matches_shift_add_multiply_accumulate",
+        "proof_record_sha256": "6000c4679c12fb5fab48e821fa4177022658fc6d47a583ce6cba231238239488",
+        "proved": true,
+        "scope": {
+          "flags": "base modular form only",
+          "input": "all triples of 8-bit unsigned values",
+          "opcode": "IMAD"
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_wide_signed_full_32x32_to_64_definition_instance",
+        "proof_record_sha256": "83551d58d3367ca02f9f2d5f5c28ba2b35acf7407e3134cfc301bc41672d175d",
+        "proved": true,
+        "scope": {
+          "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+          "input": "all 32-bit two's-complement factors and 64-bit addends",
+          "modeled_widths": {
+            "factor_bits": 32,
+            "result_bits": 64
+          },
+          "opcodes": [
+            "IMAD.WIDE",
+            "UIMAD.WIDE"
+          ],
+          "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "proof_record_sha256": "ca5a71aabcf2cac165037a1091b73b99034dc590fbebb961c0f4ebefa7776370",
+        "proved": true,
+        "scope": {
+          "boundary": "Reduced-width proposed signed multiply-add equation; unsigned forms, carry modifiers, register pairing, and hardware behavior excluded.",
+          "input": "all pairs of 8-bit two's-complement factors and 16-bit addends",
+          "opcodes": [
+            "IMAD.WIDE",
+            "UIMAD.WIDE"
+          ],
+          "proof_strength": "Independent reduced-width two's-complement magnitude/shift-add reference."
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "proof_record_sha256": "61ed514f7df2e55dee8228fc1af3e3ffd4d4a864effbaf345f9b8998f6c569fc",
+        "proved": true,
+        "scope": {
+          "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+          "input": "all 32-bit unsigned factors and 64-bit addends",
+          "modeled_widths": {
+            "factor_bits": 32,
+            "result_bits": 64
+          },
+          "opcodes": [
+            "IMAD.WIDE.U32",
+            "UIMAD.WIDE.U32"
+          ],
+          "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "imad_wide_unsigned_matches_shift_add_widened_product",
+        "proof_record_sha256": "c64dc334d2b7db774affd170121543bc4f2dd591cec47fd3697d19f2e7f89526",
+        "proved": true,
+        "scope": {
+          "boundary": "Reduced-width proposed unsigned multiply-add equation; signed forms, carry modifiers, register pairing, and hardware behavior excluded.",
+          "input": "all pairs of 8-bit unsigned factors and 16-bit addends",
+          "opcodes": [
+            "IMAD.WIDE.U32",
+            "UIMAD.WIDE.U32"
+          ],
+          "proof_strength": "Independent reduced-width shift-add reference."
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "lop3_lut_0x96_is_three_input_xor",
+        "proof_record_sha256": "98f6dc300865b501ceecfc45c22977e53691756eb9647e3acdb9a1a63fd295c2",
+        "proved": true,
+        "scope": {
+          "extension": "bitwise and therefore width-independent",
+          "input": "all triples of 8-bit values",
+          "lut": "0x96",
+          "opcode": "LOP3.LUT"
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "lop3_lut_0xe8_is_three_input_majority",
+        "proof_record_sha256": "43b085d6a7023642949dbbb331fe10d606554c24987d46bb3b4d76462c22b5aa",
+        "proved": true,
+        "scope": {
+          "extension": "bitwise and therefore width-independent",
+          "input": "all triples of 8-bit values",
+          "lut": "0xe8",
+          "opcode": "LOP3.LUT"
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "mov_is_identity",
+        "proof_record_sha256": "317b21a2c8e813e97ebb1d394f7db637e3164dd17c8b478428a519a00298753c",
+        "proved": true,
+        "scope": {
+          "input": "all 8-bit values",
+          "opcode": "MOV"
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "uldc64_matches_little_endian_constant_memory_read",
+        "proof_record_sha256": "94214c84a07032cfeec4dcff75fb21223ec6b8c77975de5aec621a4a1ecb2e87",
+        "proved": true,
+        "scope": {
+          "boundary": "Proposed 64-bit little-endian read only; constant-bank selection, alignment, faults, caching, and hardware behavior excluded.",
+          "input": "all 8-bit abstract addresses and byte-array constant memories",
+          "opcode": "ULDC.64"
+        },
+        "solver_result": "unsat"
+      }
+    ],
+    "registry_version": 1,
+    "sass_semantics_certificate_sha256": "c0dc0a85e8bb2abbd278c7a6ec0e0aa5c59b161b3060567dce09271e7b79546e",
+    "snapshot_sha256": "3e9425123b2186980b786cad44c3a84ffd11ac0c93dea07f77379fe7c5b88054"
+  },
   "expression_reaching_definition_summary": {
     "abstracted_call_overflow_count": 12,
     "ambiguous_reaching_definition_nodes": 230,
@@ -19,15 +240,19 @@
     "reachable_instruction_count": 3570,
     "unresolved_return_context_count": 0
   },
+  "hardware_instruction_semantics_established": false,
   "kernel_memory_safety_established": false,
   "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
+  "proof_premises_established_for_bound_instructions": false,
+  "proposed_semantics_proof_bindings_established": true,
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
   "sass_effective_address_bounds_established": false,
   "sass_effective_address_formula_bound": false,
   "sass_memory_certificate_sha256": "bbee178f268e9ff58f7b99f6e08ac655fb5adb6b1cbc16b2b7b5a9375ad5e06e",
+  "sass_semantics_certificate_sha256": "c0dc0a85e8bb2abbd278c7a6ec0e0aa5c59b161b3060567dce09271e7b79546e",
   "sass_to_logical_stride_correspondence_established": false,
-  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Record binding does not establish each proof premise, NVIDIA instruction semantics, or hardware conformance. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
   "selected_sass_address_expression_dags_established": true,
   "selections": [
     {
@@ -41,12 +266,24 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 0,
-      "expression_graph_sha256": "59f391053a587263de50759b6962d1ba0a24056504a3b4d3cfc12d0f9eafa7ab",
+      "expression_graph_sha256": "853ce0c7f7c0ed5b558efd02a82a7fc18563967027acbf0752db4e4fadca801c",
       "field": "query_ptr",
+      "instruction_definition_node_count": 58,
       "instruction_offset": 8432,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 128,
+      "proof_backed_instruction_node_count": 13,
+      "referenced_semantics_obligations": [
+        "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "imad_matches_shift_add_multiply_accumulate",
+        "imad_wide_signed_full_32x32_to_64_definition_instance",
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "mov_is_identity",
+        "uldc64_matches_little_endian_constant_memory_read"
+      ],
       "represented_parameter_fields": [
         "q_strideB",
         "q_strideH",
@@ -55,14 +292,39 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "6b3d8684f5a9f581e9c0bb010d44c73436a13887de0e1d8c5e8ded348963ccbf",
-        "d6992a7a74ccbf0d3d4ed43370142d4e0510278219de1bc41eb4b666cc629470"
+        "1521986a1973640ad5ce36f2035e5a49833378d9c146f7116df2fd62317dd1cc",
+        "25f6b11dafd1f06a530ca89a5f3e7d50270b935b131ef2458db8eb6623e73452"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 40
+      "unmodeled_instruction_node_count": 45,
+      "unmodeled_opcode_histogram": {
+        "IMAD.SHL.U32": 2,
+        "LDG.E": 1,
+        "LEA": 1,
+        "LEA.HI": 2,
+        "LEA.HI.SX32": 1,
+        "LEA.HI.X": 1,
+        "LOP3.LUT": 2,
+        "PRMT": 1,
+        "R2UR": 1,
+        "S2R": 2,
+        "S2UR": 3,
+        "SHF.R.S32.HI": 4,
+        "UIADD3": 3,
+        "UIADD3.X": 2,
+        "UIMAD": 4,
+        "ULDC": 3,
+        "ULEA": 2,
+        "ULEA.HI.X": 2,
+        "UMOV": 3,
+        "USHF.L.U32": 2,
+        "USHF.R.S32.HI": 2,
+        "USHF.R.U32.HI": 1
+      },
+      "unsupported_or_entry_node_count": 50
     },
     {
       "access_class": "candidate_read",
@@ -75,12 +337,21 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "61390dd86927755efdb6b93de7e1ed13eb8ee6f9878c8b19b003a79a65f6c64f",
+      "expression_graph_sha256": "b9962be7cd3a9c7663df858a2c39fb67fbb0599649315886f7edcffd6a41813d",
       "field": "key_ptr",
+      "instruction_definition_node_count": 66,
       "instruction_offset": 8512,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 146,
+      "proof_backed_instruction_node_count": 19,
+      "referenced_semantics_obligations": [
+        "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "imad_matches_shift_add_multiply_accumulate",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "uldc64_matches_little_endian_constant_memory_read"
+      ],
       "represented_parameter_fields": [
         "k_strideB",
         "k_strideH",
@@ -90,14 +361,42 @@
         "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "b06944a79deed16d81a3d704a429be65ae16db83891cfeee4745fc4f6eaf0400",
-        "32982e39c93ab879f7bac486d2fa8fd54ba97556fd3f2ccc6ef38563edcd9ae6"
+        "22949fc758e1f0188f29d9fda3ea78d6b02b7586cd952c4c85725c139f2a56e3",
+        "8681f027658210e4ad1676504185df27b822a2f2a8e2b6982b5101380e921539"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 47
+      "unmodeled_instruction_node_count": 47,
+      "unmodeled_opcode_histogram": {
+        "IADD3": 1,
+        "IMAD.MOV.U32": 2,
+        "IMAD.SHL.U32": 2,
+        "LDG.E": 1,
+        "LEA": 1,
+        "LEA.HI": 2,
+        "LEA.HI.SX32": 1,
+        "LEA.HI.X": 1,
+        "LEA.HI.X.SX32": 1,
+        "LOP3.LUT": 2,
+        "PRMT": 1,
+        "R2UR": 1,
+        "S2R": 2,
+        "S2UR": 2,
+        "SHF.R.S32.HI": 5,
+        "UIADD3": 3,
+        "UIADD3.X": 1,
+        "UIMAD": 5,
+        "ULDC": 1,
+        "ULEA": 2,
+        "ULEA.HI.X": 2,
+        "UMOV": 4,
+        "USHF.L.U32": 1,
+        "USHF.R.S32.HI": 2,
+        "USHF.R.U32.HI": 1
+      },
+      "unsupported_or_entry_node_count": 54
     },
     {
       "access_class": "candidate_read",
@@ -110,12 +409,21 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "177a900057b8eb03d9b8f64bf25586ad9647d7a0f750a2fdfbf4cdac44f8d755",
+      "expression_graph_sha256": "4e602399d5b2532aefa0bf3f551e7631f8d7b1890a51bb378a280879b4fea400",
       "field": "value_ptr",
+      "instruction_definition_node_count": 63,
       "instruction_offset": 13792,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 140,
+      "proof_backed_instruction_node_count": 16,
+      "referenced_semantics_obligations": [
+        "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "imad_matches_shift_add_multiply_accumulate",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "uldc64_matches_little_endian_constant_memory_read"
+      ],
       "represented_parameter_fields": [
         "k_strideH",
         "seqstart_k_ptr",
@@ -124,14 +432,41 @@
         "value_ptr"
       ],
       "root_nodes": [
-        "5438c38a61f952241936e8efbd67a4d9e04633099f2957856becdf3f7e1cb6cb",
-        "febabe0da210b6224c3b430c2f303eeb10063b3e3b78ef2cad7b87d2a9f1fd0f"
+        "edb4068fe0e668275beb9a3cc947f6c9139fd9dd74072abb3eee2e3ffe1ee01d",
+        "f62ef0887f09a50ccddce43209545eaf67671d40427ddfc7c41dd2c389004b0d"
       ],
       "selected_block_index": 22,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 45
+      "unmodeled_instruction_node_count": 47,
+      "unmodeled_opcode_histogram": {
+        "IADD3": 1,
+        "IADD3.X": 1,
+        "IMAD.SHL.U32": 2,
+        "LDG.E": 1,
+        "LEA": 1,
+        "LEA.HI": 2,
+        "LEA.HI.SX32": 1,
+        "LEA.HI.X": 1,
+        "LOP3.LUT": 2,
+        "PRMT": 1,
+        "R2UR": 1,
+        "S2R": 2,
+        "S2UR": 2,
+        "SHF.R.S32.HI": 5,
+        "UIADD3": 3,
+        "UIADD3.X": 1,
+        "UIMAD": 5,
+        "ULDC": 2,
+        "ULEA": 2,
+        "ULEA.HI.X": 2,
+        "UMOV": 4,
+        "USHF.L.U32": 1,
+        "USHF.R.S32.HI": 3,
+        "USHF.R.U32.HI": 1
+      },
+      "unsupported_or_entry_node_count": 54
     },
     {
       "access_class": "candidate_write",
@@ -144,12 +479,25 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "12bf95529e8adce799d8189a6ec38951254161828dffd1c3f5a33042f9909631",
+      "expression_graph_sha256": "6b320448e09db963a8f53a6a5cf4db8832d211221068b0ba476910ed160037c0",
       "field": "output_ptr",
+      "instruction_definition_node_count": 76,
       "instruction_offset": 43408,
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
       "node_count": 167,
+      "proof_backed_instruction_node_count": 20,
+      "referenced_semantics_obligations": [
+        "iadd3_matches_ripple_carry_sum",
+        "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "imad_matches_shift_add_multiply_accumulate",
+        "imad_wide_signed_full_32x32_to_64_definition_instance",
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "mov_is_identity",
+        "uldc64_matches_little_endian_constant_memory_read"
+      ],
       "represented_parameter_fields": [
         "head_dim_value",
         "num_queries",
@@ -158,14 +506,40 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "2bd3b80f2dd27718d11f8c4c7765a1a886b76dec135dc8edb9c307ac6abd06ff",
-        "ca03f38a09cbdaf7bed25c26a096e3d721461c59860b7bb5451472408db1f533"
+        "8cbd594cd5cd0931e3d36433ce6f0758eddc638bc8455e0faecfe177c348a578",
+        "5c462054db4d12388b44c8d9d6b80deff76b089070e1e0807578b255012f2381"
       ],
       "selected_block_index": 78,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 51
+      "unmodeled_instruction_node_count": 56,
+      "unmodeled_opcode_histogram": {
+        "IADD3": 1,
+        "IADD3.X": 1,
+        "IMAD.SHL.U32": 3,
+        "LDG.E": 1,
+        "LEA.HI": 4,
+        "LEA.HI.SX32": 1,
+        "LOP3.LUT": 5,
+        "PRMT": 1,
+        "R2UR": 1,
+        "S2R": 2,
+        "S2UR": 3,
+        "SHF.L.U64.HI": 1,
+        "SHF.R.S32.HI": 5,
+        "UIADD3": 3,
+        "UIADD3.X": 2,
+        "UIMAD": 5,
+        "ULDC": 4,
+        "ULEA": 2,
+        "ULEA.HI.X": 2,
+        "UMOV": 3,
+        "USHF.L.U32": 2,
+        "USHF.R.S32.HI": 3,
+        "USHF.R.U32.HI": 1
+      },
+      "unsupported_or_entry_node_count": 64
     },
     {
       "access_class": "candidate_write",
@@ -178,12 +552,25 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "98bde7b82bcf9cd910f3146dd233ad8102f0587a93323f851c4755096c43c607",
+      "expression_graph_sha256": "ce4c49552566b5a2fe31e4fc6886d3fb8c6ea48968e3376ebba42d95fd28541c",
       "field": "output_accum_ptr",
+      "instruction_definition_node_count": 106,
       "instruction_offset": 47072,
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
       "node_count": 236,
+      "proof_backed_instruction_node_count": 25,
+      "referenced_semantics_obligations": [
+        "iadd3_matches_ripple_carry_sum",
+        "imad_iadd_and_u32_share_modular_multiply_add_core",
+        "imad_matches_shift_add_multiply_accumulate",
+        "imad_wide_signed_full_32x32_to_64_definition_instance",
+        "imad_wide_signed_matches_twos_complement_shift_add_product",
+        "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+        "imad_wide_unsigned_matches_shift_add_widened_product",
+        "mov_is_identity",
+        "uldc64_matches_little_endian_constant_memory_read"
+      ],
       "represented_parameter_fields": [
         "custom_mask_type",
         "head_dim_value",
@@ -195,18 +582,44 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "062f477dcc21548c8c42d6520160d77a6223934a52d46bc530a1ba1816a0ae6c",
-        "17293862de29992fe5a350d9b4b603d4b6e596c9da7305f300e97541f015c716"
+        "41c94edce9d3fc8ea2370c5b61b1b615bd2e2ec336c2b08b095154b29536095a",
+        "a65aa7a4b374fa00ad0fb0548357cffbda1575218e0a21c9998c450423ce95f4"
       ],
       "selected_block_index": 92,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 74
+      "unmodeled_instruction_node_count": 81,
+      "unmodeled_opcode_histogram": {
+        "IADD3": 1,
+        "IADD3.X": 1,
+        "IMAD.SHL.U32": 2,
+        "LDG.E": 1,
+        "LEA.HI": 4,
+        "LEA.HI.SX32": 1,
+        "LOP3.LUT": 5,
+        "PRMT": 1,
+        "R2UR": 1,
+        "S2R": 2,
+        "S2UR": 3,
+        "SHF.R.S32.HI": 6,
+        "UIADD3": 5,
+        "UIADD3.X": 2,
+        "UIMAD": 11,
+        "ULDC": 10,
+        "ULDC.U8": 1,
+        "ULEA": 4,
+        "ULEA.HI.X": 4,
+        "UMOV": 8,
+        "USHF.L.U32": 2,
+        "USHF.R.S32.HI": 5,
+        "USHF.R.U32.HI": 1
+      },
+      "unsupported_or_entry_node_count": 93
     }
   ],
-  "source_certificate_sha256": "b05df8f32267b0e49b98bfc0e07c03ffa72b10260a98d41fbd2421865bf3aca2",
-  "summary_sha256": "4f9ebbe5fa31777e0c9ee47a7b8045a79e0b0c9b3ea3e5216be17a66356db18b",
+  "source_certificate_sha256": "9685a23a8f7ca930d28bc7b90e3d54fdc74270e72ce6d3b3d2e78bfb271d9c4b",
+  "summary_sha256": "adc51798423058610086f4717396388d28f9a463db54926eb85de9efe27bab61",
   "total_selections": 5,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }
