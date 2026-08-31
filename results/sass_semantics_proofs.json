@@ -1,6 +1,6 @@
 {
   "abstract_memory_address_width_bits": 8,
-  "certificate_sha256": "d4329072b9bcb75062e510e3a56a221f5907debead8833ccc4628981a494f052",
+  "certificate_sha256": "c0dc0a85e8bb2abbd278c7a6ec0e0aa5c59b161b3060567dce09271e7b79546e",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -62,6 +62,10 @@
     "Barrier, warp, reconvergence, and complete control-flow semantics",
     "NVIDIA hardware conformance to these proposed equations"
   ],
+  "proof_strength_summary": {
+    "full_width_definitional_or_compositional_instances": 6,
+    "independent_reduced_width_references": 2
+  },
   "proofs": [
     {
       "counterexample": null,
@@ -458,7 +462,8 @@
         "opcodes": [
           "IMAD.WIDE.U32",
           "UIMAD.WIDE.U32"
-        ]
+        ],
+        "proof_strength": "Independent reduced-width shift-add reference."
       },
       "solver_result": "unsat"
     },
@@ -472,7 +477,8 @@
         "opcodes": [
           "IMAD.WIDE",
           "UIMAD.WIDE"
-        ]
+        ],
+        "proof_strength": "Independent reduced-width two's-complement magnitude/shift-add reference."
       },
       "solver_result": "unsat"
     },
@@ -493,7 +499,8 @@
           "LEA",
           "LEA.HI"
         ],
-        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Reduced-width compositional identity within the proposed equation."
       },
       "solver_result": "unsat"
     },
@@ -514,7 +521,8 @@
           "LEA",
           "LEA.HI.X"
         ],
-        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Reduced-width compositional identity within the proposed equation."
       },
       "solver_result": "unsat"
     },
@@ -535,7 +543,8 @@
           "LEA",
           "LEA.HI.SX32"
         ],
-        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Reduced-width compositional identity within the proposed equation."
       },
       "solver_result": "unsat"
     },
@@ -556,7 +565,134 @@
           "LEA",
           "LEA.HI.X.SX32"
         ],
-        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded."
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Reduced-width compositional identity within the proposed equation."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+      "proved": true,
+      "scope": {
+        "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+        "input": "all 32-bit unsigned factors and 64-bit addends",
+        "modeled_widths": {
+          "factor_bits": 32,
+          "result_bits": 64
+        },
+        "opcodes": [
+          "IMAD.WIDE.U32",
+          "UIMAD.WIDE.U32"
+        ],
+        "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "imad_wide_signed_full_32x32_to_64_definition_instance",
+      "proved": true,
+      "scope": {
+        "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+        "input": "all 32-bit two's-complement factors and 64-bit addends",
+        "modeled_widths": {
+          "factor_bits": 32,
+          "result_bits": 64
+        },
+        "opcodes": [
+          "IMAD.WIDE",
+          "UIMAD.WIDE"
+        ],
+        "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_unsigned_full_32_to_64_no_carry_composition",
+      "proved": true,
+      "scope": {
+        "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 64-bit bases and 32-bit indices for fixed shift three under zero low-half carry",
+        "modeled_widths": {
+          "address_bits": 64,
+          "index_bits": 32
+        },
+        "opcodes": [
+          "LEA",
+          "LEA.HI",
+          "ULEA",
+          "ULEA.HI"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_unsigned_full_32_to_64_x_carry_composition",
+      "proved": true,
+      "scope": {
+        "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 64-bit bases and 32-bit indices for fixed shift three with generated low-half carry",
+        "modeled_widths": {
+          "address_bits": 64,
+          "index_bits": 32
+        },
+        "opcodes": [
+          "LEA",
+          "LEA.HI.X",
+          "ULEA",
+          "ULEA.HI.X"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_sx32_full_32_to_64_no_carry_composition",
+      "proved": true,
+      "scope": {
+        "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 64-bit bases and 32-bit indices for fixed shift three under zero low-half carry",
+        "modeled_widths": {
+          "address_bits": 64,
+          "index_bits": 32
+        },
+        "opcodes": [
+          "LEA",
+          "LEA.HI.SX32",
+          "ULEA",
+          "ULEA.HI.SX32"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "lea_sx32_full_32_to_64_x_carry_composition",
+      "proved": true,
+      "scope": {
+        "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+        "input": "all 64-bit bases and 32-bit indices for fixed shift three with generated low-half carry",
+        "modeled_widths": {
+          "address_bits": 64,
+          "index_bits": 32
+        },
+        "opcodes": [
+          "LEA",
+          "LEA.HI.X.SX32",
+          "ULEA",
+          "ULEA.HI.X.SX32"
+        ],
+        "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+        "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference."
       },
       "solver_result": "unsat"
     }
@@ -593,11 +729,11 @@
     "STG.E.128": 16,
     "STG.E.64": 8
   },
-  "proved": 39,
+  "proved": 45,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 39
+  "total": 45
 }

@@ -670,6 +670,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             {
                 "opcodes": ["IMAD.WIDE.U32", "UIMAD.WIDE.U32"],
                 "input": "all pairs of 8-bit unsigned factors and 16-bit addends",
+                "proof_strength": "Independent reduced-width shift-add reference.",
                 "boundary": "Reduced-width proposed unsigned multiply-add equation; signed forms, carry modifiers, register pairing, and hardware behavior excluded.",
             },
         )
@@ -688,6 +689,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             {
                 "opcodes": ["IMAD.WIDE", "UIMAD.WIDE"],
                 "input": "all pairs of 8-bit two's-complement factors and 16-bit addends",
+                "proof_strength": "Independent reduced-width two's-complement magnitude/shift-add reference.",
                 "boundary": "Reduced-width proposed signed multiply-add equation; unsigned forms, carry modifiers, register pairing, and hardware behavior excluded.",
             },
         )
@@ -710,6 +712,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
                 "opcodes": ["ULEA", "ULEA.HI", "LEA", "LEA.HI"],
                 "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three under zero low-half carry",
                 "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Reduced-width compositional identity within the proposed equation.",
                 "modeled_widths": {"index_bits": 8, "address_bits": 16},
                 "boundary": "Reduced-width proposed separate no-carry low/high equations; .X carry, sign extension, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
             },
@@ -727,6 +730,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
                 "opcodes": ["ULEA", "ULEA.HI.X", "LEA", "LEA.HI.X"],
                 "input": "all 16-bit bases and 8-bit unsigned indices for fixed shift three with generated low-half carry",
                 "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Reduced-width compositional identity within the proposed equation.",
                 "modeled_widths": {"index_bits": 8, "address_bits": 16},
                 "boundary": "Reduced-width proposed carry-consuming high-half equation; predicate production/encoding, sign extension, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
             },
@@ -754,6 +758,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
                 "opcodes": ["ULEA", "ULEA.HI.SX32", "LEA", "LEA.HI.SX32"],
                 "input": "all 16-bit bases and signed 8-bit indices for fixed shift three under zero low-half carry",
                 "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Reduced-width compositional identity within the proposed equation.",
                 "modeled_widths": {"SX32_source_proxy_bits": 8, "address_bits": 16},
                 "boundary": "Reduced-width proposed signed-index no-carry equation; SX32 is represented by an 8-bit source proxy, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
             },
@@ -785,17 +790,124 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
                 ],
                 "input": "all 16-bit bases and signed 8-bit indices for fixed shift three with generated low-half carry",
                 "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                "proof_strength": "Reduced-width compositional identity within the proposed equation.",
                 "modeled_widths": {"SX32_source_proxy_bits": 8, "address_bits": 16},
                 "boundary": "Reduced-width proposed signed-index carry-consuming equation; SX32 is represented by an 8-bit source proxy, predicate encoding, arbitrary shifts, register encoding, uniformity, and hardware behavior excluded.",
             },
         )
     )
 
+    full_first = z3.BitVec("sass_full_wide_first", 32)
+    full_second = z3.BitVec("sass_full_wide_second", 32)
+    full_addend = z3.BitVec("sass_full_wide_addend", 64)
+    proofs.append(
+        _prove(
+            "imad_wide_unsigned_full_32x32_to_64_definition_instance",
+            sass_imad_wide_unsigned(full_first, full_second, full_addend, 32)
+            == z3.Extract(63, 0, z3.ZeroExt(32, full_first) * z3.ZeroExt(32, full_second) + full_addend),
+            {
+                "opcodes": ["IMAD.WIDE.U32", "UIMAD.WIDE.U32"],
+                "input": "all 32-bit unsigned factors and 64-bit addends",
+                "modeled_widths": {"factor_bits": 32, "result_bits": 64},
+                "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference.",
+                "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
+            "imad_wide_signed_full_32x32_to_64_definition_instance",
+            sass_imad_wide_signed(full_first, full_second, full_addend, 32)
+            == z3.Extract(63, 0, z3.SignExt(32, full_first) * z3.SignExt(32, full_second) + full_addend),
+            {
+                "opcodes": ["IMAD.WIDE", "UIMAD.WIDE"],
+                "input": "all 32-bit two's-complement factors and 64-bit addends",
+                "modeled_widths": {"factor_bits": 32, "result_bits": 64},
+                "proof_strength": "Full-width definitional instance of the proposed equation; not an independent circuit reference.",
+                "boundary": "Carry outputs, register pairing/encoding, modifiers, uniformity, and hardware behavior excluded.",
+            },
+        )
+    )
+    full_base = z3.BitVec("sass_full_address_base", 64)
+    full_index = z3.BitVec("sass_full_address_index", 32)
+    full_low, full_carry = sass_ulea_low_and_carry(full_base, full_index, 3, 32)
+    full_signed_low, full_signed_carry = sass_ulea_low_and_carry(
+        full_base, full_index, 3, 32, signed_index=True
+    )
+    for signed_index, low, carry, suffix in (
+        (False, full_low, full_carry, "unsigned"),
+        (True, full_signed_low, full_signed_carry, "sx32"),
+    ):
+        high_opcode = "LEA.HI.SX32" if signed_index else "LEA.HI"
+        uniform_high_opcode = "ULEA.HI.SX32" if signed_index else "ULEA.HI"
+        high_x_opcode = "LEA.HI.X.SX32" if signed_index else "LEA.HI.X"
+        uniform_high_x_opcode = "ULEA.HI.X.SX32" if signed_index else "ULEA.HI.X"
+        proofs.append(
+            _prove(
+                f"lea_{suffix}_full_32_to_64_no_carry_composition",
+                z3.Implies(
+                    carry == 0,
+                    z3.Concat(
+                        sass_ulea_high_without_carry(
+                            full_base, full_index, 3, 32, signed_index=signed_index
+                        ),
+                        low,
+                    )
+                    == sass_wide_shift_add(
+                        full_base, full_index, 3, 32, signed_index=signed_index
+                    ),
+                ),
+                {
+                    "opcodes": ["LEA", high_opcode, "ULEA", uniform_high_opcode],
+                    "input": "all 64-bit bases and 32-bit indices for fixed shift three under zero low-half carry",
+                    "modeled_widths": {"index_bits": 32, "address_bits": 64},
+                    "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                    "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference.",
+                    "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+                },
+            )
+        )
+        proofs.append(
+            _prove(
+                f"lea_{suffix}_full_32_to_64_x_carry_composition",
+                z3.Concat(
+                    sass_ulea_high_with_carry(
+                        full_base,
+                        full_index,
+                        3,
+                        32,
+                        carry,
+                        signed_index=signed_index,
+                    ),
+                    low,
+                )
+                == sass_wide_shift_add(
+                    full_base, full_index, 3, 32, signed_index=signed_index
+                ),
+                {
+                    "opcodes": ["LEA", high_x_opcode, "ULEA", uniform_high_x_opcode],
+                    "input": "all 64-bit bases and 32-bit indices for fixed shift three with generated low-half carry",
+                    "modeled_widths": {"index_bits": 32, "address_bits": 64},
+                    "premise": "LEA and ULEA share the modeled arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
+                    "proof_strength": "Full-width compositional instance of the proposed equation; not an independent implementation reference.",
+                    "boundary": "Arbitrary shifts, register encoding, predicate encoding, uniformity, and hardware behavior excluded.",
+                },
+            )
+        )
+
     body = {
         "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
         "solver": {"name": "Z3", "version": z3.get_version_string()},
         "abstract_memory_address_width_bits": address_width,
         "proofs": proofs,
+        "proof_strength_summary": {
+            "independent_reduced_width_references": sum(
+                "Independent reduced-width" in item["scope"].get("proof_strength", "") for item in proofs
+            ),
+            "full_width_definitional_or_compositional_instances": sum(
+                "Full-width" in item["scope"].get("proof_strength", "") for item in proofs
+            ),
+        },
         "proved": sum(item["proved"] for item in proofs),
         "total": len(proofs),
         "covered_base_opcodes": sorted(PROPOSED_SEMANTICS_OPCODES),
@@ -838,6 +950,7 @@ def verify_sass_semantics_certificate(certificate: dict[str, Any]) -> dict[str, 
         "solver",
         "abstract_memory_address_width_bits",
         "proofs",
+        "proof_strength_summary",
         "proved",
         "total",
         "covered_base_opcodes",

@@ -62,7 +62,9 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 39)
+        self.assertGreaterEqual(certificate["total"], 45)
+        self.assertEqual(certificate["proof_strength_summary"]["independent_reduced_width_references"], 2)
+        self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 6)
         self.assertTrue(
             {
                 "FFMA",
