@@ -658,6 +658,45 @@ def command_launch_argument_summary_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_sass_expressions(args: argparse.Namespace) -> int:
+    from .sass_expressions import build_sass_expression_certificate
+
+    memory = json.loads(args.sass_memory.read_text(encoding="utf-8"))
+    bounds = json.loads(args.logical_bounds.read_text(encoding="utf-8"))
+    certificate = build_sass_expression_certificate(
+        args.cuobjdump, args.cubin, args.kernel, memory, bounds
+    )
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_sass_expression_summary(args: argparse.Namespace) -> int:
+    from .sass_expressions import build_sass_expression_summary
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    summary = build_sass_expression_summary(certificate)
+    _write_json(args.output, summary)
+    return 0
+
+
+def command_sass_expression_summary_verify(args: argparse.Namespace) -> int:
+    from .sass_expressions import verify_sass_expression_summary
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_sass_expression_summary(summary)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_sass_expressions_verify(args: argparse.Namespace) -> int:
+    from .sass_expressions import verify_sass_expression_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_sass_expression_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_attention_bounds(args: argparse.Namespace) -> int:
     from .attention_bounds import (
         build_attention_logical_bounds_certificate,
@@ -1153,6 +1192,28 @@ def build_parser() -> argparse.ArgumentParser:
     launch_argument_verify_parser = subparsers.add_parser("launch-argument-summary-verify", help="Verify launch-argument summary integrity and boundaries")
     launch_argument_verify_parser.add_argument("summary", type=Path)
     launch_argument_verify_parser.set_defaults(handler=command_launch_argument_summary_verify)
+
+    sass_expressions_parser = subparsers.add_parser("attention-sass-expressions", help="Extract selected symbolic SASS address-expression DAGs")
+    sass_expressions_parser.add_argument("--cuobjdump", required=True)
+    sass_expressions_parser.add_argument("--cubin", type=Path, required=True)
+    sass_expressions_parser.add_argument("--kernel", required=True)
+    sass_expressions_parser.add_argument("--sass-memory", type=Path, required=True)
+    sass_expressions_parser.add_argument("--logical-bounds", type=Path, required=True)
+    sass_expressions_parser.add_argument("--output", type=Path, required=True)
+    sass_expressions_parser.set_defaults(handler=command_sass_expressions)
+
+    sass_expressions_verify_parser = subparsers.add_parser("attention-sass-expressions-verify", help="Verify selected SASS address-expression DAG integrity")
+    sass_expressions_verify_parser.add_argument("certificate", type=Path)
+    sass_expressions_verify_parser.set_defaults(handler=command_sass_expressions_verify)
+
+    sass_expression_summary_parser = subparsers.add_parser("attention-sass-expression-summary", help="Build a compact summary from a full SASS expression certificate")
+    sass_expression_summary_parser.add_argument("certificate", type=Path)
+    sass_expression_summary_parser.add_argument("--output", type=Path, required=True)
+    sass_expression_summary_parser.set_defaults(handler=command_sass_expression_summary)
+
+    sass_expression_summary_verify_parser = subparsers.add_parser("attention-sass-expression-summary-verify", help="Verify a compact SASS expression summary")
+    sass_expression_summary_verify_parser.add_argument("summary", type=Path)
+    sass_expression_summary_verify_parser.set_defaults(handler=command_sass_expression_summary_verify)
 
     attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
     attention_bounds_parser.add_argument("--artifact", type=Path, required=True)

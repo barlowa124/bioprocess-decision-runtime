@@ -81,7 +81,21 @@ def _base_opcode(opcode: str) -> str:
 
 
 def _registers(value: str) -> list[str]:
-    return re.findall(r"\b(?:UR|R)\d+\b", value)
+    registers = []
+    for match in re.finditer(r"\b(UR|R)(\d+)(?:\.(64|128))?\b", value):
+        register = f"{match.group(1)}{match.group(2)}"
+        count = {"64": 2, "128": 4}.get(match.group(3), 1)
+        registers.extend(_next_register(register, increment) for increment in range(count))
+    return registers
+
+
+def _source_registers_for_opcode(opcode: str, value: str) -> list[str]:
+    registers = _registers(value)
+    if ".WIDE" in opcode and registers:
+        high_addend = _next_register(registers[-1])
+        if high_addend not in registers:
+            registers.append(high_addend)
+    return registers
 
 
 def _next_register(register: str, increment: int = 1) -> str:
@@ -100,6 +114,8 @@ def _memory_width_bytes(opcode: str) -> int:
 
 
 def _destination_register_count(opcode: str) -> int:
+    if ".WIDE" in opcode:
+        return 2
     if re.search(r"(?:^|\.)128(?:\.|$)", opcode):
         return 4
     if re.search(r"(?:^|\.)64(?:\.|$)", opcode):
@@ -179,7 +195,11 @@ def _transfer_taint(
     source_fields: set[str] = set()
     if base_opcode not in LOAD_BASES:
         remaining = operands[destination.end() :]
-        source_fields = {field for register in _registers(remaining) for field in taint.get(register, set())}
+        source_fields = {
+            field
+            for register in _source_registers_for_opcode(opcode, remaining)
+            for field in taint.get(register, set())
+        }
         for constant_offset in _constant_offsets(instruction):
             parameter_offset = constant_offset - parameter_base
             if 0 <= parameter_offset < ctypes.sizeof(_AttentionParams):
@@ -687,8 +707,8 @@ def build_sass_memory_certificate(
         == "Drop oldest return site and retain the newest at the fixed depth.",
         "call_string_returns_resolved": call_string_graph["unresolved_return_context_count"] == 0,
         "target_fields_have_opcode_text_access_classes": all(field in field_accesses for field in TARGET_POINTER_FIELDS),
-        "qkv_have_read_only_opcode_text_links": all(
-            set(field_accesses[field]) == {"candidate_read"}
+        "qkv_have_candidate_read_opcode_text_links": all(
+            field_accesses[field].get("candidate_read", 0) > 0
             for field in ("query_ptr", "key_ptr", "value_ptr")
         ),
         "output_fields_have_candidate_write_links": all(

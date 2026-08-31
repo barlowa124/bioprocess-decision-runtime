@@ -271,6 +271,65 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
+class SassExpressionTests(unittest.TestCase):
+    def test_expression_dag_and_compact_summary_integrity(self) -> None:
+        from bioprocess_runtime.sass_expressions import (
+            _linear_expression_snapshots,
+            _reachable_nodes,
+            _unsupported_expression_nodes,
+            build_sass_expression_summary,
+            verify_sass_expression_certificate,
+            verify_sass_expression_summary,
+        )
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+        ]
+        snapshots, registry = _linear_expression_snapshots(instructions, 0x160)
+        roots = [snapshots[32]["R4"], snapshots[32]["R5"]]
+        nodes = _reachable_nodes(roots, registry)
+        self.assertIn("query_ptr", {field for node in nodes for field in node.get("parameter_fields", [])})
+        certificate = {
+            "scope": "synthetic expression DAG",
+            "kernel_name": "kernel",
+            "cubin_sha256": "cubin",
+            "sass_canonical_sha256": "sass",
+            "sass_memory_certificate_sha256": "memory",
+            "logical_bounds_certificate_sha256": "bounds",
+            "selections": [
+                {
+                    "field": "query_ptr",
+                    "available": True,
+                    "closed_supported_formula": False,
+                    "expression_nodes": nodes,
+                    "root_nodes": roots,
+                    "node_count": len(nodes),
+                    "unsupported_or_entry_node_count": len(_unsupported_expression_nodes(nodes)),
+                }
+            ],
+            "checks": {"synthetic": True},
+            "all_checks_pass": True,
+            "selected_sass_address_expression_dags_established": True,
+            "closed_supported_sass_formulas_established": False,
+            "sass_effective_address_formula_bound": False,
+            "sass_to_logical_stride_correspondence_established": False,
+            "sass_effective_address_bounds_established": False,
+            "kernel_memory_safety_established": False,
+        }
+        certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
+        verification = verify_sass_expression_certificate(certificate)
+        self.assertTrue(verification["valid"], verification)
+        summary = build_sass_expression_summary(certificate)
+        self.assertTrue(verify_sass_expression_summary(summary)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["selections"][0]["expression_nodes"][0]["kind"] = "forged"
+        body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
+        damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_sass_expression_certificate(damaged)["valid"])
+
+
 class SassMemoryTests(unittest.TestCase):
     def test_parameter_base_and_linear_address_taint(self) -> None:
         from bioprocess_runtime.sass_memory import (
@@ -283,6 +342,7 @@ class SassMemoryTests(unittest.TestCase):
             _destination_register_count,
             _memory_slice,
             _memory_width_bytes,
+            _registers,
             _transfer_taint,
         )
 
@@ -321,6 +381,9 @@ class SassMemoryTests(unittest.TestCase):
         )
         self.assertTrue(all(not cleared[f"R{index}"] for index in range(4, 8)))
         self.assertEqual(_destination_register_count("LDSM.16.M88.4"), 4)
+        self.assertEqual(_destination_register_count("IMAD.WIDE.U32"), 2)
+        self.assertEqual(_registers("[R4.64]"), ["R4", "R5"])
+        self.assertEqual(_registers("[UR14.128]"), ["UR14", "UR15", "UR16", "UR17"])
         cleared = _transfer_taint(
             {"offset": 0, "predicate": None, "opcode": "LDSM.16.M88.4", "operands": "R4,[R20]"},
             stale,
