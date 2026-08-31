@@ -1,5 +1,6 @@
 {
   "all_checks_pass": true,
+  "attention_parameter_certificate_sha256": "8bf3f2fb927ddb63f4fda85c0f055441464cf78de2c5ae913c601da490a662be",
   "bounded_call_string_analysis": {
     "abstracted_call_overflow_count": 233,
     "address_slices_with_parameter_fields": 128,
@@ -49,7 +50,7 @@
   },
   "bounded_call_string_dataflow_established": true,
   "call_string_depth_overflow_free": false,
-  "certificate_sha256": "a611b4b336ecf4c1d0342f08ac1684fa1d98af0ea23aa15e91329bd6fbdd1145",
+  "certificate_sha256": "47c68be5dbddce3c633f8a10180c36eed6f16977f2000b9903b8f86a2bea2a8e",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
@@ -237,6 +238,7 @@
       }
     }
   },
+  "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
   "opcode_text_access_classification": {
     "address_operand_count_by_class": {
       "candidate_read": 215,

@@ -710,6 +710,8 @@ def build_sass_memory_certificate(
         "scope": "Syntactic SASS parameter-to-address provenance with linear, context-insensitive, and bounded call-string fixed points plus lexical barrier-token edges; unbounded call stacks, hardware reconvergence, predicate truth, instruction semantics, access direction, bounds, and hardware behavior remain incomplete.",
         "kernel_name": kernel,
         "cubin_sha256": _file_sha256(cubin),
+        "nsight_certificate_sha256": nsight_certificate["certificate_sha256"],
+        "attention_parameter_certificate_sha256": attention_certificate["certificate_sha256"],
         "sass_semantics_certificate_sha256": sass_semantics_certificate["certificate_sha256"],
         "real_opcode_width_check": {
             "instruction_count": len(real_width_records),
@@ -852,8 +854,16 @@ def verify_sass_memory_certificate(
         for value in (cuobjdump, cubin, nsight_certificate, attention_certificate, sass_semantics_certificate)
     )
     input_certificates_valid = False
+    input_certificate_hashes_match = False
     replay_matches = False
     if replay_available:
+        input_certificate_hashes_match = (
+            certificate.get("nsight_certificate_sha256") == nsight_certificate.get("certificate_sha256")
+            and certificate.get("attention_parameter_certificate_sha256")
+            == attention_certificate.get("certificate_sha256")
+            and certificate.get("sass_semantics_certificate_sha256")
+            == sass_semantics_certificate.get("certificate_sha256")
+        )
         input_certificates_valid = (
             verify_nsight_launch_certificate(nsight_certificate)["valid"]
             and verify_attention_parameter_certificate(attention_certificate)["valid"]
@@ -878,6 +888,7 @@ def verify_sass_memory_certificate(
             and opcode_invariants_valid
             and access_classification_valid
             and input_certificates_valid
+            and input_certificate_hashes_match
             and replay_matches
         ),
         "certificate_hash_valid": hash_valid,
@@ -886,6 +897,7 @@ def verify_sass_memory_certificate(
         "opcode_invariants_valid": opcode_invariants_valid,
         "access_classification_valid": access_classification_valid,
         "input_certificates_valid": input_certificates_valid,
+        "input_certificate_hashes_match": input_certificate_hashes_match,
         "replay_available": replay_available,
         "replay_matches": replay_matches,
     }

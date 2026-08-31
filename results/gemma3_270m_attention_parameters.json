@@ -12,7 +12,7 @@
       "d8725260d3088eb7f26564e2d5b5f8ea3c6f01032ff63c860d0e49a130326b5b"
     ],
     "operation": "aten._scaled_dot_product_efficient_attention.default",
-    "operation_sha256": "eaf5c3a6afce24d1822a097bdc2b173c9e7a6c6c92ebcdd5bcda86a82f991b7b",
+    "operation_sha256": "528133c599a25875703465c07fd479cef79b7528ee386caff9e063b9939b6221",
     "output_tensor_sha256": "4f8183e0c22c56af63e5c134953135571870bade7944b46b92e62755ee4ee01d",
     "schema": "aten::_scaled_dot_product_efficient_attention(Tensor query, Tensor key, Tensor value, Tensor? attn_bias, bool compute_log_sumexp, float dropout_p=0., bool is_causal=False, *, float? scale=None) -> (Tensor output, Tensor log_sumexp, Tensor philox_seed, Tensor philox_offset)"
   },
@@ -21,7 +21,7 @@
     4,
     1
   ],
-  "certificate_sha256": "0d0307ef8ce139f3fd2bd273d9a112e31e87f87bc421e934611a3074ae30bea8",
+  "certificate_sha256": "8bf3f2fb927ddb63f4fda85c0f055441464cf78de2c5ae913c601da490a662be",
   "checks": {
     "batch_and_heads_match": true,
     "causal_mask_matches": true,
@@ -94,7 +94,7 @@
     1
   ],
   "kernel_read_write_semantics_established": false,
-  "launch_artifact_sha256": "8f467e62981c9713c8c5adc0bf34852700d21e5fbbce12130d12a01b32e9a740",
+  "launch_artifact_sha256": "205afe16a0af459539aab3cb0dfd4cc678d72cc0b569e31ca186e71660797686",
   "memory_access_semantics_established": false,
   "pointer_field_sha256": {
     "attn_bias_ptr": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
@@ -124,7 +124,7 @@
   },
   "scope": "Decoded from a verified-source, source-reconstructed ctypes layout and bound to schema-named dispatcher tensors; not a compiled, hardware-verified, or fully typed kernel signature, and not a read/write or memory-access proof.",
   "shared_memory_bytes": 51200,
-  "signature_certificate_sha256": "408fe3aeb71ba59a12c6a7cf70d99d90eb0d62d849eb9456fe5c19c1fcaa7f23",
+  "signature_certificate_sha256": "1d41c1c2a589f90f20ddd769e52a74e442c12597ad41ff99c5a880e71fee306b",
   "source_layout_reconstructed": true,
   "source_named_dispatch_output_pointer_bound": true,
   "typed_signature_established": false

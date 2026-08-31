@@ -1,0 +1,155 @@
+{
+  "all_checks_pass": true,
+  "attention_parameter_certificate_sha256": "8bf3f2fb927ddb63f4fda85c0f055441464cf78de2c5ae913c601da490a662be",
+  "certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
+  "checks": {
+    "all_tensor_bounds_proved": true,
+    "attention_parameter_certificate_valid": true,
+    "decoded_strides_match_retained_tensors": true,
+    "launch_artifact_valid": true,
+    "source_named_pointer_bindings_present": true
+  },
+  "hardware_memory_access_conformance_established": false,
+  "kernel_memory_safety_established": false,
+  "launch_artifact_sha256": "205afe16a0af459539aab3cb0dfd4cc678d72cc0b569e31ca186e71660797686",
+  "logical_index_storage_bounds_established": true,
+  "proofs": [
+    {
+      "byte_range_formula": "data_pointer_offset + element_offset*2 through exclusive end +2",
+      "counterexample": null,
+      "data_pointer_offset_bytes": 0,
+      "data_pointer_sha256": "ac789c4af881e5ad87c6d1c520950e6523b7f6620b812a8ff5900a51db04e79f",
+      "domain": [
+        "0 <= index_0 < 1",
+        "0 <= index_1 < 4",
+        "0 <= index_2 < 30",
+        "0 <= index_3 < 256"
+      ],
+      "element_offset_formula": "index_0*30720 + index_1*7680 + index_2*256 + index_3*1",
+      "element_size_bytes": 2,
+      "logical_tensor_sha256": "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+      "name": "query_ptr",
+      "proved": true,
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "solver_result": "unsat",
+      "storage_base_pointer_sha256": "ac789c4af881e5ad87c6d1c520950e6523b7f6620b812a8ff5900a51db04e79f",
+      "storage_nbytes": 61440,
+      "stride": [
+        30720,
+        7680,
+        256,
+        1
+      ]
+    },
+    {
+      "byte_range_formula": "data_pointer_offset + element_offset*2 through exclusive end +2",
+      "counterexample": null,
+      "data_pointer_offset_bytes": 0,
+      "data_pointer_sha256": "36bc17076e953f761e6f48b8d46c8466a28c1caa17f2d456564f361818c09939",
+      "domain": [
+        "0 <= index_0 < 1",
+        "0 <= index_1 < 4",
+        "0 <= index_2 < 30",
+        "0 <= index_3 < 256"
+      ],
+      "element_offset_formula": "index_0*30720 + index_1*7680 + index_2*256 + index_3*1",
+      "element_size_bytes": 2,
+      "logical_tensor_sha256": "37eaa4ab6adf127617fdb2b16f59741be2f41aafe628659f7e0b3bbd8c6990fe",
+      "name": "key_ptr",
+      "proved": true,
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "solver_result": "unsat",
+      "storage_base_pointer_sha256": "36bc17076e953f761e6f48b8d46c8466a28c1caa17f2d456564f361818c09939",
+      "storage_nbytes": 61440,
+      "stride": [
+        30720,
+        7680,
+        256,
+        1
+      ]
+    },
+    {
+      "byte_range_formula": "data_pointer_offset + element_offset*2 through exclusive end +2",
+      "counterexample": null,
+      "data_pointer_offset_bytes": 0,
+      "data_pointer_sha256": "ddd0a36b1460a6f8cb91cec65de84b64256bed95f202b18b4a61f79819ad7fe2",
+      "domain": [
+        "0 <= index_0 < 1",
+        "0 <= index_1 < 4",
+        "0 <= index_2 < 30",
+        "0 <= index_3 < 256"
+      ],
+      "element_offset_formula": "index_0*30720 + index_1*7680 + index_2*256 + index_3*1",
+      "element_size_bytes": 2,
+      "logical_tensor_sha256": "d8725260d3088eb7f26564e2d5b5f8ea3c6f01032ff63c860d0e49a130326b5b",
+      "name": "value_ptr",
+      "proved": true,
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "solver_result": "unsat",
+      "storage_base_pointer_sha256": "ddd0a36b1460a6f8cb91cec65de84b64256bed95f202b18b4a61f79819ad7fe2",
+      "storage_nbytes": 61440,
+      "stride": [
+        30720,
+        7680,
+        256,
+        1
+      ]
+    },
+    {
+      "byte_range_formula": "data_pointer_offset + element_offset*2 through exclusive end +2",
+      "counterexample": null,
+      "data_pointer_offset_bytes": 0,
+      "data_pointer_sha256": "843045085cd348b7ce9385cf3803208776342980e90bb61ce910751234c6b273",
+      "domain": [
+        "0 <= index_0 < 1",
+        "0 <= index_1 < 4",
+        "0 <= index_2 < 30",
+        "0 <= index_3 < 256"
+      ],
+      "element_offset_formula": "index_0*30720 + index_1*256 + index_2*1024 + index_3*1",
+      "element_size_bytes": 2,
+      "logical_tensor_sha256": "4f8183e0c22c56af63e5c134953135571870bade7944b46b92e62755ee4ee01d",
+      "name": "output_ptr",
+      "proved": true,
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "solver_result": "unsat",
+      "storage_base_pointer_sha256": "843045085cd348b7ce9385cf3803208776342980e90bb61ce910751234c6b273",
+      "storage_nbytes": 61440,
+      "stride": [
+        30720,
+        256,
+        1024,
+        1
+      ]
+    }
+  ],
+  "proved": 4,
+  "sass_effective_address_bounds_established": false,
+  "sass_effective_address_formula_bound": false,
+  "scope": "Machine-checked logical index-to-storage bounds for source-named Q/K/V/output tensors using retained shapes, strides, element sizes, and storage commitments; not SASS effective-address or hardware memory-safety proof.",
+  "solver": {
+    "name": "Z3",
+    "version": "4.15.3"
+  },
+  "total": 4
+}

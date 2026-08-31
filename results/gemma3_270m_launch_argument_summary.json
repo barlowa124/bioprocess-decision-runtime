@@ -98,7 +98,7 @@
       "total_symbol_launches": 54
     },
     {
-      "artifact_sha256": "8f467e62981c9713c8c5adc0bf34852700d21e5fbbce12130d12a01b32e9a740",
+      "artifact_sha256": "205afe16a0af459539aab3cb0dfd4cc678d72cc0b569e31ca186e71660797686",
       "artifact_valid": true,
       "block": [
         32,
@@ -294,7 +294,7 @@
   ],
   "scope": "CUPTI driver-entry launch parameter commitments with pre-launch retained input/parameter matches and post-launch retrospective output-address matches; not typed signature or memory-access proof.",
   "storage_range_match_count": 11,
-  "summary_sha256": "a497318145f4f7800ecd0eebb768d8f4c2745349afaf610e9b70177505019775",
+  "summary_sha256": "ac9c203f5d8c4f63b4726261db9f5c715c86f0b4f1f1b87aa9dc13e824000dbe",
   "total_entries": 4,
   "typed_kernel_signatures_established": false,
   "valid_entries": 4

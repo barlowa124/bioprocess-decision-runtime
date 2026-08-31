@@ -286,6 +286,8 @@ def redact_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
             for tensor in invocation[role]:
                 tensor["sha256"] = "redacted"
                 tensor["data_pointer_sha256"] = "redacted"
+                if "storage_base_pointer_sha256" in tensor:
+                    tensor["storage_base_pointer_sha256"] = "redacted"
         invocation_body = {key: value for key, value in invocation.items() if key != "invocation_sha256"}
         invocation["invocation_sha256"] = hashlib.sha256(canonical_json(invocation_body).encode("utf-8")).hexdigest()
     module_body = {key: value for key, value in module_report.items() if key != "report_sha256"}
@@ -297,6 +299,8 @@ def redact_launch_argument_artifact(artifact: dict[str, Any]) -> dict[str, Any]:
                 for tensor in operation[role]:
                     tensor["sha256"] = "redacted"
                     tensor["data_pointer_sha256"] = "redacted"
+                    if "storage_base_pointer_sha256" in tensor:
+                        tensor["storage_base_pointer_sha256"] = "redacted"
             operation_body = {key: value for key, value in operation.items() if key != "operation_sha256"}
             operation["operation_sha256"] = hashlib.sha256(canonical_json(operation_body).encode("utf-8")).hexdigest()
         dispatch_body = {key: value for key, value in dispatch_report.items() if key != "report_sha256"}

@@ -37,7 +37,12 @@ def _tensor_values(value: Any) -> list[Any]:
 def _invocation_tensor_record(tensor: Any) -> dict[str, Any]:
     descriptor = tensor_descriptor(tensor)
     descriptor["stride"] = list(tensor.stride())
+    storage = tensor.untyped_storage()
     descriptor["storage_offset"] = int(tensor.storage_offset())
+    descriptor["element_size_bytes"] = int(tensor.element_size())
+    descriptor["storage_nbytes"] = int(storage.nbytes())
+    descriptor["data_pointer_offset_bytes"] = int(tensor.data_ptr() - storage.data_ptr())
+    descriptor["storage_base_pointer_sha256"] = hashlib.sha256(str(storage.data_ptr()).encode("ascii")).hexdigest()
     descriptor["data_pointer_sha256"] = hashlib.sha256(str(tensor.data_ptr()).encode("ascii")).hexdigest()
     return descriptor
 

@@ -658,6 +658,30 @@ def command_launch_argument_summary_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_attention_bounds(args: argparse.Namespace) -> int:
+    from .attention_bounds import (
+        build_attention_logical_bounds_certificate,
+        redact_attention_logical_bounds_certificate,
+    )
+
+    artifact = json.loads(args.artifact.read_text(encoding="utf-8"))
+    attention = json.loads(args.attention.read_text(encoding="utf-8"))
+    certificate = build_attention_logical_bounds_certificate(artifact, attention)
+    if args.redact:
+        certificate = redact_attention_logical_bounds_certificate(certificate)
+    _write_json(args.output, certificate)
+    return 0 if certificate["all_checks_pass"] else 1
+
+
+def command_attention_bounds_verify(args: argparse.Namespace) -> int:
+    from .attention_bounds import verify_attention_logical_bounds_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_attention_logical_bounds_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_sass_memory(args: argparse.Namespace) -> int:
     from .sass_memory import build_sass_memory_certificate
 
@@ -1129,6 +1153,17 @@ def build_parser() -> argparse.ArgumentParser:
     launch_argument_verify_parser = subparsers.add_parser("launch-argument-summary-verify", help="Verify launch-argument summary integrity and boundaries")
     launch_argument_verify_parser.add_argument("summary", type=Path)
     launch_argument_verify_parser.set_defaults(handler=command_launch_argument_summary_verify)
+
+    attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
+    attention_bounds_parser.add_argument("--artifact", type=Path, required=True)
+    attention_bounds_parser.add_argument("--attention", type=Path, required=True)
+    attention_bounds_parser.add_argument("--redact", action="store_true")
+    attention_bounds_parser.add_argument("--output", type=Path, required=True)
+    attention_bounds_parser.set_defaults(handler=command_attention_bounds)
+
+    attention_bounds_verify_parser = subparsers.add_parser("attention-logical-bounds-verify", help="Re-execute a logical attention storage-bounds certificate")
+    attention_bounds_verify_parser.add_argument("certificate", type=Path)
+    attention_bounds_verify_parser.set_defaults(handler=command_attention_bounds_verify)
 
     sass_memory_parser = subparsers.add_parser("attention-sass-memory", help="Trace syntactic SASS memory-address provenance to attention parameters")
     sass_memory_parser.add_argument("--cuobjdump", required=True)

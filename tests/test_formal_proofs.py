@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 
 from bioprocess_runtime.serialization import canonical_json
@@ -431,6 +432,110 @@ class SassMemoryTests(unittest.TestCase):
         self.assertEqual(graph["direct_calls"], 1)
         self.assertEqual(graph["direct_call_fallthroughs"], 0)
         self.assertEqual(graph["context_insensitive_return_edges"], 0)
+
+
+@unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")
+class AttentionLogicalBoundsTests(unittest.TestCase):
+    def test_logical_index_bounds_detect_storage_overrun(self) -> None:
+        from bioprocess_runtime.attention_bounds import _prove_tensor_storage_bound
+
+        tensor = {
+            "shape": [2, 3],
+            "stride": [3, 1],
+            "element_size_bytes": 2,
+            "storage_nbytes": 12,
+            "data_pointer_offset_bytes": 0,
+            "sha256": "logical",
+            "storage_base_pointer_sha256": "base",
+            "data_pointer_sha256": "data",
+        }
+        self.assertTrue(_prove_tensor_storage_bound("bounded", tensor)["proved"])
+        tensor["storage_nbytes"] = 10
+        proof = _prove_tensor_storage_bound("overrun", tensor)
+        self.assertFalse(proof["proved"])
+        self.assertIsNotNone(proof["counterexample"])
+
+    def test_full_bounds_certificate_reexecutes_redacts_and_detects_tampering(self) -> None:
+        from bioprocess_runtime.attention_bounds import (
+            build_attention_logical_bounds_certificate,
+            redact_attention_logical_bounds_certificate,
+            verify_attention_logical_bounds_certificate,
+        )
+
+        def tensor(name: str, stride: list[int]) -> dict[str, Any]:
+            return {
+                "shape": [1, 4, 30, 256],
+                "stride": stride,
+                "element_size_bytes": 2,
+                "storage_nbytes": 61440,
+                "data_pointer_offset_bytes": 0,
+                "sha256": name,
+                "storage_base_pointer_sha256": f"{name}_base",
+                "data_pointer_sha256": f"{name}_data",
+            }
+
+        qkv_stride = [30720, 7680, 256, 1]
+        output_stride = [30720, 256, 1024, 1]
+        artifact = {
+            "artifact_sha256": "artifact",
+            "attention_dispatch_report": {
+                "operations": [
+                    {
+                        "input_names": ["query", "key", "value"],
+                        "inputs": [tensor("query", qkv_stride), tensor("key", qkv_stride), tensor("value", qkv_stride)],
+                        "outputs": [tensor("output", output_stride)],
+                    }
+                ]
+            },
+        }
+        attention = {
+            "certificate_sha256": "attention",
+            "qkv_pointer_and_logical_commitments_bound": True,
+            "source_named_dispatch_output_pointer_bound": True,
+            "decoded_scalars": {
+                "q_strideB": 30720,
+                "q_strideH": 7680,
+                "q_strideM": 256,
+                "k_strideB": 30720,
+                "k_strideH": 7680,
+                "k_strideM": 256,
+                "v_strideB": 30720,
+                "v_strideH": 7680,
+                "v_strideM": 256,
+                "num_queries": 30,
+                "o_strideM": 1024,
+                "head_dim_value": 256,
+            },
+        }
+        with (
+            patch("bioprocess_runtime.attention_bounds.verify_launch_argument_artifact", return_value={"valid": True}),
+            patch("bioprocess_runtime.attention_bounds.verify_attention_parameter_certificate", return_value={"valid": True}),
+        ):
+            certificate = build_attention_logical_bounds_certificate(artifact, attention)
+        self.assertTrue(certificate["checks"]["decoded_strides_match_retained_tensors"])
+        self.assertTrue(verify_attention_logical_bounds_certificate(certificate)["valid"])
+        wrong_output = copy.deepcopy(artifact)
+        wrong_output["attention_dispatch_report"]["operations"][0]["outputs"][0]["stride"] = qkv_stride
+        with (
+            patch("bioprocess_runtime.attention_bounds.verify_launch_argument_artifact", return_value={"valid": True}),
+            patch("bioprocess_runtime.attention_bounds.verify_attention_parameter_certificate", return_value={"valid": True}),
+        ):
+            mismatch = build_attention_logical_bounds_certificate(wrong_output, attention)
+        self.assertFalse(mismatch["checks"]["decoded_strides_match_retained_tensors"])
+        self.assertFalse(mismatch["all_checks_pass"])
+        redacted = redact_attention_logical_bounds_certificate(certificate)
+        self.assertEqual(redacted["proofs"][0]["data_pointer_sha256"], "redacted")
+        self.assertTrue(verify_attention_logical_bounds_certificate(redacted)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["proofs"][0]["storage_nbytes"] = 1
+        body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
+        damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_attention_logical_bounds_certificate(damaged)["valid"])
+        damaged = copy.deepcopy(certificate)
+        damaged["logical_index_storage_bounds_established"] = False
+        body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
+        damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_attention_logical_bounds_certificate(damaged)["valid"])
 
 
 class AttentionParameterTests(unittest.TestCase):
