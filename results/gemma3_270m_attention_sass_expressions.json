@@ -1,17 +1,33 @@
 {
   "available_selections": 5,
+  "bounded_call_string_expression_reaching_definitions_established": true,
   "closed_supported_formulas": 0,
   "closed_supported_sass_formulas_established": false,
   "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
+  "expression_call_string_depth_overflow_free": false,
+  "expression_reaching_definition_summary": {
+    "abstracted_call_overflow_count": 12,
+    "ambiguous_reaching_definition_nodes": 230,
+    "call_context_count": 855,
+    "call_overflow_abstraction": "Drop oldest return site and retain the newest at the fixed depth.",
+    "context_transition_count": 14807,
+    "cyclic_reaching_definition_nodes": 65,
+    "fixed_point_context_iterations": 10522,
+    "maximum_call_depth": 4,
+    "maximum_observed_call_depth": 4,
+    "reachable_basic_block_count": 161,
+    "reachable_instruction_count": 3570,
+    "unresolved_return_context_count": 0
+  },
   "kernel_memory_safety_established": false,
   "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
   "sass_effective_address_bounds_established": false,
   "sass_effective_address_formula_bound": false,
-  "sass_memory_certificate_sha256": "d501986a2d91afdb457afd86e7bf0c42234b907ce9f0a7ee91d1c5a122283d46",
+  "sass_memory_certificate_sha256": "bbee178f268e9ff58f7b99f6e08ac655fb5adb6b1cbc16b2b7b5a9375ad5e06e",
   "sass_to_logical_stride_correspondence_established": false,
-  "scope": "One hash-consed linear-definition address-expression DAG selected per target field from bounded call-string memory operands; unsupported entry/register operations remain explicit and no closed SASS formula or logical correspondence is claimed.",
+  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
   "selected_sass_address_expression_dags_established": true,
   "selections": [
     {
@@ -20,26 +36,33 @@
         "R88",
         "R89"
       ],
+      "ambiguous_reaching_definition_node_count": 5,
       "available": true,
+      "available_call_context_count": 5,
       "closed_supported_formula": false,
-      "expression_graph_sha256": "3cdc5e0f1143ef7949b83c448346beb81b571421a6bb4431bd49197e5afe7d28",
+      "cyclic_reaching_definition_node_count": 0,
+      "expression_graph_sha256": "59f391053a587263de50759b6962d1ba0a24056504a3b4d3cfc12d0f9eafa7ab",
       "field": "query_ptr",
       "instruction_offset": 8432,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 99,
+      "node_count": 128,
       "represented_parameter_fields": [
         "q_strideB",
         "q_strideH",
         "q_strideM",
-        "query_ptr"
+        "query_ptr",
+        "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "259eb960c58f9e2bc1c8f9135d714e59e34467e9af48d57eefd8142d358e27fa",
-        "4ae9800743e06e3e6e03c503799f2fc009b63c0ef19c781b04ae1d312cda4d2d"
+        "6b3d8684f5a9f581e9c0bb010d44c73436a13887de0e1d8c5e8ded348963ccbf",
+        "d6992a7a74ccbf0d3d4ed43370142d4e0510278219de1bc41eb4b666cc629470"
       ],
+      "selected_block_index": 19,
+      "selected_call_stack": [],
+      "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 27
+      "unsupported_or_entry_node_count": 40
     },
     {
       "access_class": "candidate_read",
@@ -47,27 +70,34 @@
         "R44",
         "R45"
       ],
+      "ambiguous_reaching_definition_node_count": 6,
       "available": true,
+      "available_call_context_count": 5,
       "closed_supported_formula": false,
-      "expression_graph_sha256": "3047d29457512e9633b32bc4d068b637943060d2c99df9c2e1dcc1b78c4c8dca",
+      "cyclic_reaching_definition_node_count": 1,
+      "expression_graph_sha256": "61390dd86927755efdb6b93de7e1ed13eb8ee6f9878c8b19b003a79a65f6c64f",
       "field": "key_ptr",
       "instruction_offset": 8512,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 113,
+      "node_count": 146,
       "represented_parameter_fields": [
         "k_strideB",
         "k_strideH",
         "k_strideM",
         "key_ptr",
-        "q_strideM"
+        "q_strideM",
+        "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "08800ebeed210ca624777e9300c065f6a19c51aea947376a7249ea7d04fab0e5",
-        "b8451f05c3a268efe2d498001398c6a98c951786b31706149c5be72d72724816"
+        "b06944a79deed16d81a3d704a429be65ae16db83891cfeee4745fc4f6eaf0400",
+        "32982e39c93ab879f7bac486d2fa8fd54ba97556fd3f2ccc6ef38563edcd9ae6"
       ],
+      "selected_block_index": 19,
+      "selected_call_stack": [],
+      "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 30
+      "unsupported_or_entry_node_count": 47
     },
     {
       "access_class": "candidate_read",
@@ -75,26 +105,33 @@
         "R46",
         "R47"
       ],
+      "ambiguous_reaching_definition_node_count": 6,
       "available": true,
+      "available_call_context_count": 5,
       "closed_supported_formula": false,
-      "expression_graph_sha256": "6dec953099a0e1cde92d62244c3fd6e8fd0e994b3289a9ce4f546b89b1516097",
+      "cyclic_reaching_definition_node_count": 1,
+      "expression_graph_sha256": "177a900057b8eb03d9b8f64bf25586ad9647d7a0f750a2fdfbf4cdac44f8d755",
       "field": "value_ptr",
       "instruction_offset": 13792,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 108,
+      "node_count": 140,
       "represented_parameter_fields": [
         "k_strideH",
+        "seqstart_k_ptr",
         "v_strideB",
         "v_strideM",
         "value_ptr"
       ],
       "root_nodes": [
-        "ee535b1d7e3684d79895bf151d2456bcd75a30acb69b0cde06bea1ed3279e672",
-        "e24c841cc058594b91a145473afcc9727bb48946fbb74aba938599c1b2b62f45"
+        "5438c38a61f952241936e8efbd67a4d9e04633099f2957856becdf3f7e1cb6cb",
+        "febabe0da210b6224c3b430c2f303eeb10063b3e3b78ef2cad7b87d2a9f1fd0f"
       ],
+      "selected_block_index": 22,
+      "selected_call_stack": [],
+      "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 29
+      "unsupported_or_entry_node_count": 45
     },
     {
       "access_class": "candidate_write",
@@ -102,27 +139,33 @@
         "R8",
         "R9"
       ],
+      "ambiguous_reaching_definition_node_count": 7,
       "available": true,
+      "available_call_context_count": 5,
       "closed_supported_formula": false,
-      "expression_graph_sha256": "743ac853d1bea6d525f4fd98d6ab9455bb8081cf5999e37520f8ab44dd2883dc",
+      "cyclic_reaching_definition_node_count": 1,
+      "expression_graph_sha256": "12bf95529e8adce799d8189a6ec38951254161828dffd1c3f5a33042f9909631",
       "field": "output_ptr",
       "instruction_offset": 43408,
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
-      "node_count": 262,
+      "node_count": 167,
       "represented_parameter_fields": [
         "head_dim_value",
         "num_queries",
         "o_strideM",
         "output_ptr",
-        "seqstart_k_ptr"
+        "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "1c26e64d06f7ac74df6f95c3fb691fab7155b357d42749df57df55146510341a",
-        "540572b00055067ae620f57827222c9c22d83b9cdbc5c360d35835edfaa701ec"
+        "2bd3b80f2dd27718d11f8c4c7765a1a886b76dec135dc8edb9c307ac6abd06ff",
+        "ca03f38a09cbdaf7bed25c26a096e3d721461c59860b7bb5451472408db1f533"
       ],
+      "selected_block_index": 78,
+      "selected_call_stack": [],
+      "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 82
+      "unsupported_or_entry_node_count": 51
     },
     {
       "access_class": "candidate_write",
@@ -130,29 +173,40 @@
         "R112",
         "R113"
       ],
+      "ambiguous_reaching_definition_node_count": 11,
       "available": true,
+      "available_call_context_count": 5,
       "closed_supported_formula": false,
-      "expression_graph_sha256": "864ab2880a86cda528500175e13c46b1e1559dad57b19d39ba196e8f30f4e995",
+      "cyclic_reaching_definition_node_count": 1,
+      "expression_graph_sha256": "98bde7b82bcf9cd910f3146dd233ad8102f0587a93323f851c4755096c43c607",
       "field": "output_accum_ptr",
       "instruction_offset": 47072,
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
-      "node_count": 359,
+      "node_count": 236,
       "represented_parameter_fields": [
+        "custom_mask_type",
         "head_dim_value",
         "num_heads",
         "num_queries",
-        "output_accum_ptr"
+        "o_strideM",
+        "output_accum_ptr",
+        "output_ptr",
+        "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "a9f4a437bb3e5a7dc4c478338f94c4ada1cb00d46f91b17faf0f474557cbeeb9",
-        "d716c5de92d47d4acc328aa1331ef9f4026b589c7d88411d8f330350f5270c3b"
+        "062f477dcc21548c8c42d6520160d77a6223934a52d46bc530a1ba1816a0ae6c",
+        "17293862de29992fe5a350d9b4b603d4b6e596c9da7305f300e97541f015c716"
       ],
+      "selected_block_index": 92,
+      "selected_call_stack": [],
+      "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "target_field_represented": true,
-      "unsupported_or_entry_node_count": 110
+      "unsupported_or_entry_node_count": 74
     }
   ],
-  "source_certificate_sha256": "6267160b67bdb3b7503881c6f3195ecb6aaa48bf36c547cfd099891b1d176d90",
-  "summary_sha256": "5b2e966598c666189abdb3a349fac37b56e2f2ba4329f200032dd7b6f0faabca",
-  "total_selections": 5
+  "source_certificate_sha256": "b05df8f32267b0e49b98bfc0e07c03ffa72b10260a98d41fbd2421865bf3aca2",
+  "summary_sha256": "4f9ebbe5fa31777e0c9ee47a7b8045a79e0b0c9b3ea3e5216be17a66356db18b",
+  "total_selections": 5,
+  "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }

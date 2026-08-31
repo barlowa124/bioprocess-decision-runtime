@@ -2,56 +2,55 @@
   "all_checks_pass": true,
   "attention_parameter_certificate_sha256": "8bf3f2fb927ddb63f4fda85c0f055441464cf78de2c5ae913c601da490a662be",
   "bounded_call_string_analysis": {
-    "abstracted_call_overflow_count": 161,
+    "abstracted_call_overflow_count": 150,
     "address_slices_with_parameter_fields": 128,
     "call_context_count": 855,
     "call_overflow_abstraction": "Drop oldest return site and retain the newest at the fixed depth.",
-    "context_transition_count": 18846,
-    "fixed_point_context_iterations": 13306,
+    "context_transition_count": 18119,
+    "fixed_point_context_iterations": 12767,
     "maximum_call_depth": 4,
     "maximum_observed_call_depth": 4,
     "reachable_basic_block_count": 161,
     "reachable_instruction_count": 3570,
     "syntactic_memory_address_slice_count": 364,
     "syntactic_memory_links_by_field": {
-      "attn_bias_ptr": 10,
-      "bias_strideB": 10,
-      "bias_strideH": 10,
-      "bias_strideM": 10,
-      "causal_diagonal_offset": 11,
-      "custom_mask_type": 38,
+      "attn_bias_ptr": 4,
+      "bias_strideB": 4,
+      "bias_strideH": 4,
+      "bias_strideM": 4,
+      "causal_diagonal_offset": 8,
+      "custom_mask_type": 32,
       "extragraph_offset": 1,
-      "head_dim": 33,
+      "head_dim": 15,
       "head_dim_value": 53,
-      "k_strideB": 34,
-      "k_strideH": 62,
-      "k_strideM": 34,
-      "key_ptr": 34,
+      "k_strideB": 16,
+      "k_strideH": 56,
+      "k_strideM": 16,
+      "key_ptr": 16,
       "logsumexp_ptr": 2,
-      "num_heads": 48,
+      "num_heads": 42,
       "num_queries": 58,
       "o_strideM": 48,
-      "output_accum_ptr": 38,
+      "output_accum_ptr": 32,
       "output_ptr": 48,
       "q_strideB": 4,
-      "q_strideH": 34,
-      "q_strideM": 62,
+      "q_strideH": 4,
+      "q_strideM": 20,
       "query_ptr": 4,
-      "rng_engine_inputs": 8,
-      "scale": 6,
+      "rng_engine_inputs": 2,
       "seed": 1,
       "seqlen_k_ptr": 1,
-      "seqstart_k_ptr": 14,
+      "seqstart_k_ptr": 11,
       "seqstart_q_ptr": 2,
-      "v_strideB": 38,
-      "v_strideM": 38,
-      "value_ptr": 38
+      "v_strideB": 32,
+      "v_strideM": 32,
+      "value_ptr": 32
     },
     "unresolved_return_context_count": 0
   },
   "bounded_call_string_dataflow_established": true,
   "call_string_depth_overflow_free": false,
-  "certificate_sha256": "d501986a2d91afdb457afd86e7bf0c42234b907ce9f0a7ee91d1c5a122283d46",
+  "certificate_sha256": "bbee178f268e9ff58f7b99f6e08ac655fb5adb6b1cbc16b2b7b5a9375ad5e06e",
   "checks": {
     "attention_parameter_certificate_valid": true,
     "barrier_controls_lexically_matched": true,
@@ -95,7 +94,7 @@
     "direct_call_fallthroughs": 12,
     "direct_calls": 12,
     "edge_count": 3697,
-    "fixed_point_block_iterations": 6233,
+    "fixed_point_block_iterations": 6205,
     "lexically_matched_bssy_bsync": 23,
     "reachable_basic_block_count": 161,
     "reachable_instruction_count": 3570,
@@ -110,12 +109,12 @@
       "custom_mask_type": 56,
       "dropout_prob": 24,
       "extragraph_offset": 1,
-      "head_dim": 51,
+      "head_dim": 39,
       "head_dim_value": 61,
-      "k_strideB": 52,
+      "k_strideB": 40,
       "k_strideH": 80,
-      "k_strideM": 52,
-      "key_ptr": 52,
+      "k_strideM": 40,
+      "key_ptr": 40,
       "logsumexp_ptr": 2,
       "num_heads": 63,
       "num_queries": 63,
@@ -123,8 +122,8 @@
       "output_accum_ptr": 56,
       "output_ptr": 56,
       "q_strideB": 105,
-      "q_strideH": 178,
-      "q_strideM": 178,
+      "q_strideH": 157,
+      "q_strideM": 157,
       "query_ptr": 105,
       "rng_engine_inputs": 31,
       "scale": 24,
@@ -152,23 +151,23 @@
       "attn_bias_ptr": 4,
       "bias_strideB": 4,
       "bias_strideH": 4,
-      "causal_diagonal_offset": 11,
+      "causal_diagonal_offset": 8,
       "extragraph_offset": 1,
-      "head_dim": 27,
+      "head_dim": 15,
       "head_dim_value": 48,
-      "k_strideB": 28,
-      "k_strideH": 59,
-      "k_strideM": 28,
-      "key_ptr": 28,
+      "k_strideB": 16,
+      "k_strideH": 56,
+      "k_strideM": 16,
+      "key_ptr": 16,
       "logsumexp_ptr": 2,
-      "num_heads": 45,
+      "num_heads": 42,
       "num_queries": 58,
       "o_strideM": 16,
       "output_accum_ptr": 32,
       "output_ptr": 16,
       "q_strideB": 4,
       "q_strideH": 4,
-      "q_strideM": 32,
+      "q_strideM": 20,
       "query_ptr": 4,
       "rng_engine_inputs": 2,
       "seed": 1,
@@ -248,62 +247,54 @@
     },
     "parameter_field_links_by_class": {
       "attn_bias_ptr": {
-        "candidate_read": 4,
-        "candidate_write": 6
+        "candidate_read": 4
       },
       "bias_strideB": {
-        "candidate_read": 4,
-        "candidate_write": 6
+        "candidate_read": 4
       },
       "bias_strideH": {
-        "candidate_read": 4,
-        "candidate_write": 6
+        "candidate_read": 4
       },
       "bias_strideM": {
-        "candidate_read": 4,
-        "candidate_write": 6
+        "candidate_read": 4
       },
       "causal_diagonal_offset": {
         "candidate_read": 4,
-        "candidate_write": 7
+        "candidate_write": 4
       },
       "custom_mask_type": {
         "candidate_read": 16,
-        "candidate_write": 22
+        "candidate_write": 16
       },
       "extragraph_offset": {
         "candidate_write": 1
       },
       "head_dim": {
-        "candidate_read": 27,
-        "candidate_write": 6
+        "candidate_read": 15
       },
       "head_dim_value": {
         "candidate_read": 21,
         "candidate_write": 32
       },
       "k_strideB": {
-        "candidate_read": 28,
-        "candidate_write": 6
+        "candidate_read": 16
       },
       "k_strideH": {
         "candidate_read": 52,
-        "candidate_write": 10
+        "candidate_write": 4
       },
       "k_strideM": {
-        "candidate_read": 28,
-        "candidate_write": 6
+        "candidate_read": 16
       },
       "key_ptr": {
-        "candidate_read": 28,
-        "candidate_write": 6
+        "candidate_read": 16
       },
       "logsumexp_ptr": {
         "candidate_write": 2
       },
       "num_heads": {
         "candidate_read": 20,
-        "candidate_write": 28
+        "candidate_write": 22
       },
       "num_queries": {
         "candidate_read": 20,
@@ -315,7 +306,7 @@
       },
       "output_accum_ptr": {
         "candidate_read": 16,
-        "candidate_write": 22
+        "candidate_write": 16
       },
       "output_ptr": {
         "candidate_read": 16,
@@ -325,22 +316,16 @@
         "candidate_read": 4
       },
       "q_strideH": {
-        "candidate_read": 20,
-        "candidate_write": 14
+        "candidate_read": 4
       },
       "q_strideM": {
-        "candidate_read": 48,
-        "candidate_write": 14
+        "candidate_read": 20
       },
       "query_ptr": {
         "candidate_read": 4
       },
       "rng_engine_inputs": {
-        "candidate_read": 2,
-        "candidate_write": 6
-      },
-      "scale": {
-        "candidate_write": 6
+        "candidate_read": 2
       },
       "seed": {
         "candidate_write": 1
@@ -350,22 +335,19 @@
       },
       "seqstart_k_ptr": {
         "candidate_read": 6,
-        "candidate_write": 8
+        "candidate_write": 5
       },
       "seqstart_q_ptr": {
         "candidate_read": 2
       },
       "v_strideB": {
-        "candidate_read": 32,
-        "candidate_write": 6
+        "candidate_read": 32
       },
       "v_strideM": {
-        "candidate_read": 32,
-        "candidate_write": 6
+        "candidate_read": 32
       },
       "value_ptr": {
-        "candidate_read": 32,
-        "candidate_write": 6
+        "candidate_read": 32
       }
     },
     "parameter_linked_address_operand_count": 128,

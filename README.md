@@ -614,7 +614,7 @@ The checked [`results/gemma3_270m_attention_logical_bounds.json`](results/gemma3
 
 ### Selected SASS address-expression DAGs
 
-A linear last-definition pass builds hash-consed instruction DAGs for selected bounded call-string operands. Full node graphs remain generated artifacts; a compact summary commits each root, graph hash, selected instruction, represented parameter fields, and unresolved-node count:
+A fixed-point reaching-definition pass builds hash-consed instruction DAGs separately for each bounded call-string context. Predicated definitions preserve old and new alternatives; control-flow joins and loop recurrences remain explicit nodes rather than being collapsed to lexical last definitions. Full node graphs remain generated artifacts; a compact summary commits each root, graph hash, selected context and instruction, represented parameter fields, and unresolved-node count:
 
 ```powershell
 python -m bioprocess_runtime attention-sass-expressions --cuobjdump <cuobjdump> --cubin <captured-cubin> --kernel <exact-mangled-name> --sass-memory results/gemma3_270m_attention_sass_memory.json --logical-bounds results/gemma3_270m_attention_logical_bounds.json --output artifacts/gemma3_270m_attention_sass_expressions.json
@@ -624,15 +624,17 @@ python -m bioprocess_runtime attention-sass-expression-summary-verify results/ge
 
 The checked summary selects one operand for each target:
 
-| Field | SASS offset | Memory opcode | DAG nodes | Unsupported/entry nodes |
-|---|---:|---|---:|---:|
-| `query_ptr` | `0x20f0` | `LDGSTS.E.BYPASS.LTC128B.128` | 99 | 27 |
-| `key_ptr` | `0x2140` | `LDGSTS.E.BYPASS.LTC128B.128` | 113 | 30 |
-| `value_ptr` | `0x35e0` | `LDGSTS.E.BYPASS.LTC128B.128` | 108 | 29 |
-| `output_ptr` | `0xa990` | `STG.E.64` | 262 | 82 |
-| `output_accum_ptr` | `0xb7e0` | `STG.E.128` | 359 | 110 |
+| Field | SASS offset | Memory opcode | DAG nodes | Ambiguous joins | Cyclic leaves | Unsupported/unresolved nodes |
+|---|---:|---|---:|---:|---:|---:|
+| `query_ptr` | `0x20f0` | `LDGSTS.E.BYPASS.LTC128B.128` | 128 | 5 | 0 | 40 |
+| `key_ptr` | `0x2140` | `LDGSTS.E.BYPASS.LTC128B.128` | 146 | 6 | 1 | 47 |
+| `value_ptr` | `0x35e0` | `LDGSTS.E.BYPASS.LTC128B.128` | 140 | 6 | 1 | 45 |
+| `output_ptr` | `0xa990` | `STG.E.64` | 167 | 7 | 1 | 51 |
+| `output_accum_ptr` | `0xb7e0` | `STG.E.128` | 236 | 11 | 1 | 74 |
 
-Every graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory certificate, and logical-bounds certificate. None is closed over the currently supported operations and entry symbols. Therefore `selected_sass_address_expression_dags_established` is true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
+The expression fixed point visits the same 855 bounded block/call-stack contexts and 161 reachable blocks as the taint analysis. Its state lattice converges separately after 10,522 context iterations and records 12 distinct overflow contexts, 230 hash-consed ambiguous-join nodes, and 65 cyclic-definition leaves across materialized contexts. Consequently `expression_call_string_depth_overflow_free` and `unbounded_context_sensitive_expression_reaching_definitions_established` are false. Selection minimizes aggregate source-field count before instruction offset, then chooses the first bounded context containing the target field.
+
+Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory certificate, and logical-bounds certificate. None is closed over the currently supported operations, joins, recurrences, or entry symbols. Therefore `bounded_call_string_expression_reaching_definitions_established` and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 
 ### SASS memory-address provenance
 
@@ -657,9 +659,9 @@ The checked [`results/gemma3_270m_attention_sass_memory.json`](results/gemma3_27
 
 The linear baseline records 364 memory-address slices, 123 with at least one parameter-field text dependency. A fixed-point CFG contains 163 basic blocks and 3,697 edges; 161 blocks and 3,570 instructions are reachable under the modeled edges. It resolves all 99 direct branch targets, includes target and fallthrough edges for 12 direct calls, adds 36 context-insensitive edges from three returns to all call fallthroughs, preserves fallthrough for predicated `RET` and `EXIT`, and converges after 6,233 block iterations. A lexical barrier-token stack matches all 23 `BSSY`/`BSYNC` pairs and routes four predicated `BREAK` instructions to the active barrier target; no `BRX` occurs. The context-insensitive CFG records all 364 memory-address slices as reachable, 197 with parameter-field dependencies.
 
-A separate call-string analysis uses a maximum depth of four and matches returns to retained call-site fallthroughs. It visits 855 block/call-stack contexts, performs 13,306 fixed-point context iterations and 18,846 transitions, resolves every reached return context, and records 128/364 parameter-linked memory slices. Conservative predicate and lexical-reconvergence paths reach the depth limit 161 times; each overflow drops the oldest return site and retains the newest, so `call_string_depth_overflow_free` is false and unbounded context sensitivity is not claimed. Every target pointer field reaches at least one address operand in all three analyses.
+A separate call-string analysis uses a maximum depth of four and matches returns to retained call-site fallthroughs. It visits 855 block/call-stack contexts, performs 12,767 fixed-point context iterations and 18,119 transitions, resolves every reached return context, and records 128/364 parameter-linked memory slices. Conservative predicate and lexical-reconvergence paths apply the depth-limit abstraction 150 times during fixed-point processing; each overflow drops the oldest return site and retains the newest, so `call_string_depth_overflow_free` is false and unbounded context sensitivity is not claimed. Every target pointer field reaches at least one address operand in all three analyses.
 
-Exact opcode text classifies 416 address operands: 215 `candidate_read`, 193 `candidate_write`, and eight `candidate_read_write`. `LDGSTS` contributes separate shared-destination and global-source operands. In the bounded call-string result, Q/K/V have candidate-read links (`4/28/32` respectively). Query has no candidate-write link; conservative high-register propagation also gives key and value six candidate-write links each. `output_ptr` links to 16 candidate-read and 32 candidate-write operands, while `output_accum_ptr` links to 16 candidate-read and 22 candidate-write operands.
+Exact opcode text classifies 416 address operands: 215 `candidate_read`, 193 `candidate_write`, and eight `candidate_read_write`. `LDGSTS` contributes separate shared-destination and global-source operands. In the bounded call-string result, Q/K/V link only to candidate-read operands (`4/16/32` respectively). `output_ptr` links to 16 candidate-read and 32 candidate-write operands, while `output_accum_ptr` links to 16 candidate-read and 16 candidate-write operands. `.WIDE` propagation includes the high half only when the final addend is an actual numbered register, avoiding phantom dependencies for immediate or zero-register addends.
 
 The Z3 certificate proves internal properties of proposed little-endian byte-array equations: `ULDC.64` reads eight constant-memory bytes; 32/64/128-bit `LDG` forms preserve abstract global memory; matching 32/64/128-bit `STG` forms round-trip through `LDG`; 32-bit `STG` preserves nonoverlapping bytes; and 128-bit `LDGSTS` preserves global memory while copying into abstract shared memory. Reduced-width proofs separately cover signed default and unsigned `.U32` wide multiply-add. The no-carry `LEA`/`ULEA` high-half theorem requires a zero low-half carry premise; the `.HI.X` theorem explicitly consumes the generated carry. `.SX32` forms use a declared 8-bit source proxy in a 16-bit address model. Regular and uniform LEA forms are assumed to share only this arithmetic; uniform-register selection and warp-uniform behavior are excluded. Full-width 32×32→64 and 32-bit-index/64-bit-address instances validate the proposed equations at deployment widths, while independent reference constructions remain limited to the reduced-width signed/unsigned multiply proofs. The SASS-memory certificate checks every real parsed `LDG`, `STG`, and `LDGSTS` instruction and verifies that all actual operand classifications and all six observed exact width forms match the proposed role and width tables. These remain proposed equations and textual labels, not NVIDIA instruction semantics or actual access-direction proof.
 

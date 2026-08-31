@@ -91,8 +91,10 @@ def _registers(value: str) -> list[str]:
 
 def _source_registers_for_opcode(opcode: str, value: str) -> list[str]:
     registers = _registers(value)
-    if ".WIDE" in opcode and registers:
-        high_addend = _next_register(registers[-1])
+    last_operand = value.rsplit(",", 1)[-1].strip()
+    wide_addend = re.fullmatch(r"(UR|R)(\d+)", last_operand)
+    if ".WIDE" in opcode and wide_addend:
+        high_addend = _next_register(f"{wide_addend.group(1)}{wide_addend.group(2)}")
         if high_addend not in registers:
             registers.append(high_addend)
     return registers

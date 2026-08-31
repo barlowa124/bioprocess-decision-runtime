@@ -274,8 +274,9 @@ class CudaMetadataTests(unittest.TestCase):
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
-            _linear_expression_snapshots,
+            _call_string_expression_snapshots,
             _reachable_nodes,
+            _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
             verify_sass_expression_certificate,
@@ -287,8 +288,27 @@ class SassExpressionTests(unittest.TestCase):
             {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
             {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
         ]
-        snapshots, registry = _linear_expression_snapshots(instructions, 0x160)
-        roots = [snapshots[32]["R4"], snapshots[32]["R5"]]
+        snapshots, registry, graph = _call_string_expression_snapshots(instructions, 0x160)
+        roots = [
+            snapshots[32][0]["definitions"]["R4"][0],
+            snapshots[32][0]["definitions"]["R5"][0],
+        ]
+        self.assertEqual(graph["call_context_count"], 1)
+        atomic = _transfer_definitions(
+            {"offset": 48, "predicate": None, "opcode": "ATOM.E.ADD", "operands": "R4,[R8.64],R10"},
+            3,
+            (0, ()),
+            {"R4": frozenset({"old"})},
+        )
+        self.assertNotEqual(atomic["R4"], frozenset({"old"}))
+        predicated = _transfer_definitions(
+            {"offset": 64, "predicate": "@P0", "opcode": "MOV", "operands": "R4,R8"},
+            4,
+            (0, ()),
+            {"R4": frozenset({"old"})},
+        )
+        self.assertIn("old", predicated["R4"])
+        self.assertEqual(len(predicated["R4"]), 2)
         nodes = _reachable_nodes(roots, registry)
         self.assertIn("query_ptr", {field for node in nodes for field in node.get("parameter_fields", [])})
         certificate = {
@@ -298,6 +318,7 @@ class SassExpressionTests(unittest.TestCase):
             "sass_canonical_sha256": "sass",
             "sass_memory_certificate_sha256": "memory",
             "logical_bounds_certificate_sha256": "bounds",
+            "expression_reaching_definition_summary": graph,
             "selections": [
                 {
                     "field": "query_ptr",
@@ -306,12 +327,19 @@ class SassExpressionTests(unittest.TestCase):
                     "expression_nodes": nodes,
                     "root_nodes": roots,
                     "node_count": len(nodes),
+                    "represented_parameter_fields": ["query_ptr"],
+                    "target_field_represented": True,
+                    "ambiguous_reaching_definition_node_count": 0,
+                    "cyclic_reaching_definition_node_count": 0,
                     "unsupported_or_entry_node_count": len(_unsupported_expression_nodes(nodes)),
                 }
             ],
             "checks": {"synthetic": True},
             "all_checks_pass": True,
             "selected_sass_address_expression_dags_established": True,
+            "bounded_call_string_expression_reaching_definitions_established": True,
+            "expression_call_string_depth_overflow_free": True,
+            "unbounded_context_sensitive_expression_reaching_definitions_established": False,
             "closed_supported_sass_formulas_established": False,
             "sass_effective_address_formula_bound": False,
             "sass_to_logical_stride_correspondence_established": False,
@@ -328,6 +356,67 @@ class SassExpressionTests(unittest.TestCase):
         body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
         damaged["certificate_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
         self.assertFalse(verify_sass_expression_certificate(damaged)["valid"])
+        with self.assertRaises(ValueError):
+            build_sass_expression_summary(damaged)
+
+    def test_expression_reaching_definitions_preserve_branch_ambiguity(self) -> None:
+        from bioprocess_runtime.sass_expressions import (
+            _call_string_expression_snapshots,
+            _reachable_nodes,
+        )
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "predicate": "@P0", "opcode": "BRA.U", "operands": "0x40"},
+            {"offset": 32, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x168]"},
+            {"offset": 48, "predicate": None, "opcode": "BRA", "operands": "0x50"},
+            {"offset": 64, "predicate": None, "opcode": "MOV", "operands": "UR2,UR2"},
+            {"offset": 80, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 96, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+        ]
+        snapshots, registry, _ = _call_string_expression_snapshots(instructions, 0x160)
+        roots = [
+            definition
+            for definitions in snapshots[96][0]["definitions"].values()
+            for definition in definitions
+        ]
+        nodes = _reachable_nodes(roots, registry)
+        self.assertIn("reaching_definition_join", {node["kind"] for node in nodes})
+        self.assertEqual(
+            {field for node in nodes for field in node.get("parameter_fields", [])},
+            {"query_ptr", "key_ptr"},
+        )
+
+    def test_expression_reaching_definitions_return_to_call_context(self) -> None:
+        from bioprocess_runtime.sass_expressions import (
+            _call_string_expression_snapshots,
+            _reachable_nodes,
+        )
+
+        instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
+            {"offset": 16, "predicate": None, "opcode": "CALL.REL.NOINC", "operands": "0x50"},
+            {"offset": 32, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 48, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+            {"offset": 64, "predicate": None, "opcode": "EXIT", "operands": ""},
+            {"offset": 80, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x168]"},
+            {"offset": 96, "predicate": None, "opcode": "RET.REL.NODEC", "operands": "R2,0x0"},
+        ]
+        snapshots, registry, graph = _call_string_expression_snapshots(
+            instructions, 0x160, maximum_call_depth=2
+        )
+        roots = [
+            definition
+            for definitions in snapshots[48][0]["definitions"].values()
+            for definition in definitions
+        ]
+        nodes = _reachable_nodes(roots, registry)
+        self.assertEqual(
+            {field for node in nodes for field in node.get("parameter_fields", [])},
+            {"key_ptr"},
+        )
+        self.assertEqual(graph["maximum_observed_call_depth"], 1)
+        self.assertEqual(graph["unresolved_return_context_count"], 0)
 
 
 class SassMemoryTests(unittest.TestCase):
@@ -343,6 +432,7 @@ class SassMemoryTests(unittest.TestCase):
             _memory_slice,
             _memory_width_bytes,
             _registers,
+            _source_registers_for_opcode,
             _transfer_taint,
         )
 
@@ -384,6 +474,13 @@ class SassMemoryTests(unittest.TestCase):
         self.assertEqual(_destination_register_count("IMAD.WIDE.U32"), 2)
         self.assertEqual(_registers("[R4.64]"), ["R4", "R5"])
         self.assertEqual(_registers("[UR14.128]"), ["UR14", "UR15", "UR16", "UR17"])
+        self.assertEqual(
+            _source_registers_for_opcode("IMAD.WIDE", ",R6,0x4,RZ"), ["R6"]
+        )
+        self.assertEqual(
+            _source_registers_for_opcode("IMAD.WIDE", ",R6,0x4,R20"),
+            ["R6", "R20", "R21"],
+        )
         cleared = _transfer_taint(
             {"offset": 0, "predicate": None, "opcode": "LDSM.16.M88.4", "operands": "R4,[R20]"},
             stale,
