@@ -2181,6 +2181,200 @@ def _verify_root_predicate_pair_binding(binding: dict[str, Any]) -> bool:
     )
 
 
+def _build_carry_semantics_qualification(
+    nsight_certificate: dict[str, Any],
+    pair_bindings: list[dict[str, Any]],
+    expected_fields: list[str],
+) -> dict[str, Any]:
+    pair_records = []
+    for binding in pair_bindings:
+        predicate_count = len(binding.get("predicate_bindings", []))
+        body = {
+            "field": binding.get("field"),
+            "pair_binding_sha256": binding.get("binding_sha256"),
+            "low_opcode": (binding.get("low_root") or {}).get("opcode"),
+            "high_opcode": (binding.get("high_root") or {}).get("opcode"),
+            "predicate_count": predicate_count,
+            "required_dynamic_truth_table": (
+                "one_predicate" if predicate_count == 1 else "two_predicate"
+            ),
+            "dynamic_truth_table_complete": False,
+            "carry_encoding_established": False,
+            "carry_arithmetic_established": False,
+        }
+        pair_records.append(
+            {
+                **body,
+                "qualification_record_sha256": hashlib.sha256(
+                    canonical_json(body).encode("utf-8")
+                ).hexdigest(),
+            }
+        )
+    requirements = [
+        {
+            "name": "exact_selected_root_pair_bindings",
+            "satisfied": bool(expected_fields)
+            and {binding.get("field") for binding in pair_bindings}
+            == set(expected_fields)
+            and all(binding.get("available") is True for binding in pair_bindings),
+            "evidence": "Root predicate-pair binding hashes retained in this certificate.",
+        },
+        {
+            "name": "architecture_identity_bound",
+            "satisfied": bool(
+                nsight_certificate.get("details", {}).get("compute_capability")
+                and nsight_certificate.get("certificate_sha256")
+            ),
+            "evidence": "Exact retained Nsight certificate and compute capability.",
+        },
+        {
+            "name": "authoritative_instruction_semantics_bound",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "architecture_specific_predicate_encoding_bound",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "one_predicate_dynamic_truth_table_complete",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "two_predicate_dynamic_truth_table_complete",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "low_high_recomposition_validated",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "independent_reference_validated",
+            "satisfied": False,
+            "evidence": None,
+        },
+        {
+            "name": "predicate_negation_semantics_validated",
+            "satisfied": False,
+            "evidence": None,
+        },
+    ]
+    qualification_passed = all(requirement["satisfied"] for requirement in requirements)
+    body = {
+        "scope": "Architecture-specific evidence gate for activating proposed SASS carry equations; pair identity alone is insufficient.",
+        "nsight_certificate_sha256": nsight_certificate.get("certificate_sha256"),
+        "compute_capability": nsight_certificate.get("details", {}).get(
+            "compute_capability"
+        ),
+        "expected_fields": sorted(expected_fields),
+        "pair_qualification_records": pair_records,
+        "requirements": requirements,
+        "unsatisfied_requirements": [
+            requirement["name"]
+            for requirement in requirements
+            if not requirement["satisfied"]
+        ],
+        "qualification_passed": qualification_passed,
+        "carry_equation_activation_allowed": qualification_passed,
+        "proposed_carry_equations_activated": False,
+        "hardware_semantics_established": False,
+    }
+    body["qualification_sha256"] = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def _verify_carry_semantics_qualification(
+    qualification: dict[str, Any], expected_nsight_certificate_sha256: str | None = None
+) -> bool:
+    body = {
+        key: value
+        for key, value in qualification.items()
+        if key != "qualification_sha256"
+    }
+    requirements = qualification.get("requirements", [])
+    records = qualification.get("pair_qualification_records", [])
+    return bool(
+        hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        == qualification.get("qualification_sha256")
+        and bool(re.fullmatch(r"[0-9a-f]{64}", qualification.get("nsight_certificate_sha256", "")))
+        and (
+            expected_nsight_certificate_sha256 is None
+            or qualification.get("nsight_certificate_sha256")
+            == expected_nsight_certificate_sha256
+        )
+        and qualification.get("compute_capability") == "8.9"
+        and bool(qualification.get("expected_fields"))
+        and len(records) == len(qualification.get("expected_fields", []))
+        and {record.get("field") for record in records}
+        == set(qualification.get("expected_fields", []))
+        and all(
+            bool(re.fullmatch(r"[0-9a-f]{64}", record.get("pair_binding_sha256", "")))
+            and (record.get("low_opcode"), record.get("high_opcode"))
+            in {("LEA", "LEA.HI.X"), ("IADD3", "IADD3.X")}
+            and record.get("predicate_count") in {1, 2}
+            and record.get("required_dynamic_truth_table")
+            == (
+                "one_predicate"
+                if record.get("predicate_count") == 1
+                else "two_predicate"
+            )
+            and record.get("dynamic_truth_table_complete") is False
+            and record.get("carry_encoding_established") is False
+            and record.get("carry_arithmetic_established") is False
+            and hashlib.sha256(
+                canonical_json(
+                    {
+                        key: value
+                        for key, value in record.items()
+                        if key != "qualification_record_sha256"
+                    }
+                ).encode("utf-8")
+            ).hexdigest()
+            == record.get("qualification_record_sha256")
+            for record in records
+        )
+        and {requirement.get("name") for requirement in requirements}
+        == {
+            "exact_selected_root_pair_bindings",
+            "architecture_identity_bound",
+            "authoritative_instruction_semantics_bound",
+            "architecture_specific_predicate_encoding_bound",
+            "one_predicate_dynamic_truth_table_complete",
+            "two_predicate_dynamic_truth_table_complete",
+            "low_high_recomposition_validated",
+            "independent_reference_validated",
+            "predicate_negation_semantics_validated",
+        }
+        and all(
+            requirement.get("satisfied")
+            == (
+                requirement.get("name")
+                in {
+                    "exact_selected_root_pair_bindings",
+                    "architecture_identity_bound",
+                }
+            )
+            for requirement in requirements
+        )
+        and qualification.get("unsatisfied_requirements")
+        == [
+            requirement["name"]
+            for requirement in requirements
+            if not requirement["satisfied"]
+        ]
+        and qualification.get("qualification_passed") is False
+        and qualification.get("carry_equation_activation_allowed") is False
+        and qualification.get("proposed_carry_equations_activated") is False
+        and qualification.get("hardware_semantics_established") is False
+    )
+
+
 def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         node
@@ -2426,6 +2620,11 @@ def build_sass_expression_certificate(
         and node.get("launch_domain_assumption") is not None
         for node in registry.nodes.values()
     )
+    carry_semantics_qualification = _build_carry_semantics_qualification(
+        nsight_certificate,
+        [selection.get("root_predicate_pair_binding", {}) for selection in selections],
+        list(DESIRED_ACCESS),
+    )
     checks = {
         "cubin_hash_matches": hashlib.sha256(cubin.read_bytes()).hexdigest()
         == sass_memory_certificate["cubin_sha256"],
@@ -2584,6 +2783,16 @@ def build_sass_expression_certificate(
             is False
             for selection in selections
         ),
+        "carry_semantics_qualification_valid": _verify_carry_semantics_qualification(
+            carry_semantics_qualification,
+            nsight_certificate.get("certificate_sha256"),
+        ),
+        "carry_semantics_activation_withheld": carry_semantics_qualification[
+            "carry_equation_activation_allowed"
+        ]
+        is False
+        and carry_semantics_qualification["proposed_carry_equations_activated"]
+        is False,
     }
     body = {
         "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
@@ -2621,6 +2830,12 @@ def build_sass_expression_certificate(
         ],
         "root_predicate_pair_encoding_established": False,
         "root_carry_arithmetic_established": False,
+        "carry_semantics_qualification": carry_semantics_qualification,
+        "carry_semantics_qualification_gate_established": checks[
+            "carry_semantics_qualification_valid"
+        ],
+        "carry_semantics_qualified": False,
+        "carry_equation_activation_allowed": False,
         "partial_proposed_symbolic_formulas_established": all(
             bool(selection.get("partial_symbolic_formula", {}).get("formula_nodes"))
             for selection in selections
@@ -2814,6 +3029,14 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         ],
         "root_predicate_pair_encoding_established": False,
         "root_carry_arithmetic_established": False,
+        "carry_semantics_qualification": certificate[
+            "carry_semantics_qualification"
+        ],
+        "carry_semantics_qualification_gate_established": certificate[
+            "carry_semantics_qualification_gate_established"
+        ],
+        "carry_semantics_qualified": False,
+        "carry_equation_activation_allowed": False,
         "partial_proposed_symbolic_formulas_established": certificate[
             "partial_proposed_symbolic_formulas_established"
         ],
@@ -3050,6 +3273,35 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         )
         and summary.get("root_predicate_pair_encoding_established") is False
         and summary.get("root_carry_arithmetic_established") is False
+        and _verify_carry_semantics_qualification(
+            summary.get("carry_semantics_qualification", {}),
+            summary.get("nsight_certificate_sha256"),
+        )
+        and summary.get("carry_semantics_qualification", {}).get(
+            "nsight_certificate_sha256"
+        )
+        == summary.get("nsight_certificate_sha256")
+        and {
+            record["field"]: (
+                record["pair_binding_sha256"],
+                record["predicate_count"],
+            )
+            for record in summary.get("carry_semantics_qualification", {}).get(
+                "pair_qualification_records", []
+            )
+        }
+        == {
+            selection["field"]: (
+                selection.get("root_predicate_pair_binding", {}).get(
+                    "binding_sha256"
+                ),
+                selection.get("root_predicate_pair_binding_predicate_count"),
+            )
+            for selection in selections
+        }
+        and summary.get("carry_semantics_qualification_gate_established") is True
+        and summary.get("carry_semantics_qualified") is False
+        and summary.get("carry_equation_activation_allowed") is False
         and summary.get("partial_proposed_symbolic_formulas_established")
         == all(bool(selection.get("partial_formula_sha256")) for selection in selections)
         and summary.get("partial_formula_ordered_operands_preserved") is True
@@ -3122,6 +3374,9 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("root_predicate_pair_bindings_established") is True
         and summary.get("root_predicate_pair_encoding_established") is False
         and summary.get("root_carry_arithmetic_established") is False
+        and summary.get("carry_semantics_qualification_gate_established") is True
+        and summary.get("carry_semantics_qualified") is False
+        and summary.get("carry_equation_activation_allowed") is False
         and summary.get("partial_proposed_symbolic_formulas_established") is True
         and summary.get("partial_formula_ordered_operands_preserved") is True
         and summary.get("partial_formula_well_typed") is True
@@ -3369,6 +3624,29 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
     ) and certificate.get("nsight_certificate_sha256") == launch_coordinate_domains.get(
         "nsight_certificate_sha256"
     )
+    selections = certificate.get("selections", [])
+    carry_semantics_qualification = certificate.get(
+        "carry_semantics_qualification", {}
+    )
+    expected_carry_semantics_qualification = _build_carry_semantics_qualification(
+        {
+            "certificate_sha256": certificate.get("nsight_certificate_sha256"),
+            "details": {
+                "compute_capability": carry_semantics_qualification.get(
+                    "compute_capability"
+                )
+            },
+        },
+        [selection.get("root_predicate_pair_binding", {}) for selection in selections],
+        [selection.get("field") for selection in selections],
+    )
+    carry_semantics_qualification_valid = bool(
+        _verify_carry_semantics_qualification(
+            carry_semantics_qualification,
+            certificate.get("nsight_certificate_sha256"),
+        )
+        and carry_semantics_qualification == expected_carry_semantics_qualification
+    )
     boundaries_preserved = (
         certificate.get("selected_sass_address_expression_dags_established") is True
         and certificate.get("bounded_call_string_expression_reaching_definitions_established") is True
@@ -3380,6 +3658,9 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("root_predicate_pair_bindings_established") is True
         and certificate.get("root_predicate_pair_encoding_established") is False
         and certificate.get("root_carry_arithmetic_established") is False
+        and certificate.get("carry_semantics_qualification_gate_established") is True
+        and certificate.get("carry_semantics_qualified") is False
+        and certificate.get("carry_equation_activation_allowed") is False
         and certificate.get("partial_proposed_symbolic_formulas_established") is True
         and certificate.get("partial_formula_ordered_operands_preserved") is True
         and certificate.get("partial_formula_well_typed") is True
@@ -3422,7 +3703,6 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         selection.get("closed_supported_formula", False)
         for selection in certificate.get("selections", [])
     )
-    selections = certificate.get("selections", [])
     selection_graphs_consistent = (
         all(
             _selection_graph_consistent(
@@ -3458,6 +3738,10 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
             selection.get("root_predicate_pair_binding_available") is True
             for selection in selections
         )
+        and certificate.get("carry_semantics_qualification_gate_established")
+        == carry_semantics_qualification_valid
+        and certificate.get("carry_semantics_qualified") is False
+        and certificate.get("carry_equation_activation_allowed") is False
         and certificate.get("selected_sass_address_expression_dags_established")
         == all(
             selection.get("available")
@@ -3533,6 +3817,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
             and boundaries_preserved
             and semantics_snapshot_valid
             and launch_coordinate_domains_valid
+            and carry_semantics_qualification_valid
             and closed_formulas_consistent
             and selection_graphs_consistent
             and node_hashes_valid
@@ -3543,6 +3828,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         "boundaries_preserved": boundaries_preserved,
         "semantics_snapshot_valid": semantics_snapshot_valid,
         "launch_coordinate_domains_valid": launch_coordinate_domains_valid,
+        "carry_semantics_qualification_valid": carry_semantics_qualification_valid,
         "closed_formulas_consistent": closed_formulas_consistent,
         "selection_graphs_consistent": selection_graphs_consistent,
         "node_hashes_valid": node_hashes_valid,

@@ -6,6 +6,144 @@
   "available_selections": 5,
   "bounded_call_string_expression_reaching_definitions_established": true,
   "bounded_predicate_reaching_definitions_established": true,
+  "carry_equation_activation_allowed": false,
+  "carry_semantics_qualification": {
+    "carry_equation_activation_allowed": false,
+    "compute_capability": "8.9",
+    "expected_fields": [
+      "key_ptr",
+      "output_accum_ptr",
+      "output_ptr",
+      "query_ptr",
+      "value_ptr"
+    ],
+    "hardware_semantics_established": false,
+    "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
+    "pair_qualification_records": [
+      {
+        "carry_arithmetic_established": false,
+        "carry_encoding_established": false,
+        "dynamic_truth_table_complete": false,
+        "field": "query_ptr",
+        "high_opcode": "LEA.HI.X",
+        "low_opcode": "LEA",
+        "pair_binding_sha256": "c36a1da6aefe9a1ec5fb70bb3a1f5686be5ce20fa62fe927cdbf2d636dd7f796",
+        "predicate_count": 1,
+        "qualification_record_sha256": "1b725eb3a29bebccd595e55b43beb9df020eae4beefb67868bb16059fba9c33e",
+        "required_dynamic_truth_table": "one_predicate"
+      },
+      {
+        "carry_arithmetic_established": false,
+        "carry_encoding_established": false,
+        "dynamic_truth_table_complete": false,
+        "field": "key_ptr",
+        "high_opcode": "LEA.HI.X",
+        "low_opcode": "LEA",
+        "pair_binding_sha256": "4a3da4e968de4f99691e093dbdcacb68cdf695906eff89517417fbefdb0b1d49",
+        "predicate_count": 1,
+        "qualification_record_sha256": "9cb2afc19737004b9bf80fea761b3503f394c21589f8823ab6b7b5135cc9b5d1",
+        "required_dynamic_truth_table": "one_predicate"
+      },
+      {
+        "carry_arithmetic_established": false,
+        "carry_encoding_established": false,
+        "dynamic_truth_table_complete": false,
+        "field": "value_ptr",
+        "high_opcode": "LEA.HI.X",
+        "low_opcode": "LEA",
+        "pair_binding_sha256": "452817b1474b65c697cf7edb572a4dae41c8440c6ec8b6ada575341ce47dc0f1",
+        "predicate_count": 1,
+        "qualification_record_sha256": "b2e74bf37c3498db6e30267a79c4f98c17cbd3684b23d6a6cc0ab09c57dbc03c",
+        "required_dynamic_truth_table": "one_predicate"
+      },
+      {
+        "carry_arithmetic_established": false,
+        "carry_encoding_established": false,
+        "dynamic_truth_table_complete": false,
+        "field": "output_ptr",
+        "high_opcode": "IADD3.X",
+        "low_opcode": "IADD3",
+        "pair_binding_sha256": "b0255a1d0b91fe101021d542731d4b9ba07fedd241a72a6fde0c8a58e2cbaa17",
+        "predicate_count": 2,
+        "qualification_record_sha256": "8fb5f5c58e00cfee4b16d2fef86460428b01b7594389664e66df5c6fd55ee90c",
+        "required_dynamic_truth_table": "two_predicate"
+      },
+      {
+        "carry_arithmetic_established": false,
+        "carry_encoding_established": false,
+        "dynamic_truth_table_complete": false,
+        "field": "output_accum_ptr",
+        "high_opcode": "IADD3.X",
+        "low_opcode": "IADD3",
+        "pair_binding_sha256": "f2477f9ea6ff7e770acbc4471221850f6b85167b36d378093c3a2b2b7979e558",
+        "predicate_count": 1,
+        "qualification_record_sha256": "7b0ac0848e886b69ac61d1e0b50075b0f37bbafb3a7ba2245d95227fd693c696",
+        "required_dynamic_truth_table": "one_predicate"
+      }
+    ],
+    "proposed_carry_equations_activated": false,
+    "qualification_passed": false,
+    "qualification_sha256": "2c2749aff7b6d5af4a319e3b602f8d8ab9fa94ec9539065954eed7eced09082e",
+    "requirements": [
+      {
+        "evidence": "Root predicate-pair binding hashes retained in this certificate.",
+        "name": "exact_selected_root_pair_bindings",
+        "satisfied": true
+      },
+      {
+        "evidence": "Exact retained Nsight certificate and compute capability.",
+        "name": "architecture_identity_bound",
+        "satisfied": true
+      },
+      {
+        "evidence": null,
+        "name": "authoritative_instruction_semantics_bound",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "architecture_specific_predicate_encoding_bound",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "one_predicate_dynamic_truth_table_complete",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "two_predicate_dynamic_truth_table_complete",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "low_high_recomposition_validated",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "independent_reference_validated",
+        "satisfied": false
+      },
+      {
+        "evidence": null,
+        "name": "predicate_negation_semantics_validated",
+        "satisfied": false
+      }
+    ],
+    "scope": "Architecture-specific evidence gate for activating proposed SASS carry equations; pair identity alone is insufficient.",
+    "unsatisfied_requirements": [
+      "authoritative_instruction_semantics_bound",
+      "architecture_specific_predicate_encoding_bound",
+      "one_predicate_dynamic_truth_table_complete",
+      "two_predicate_dynamic_truth_table_complete",
+      "low_high_recomposition_validated",
+      "independent_reference_validated",
+      "predicate_negation_semantics_validated"
+    ]
+  },
+  "carry_semantics_qualification_gate_established": true,
+  "carry_semantics_qualified": false,
   "closed_supported_formulas": 0,
   "closed_supported_sass_formulas_established": false,
   "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
@@ -1714,12 +1852,12 @@
       "unsupported_or_entry_node_count": 77
     }
   ],
-  "source_certificate_sha256": "ea747a532d0dd232f82ab797da5bbe98a22d1a08889d3cc691c6b04f82d8d8ee",
+  "source_certificate_sha256": "bbb9d5d3cb26aa1c2614ef8e937f0458e0e3ca9fdba553027298cce31e05e08e",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "2929a4755d07774ed2cb84611f37bad7babfd72d30985f6f29ee4c95bea09463",
+  "summary_sha256": "5456dd7fbb257d5920724dc9fd184a5a504b677503feef76c63b11330aa7f156",
   "total_selections": 5,
   "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false

@@ -295,6 +295,7 @@ class SassExpressionTests(unittest.TestCase):
             _analyze_partial_formula_blockers,
             _analyze_partial_formula_intervals,
             _analyze_partial_symbolic_formula,
+            _build_carry_semantics_qualification,
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
             _build_partial_symbolic_formula,
@@ -311,6 +312,7 @@ class SassExpressionTests(unittest.TestCase):
             _unsupported_expression_nodes,
             build_sass_expression_summary,
             _verify_blocker_record,
+            _verify_carry_semantics_qualification,
             _verify_interval_record,
             _verify_launch_coordinate_domains,
             _verify_root_predicate_pair_binding,
@@ -327,6 +329,7 @@ class SassExpressionTests(unittest.TestCase):
         nsight = {
             "certificate_sha256": "a" * 64,
             "details": {
+                "compute_capability": "8.9",
                 "block_size": "(32, 4, 1)",
                 "grid_size": "(1, 4, 1)",
                 "metrics": {
@@ -562,6 +565,9 @@ class SassExpressionTests(unittest.TestCase):
         root_predicate_pair_binding = _build_root_predicate_pair_binding(
             "query_ptr", nodes, partial_formula_blocker_analysis
         )
+        carry_semantics_qualification = _build_carry_semantics_qualification(
+            nsight, [root_predicate_pair_binding], ["query_ptr"]
+        )
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
         self.assertTrue(partial_formula_analysis["type_check"]["well_typed"])
@@ -595,6 +601,46 @@ class SassExpressionTests(unittest.TestCase):
         self.assertTrue(_verify_root_predicate_pair_binding(root_predicate_pair_binding))
         self.assertEqual(len(root_predicate_pair_binding["predicate_bindings"]), 1)
         self.assertFalse(root_predicate_pair_binding["carry_arithmetic_established"])
+        self.assertTrue(
+            _verify_carry_semantics_qualification(
+                carry_semantics_qualification, nsight["certificate_sha256"]
+            )
+        )
+        self.assertFalse(carry_semantics_qualification["qualification_passed"])
+        self.assertIn(
+            "authoritative_instruction_semantics_bound",
+            carry_semantics_qualification["unsatisfied_requirements"],
+        )
+        activated_qualification = copy.deepcopy(carry_semantics_qualification)
+        activated_qualification["carry_equation_activation_allowed"] = True
+        activated_body = {
+            key: value
+            for key, value in activated_qualification.items()
+            if key != "qualification_sha256"
+        }
+        activated_qualification["qualification_sha256"] = hashlib.sha256(
+            canonical_json(activated_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            _verify_carry_semantics_qualification(
+                activated_qualification, nsight["certificate_sha256"]
+            )
+        )
+        wrong_architecture_link = copy.deepcopy(carry_semantics_qualification)
+        wrong_architecture_link["nsight_certificate_sha256"] = "b" * 64
+        wrong_link_body = {
+            key: value
+            for key, value in wrong_architecture_link.items()
+            if key != "qualification_sha256"
+        }
+        wrong_architecture_link["qualification_sha256"] = hashlib.sha256(
+            canonical_json(wrong_link_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            _verify_carry_semantics_qualification(
+                wrong_architecture_link, nsight["certificate_sha256"]
+            )
+        )
         negated_nodes = copy.deepcopy(nodes)
         negated_consumer = next(
             node
@@ -829,6 +875,10 @@ class SassExpressionTests(unittest.TestCase):
             "root_predicate_pair_bindings_established": True,
             "root_predicate_pair_encoding_established": False,
             "root_carry_arithmetic_established": False,
+            "carry_semantics_qualification": carry_semantics_qualification,
+            "carry_semantics_qualification_gate_established": True,
+            "carry_semantics_qualified": False,
+            "carry_equation_activation_allowed": False,
             "partial_proposed_symbolic_formulas_established": True,
             "partial_formula_ordered_operands_preserved": True,
             "partial_formula_well_typed": True,
@@ -1010,6 +1060,33 @@ class SassExpressionTests(unittest.TestCase):
         ).hexdigest()
         self.assertFalse(
             verify_sass_expression_certificate(damaged_pair_binding)["valid"]
+        )
+        forged_carry_qualification = copy.deepcopy(certificate)
+        qualification = forged_carry_qualification["carry_semantics_qualification"]
+        next(
+            requirement
+            for requirement in qualification["requirements"]
+            if requirement["name"] == "authoritative_instruction_semantics_bound"
+        )["satisfied"] = True
+        qualification["qualification_sha256"] = hashlib.sha256(
+            canonical_json(
+                {
+                    key: value
+                    for key, value in qualification.items()
+                    if key != "qualification_sha256"
+                }
+            ).encode("utf-8")
+        ).hexdigest()
+        forged_qualification_body = {
+            key: value
+            for key, value in forged_carry_qualification.items()
+            if key != "certificate_sha256"
+        }
+        forged_carry_qualification["certificate_sha256"] = hashlib.sha256(
+            canonical_json(forged_qualification_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_expression_certificate(forged_carry_qualification)["valid"]
         )
         forged_formula = copy.deepcopy(certificate)
         formula = forged_formula["selections"][0]["partial_symbolic_formula"]
