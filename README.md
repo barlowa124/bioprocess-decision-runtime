@@ -626,13 +626,13 @@ The checked summary selects one operand for each target:
 
 | Field | SASS offset | DAG nodes | Proof-record-bound instructions | Unbound instructions | Joins | Cycles | Special-register leaves | Unsupported/unresolved nodes |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `query_ptr` | `0x20f0` | 133 | 28/58 | 30 | 5 | 0 | 5 | 40 |
-| `key_ptr` | `0x2140` | 150 | 34/66 | 32 | 6 | 1 | 4 | 43 |
-| `value_ptr` | `0x35e0` | 144 | 32/63 | 31 | 6 | 1 | 4 | 42 |
-| `output_ptr` | `0xa990` | 172 | 36/76 | 40 | 7 | 1 | 5 | 53 |
-| `output_accum_ptr` | `0xb7e0` | 241 | 61/106 | 45 | 11 | 1 | 5 | 62 |
+| `query_ptr` | `0x20f0` | 150 | 35/70 | 35 | 5 | 0 | 5 | 45 |
+| `key_ptr` | `0x2140` | 167 | 41/78 | 37 | 6 | 1 | 4 | 48 |
+| `value_ptr` | `0x35e0` | 163 | 39/76 | 37 | 6 | 1 | 4 | 48 |
+| `output_ptr` | `0xa990` | 191 | 43/89 | 46 | 7 | 1 | 5 | 59 |
+| `output_accum_ptr` | `0xb7e0` | 311 | 88/146 | 58 | 13 | 1 | 5 | 77 |
 
-The expression fixed point visits the same 855 bounded block/call-stack contexts and 161 reachable blocks as the taint analysis. Its state lattice converges separately after 10,522 context iterations and records 12 distinct overflow contexts, 230 hash-consed ambiguous-join nodes, 65 cyclic-definition leaves, and five explicit special-register leaves across materialized contexts. Consequently `expression_call_string_depth_overflow_free` and `unbounded_context_sensitive_expression_reaching_definitions_established` are false. Selection minimizes aggregate source-field count before instruction offset, then chooses the first bounded context containing the target field.
+The expression fixed point visits the same 855 bounded block/call-stack contexts and 161 reachable blocks as the taint analysis. Its state lattice converges separately after 10,675 context iterations and records 12 distinct overflow contexts, 250 hash-consed ambiguous-join nodes, 65 cyclic-definition leaves, and five explicit special-register leaves across materialized contexts. It also retains 211 predicate-definition nodes, 274 predicate-source edges, 20 predicate joins, and four unresolved entry-predicate nodes globally; none of the five selected DAGs contains an entry-predicate leaf. Consequently `expression_call_string_depth_overflow_free` and `unbounded_context_sensitive_expression_reaching_definitions_established` are false. Selection minimizes aggregate source-field count before instruction offset, then chooses the first bounded context containing the target field.
 
 The exact Nsight launch records block dimensions `[32,4,1]` and grid dimensions `[1,4,1]`. The expression certificate therefore binds launch-coordinate domain assumptions `TID.X∈[0,32)`, `TID.Y∈[0,4)`, `TID.Z∈[0,1)`, `CTAID.X∈[0,1)`, `CTAID.Y∈[0,4)`, and `CTAID.Z∈[0,1)` to the five observed special-register leaves and verifies dimension products against Nsight's scalar block/grid metrics. `special_register_launch_domain_assumptions_bound` is true, but `special_register_coordinate_correspondence_established`, `special_register_concrete_values_established`, and `special_register_hardware_acquisition_established` remain false. The leaves therefore remain unresolved for closed-form accounting.
 
@@ -642,15 +642,17 @@ A second hash-consed layer now lowers ordered semantic operands into partial pro
 
 | Field | Formula nodes | Lowered proposed operations | Opaque nodes |
 |---|---:|---:|---:|
-| `query_ptr` | 93 | 21 | 60 |
-| `key_ptr` | 105 | 27 | 64 |
-| `value_ptr` | 99 | 24 | 62 |
-| `output_ptr` | 121 | 27 | 76 |
-| `output_accum_ptr` | 154 | 43 | 94 |
+| `query_ptr` | 94 | 21 | 61 |
+| `key_ptr` | 106 | 27 | 65 |
+| `value_ptr` | 100 | 24 | 63 |
+| `output_ptr` | 122 | 27 | 77 |
+| `output_accum_ptr` | 157 | 43 | 97 |
 
 `partial_proposed_symbolic_formulas_established`, `partial_formula_ordered_operands_preserved`, `partial_formula_well_typed`, and `typed_z3_translation_established` are true. The type checker validates every node's arity, bit width, child widths, LUT, and 32-bit root type. Z3 translates both roots per target, uses fresh typed symbols for opaque operations/leaves and shared named symbols for identical SR leaves, and retains 10/8/8/10/10 launch-domain inequalities for query/key/value/output/output-accumulator respectively. One local obligation per lowered operation—21/27/24/27/43—proves unsatisfiability of disagreement with the corresponding proposed formula operator, so `local_proposed_operator_lowering_equivalence_established` is true. This is local definitional correspondence only; it does not establish instruction premises or hardware semantics.
 
 Every partial formula remains non-closed because it contains opaque nodes. The full-certificate verifier reconstructs each formula and analysis from the retained expression DAG and rejects formula, operand-order, type, width, solver-result, and hash inconsistencies; the compact-summary verifier checks retained commitments, counts, and boundaries without the omitted full node graphs.
+
+Numbered `P` and `UP` state now participates in the same bounded call-string reaching definitions as general and uniform registers. Low `LEA`/`ULEA` and `IADD3`/`UIADD3` forms create explicit one-bit predicate outputs; `.X` consumers and instruction guards retain source edges to the reaching predicate definitions. The selected query/key/value/output/output-accumulator DAGs contain 5/5, 5/5, 6/6, 6/6, and 9/9 predicate definitions/source edges respectively, with no entry-predicate leaf or predicate join. `bounded_predicate_reaching_definitions_established` and `predicate_producer_consumer_dependencies_established` are true, while `predicate_values_established`, `predicate_carry_equations_established`, and `predicate_hardware_semantics_established` remain false.
 
 A conservative unsigned interval pass covers every formula node. Literals are exact, coordinate symbols use their launch-domain assumptions, joins take the hull of reaching alternatives, and modular addition or multiply-add narrows only for exact inputs or when integer endpoint arithmetic proves no wrap. Constant-memory values and other opaque operations remain full-width. The retained interval counts are:
 
@@ -674,7 +676,7 @@ A nearest-opaque-cut pass identifies the exact depth-zero blocker at each root:
 | `output_ptr` | `IADD3` | `IADD3.X` |
 | `output_accum_ptr` | `IADD3` | `IADD3.X` |
 
-`root_opaque_blocker_frontiers_established` and `all_selected_roots_have_opaque_blockers` are true. This does not establish the missing semantics. In each pair, the low instruction produces predicate/carry state consumed by the `.X` high instruction; the current expression dataflow does not bind that predicate production, identity, or consumption. Existing arithmetic composition obligations are therefore insufficient on their own. A future root-closing increment must first add bounded predicate/carry reaching definitions and connect each low/high pair without assuming predicate truth or NVIDIA hardware conformance.
+`root_opaque_blocker_frontiers_established` and `all_selected_roots_have_opaque_blockers` are true. This does not establish the missing semantics. In each pair, the low instruction produces predicate/carry state consumed by the `.X` high instruction; the expression DAG now binds those producer-consumer dependencies, but not the predicate values or carry equations. Existing arithmetic composition obligations are therefore still insufficient on their own. A future root-closing increment must bind proposed low-word carry production and `.X` consumption equations without assuming predicate truth or NVIDIA hardware conformance.
 
 Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory, SASS-semantics, and logical-bounds certificates. None is closed over the currently record-bound operations, unbound instructions, joins, recurrences, or entry symbols. Therefore `proposed_semantics_proof_bindings_established`, `bounded_call_string_expression_reaching_definitions_established`, and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 

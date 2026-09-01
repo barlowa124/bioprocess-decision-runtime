@@ -485,9 +485,33 @@ def _ordered_semantic_operands(
     parameter_base: int,
 ) -> list[dict[str, Any]]:
     tokens = [token.strip() for token in operands.split(",")][1:]
+    predicate_roles = _predicate_operand_roles(opcode, operands)
     descriptors = []
     for index, token in enumerate(tokens):
         normalized = token.upper()
+        operand_index = index + 1
+        predicate = _numbered_predicate(token)
+        if operand_index in predicate_roles["outputs"] and predicate:
+            descriptors.append(
+                {
+                    "kind": "predicate_output",
+                    "predicate": predicate,
+                    "negated": token.strip().lstrip("@").startswith("!"),
+                    "width_bits": 1,
+                }
+            )
+            continue
+        if predicate:
+            descriptors.append(
+                {
+                    "kind": "predicate",
+                    "predicate": predicate,
+                    "negated": token.strip().lstrip("@").startswith("!"),
+                    "source_node": source_node_by_register.get(predicate),
+                    "width_bits": 1,
+                }
+            )
+            continue
         if normalized.lstrip("-") in {"RZ", "URZ"}:
             descriptors.append(
                 {
@@ -574,6 +598,69 @@ def _ordered_semantic_operands(
     return descriptors
 
 
+def _numbered_predicate(token: str) -> str | None:
+    normalized = token.strip().upper().lstrip("@!")
+    return normalized if re.fullmatch(r"(?:UP|P)\d+", normalized) else None
+
+
+def _predicate_operand_roles(opcode: str, operands: str) -> dict[str, list[int]]:
+    tokens = [token.strip() for token in operands.split(",")]
+    output_indexes = []
+    source_indexes = []
+    if opcode in {"IADD3", "UIADD3"} and len(tokens) >= 4:
+        output_indexes = [
+            index
+            for index in range(1, len(tokens) - 3)
+            if _numbered_predicate(tokens[index])
+        ]
+    elif opcode in {"LEA", "ULEA"} and len(tokens) >= 4:
+        output_indexes = [
+            index
+            for index in range(1, len(tokens) - 3)
+            if _numbered_predicate(tokens[index])
+        ]
+    if opcode in {"IADD3.X", "UIADD3.X"}:
+        source_indexes = [
+            index
+            for index in range(max(1, len(tokens) - 2), len(tokens))
+            if _numbered_predicate(tokens[index])
+        ]
+    elif opcode in {
+        "LEA.HI.X",
+        "LEA.HI.X.SX32",
+        "ULEA.HI.X",
+        "ULEA.HI.X.SX32",
+    }:
+        source_indexes = [
+            len(tokens) - 1
+        ] if len(tokens) > 1 and _numbered_predicate(tokens[-1]) else []
+    return {"outputs": output_indexes, "sources": source_indexes}
+
+
+def _instruction_predicate_sources(instruction: dict[str, Any]) -> list[str]:
+    roles = _predicate_operand_roles(
+        instruction["opcode"], instruction["operands"]
+    )
+    tokens = [token.strip() for token in instruction["operands"].split(",")]
+    sources = [
+        _numbered_predicate(tokens[index]) for index in roles["sources"]
+    ]
+    guard = _numbered_predicate(instruction.get("predicate") or "")
+    return sorted({source for source in [*sources, guard] if source})
+
+
+def _instruction_predicate_outputs(instruction: dict[str, Any]) -> list[str]:
+    roles = _predicate_operand_roles(
+        instruction["opcode"], instruction["operands"]
+    )
+    tokens = [token.strip() for token in instruction["operands"].split(",")]
+    return [
+        predicate
+        for index in roles["outputs"]
+        if (predicate := _numbered_predicate(tokens[index]))
+    ]
+
+
 NON_DEFINING_BASE_OPCODES = {
     "ST",
     "STG",
@@ -624,14 +711,18 @@ def _transfer_definitions(
     prefix = "UR" if destination_register.startswith("UR") else "R"
     first = int(destination_register[len(prefix) :])
     block_index, call_stack = context
-    for output_index in range(_destination_register_count(instruction["opcode"])):
-        register = f"{prefix}{first + output_index}"
+    register_output_count = _destination_register_count(instruction["opcode"])
+    output_names = [
+        f"{prefix}{first + output_index}"
+        for output_index in range(register_output_count)
+    ] + _instruction_predicate_outputs(instruction)
+    for output_index, output_name in enumerate(output_names):
         definition = frozenset(
             {_definition_key(block_index, call_stack, instruction_index, output_index)}
         )
         if instruction.get("predicate"):
-            definition |= state.get(register, frozenset())
-        output[register] = definition
+            definition |= state.get(output_name, frozenset())
+        output[output_name] = definition
     return output
 
 
@@ -779,14 +870,25 @@ def _call_string_expression_snapshots(
             destination = re.match(r"((?:UR|R)\d+)\b", instruction["operands"])
             if destination and _base_opcode(instruction["opcode"]) not in NON_DEFINING_BASE_OPCODES:
                 remaining = instruction["operands"][destination.end() :]
+                source_names = [
+                    *_source_registers_for_opcode(instruction["opcode"], remaining),
+                    *_instruction_predicate_sources(instruction),
+                ]
                 source_definitions = {
-                    register: sorted(state.get(register, {f"entry:{register}"}))
-                    for register in _source_registers_for_opcode(
-                        instruction["opcode"], remaining
-                    )
+                    name: sorted(state.get(name, {f"entry:{name}"}))
+                    for name in sorted(set(source_names))
                 }
                 destination_register = destination.group(1)
-                for output_index in range(_destination_register_count(instruction["opcode"])):
+                prefix = "UR" if destination_register.startswith("UR") else "R"
+                first = int(destination_register[len(prefix) :])
+                register_output_count = _destination_register_count(
+                    instruction["opcode"]
+                )
+                output_names = [
+                    f"{prefix}{first + output_index}"
+                    for output_index in range(register_output_count)
+                ] + _instruction_predicate_outputs(instruction)
+                for output_index, output_name in enumerate(output_names):
                     key = _definition_key(
                         block_index, call_stack, instruction_index, output_index
                     )
@@ -798,6 +900,15 @@ def _call_string_expression_snapshots(
                         "opcode": instruction["opcode"],
                         "predicate": instruction.get("predicate"),
                         "output_index": output_index,
+                        "output_name": output_name,
+                        "output_kind": (
+                            "predicate"
+                            if output_index >= register_output_count
+                            else "register"
+                        ),
+                        "output_width_bits": (
+                            1 if output_index >= register_output_count else 32
+                        ),
                         "source_definitions": source_definitions,
                         "special_registers": sorted(set(_special_registers(remaining))),
                     }
@@ -807,7 +918,21 @@ def _call_string_expression_snapshots(
 
     def materialize(key: str, active: frozenset[str] = frozenset()) -> str:
         if key.startswith("entry:"):
-            return registry.add({"kind": "entry_register", "register": key.split(":", 1)[1]})
+            name = key.split(":", 1)[1]
+            return registry.add(
+                {
+                    "kind": "entry_register",
+                    "register": name,
+                    "value_kind": (
+                        "predicate"
+                        if re.fullmatch(r"(?:UP|P)\d+", name)
+                        else "register"
+                    ),
+                    "width_bits": (
+                        1 if re.fullmatch(r"(?:UP|P)\d+", name) else 32
+                    ),
+                }
+            )
         if key in active:
             spec = definition_specs[key]
             return registry.add(
@@ -815,6 +940,9 @@ def _call_string_expression_snapshots(
                     "kind": "cyclic_reaching_definition",
                     "instruction_offset": spec["instruction_offset"],
                     "output_index": spec["output_index"],
+                    "output_name": spec["output_name"],
+                    "output_kind": spec["output_kind"],
+                    "width_bits": spec["output_width_bits"],
                     "block_index": spec["block_index"],
                     "call_stack": spec["call_stack"],
                 }
@@ -833,6 +961,16 @@ def _call_string_expression_snapshots(
                     {
                         "kind": "reaching_definition_join",
                         "register": register,
+                        "value_kind": (
+                            "predicate"
+                            if re.fullmatch(r"(?:UP|P)\d+", register)
+                            else "register"
+                        ),
+                        "width_bits": (
+                            1
+                            if re.fullmatch(r"(?:UP|P)\d+", register)
+                            else 32
+                        ),
                         "source_nodes": alternatives,
                     }
                 )
@@ -873,6 +1011,9 @@ def _call_string_expression_snapshots(
                 "predicate": spec["predicate"],
                 "block_index": spec["block_index"],
                 "call_stack": spec["call_stack"],
+                "output_name": spec["output_name"],
+                "output_kind": spec["output_kind"],
+                "output_width_bits": spec["output_width_bits"],
                 "source_registers": [
                     *sorted(spec["source_definitions"]),
                     *spec["special_registers"],
@@ -898,6 +1039,9 @@ def _call_string_expression_snapshots(
                 "kind": "instruction_output",
                 "definition_node": definition_node,
                 "output_index": spec["output_index"],
+                "output_name": spec["output_name"],
+                "output_kind": spec["output_kind"],
+                "width_bits": spec["output_width_bits"],
             }
         )
         materialized[key] = output_node
@@ -939,6 +1083,27 @@ def _call_string_expression_snapshots(
         "launch_domain_bound_special_register_nodes": sum(
             node["kind"] == "special_register"
             and node.get("launch_domain_assumption") is not None
+            for node in registry.nodes.values()
+        ),
+        "predicate_definition_nodes": sum(
+            node["kind"] == "instruction_definition"
+            and node.get("output_kind") == "predicate"
+            for node in registry.nodes.values()
+        ),
+        "predicate_source_edges": sum(
+            bool(re.fullmatch(r"(?:UP|P)\d+", source))
+            for node in registry.nodes.values()
+            if node["kind"] == "instruction_definition"
+            for source in node.get("source_registers", [])
+        ),
+        "entry_predicate_nodes": sum(
+            node["kind"] == "entry_register"
+            and node.get("value_kind") == "predicate"
+            for node in registry.nodes.values()
+        ),
+        "predicate_join_nodes": sum(
+            node["kind"] == "reaching_definition_join"
+            and node.get("value_kind") == "predicate"
             for node in registry.nodes.values()
         ),
     }
@@ -1052,6 +1217,19 @@ def _build_partial_symbolic_formula(
                     }
                 )
             return value
+        if kind == "predicate":
+            source = descriptor.get("source_node")
+            return (
+                lower(source)
+                if source
+                else registry.add(
+                    {
+                        "kind": "opaque_operand",
+                        "descriptor": descriptor,
+                        "width_bits": 1,
+                    }
+                )
+            )
         if kind == "special_register" and descriptor.get("source_node"):
             return lower(descriptor["source_node"])
         return registry.add(
@@ -1073,7 +1251,9 @@ def _build_partial_symbolic_formula(
             value = lower(definition_id)
             output_index = node["output_index"]
             value_width = registry.nodes[value].get("width_bits", 0)
-            if value_width > 32 and output_index * 32 + 31 < value_width:
+            if node.get("output_kind") == "predicate" and value_width == 1:
+                result = value
+            elif value_width > 32 and output_index * 32 + 31 < value_width:
                 result = registry.add(
                     {
                         "kind": "opaque_operation",
@@ -1108,12 +1288,15 @@ def _build_partial_symbolic_formula(
                         "kind": "opaque_operation",
                         "expression_node_sha256": node_id,
                         "opcode": node.get("opcode"),
-                        "width_bits": max(
-                            32, _destination_register_count(node.get("opcode", "")) * 32
+                        "width_bits": node.get("output_width_bits")
+                        or max(
+                            32,
+                            _destination_register_count(node.get("opcode", "")) * 32,
                         ),
                         "arguments": [
                             operand(item)
                             for item in node.get("ordered_semantic_operands", [])
+                            if item.get("kind") != "predicate_output"
                         ],
                     }
                 )
@@ -1183,7 +1366,7 @@ def _build_partial_symbolic_formula(
                 {
                     "kind": "opaque_join",
                     "expression_node_sha256": node_id,
-                    "width_bits": 32,
+                    "width_bits": node.get("width_bits", 32),
                     "arguments": [lower(source) for source in node.get("source_nodes", [])],
                 }
             )
@@ -1198,7 +1381,7 @@ def _build_partial_symbolic_formula(
                 }
             )
         else:
-            result = opaque(node_id, kind)
+            result = opaque(node_id, kind, node.get("width_bits", 32))
         lowered[node_id] = result
         return result
 
@@ -1946,6 +2129,27 @@ def build_sass_expression_certificate(
                     "special_register_leaf_count": sum(
                         node["kind"] == "special_register" for node in nodes
                     ),
+                    "predicate_definition_node_count": sum(
+                        node["kind"] == "instruction_definition"
+                        and node.get("output_kind") == "predicate"
+                        for node in nodes
+                    ),
+                    "predicate_source_edge_count": sum(
+                        bool(re.fullmatch(r"(?:UP|P)\d+", source))
+                        for node in nodes
+                        if node["kind"] == "instruction_definition"
+                        for source in node.get("source_registers", [])
+                    ),
+                    "entry_predicate_leaf_count": sum(
+                        node["kind"] == "entry_register"
+                        and node.get("value_kind") == "predicate"
+                        for node in nodes
+                    ),
+                    "predicate_join_node_count": sum(
+                        node["kind"] == "reaching_definition_join"
+                        and node.get("value_kind") == "predicate"
+                        for node in nodes
+                    ),
                     "coordinate_special_register_leaf_count": sum(
                         node["kind"] == "special_register"
                         and node.get("register") in SPECIAL_REGISTER_COORDINATES
@@ -2147,6 +2351,24 @@ def build_sass_expression_certificate(
             is False
             for selection in selections
         ),
+        "all_materialized_predicate_sources_resolved": all(
+            descriptor.get("source_node") is not None
+            and any(
+                candidate.get("node_sha256") == descriptor.get("source_node")
+                and candidate.get("kind") != "entry_register"
+                for candidate in selection.get("expression_nodes", [])
+            )
+            for selection in selections
+            for node in selection.get("expression_nodes", [])
+            if node.get("kind") == "instruction_definition"
+            for descriptor in node.get("ordered_semantic_operands", [])
+            if descriptor.get("kind") == "predicate"
+        ),
+        "predicate_producer_consumer_links_present": any(
+            selection.get("predicate_definition_node_count", 0) > 0
+            and selection.get("predicate_source_edge_count", 0) > 0
+            for selection in selections
+        ),
     }
     body = {
         "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
@@ -2171,6 +2393,14 @@ def build_sass_expression_certificate(
             for selection in selections
         ),
         "bounded_call_string_expression_reaching_definitions_established": True,
+        "bounded_predicate_reaching_definitions_established": True,
+        "predicate_producer_consumer_dependencies_established": checks[
+            "all_materialized_predicate_sources_resolved"
+        ]
+        and checks["predicate_producer_consumer_links_present"],
+        "predicate_values_established": False,
+        "predicate_carry_equations_established": False,
+        "predicate_hardware_semantics_established": False,
         "partial_proposed_symbolic_formulas_established": all(
             bool(selection.get("partial_symbolic_formula", {}).get("formula_nodes"))
             for selection in selections
@@ -2350,6 +2580,15 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "bounded_call_string_expression_reaching_definitions_established": certificate[
             "bounded_call_string_expression_reaching_definitions_established"
         ],
+        "bounded_predicate_reaching_definitions_established": certificate[
+            "bounded_predicate_reaching_definitions_established"
+        ],
+        "predicate_producer_consumer_dependencies_established": certificate[
+            "predicate_producer_consumer_dependencies_established"
+        ],
+        "predicate_values_established": False,
+        "predicate_carry_equations_established": False,
+        "predicate_hardware_semantics_established": False,
         "partial_proposed_symbolic_formulas_established": certificate[
             "partial_proposed_symbolic_formulas_established"
         ],
@@ -2534,6 +2773,16 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
                 selection.get("partial_formula_all_opaque_label_histogram", {}).values()
             )
             == selection.get("partial_formula_opaque_node_count")
+            and all(
+                isinstance(selection.get(field), int)
+                and selection.get(field) >= 0
+                for field in (
+                    "predicate_definition_node_count",
+                    "predicate_source_edge_count",
+                    "entry_predicate_leaf_count",
+                    "predicate_join_node_count",
+                )
+            )
             for selection in selections
         )
         and summary.get("all_expression_instruction_semantics_bound")
@@ -2550,6 +2799,13 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         == all(
             selection.get("available")
             and selection.get("target_field_represented")
+            for selection in selections
+        )
+        and summary.get("bounded_predicate_reaching_definitions_established") is True
+        and summary.get("predicate_producer_consumer_dependencies_established")
+        == any(
+            selection.get("predicate_definition_node_count", 0) > 0
+            and selection.get("predicate_source_edge_count", 0) > 0
             for selection in selections
         )
         and summary.get("partial_proposed_symbolic_formulas_established")
@@ -2616,6 +2872,11 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
     boundaries_preserved = (
         summary.get("selected_sass_address_expression_dags_established") is True
         and summary.get("bounded_call_string_expression_reaching_definitions_established") is True
+        and summary.get("bounded_predicate_reaching_definitions_established") is True
+        and summary.get("predicate_producer_consumer_dependencies_established") is True
+        and summary.get("predicate_values_established") is False
+        and summary.get("predicate_carry_equations_established") is False
+        and summary.get("predicate_hardware_semantics_established") is False
         and summary.get("partial_proposed_symbolic_formulas_established") is True
         and summary.get("partial_formula_ordered_operands_preserved") is True
         and summary.get("partial_formula_well_typed") is True
@@ -2733,6 +2994,13 @@ def _selection_graph_consistent(
     expected_partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
         expected_partial_formula
     )
+    node_by_id = {node["node_sha256"]: node for node in nodes}
+    predicate_descriptors = [
+        descriptor
+        for node in instruction_nodes
+        for descriptor in node.get("ordered_semantic_operands", [])
+        if descriptor.get("kind") == "predicate"
+    ]
     return bool(
         selection.get("available")
         and selection.get("node_count") == len(nodes)
@@ -2746,6 +3014,35 @@ def _selection_graph_consistent(
         and selection.get("cyclic_reaching_definition_node_count")
         == sum(node.get("kind") == "cyclic_reaching_definition" for node in nodes)
         and selection.get("special_register_leaf_count") == len(special_nodes)
+        and selection.get("predicate_definition_node_count")
+        == sum(
+            node.get("output_kind") == "predicate"
+            for node in instruction_nodes
+        )
+        and selection.get("predicate_source_edge_count")
+        == sum(
+            bool(re.fullmatch(r"(?:UP|P)\d+", source))
+            for node in instruction_nodes
+            for source in node.get("source_registers", [])
+        )
+        and selection.get("entry_predicate_leaf_count")
+        == sum(
+            node.get("kind") == "entry_register"
+            and node.get("value_kind") == "predicate"
+            for node in nodes
+        )
+        and selection.get("predicate_join_node_count")
+        == sum(
+            node.get("kind") == "reaching_definition_join"
+            and node.get("value_kind") == "predicate"
+            for node in nodes
+        )
+        and all(
+            descriptor.get("source_node") in node_by_id
+            and node_by_id[descriptor["source_node"]].get("kind")
+            != "entry_register"
+            for descriptor in predicate_descriptors
+        )
         and selection.get("coordinate_special_register_leaf_count")
         == sum(
             node.get("register") in SPECIAL_REGISTER_COORDINATES
@@ -2818,6 +3115,11 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
     boundaries_preserved = (
         certificate.get("selected_sass_address_expression_dags_established") is True
         and certificate.get("bounded_call_string_expression_reaching_definitions_established") is True
+        and certificate.get("bounded_predicate_reaching_definitions_established") is True
+        and certificate.get("predicate_producer_consumer_dependencies_established") is True
+        and certificate.get("predicate_values_established") is False
+        and certificate.get("predicate_carry_equations_established") is False
+        and certificate.get("predicate_hardware_semantics_established") is False
         and certificate.get("partial_proposed_symbolic_formulas_established") is True
         and certificate.get("partial_formula_ordered_operands_preserved") is True
         and certificate.get("partial_formula_well_typed") is True
@@ -2882,6 +3184,13 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         == all(
             selection.get("launch_domain_bound_special_register_leaf_count")
             == selection.get("coordinate_special_register_leaf_count")
+            for selection in selections
+        )
+        and certificate.get("bounded_predicate_reaching_definitions_established") is True
+        and certificate.get("predicate_producer_consumer_dependencies_established")
+        == any(
+            selection.get("predicate_definition_node_count", 0) > 0
+            and selection.get("predicate_source_edge_count", 0) > 0
             for selection in selections
         )
         and certificate.get("selected_sass_address_expression_dags_established")

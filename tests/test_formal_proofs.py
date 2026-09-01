@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import ctypes
+from collections import Counter
 import hashlib
 import struct
 import importlib.util
@@ -299,6 +300,8 @@ class SassExpressionTests(unittest.TestCase):
             _build_partial_symbolic_formula,
             _call_string_expression_snapshots,
             _FormulaRegistry,
+            _instruction_predicate_outputs,
+            _instruction_predicate_sources,
             _ordered_semantic_operands,
             _reachable_nodes,
             _semantic_requirement,
@@ -424,10 +427,36 @@ class SassExpressionTests(unittest.TestCase):
             _semantic_requirement("LOP3.LUT", "R4,R5,R6,RZ,0x96,!PT"),
             ["lop3_lut_0x96_is_three_input_xor"],
         )
+        self.assertEqual(
+            _instruction_predicate_outputs(
+                {"opcode": "IADD3", "operands": "R8,P6,P4,R60,UR8,R109"}
+            ),
+            ["P6", "P4"],
+        )
+        self.assertEqual(
+            _instruction_predicate_sources(
+                {"opcode": "IADD3.X", "operands": "R9,R61,UR9,R4,P6,P4", "predicate": None}
+            ),
+            ["P4", "P6"],
+        )
+        self.assertEqual(
+            _instruction_predicate_outputs(
+                {"opcode": "LEA", "operands": "R88,P0,R14,UR31,0x1"}
+            ),
+            ["P0"],
+        )
+        self.assertEqual(
+            _instruction_predicate_sources(
+                {"opcode": "LEA.HI.X", "operands": "R89,R14,UR15,R15,0x1,P0", "predicate": None}
+            ),
+            ["P0"],
+        )
         instructions = [
             {"offset": 0, "predicate": None, "opcode": "ULDC.64", "operands": "UR2,c[0x0][0x160]"},
             {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
-            {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+            {"offset": 32, "predicate": None, "opcode": "LEA", "operands": "R4,P0,R4,RZ,0x0"},
+            {"offset": 48, "predicate": None, "opcode": "LEA.HI.X", "operands": "R5,R4,RZ,RZ,0x0,P0"},
+            {"offset": 64, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
         ]
         snapshots, registry, graph = _call_string_expression_snapshots(
             instructions,
@@ -436,8 +465,8 @@ class SassExpressionTests(unittest.TestCase):
             launch_coordinate_domains=launch_domains,
         )
         roots = [
-            snapshots[32][0]["definitions"]["R4"][0],
-            snapshots[32][0]["definitions"]["R5"][0],
+            snapshots[64][0]["definitions"]["R4"][0],
+            snapshots[64][0]["definitions"]["R5"][0],
         ]
         self.assertEqual(graph["call_context_count"], 1)
         atomic = _transfer_definitions(
@@ -457,6 +486,29 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(len(predicated["R4"]), 2)
         nodes = _reachable_nodes(roots, registry)
         self.assertIn("query_ptr", {field for node in nodes for field in node.get("parameter_fields", [])})
+        predicate_definitions = [
+            node
+            for node in nodes
+            if node.get("kind") == "instruction_definition"
+            and node.get("output_kind") == "predicate"
+        ]
+        self.assertEqual({node["output_name"] for node in predicate_definitions}, {"P0"})
+        high_definition = next(
+            node
+            for node in nodes
+            if node.get("kind") == "instruction_definition"
+            and node.get("opcode") == "LEA.HI.X"
+            and node.get("output_kind") == "register"
+        )
+        predicate_operand = next(
+            descriptor
+            for descriptor in high_definition["ordered_semantic_operands"]
+            if descriptor["kind"] == "predicate"
+        )
+        node_by_id = {node["node_sha256"]: node for node in nodes}
+        predicate_output = node_by_id[predicate_operand["source_node"]]
+        self.assertEqual(predicate_output["output_kind"], "predicate")
+        self.assertEqual(predicate_output["width_bits"], 1)
         special_instructions = [
             {"offset": 0, "predicate": None, "opcode": "S2R", "operands": "R4,SR_TID.X"},
             {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R6,R4"},
@@ -518,7 +570,7 @@ class SassExpressionTests(unittest.TestCase):
         self.assertTrue(
             partial_formula_interval_analysis["all_root_intervals_full_width_unknown"]
         )
-        self.assertEqual(partial_formula_interval_analysis["bounded_node_count"], 0)
+        self.assertGreater(partial_formula_interval_analysis["bounded_node_count"], 0)
         self.assertFalse(
             partial_formula_interval_analysis["effective_address_bounds_established"]
         )
@@ -526,7 +578,7 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(partial_formula_blocker_analysis["roots_with_blockers"], 2)
         self.assertEqual(
             sorted(record["depth"] for record in partial_formula_blocker_analysis["root_frontier"]),
-            [0, 1],
+            [0, 0],
         )
         self.assertTrue(
             all(
@@ -652,6 +704,17 @@ class SassExpressionTests(unittest.TestCase):
                 if node["kind"] == "opaque_operation"
             },
         )
+        instruction_nodes = [
+            node for node in nodes if node["kind"] == "instruction_definition"
+        ]
+        proof_backed_nodes = [
+            node for node in instruction_nodes if node.get("semantic_binding")
+        ]
+        unmodeled_opcodes = Counter(
+            node["opcode"]
+            for node in instruction_nodes
+            if not node.get("semantic_binding")
+        )
         certificate = {
             "scope": "synthetic expression DAG",
             "kernel_name": "kernel",
@@ -706,12 +769,17 @@ class SassExpressionTests(unittest.TestCase):
                     "ambiguous_reaching_definition_node_count": 0,
                     "cyclic_reaching_definition_node_count": 0,
                     "special_register_leaf_count": 0,
+                    "predicate_definition_node_count": 1,
+                    "predicate_source_edge_count": 1,
+                    "entry_predicate_leaf_count": 0,
+                    "predicate_join_node_count": 0,
                     "coordinate_special_register_leaf_count": 0,
                     "launch_domain_bound_special_register_leaf_count": 0,
-                    "instruction_definition_node_count": 2,
-                    "proof_backed_instruction_node_count": 2,
-                    "unmodeled_instruction_node_count": 0,
-                    "unmodeled_opcode_histogram": {},
+                    "instruction_definition_node_count": len(instruction_nodes),
+                    "proof_backed_instruction_node_count": len(proof_backed_nodes),
+                    "unmodeled_instruction_node_count": len(instruction_nodes)
+                    - len(proof_backed_nodes),
+                    "unmodeled_opcode_histogram": dict(sorted(unmodeled_opcodes.items())),
                     "referenced_semantics_obligations": [
                         "mov_is_identity",
                         "uldc64_matches_little_endian_constant_memory_read",
@@ -723,6 +791,11 @@ class SassExpressionTests(unittest.TestCase):
             "all_checks_pass": True,
             "selected_sass_address_expression_dags_established": True,
             "bounded_call_string_expression_reaching_definitions_established": True,
+            "bounded_predicate_reaching_definitions_established": True,
+            "predicate_producer_consumer_dependencies_established": True,
+            "predicate_values_established": False,
+            "predicate_carry_equations_established": False,
+            "predicate_hardware_semantics_established": False,
             "partial_proposed_symbolic_formulas_established": True,
             "partial_formula_ordered_operands_preserved": True,
             "partial_formula_well_typed": True,
@@ -739,7 +812,7 @@ class SassExpressionTests(unittest.TestCase):
             "special_register_coordinate_correspondence_established": False,
             "special_register_concrete_values_established": False,
             "special_register_hardware_acquisition_established": False,
-            "all_expression_instruction_semantics_bound": True,
+            "all_expression_instruction_semantics_bound": False,
             "expression_call_string_depth_overflow_free": True,
             "unbounded_context_sensitive_expression_reaching_definitions_established": False,
             "hardware_instruction_semantics_established": False,
@@ -855,6 +928,32 @@ class SassExpressionTests(unittest.TestCase):
             canonical_json(damaged_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_expression_certificate(damaged_domain)["valid"])
+        damaged_predicate_link = copy.deepcopy(certificate)
+        predicate_consumer = next(
+            node
+            for node in damaged_predicate_link["selections"][0]["expression_nodes"]
+            if node.get("kind") == "instruction_definition"
+            and any(
+                descriptor.get("kind") == "predicate"
+                for descriptor in node.get("ordered_semantic_operands", [])
+            )
+        )
+        next(
+            descriptor
+            for descriptor in predicate_consumer["ordered_semantic_operands"]
+            if descriptor.get("kind") == "predicate"
+        )["source_node"] = None
+        damaged_predicate_body = {
+            key: value
+            for key, value in damaged_predicate_link.items()
+            if key != "certificate_sha256"
+        }
+        damaged_predicate_link["certificate_sha256"] = hashlib.sha256(
+            canonical_json(damaged_predicate_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_expression_certificate(damaged_predicate_link)["valid"]
+        )
         forged_formula = copy.deepcopy(certificate)
         formula = forged_formula["selections"][0]["partial_symbolic_formula"]
         formula_node = formula["formula_nodes"][0]
