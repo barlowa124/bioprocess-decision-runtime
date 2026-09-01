@@ -699,6 +699,25 @@ def command_sass_expressions_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_sass_carry_evidence_template(args: argparse.Namespace) -> int:
+    from .sass_expressions import build_carry_evidence_template
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    template = build_carry_evidence_template(certificate)
+    _write_json(args.output, template)
+    return 0
+
+
+def command_sass_carry_evidence_verify(args: argparse.Namespace) -> int:
+    from .sass_expressions import verify_carry_evidence_bundle
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    bundle = json.loads(args.bundle.read_text(encoding="utf-8"))
+    verification = verify_carry_evidence_bundle(bundle, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_attention_bounds(args: argparse.Namespace) -> int:
     from .attention_bounds import (
         build_attention_logical_bounds_certificate,
@@ -1218,6 +1237,16 @@ def build_parser() -> argparse.ArgumentParser:
     sass_expression_summary_verify_parser = subparsers.add_parser("attention-sass-expression-summary-verify", help="Verify a compact SASS expression summary")
     sass_expression_summary_verify_parser.add_argument("summary", type=Path)
     sass_expression_summary_verify_parser.set_defaults(handler=command_sass_expression_summary_verify)
+
+    sass_carry_template_parser = subparsers.add_parser("attention-sass-carry-evidence-template", help="Build an incomplete dynamic carry-evidence template")
+    sass_carry_template_parser.add_argument("certificate", type=Path)
+    sass_carry_template_parser.add_argument("--output", type=Path, required=True)
+    sass_carry_template_parser.set_defaults(handler=command_sass_carry_evidence_template)
+
+    sass_carry_verify_parser = subparsers.add_parser("attention-sass-carry-evidence-verify", help="Verify a dynamic carry-evidence bundle without activating semantics")
+    sass_carry_verify_parser.add_argument("certificate", type=Path)
+    sass_carry_verify_parser.add_argument("bundle", type=Path)
+    sass_carry_verify_parser.set_defaults(handler=command_sass_carry_evidence_verify)
 
     attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
     attention_bounds_parser.add_argument("--artifact", type=Path, required=True)

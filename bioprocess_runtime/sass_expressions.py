@@ -2232,6 +2232,12 @@ def _build_carry_capture_protocol(
         "compute_capability": nsight_certificate.get("details", {}).get(
             "compute_capability"
         ),
+        "block_size": _parse_launch_dimensions(
+            nsight_certificate.get("details", {}).get("block_size", "")
+        ),
+        "grid_size": _parse_launch_dimensions(
+            nsight_certificate.get("details", {}).get("grid_size", "")
+        ),
         "nsight_certificate_sha256": nsight_certificate.get("certificate_sha256"),
         "required_host_os": "Linux",
         "instrumentation_backend": "NVBit-compatible dynamic SASS instrumentation",
@@ -2268,6 +2274,8 @@ def _verify_carry_capture_protocol(protocol: dict[str, Any]) -> bool:
         == protocol.get("protocol_sha256")
         and protocol.get("protocol_version") == 1
         and protocol.get("compute_capability") == "8.9"
+        and protocol.get("block_size") == [32, 4, 1]
+        and protocol.get("grid_size") == [1, 4, 1]
         and bool(
             re.fullmatch(
                 r"[0-9a-f]{64}", protocol.get("nsight_certificate_sha256", "")
@@ -2558,6 +2566,281 @@ def _verify_carry_semantics_qualification(
         and qualification.get("proposed_carry_equations_activated") is False
         and qualification.get("hardware_semantics_established") is False
     )
+
+
+def build_carry_evidence_template(
+    expression_certificate: dict[str, Any]
+) -> dict[str, Any]:
+    if not verify_sass_expression_certificate(expression_certificate)["valid"]:
+        raise ValueError("Invalid SASS expression certificate")
+    qualification = expression_certificate["carry_semantics_qualification"]
+    protocol = qualification["carry_capture_protocol"]
+    observation_records = []
+    for requirement in protocol["pair_capture_requirements"]:
+        body = {
+            "field": requirement["field"],
+            "pair_binding_sha256": requirement["pair_binding_sha256"],
+            "capture_requirement_sha256": requirement[
+                "capture_requirement_sha256"
+            ],
+            "reference_carry_classes": [
+                {
+                    "reference_carry_class": carry_class,
+                    "observations": [],
+                }
+                for carry_class in requirement["required_reference_carry_classes"]
+            ],
+        }
+        observation_records.append(
+            {
+                **body,
+                "observation_record_sha256": hashlib.sha256(
+                    canonical_json(body).encode("utf-8")
+                ).hexdigest(),
+            }
+        )
+    body = {
+        "schema_version": 1,
+        "scope": "Incomplete template for importing dynamic SASS carry observations; structural validity never activates semantic qualification without independent capture replay.",
+        "expression_certificate_sha256": expression_certificate[
+            "certificate_sha256"
+        ],
+        "protocol_sha256": protocol["protocol_sha256"],
+        "nsight_certificate_sha256": protocol["nsight_certificate_sha256"],
+        "compute_capability": protocol["compute_capability"],
+        "cubin_sha256": expression_certificate["cubin_sha256"],
+        "kernel_name": expression_certificate["kernel_name"],
+        "host_os": protocol["required_host_os"],
+        "backend_version": None,
+        "capture_tool_sha256": None,
+        "driver_version": None,
+        "nvcc_version": None,
+        "observation_records": observation_records,
+        "independent_capture_replay_verified": False,
+        "syntactic_dynamic_coverage_complete": False,
+        "qualification_eligible": False,
+        "carry_equation_activation_allowed": False,
+        "hardware_semantics_established": False,
+    }
+    body["bundle_sha256"] = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def verify_carry_evidence_bundle(
+    bundle: dict[str, Any], expression_certificate: dict[str, Any]
+) -> dict[str, Any]:
+    expression_certificate_valid = verify_sass_expression_certificate(
+        expression_certificate
+    )["valid"]
+    qualification = expression_certificate.get("carry_semantics_qualification", {})
+    protocol = qualification.get("carry_capture_protocol", {})
+    body = {
+        key: value for key, value in bundle.items() if key != "bundle_sha256"
+    }
+    bundle_hash_valid = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest() == bundle.get("bundle_sha256")
+    identity_links_valid = bool(
+        bundle.get("expression_certificate_sha256")
+        == expression_certificate.get("certificate_sha256")
+        and bundle.get("protocol_sha256") == protocol.get("protocol_sha256")
+        and bundle.get("nsight_certificate_sha256")
+        == expression_certificate.get("nsight_certificate_sha256")
+        and bundle.get("compute_capability") == "8.9"
+        and bundle.get("cubin_sha256") == expression_certificate.get("cubin_sha256")
+        and bundle.get("kernel_name") == expression_certificate.get("kernel_name")
+        and bundle.get("host_os") == "Linux"
+    )
+    requirement_by_field = {
+        requirement["field"]: requirement
+        for requirement in protocol.get("pair_capture_requirements", [])
+    }
+    records = bundle.get("observation_records", [])
+    record_fields = {record.get("field") for record in records}
+    observation_structure_valid = bool(
+        bundle.get("schema_version") == 1
+        and len(records) == len(requirement_by_field)
+        and record_fields == set(requirement_by_field)
+        and all(
+            record.get("pair_binding_sha256")
+            == requirement_by_field[record["field"]]["pair_binding_sha256"]
+            and record.get("capture_requirement_sha256")
+            == requirement_by_field[record["field"]]["capture_requirement_sha256"]
+            and [
+                item.get("reference_carry_class")
+                for item in record.get("reference_carry_classes", [])
+            ]
+            == requirement_by_field[record["field"]][
+                "required_reference_carry_classes"
+            ]
+            and all(
+                isinstance(item.get("observations"), list)
+                and all(
+                    isinstance(observation, dict)
+                    for observation in item.get("observations", [])
+                )
+                for item in record.get("reference_carry_classes", [])
+            )
+            and hashlib.sha256(
+                canonical_json(
+                    {
+                        key: value
+                        for key, value in record.items()
+                        if key != "observation_record_sha256"
+                    }
+                ).encode("utf-8")
+            ).hexdigest()
+            == record.get("observation_record_sha256")
+            for record in records
+        )
+    )
+    tool_identity_complete = all(
+        isinstance(bundle.get(field), str) and bool(bundle[field])
+        for field in (
+            "backend_version",
+            "driver_version",
+            "nvcc_version",
+        )
+    ) and bool(
+        re.fullmatch(r"[0-9a-f]{64}", bundle.get("capture_tool_sha256") or "")
+    )
+    def observation_valid(
+        observation: dict[str, Any], requirement: dict[str, Any], carry_class: int
+    ) -> bool:
+        if not isinstance(observation, dict):
+            return False
+        capture_points = observation.get("capture_points")
+        if not isinstance(capture_points, dict) or not all(
+            isinstance(point, dict) for point in capture_points.values()
+        ):
+            return False
+        observation_body = {
+            key: value
+            for key, value in observation.items()
+            if key != "observation_sha256"
+        }
+        return bool(
+            observation.get("reference_carry_class") == carry_class
+            and isinstance(observation.get("repetition_index"), int)
+            and observation["repetition_index"] >= 0
+            and set(capture_points) == set(requirement["capture_points"])
+            and all(
+                isinstance(point.get("active_lane_mask"), int)
+                and 0 < point["active_lane_mask"] <= 0xFFFFFFFF
+                and isinstance(point.get("block_coordinates"), list)
+                and isinstance(point.get("thread_coordinates"), list)
+                and len(point["block_coordinates"]) == 3
+                and len(point["thread_coordinates"]) == 3
+                and all(
+                    isinstance(value, int) and 0 <= value < limit
+                    for value, limit in zip(
+                        point["block_coordinates"], protocol["grid_size"], strict=True
+                    )
+                )
+                and all(
+                    isinstance(value, int) and 0 <= value < limit
+                    for value, limit in zip(
+                        point["thread_coordinates"], protocol["block_size"], strict=True
+                    )
+                )
+                and isinstance(point.get("source_register_values"), dict)
+                and bool(point["source_register_values"])
+                and all(
+                    isinstance(register, str)
+                    and isinstance(value, int)
+                    and 0 <= value < 1 << 64
+                    for register, value in point["source_register_values"].items()
+                )
+                and isinstance(point.get("destination_register_values"), dict)
+                and bool(point["destination_register_values"])
+                and all(
+                    isinstance(register, str)
+                    and isinstance(value, int)
+                    and 0 <= value < 1 << 64
+                    for register, value in point[
+                        "destination_register_values"
+                    ].items()
+                )
+                and set(point.get("predicate_values", {}))
+                == set(requirement["predicates"])
+                and all(
+                    value in {0, 1}
+                    for value in point.get("predicate_values", {}).values()
+                )
+                for point in capture_points.values()
+            )
+            and hashlib.sha256(
+                canonical_json(observation_body).encode("utf-8")
+            ).hexdigest()
+            == observation.get("observation_sha256")
+        )
+
+    def record_coverage_complete(record: dict[str, Any]) -> bool:
+        requirement = requirement_by_field[record["field"]]
+        class_patterns = []
+        for item in record["reference_carry_classes"]:
+            observations = item["observations"]
+            if len(observations) < protocol.get("minimum_repetitions_per_vector", 3):
+                return False
+            if not all(
+                observation_valid(
+                    observation,
+                    requirement,
+                    item["reference_carry_class"],
+                )
+                for observation in observations
+            ):
+                return False
+            patterns = {
+                tuple(
+                    observation["capture_points"]["after_low_instruction"][
+                        "predicate_values"
+                    ][predicate]
+                    for predicate in requirement["predicates"]
+                )
+                for observation in observations
+            }
+            if len(patterns) != 1:
+                return False
+            class_patterns.extend(patterns)
+        return len(set(class_patterns)) >= requirement[
+            "minimum_distinct_observed_predicate_patterns"
+        ]
+
+    syntactic_coverage_complete = bool(
+        observation_structure_valid
+        and tool_identity_complete
+        and all(record_coverage_complete(record) for record in records)
+    )
+    boundaries_preserved = bool(
+        bundle.get("independent_capture_replay_verified") is False
+        and bundle.get("syntactic_dynamic_coverage_complete")
+        == syntactic_coverage_complete
+        and bundle.get("qualification_eligible") is False
+        and bundle.get("carry_equation_activation_allowed") is False
+        and bundle.get("hardware_semantics_established") is False
+    )
+    return {
+        "valid": bool(
+            expression_certificate_valid
+            and bundle_hash_valid
+            and identity_links_valid
+            and observation_structure_valid
+            and boundaries_preserved
+        ),
+        "expression_certificate_valid": expression_certificate_valid,
+        "bundle_hash_valid": bundle_hash_valid,
+        "identity_links_valid": identity_links_valid,
+        "observation_structure_valid": observation_structure_valid,
+        "tool_identity_complete": tool_identity_complete,
+        "syntactic_dynamic_coverage_complete": syntactic_coverage_complete,
+        "semantic_coverage_verified": False,
+        "independent_capture_replay_verified": False,
+        "qualification_eligible": False,
+        "boundaries_preserved": boundaries_preserved,
+    }
 
 
 def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -3831,7 +4114,21 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
             "details": {
                 "compute_capability": carry_semantics_qualification.get(
                     "compute_capability"
-                )
+                ),
+                "block_size": str(
+                    tuple(
+                        carry_semantics_qualification.get(
+                            "carry_capture_protocol", {}
+                        ).get("block_size", [])
+                    )
+                ),
+                "grid_size": str(
+                    tuple(
+                        carry_semantics_qualification.get(
+                            "carry_capture_protocol", {}
+                        ).get("grid_size", [])
+                    )
+                ),
             },
         },
         [selection.get("root_predicate_pair_binding", {}) for selection in selections],

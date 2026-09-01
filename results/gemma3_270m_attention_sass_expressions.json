@@ -10,6 +10,11 @@
   "carry_equation_activation_allowed": false,
   "carry_semantics_qualification": {
     "carry_capture_protocol": {
+      "block_size": [
+        32,
+        4,
+        1
+      ],
       "compute_capability": "8.9",
       "dynamic_observations_present": false,
       "evidence_bundle_required_fields": [
@@ -21,6 +26,11 @@
         "nvcc_version",
         "observation_records",
         "protocol_sha256"
+      ],
+      "grid_size": [
+        1,
+        4,
+        1
       ],
       "hardware_semantics_established": false,
       "independent_reproduction_complete": false,
@@ -186,7 +196,7 @@
           ]
         }
       ],
-      "protocol_sha256": "a50a3dd4a5fda721d2d970355dd71795af40d428d0f1c97a599a23118976bafe",
+      "protocol_sha256": "b51e8da12c991c03ff3167df7ad98c42b69732120695b7a21958fca17b01cab5",
       "protocol_version": 1,
       "required_host_os": "Linux",
       "scope": "Dynamic observation protocol for characterizing selected SASS predicate/carry pairs; observations do not by themselves establish hardware semantics.",
@@ -268,7 +278,7 @@
     ],
     "proposed_carry_equations_activated": false,
     "qualification_passed": false,
-    "qualification_sha256": "1a9663e09487e55ddaae2b67e1b130813bb8e454328daf9169444edbe2006017",
+    "qualification_sha256": "2faedec1e649da28e62b1714ba5acbb3ab4e47513db08c7170d3ef651271c42a",
     "requirements": [
       {
         "evidence": "Root predicate-pair binding hashes retained in this certificate.",
@@ -2038,12 +2048,12 @@
       "unsupported_or_entry_node_count": 77
     }
   ],
-  "source_certificate_sha256": "b2a648bfaea154a2865ab8de8f9ee8ba84a1364044160a41128a107bbc9df759",
+  "source_certificate_sha256": "95415441d850c0ac813e648aa903279fbf9ba211bc8a5b711c53a4793aab7a14",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "f65a8c85c08c82cbba5e5a174a9cdfeac3e36643a12e72b04fbfb12bbcab5cb9",
+  "summary_sha256": "507ebca00546620df8fa00f61cd1ffdfccc5fde3a4694912d36ae7fab2bff6bd",
   "total_selections": 5,
   "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false

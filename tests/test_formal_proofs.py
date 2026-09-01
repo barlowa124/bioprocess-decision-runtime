@@ -301,6 +301,7 @@ class SassExpressionTests(unittest.TestCase):
             _build_launch_coordinate_domains,
             _build_partial_symbolic_formula,
             _build_root_predicate_pair_binding,
+            build_carry_evidence_template,
             _call_string_expression_snapshots,
             _FormulaRegistry,
             _instruction_predicate_outputs,
@@ -318,6 +319,7 @@ class SassExpressionTests(unittest.TestCase):
             _verify_interval_record,
             _verify_launch_coordinate_domains,
             _verify_root_predicate_pair_binding,
+            verify_carry_evidence_bundle,
             verify_sass_expression_certificate,
             verify_sass_expression_summary,
         )
@@ -943,6 +945,54 @@ class SassExpressionTests(unittest.TestCase):
         certificate["certificate_sha256"] = hashlib.sha256(canonical_json(certificate).encode("utf-8")).hexdigest()
         verification = verify_sass_expression_certificate(certificate)
         self.assertTrue(verification["valid"], verification)
+        evidence_template = build_carry_evidence_template(certificate)
+        evidence_verification = verify_carry_evidence_bundle(
+            evidence_template, certificate
+        )
+        self.assertTrue(evidence_verification["valid"], evidence_verification)
+        self.assertFalse(evidence_verification["tool_identity_complete"])
+        self.assertFalse(evidence_verification["syntactic_dynamic_coverage_complete"])
+        self.assertFalse(evidence_verification["semantic_coverage_verified"])
+        self.assertFalse(evidence_verification["qualification_eligible"])
+        damaged_evidence = copy.deepcopy(evidence_template)
+        damaged_evidence["protocol_sha256"] = "b" * 64
+        damaged_evidence_body = {
+            key: value
+            for key, value in damaged_evidence.items()
+            if key != "bundle_sha256"
+        }
+        damaged_evidence["bundle_sha256"] = hashlib.sha256(
+            canonical_json(damaged_evidence_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_carry_evidence_bundle(damaged_evidence, certificate)["valid"]
+        )
+        malformed_evidence = copy.deepcopy(evidence_template)
+        malformed_record = malformed_evidence["observation_records"][0]
+        malformed_record["reference_carry_classes"][0]["observations"].append(
+            "invalid"
+        )
+        malformed_record_body = {
+            key: value
+            for key, value in malformed_record.items()
+            if key != "observation_record_sha256"
+        }
+        malformed_record["observation_record_sha256"] = hashlib.sha256(
+            canonical_json(malformed_record_body).encode("utf-8")
+        ).hexdigest()
+        malformed_bundle_body = {
+            key: value
+            for key, value in malformed_evidence.items()
+            if key != "bundle_sha256"
+        }
+        malformed_evidence["bundle_sha256"] = hashlib.sha256(
+            canonical_json(malformed_bundle_body).encode("utf-8")
+        ).hexdigest()
+        malformed_verification = verify_carry_evidence_bundle(
+            malformed_evidence, certificate
+        )
+        self.assertFalse(malformed_verification["valid"])
+        self.assertFalse(malformed_verification["observation_structure_valid"])
         summary = build_sass_expression_summary(certificate)
         self.assertTrue(verify_sass_expression_summary(summary)["valid"])
         forged_summary = copy.deepcopy(summary)

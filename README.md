@@ -670,6 +670,13 @@ A hashed compute-capability-8.9 qualification gate now records and verifies the 
 
 A versioned capture protocol specifies how dynamic evidence must be collected without treating instrumentation as semantic proof. It requires a Linux NVBit-compatible backend, exact Nsight and pair-binding hashes, capture before and after both low and high instructions, active-lane/thread/block coordinates, source/destination register and predicate values, at least three repetitions per vector, reference carry classes 0/1 for one-predicate pairs and 0/1/2 for the two-predicate pair, and at least one distinct observed predicate pattern per reference class. Any future bundle must additionally bind the backend, capture-tool, cubin, kernel, driver, and compiler identities. `carry_capture_protocol_established` is true, but `dynamic_carry_observations_bound`, truth-table completion, and independent reproduction remain false; the installed Windows CUDA and Compute Sanitizer tools do not provide a demonstrated predicate-register capture path.
 
+```powershell
+python -m bioprocess_runtime attention-sass-carry-evidence-template artifacts/gemma3_270m_attention_sass_expressions.json --output artifacts/gemma3_270m_attention_sass_carry_evidence_template.json
+python -m bioprocess_runtime attention-sass-carry-evidence-verify artifacts/gemma3_270m_attention_sass_expressions.json artifacts/gemma3_270m_attention_sass_carry_evidence_template.json
+```
+
+The generated empty template is structurally valid but reports incomplete tool identity and syntactic dynamic coverage. A populated bundle must contain in-range coordinates, nonzero lane masks, nonempty register maps, hashed observations, stable per-class predicate patterns, and the required repetitions. Even complete syntactic coverage leaves `semantic_coverage_verified: false` and `qualification_eligible: false` until a separately implemented independent capture-replay verifier authenticates it; bundle ingestion cannot directly activate carry equations.
+
 A conservative unsigned interval pass covers every formula node. Literals are exact, coordinate symbols use their launch-domain assumptions, joins take the hull of reaching alternatives, and modular addition or multiply-add narrows only for exact inputs or when integer endpoint arithmetic proves no wrap. Constant-memory values and other opaque operations remain full-width. The retained interval counts are:
 
 | Field | Bounded nodes | Exact nodes | Assumption-dependent bounded nodes | Nontrivial root intervals |
