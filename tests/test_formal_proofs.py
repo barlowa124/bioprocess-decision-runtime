@@ -291,6 +291,7 @@ class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
             _build_expression_semantics_snapshot,
+            _build_launch_coordinate_domains,
             _call_string_expression_snapshots,
             _reachable_nodes,
             _semantic_requirement,
@@ -298,6 +299,7 @@ class SassExpressionTests(unittest.TestCase):
             _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
+            _verify_launch_coordinate_domains,
             verify_sass_expression_certificate,
             verify_sass_expression_summary,
         )
@@ -308,6 +310,22 @@ class SassExpressionTests(unittest.TestCase):
             )
         )
         semantics_snapshot = _build_expression_semantics_snapshot(semantics)
+        nsight = {
+            "certificate_sha256": "a" * 64,
+            "details": {
+                "block_size": "(32, 4, 1)",
+                "grid_size": "(1, 4, 1)",
+                "metrics": {
+                    "Block Size": {"value": "128"},
+                    "Grid Size": {"value": "4"},
+                },
+            },
+        }
+        launch_domains = _build_launch_coordinate_domains(nsight)
+        self.assertTrue(_verify_launch_coordinate_domains(launch_domains))
+        damaged_launch_domains = copy.deepcopy(launch_domains)
+        damaged_launch_domains["block_size"][0] = 31
+        self.assertFalse(_verify_launch_coordinate_domains(damaged_launch_domains))
         missing_obligation = copy.deepcopy(semantics)
         missing_obligation["proofs"] = [
             proof
@@ -389,7 +407,10 @@ class SassExpressionTests(unittest.TestCase):
             {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
         ]
         snapshots, registry, graph = _call_string_expression_snapshots(
-            instructions, 0x160, semantics_snapshot=semantics_snapshot
+            instructions,
+            0x160,
+            semantics_snapshot=semantics_snapshot,
+            launch_coordinate_domains=launch_domains,
         )
         roots = [
             snapshots[32][0]["definitions"]["R4"][0],
@@ -419,7 +440,10 @@ class SassExpressionTests(unittest.TestCase):
             {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R8,[R6.64]"},
         ]
         special_snapshots, special_registry, _ = _call_string_expression_snapshots(
-            special_instructions, 0x160, semantics_snapshot=semantics_snapshot
+            special_instructions,
+            0x160,
+            semantics_snapshot=semantics_snapshot,
+            launch_coordinate_domains=launch_domains,
         )
         special_roots = [
             definition
@@ -427,13 +451,37 @@ class SassExpressionTests(unittest.TestCase):
             for definition in definitions
         ]
         special_nodes = _reachable_nodes(special_roots, special_registry)
-        self.assertIn("special_register", {node["kind"] for node in special_nodes})
+        special_leaf = next(node for node in special_nodes if node["kind"] == "special_register")
+        self.assertEqual(special_leaf["launch_domain_assumption"]["maximum_exclusive"], 32)
+        self.assertFalse(
+            special_leaf["launch_domain_assumption"]["coordinate_correspondence_established"]
+        )
+        unknown_special = [
+            {"offset": 0, "predicate": None, "opcode": "S2R", "operands": "R4,SR_MACHINE_ID_0"},
+            {"offset": 16, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+        ]
+        unknown_snapshots, unknown_registry, _ = _call_string_expression_snapshots(
+            unknown_special,
+            0x160,
+            semantics_snapshot=semantics_snapshot,
+            launch_coordinate_domains=launch_domains,
+        )
+        unknown_roots = [
+            definition
+            for definitions in unknown_snapshots[16][0]["definitions"].values()
+            for definition in definitions
+        ]
+        unknown_nodes = _reachable_nodes(unknown_roots, unknown_registry)
+        unknown_leaf = next(node for node in unknown_nodes if node["kind"] == "special_register")
+        self.assertIsNone(unknown_leaf["launch_domain_assumption"])
         certificate = {
             "scope": "synthetic expression DAG",
             "kernel_name": "kernel",
             "cubin_sha256": "cubin",
             "sass_canonical_sha256": "sass",
             "sass_memory_certificate_sha256": "memory",
+            "nsight_certificate_sha256": nsight["certificate_sha256"],
+            "launch_coordinate_domains": launch_domains,
             "sass_semantics_certificate_sha256": semantics["certificate_sha256"],
             "expression_opcode_semantics": semantics_snapshot,
             "logical_bounds_certificate_sha256": "bounds",
@@ -451,6 +499,8 @@ class SassExpressionTests(unittest.TestCase):
                     "ambiguous_reaching_definition_node_count": 0,
                     "cyclic_reaching_definition_node_count": 0,
                     "special_register_leaf_count": 0,
+                    "coordinate_special_register_leaf_count": 0,
+                    "launch_domain_bound_special_register_leaf_count": 0,
                     "instruction_definition_node_count": 2,
                     "proof_backed_instruction_node_count": 2,
                     "unmodeled_instruction_node_count": 0,
@@ -468,6 +518,10 @@ class SassExpressionTests(unittest.TestCase):
             "bounded_call_string_expression_reaching_definitions_established": True,
             "proposed_semantics_proof_bindings_established": True,
             "proof_premises_established_for_bound_instructions": False,
+            "special_register_launch_domain_assumptions_bound": True,
+            "special_register_coordinate_correspondence_established": False,
+            "special_register_concrete_values_established": False,
+            "special_register_hardware_acquisition_established": False,
             "all_expression_instruction_semantics_bound": True,
             "expression_call_string_depth_overflow_free": True,
             "unbounded_context_sensitive_expression_reaching_definitions_established": False,
@@ -483,6 +537,15 @@ class SassExpressionTests(unittest.TestCase):
         self.assertTrue(verification["valid"], verification)
         summary = build_sass_expression_summary(certificate)
         self.assertTrue(verify_sass_expression_summary(summary)["valid"])
+        forged_summary = copy.deepcopy(summary)
+        forged_summary["special_register_coordinate_correspondence_established"] = True
+        summary_body = {
+            key: value for key, value in forged_summary.items() if key != "summary_sha256"
+        }
+        forged_summary["summary_sha256"] = hashlib.sha256(
+            canonical_json(summary_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_summary(forged_summary)["valid"])
         damaged = copy.deepcopy(certificate)
         damaged["selections"][0]["expression_nodes"][0]["kind"] = "forged"
         body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
@@ -513,6 +576,15 @@ class SassExpressionTests(unittest.TestCase):
             canonical_json(forged_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_expression_certificate(forged_semantics)["valid"])
+        damaged_domain = copy.deepcopy(certificate)
+        damaged_domain["launch_coordinate_domains"]["block_size"][0] = 31
+        damaged_body = {
+            key: value for key, value in damaged_domain.items() if key != "certificate_sha256"
+        }
+        damaged_domain["certificate_sha256"] = hashlib.sha256(
+            canonical_json(damaged_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_certificate(damaged_domain)["valid"])
 
     def test_expression_reaching_definitions_preserve_branch_ambiguity(self) -> None:
         from bioprocess_runtime.sass_expressions import (

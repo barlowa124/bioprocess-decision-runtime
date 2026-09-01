@@ -664,8 +664,9 @@ def command_sass_expressions(args: argparse.Namespace) -> int:
     memory = json.loads(args.sass_memory.read_text(encoding="utf-8"))
     bounds = json.loads(args.logical_bounds.read_text(encoding="utf-8"))
     semantics = json.loads(args.sass_semantics.read_text(encoding="utf-8"))
+    nsight = json.loads(args.nsight.read_text(encoding="utf-8"))
     certificate = build_sass_expression_certificate(
-        args.cuobjdump, args.cubin, args.kernel, memory, bounds, semantics
+        args.cuobjdump, args.cubin, args.kernel, memory, bounds, semantics, nsight
     )
     _write_json(args.output, certificate)
     return 0 if certificate["all_checks_pass"] else 1
@@ -1200,6 +1201,7 @@ def build_parser() -> argparse.ArgumentParser:
     sass_expressions_parser.add_argument("--kernel", required=True)
     sass_expressions_parser.add_argument("--sass-memory", type=Path, required=True)
     sass_expressions_parser.add_argument("--sass-semantics", type=Path, required=True)
+    sass_expressions_parser.add_argument("--nsight", type=Path, required=True)
     sass_expressions_parser.add_argument("--logical-bounds", type=Path, required=True)
     sass_expressions_parser.add_argument("--output", type=Path, required=True)
     sass_expressions_parser.set_defaults(handler=command_sass_expressions)

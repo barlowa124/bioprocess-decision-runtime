@@ -9,7 +9,11 @@ from pathlib import Path
 from typing import Any
 
 from .attention_bounds import verify_attention_logical_bounds_certificate
-from .nsight_attestation import _instruction_summary, _parse_cuobjdump_sass
+from .nsight_attestation import (
+    _instruction_summary,
+    _parse_cuobjdump_sass,
+    verify_nsight_launch_certificate,
+)
 from .sass_memory import (
     _AttentionParams,
     _base_opcode,
@@ -314,6 +318,106 @@ def _instruction_semantic_binding(
     }
 
 
+SPECIAL_REGISTER_COORDINATES = {
+    "SR_TID.X": ("block_size", 0),
+    "SR_TID.Y": ("block_size", 1),
+    "SR_TID.Z": ("block_size", 2),
+    "SR_CTAID.X": ("grid_size", 0),
+    "SR_CTAID.Y": ("grid_size", 1),
+    "SR_CTAID.Z": ("grid_size", 2),
+}
+
+
+def _parse_launch_dimensions(value: str) -> list[int]:
+    match = re.fullmatch(r"\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)", value)
+    if not match:
+        raise ValueError(f"Invalid launch dimensions: {value}")
+    dimensions = [int(match.group(index)) for index in range(1, 4)]
+    if any(dimension <= 0 for dimension in dimensions):
+        raise ValueError("Launch dimensions must be positive")
+    return dimensions
+
+
+def _launch_coordinate_registers(
+    block_size: list[int], grid_size: list[int]
+) -> dict[str, dict[str, Any]]:
+    dimensions = {"block_size": block_size, "grid_size": grid_size}
+    return {
+        register: {
+            "symbolic": True,
+            "bit_width": 32,
+            "minimum_inclusive": 0,
+            "maximum_exclusive": dimensions[source][axis],
+            "launch_dimension": source,
+            "axis": "XYZ"[axis],
+            "coordinate_correspondence_established": False,
+            "hardware_acquisition_established": False,
+        }
+        for register, (source, axis) in SPECIAL_REGISTER_COORDINATES.items()
+    }
+
+
+def _build_launch_coordinate_domains(
+    nsight_certificate: dict[str, Any]
+) -> dict[str, Any]:
+    details = nsight_certificate["details"]
+    block_size = _parse_launch_dimensions(details["block_size"])
+    grid_size = _parse_launch_dimensions(details["grid_size"])
+    try:
+        reported_block_volume = int(
+            details["metrics"]["Block Size"]["value"].replace(",", "")
+        )
+        reported_grid_volume = int(
+            details["metrics"]["Grid Size"]["value"].replace(",", "")
+        )
+    except (AttributeError, KeyError, ValueError) as error:
+        raise ValueError("Nsight launch-volume metrics are missing or invalid") from error
+    body = {
+        "scope": "Launch-coordinate domain assumptions derived from retained Nsight grid/block dimensions; SR naming correspondence, runtime values, and hardware acquisition are not established.",
+        "nsight_certificate_sha256": nsight_certificate["certificate_sha256"],
+        "block_size": block_size,
+        "grid_size": grid_size,
+        "reported_block_volume": reported_block_volume,
+        "reported_grid_volume": reported_grid_volume,
+        "dimension_products_match_reported_metrics": block_size[0]
+        * block_size[1]
+        * block_size[2]
+        == reported_block_volume
+        and grid_size[0] * grid_size[1] * grid_size[2] == reported_grid_volume,
+        "registers": _launch_coordinate_registers(block_size, grid_size),
+    }
+    body["domain_sha256"] = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def _verify_launch_coordinate_domains(domains: dict[str, Any]) -> bool:
+    body = {key: value for key, value in domains.items() if key != "domain_sha256"}
+    hash_valid = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == domains.get(
+        "domain_sha256"
+    )
+    block_size = domains.get("block_size", [])
+    grid_size = domains.get("grid_size", [])
+    dimensions_valid = (
+        len(block_size) == 3
+        and len(grid_size) == 3
+        and all(isinstance(value, int) and value > 0 for value in block_size + grid_size)
+    )
+    return bool(
+        hash_valid
+        and dimensions_valid
+        and bool(re.fullmatch(r"[0-9a-f]{64}", domains.get("nsight_certificate_sha256", "")))
+        and domains.get("dimension_products_match_reported_metrics") is True
+        and block_size[0] * block_size[1] * block_size[2]
+        == domains.get("reported_block_volume")
+        and grid_size[0] * grid_size[1] * grid_size[2]
+        == domains.get("reported_grid_volume")
+        and domains.get("registers")
+        == _launch_coordinate_registers(block_size, grid_size)
+    )
+
+
 DESIRED_ACCESS = {
     "query_ptr": "candidate_read",
     "key_ptr": "candidate_read",
@@ -448,9 +552,14 @@ def _call_string_expression_snapshots(
     parameter_base: int,
     maximum_call_depth: int = 4,
     semantics_snapshot: dict[str, Any] | None = None,
+    launch_coordinate_domains: dict[str, Any] | None = None,
 ) -> tuple[dict[int, list[dict[str, Any]]], _NodeRegistry, dict[str, Any]]:
     if semantics_snapshot and not _verify_expression_semantics_snapshot(semantics_snapshot):
         raise ValueError("Invalid expression semantics snapshot")
+    if launch_coordinate_domains and not _verify_launch_coordinate_domains(
+        launch_coordinate_domains
+    ):
+        raise ValueError("Invalid launch-coordinate domains")
     instruction_successors, _ = _cfg_successors(instructions)
     blocks, instruction_to_block, block_successors = _basic_blocks(
         instructions, instruction_successors
@@ -595,7 +704,17 @@ def _call_string_expression_snapshots(
                 )
             )
         source_nodes.extend(
-            registry.add({"kind": "special_register", "register": register})
+            registry.add(
+                {
+                    "kind": "special_register",
+                    "register": register,
+                    "launch_domain_assumption": (
+                        launch_coordinate_domains.get("registers", {}).get(register)
+                        if launch_coordinate_domains
+                        else None
+                    ),
+                }
+            )
             for register in spec["special_registers"]
         )
         parameter_fields = []
@@ -673,6 +792,11 @@ def _call_string_expression_snapshots(
         "special_register_nodes": sum(
             node["kind"] == "special_register" for node in registry.nodes.values()
         ),
+        "launch_domain_bound_special_register_nodes": sum(
+            node["kind"] == "special_register"
+            and node.get("launch_domain_assumption") is not None
+            for node in registry.nodes.values()
+        ),
     }
     return snapshots, registry, graph
 
@@ -716,6 +840,7 @@ def build_sass_expression_certificate(
     sass_memory_certificate: dict[str, Any],
     logical_bounds_certificate: dict[str, Any],
     sass_semantics_certificate: dict[str, Any],
+    nsight_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     completed = subprocess.run(
         [cuobjdump, "--dump-sass", "--function", kernel, str(cubin)],
@@ -731,9 +856,13 @@ def build_sass_expression_certificate(
     semantics_snapshot = _build_expression_semantics_snapshot(
         sass_semantics_certificate
     )
+    launch_coordinate_domains = _build_launch_coordinate_domains(nsight_certificate)
     slices, call_graph = _call_string_address_taint_slices(instructions, parameter_base)
     snapshots, registry, expression_graph = _call_string_expression_snapshots(
-        instructions, parameter_base, semantics_snapshot=semantics_snapshot
+        instructions,
+        parameter_base,
+        semantics_snapshot=semantics_snapshot,
+        launch_coordinate_domains=launch_coordinate_domains,
     )
     selections = []
     for field, access_class in DESIRED_ACCESS.items():
@@ -813,6 +942,16 @@ def build_sass_expression_certificate(
                     "special_register_leaf_count": sum(
                         node["kind"] == "special_register" for node in nodes
                     ),
+                    "coordinate_special_register_leaf_count": sum(
+                        node["kind"] == "special_register"
+                        and node.get("register") in SPECIAL_REGISTER_COORDINATES
+                        for node in nodes
+                    ),
+                    "launch_domain_bound_special_register_leaf_count": sum(
+                        node["kind"] == "special_register"
+                        and node.get("launch_domain_assumption") is not None
+                        for node in nodes
+                    ),
                     "instruction_definition_node_count": len(instruction_nodes),
                     "proof_backed_instruction_node_count": len(proof_backed_nodes),
                     "unmodeled_instruction_node_count": len(instruction_nodes)
@@ -845,6 +984,11 @@ def build_sass_expression_certificate(
     )
     expression_graph["special_register_nodes"] = sum(
         node["kind"] == "special_register" for node in registry.nodes.values()
+    )
+    expression_graph["launch_domain_bound_special_register_nodes"] = sum(
+        node["kind"] == "special_register"
+        and node.get("launch_domain_assumption") is not None
+        for node in registry.nodes.values()
     )
     checks = {
         "cubin_hash_matches": hashlib.sha256(cubin.read_bytes()).hexdigest()
@@ -889,6 +1033,21 @@ def build_sass_expression_certificate(
         "expression_semantics_snapshot_valid": _verify_expression_semantics_snapshot(
             semantics_snapshot
         ),
+        "nsight_certificate_valid": verify_nsight_launch_certificate(
+            nsight_certificate
+        )["valid"],
+        "nsight_hash_matches_sass_memory": nsight_certificate.get("certificate_sha256")
+        == sass_memory_certificate.get("nsight_certificate_sha256"),
+        "launch_coordinate_domains_valid": _verify_launch_coordinate_domains(
+            launch_coordinate_domains
+        ),
+        "all_observed_coordinate_special_registers_have_launch_domains": all(
+            node.get("launch_domain_assumption") is not None
+            for selection in selections
+            for node in selection.get("expression_nodes", [])
+            if node.get("kind") == "special_register"
+            and node.get("register") in SPECIAL_REGISTER_COORDINATES
+        ),
         "logical_bounds_certificate_valid": verify_attention_logical_bounds_certificate(
             logical_bounds_certificate
         )["valid"],
@@ -902,11 +1061,13 @@ def build_sass_expression_certificate(
         ),
     }
     body = {
-        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Record binding does not establish each proof premise, NVIDIA instruction semantics, or hardware conformance. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Observed TID/CTAID leaves retain launch-dimension-derived symbolic domain assumptions, but SR naming correspondence, concrete values, acquisition semantics, and hardware behavior are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
         "kernel_name": kernel,
         "cubin_sha256": hashlib.sha256(cubin.read_bytes()).hexdigest(),
         "sass_canonical_sha256": summary["canonical_sha256"],
         "sass_memory_certificate_sha256": sass_memory_certificate["certificate_sha256"],
+        "nsight_certificate_sha256": nsight_certificate["certificate_sha256"],
+        "launch_coordinate_domains": launch_coordinate_domains,
         "sass_semantics_certificate_sha256": sass_semantics_certificate[
             "certificate_sha256"
         ],
@@ -927,6 +1088,14 @@ def build_sass_expression_certificate(
             for selection in selections
         ),
         "proof_premises_established_for_bound_instructions": False,
+        "special_register_launch_domain_assumptions_bound": all(
+            selection.get("launch_domain_bound_special_register_leaf_count")
+            == selection.get("coordinate_special_register_leaf_count")
+            for selection in selections
+        ),
+        "special_register_coordinate_correspondence_established": False,
+        "special_register_concrete_values_established": False,
+        "special_register_hardware_acquisition_established": False,
         "all_expression_instruction_semantics_bound": all(
             selection.get("unmodeled_instruction_node_count") == 0
             for selection in selections
@@ -973,6 +1142,8 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "cubin_sha256": certificate["cubin_sha256"],
         "sass_canonical_sha256": certificate["sass_canonical_sha256"],
         "sass_memory_certificate_sha256": certificate["sass_memory_certificate_sha256"],
+        "nsight_certificate_sha256": certificate["nsight_certificate_sha256"],
+        "launch_coordinate_domains": certificate["launch_coordinate_domains"],
         "sass_semantics_certificate_sha256": certificate[
             "sass_semantics_certificate_sha256"
         ],
@@ -997,6 +1168,12 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
             "proposed_semantics_proof_bindings_established"
         ],
         "proof_premises_established_for_bound_instructions": False,
+        "special_register_launch_domain_assumptions_bound": certificate[
+            "special_register_launch_domain_assumptions_bound"
+        ],
+        "special_register_coordinate_correspondence_established": False,
+        "special_register_concrete_values_established": False,
+        "special_register_hardware_acquisition_established": False,
         "all_expression_instruction_semantics_bound": certificate[
             "all_expression_instruction_semantics_bound"
         ],
@@ -1063,12 +1240,29 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         == summary.get("expression_opcode_semantics", {}).get(
             "sass_semantics_certificate_sha256"
         )
+        and _verify_launch_coordinate_domains(
+            summary.get("launch_coordinate_domains", {})
+        )
+        and summary.get("nsight_certificate_sha256")
+        == summary.get("launch_coordinate_domains", {}).get(
+            "nsight_certificate_sha256"
+        )
+        and summary.get("special_register_launch_domain_assumptions_bound")
+        == all(
+            selection.get("launch_domain_bound_special_register_leaf_count")
+            == selection.get("coordinate_special_register_leaf_count")
+            for selection in selections
+        )
     )
     boundaries_preserved = (
         summary.get("selected_sass_address_expression_dags_established") is True
         and summary.get("bounded_call_string_expression_reaching_definitions_established") is True
         and summary.get("proposed_semantics_proof_bindings_established") is True
         and summary.get("proof_premises_established_for_bound_instructions") is False
+        and summary.get("special_register_launch_domain_assumptions_bound") is True
+        and summary.get("special_register_coordinate_correspondence_established") is False
+        and summary.get("special_register_concrete_values_established") is False
+        and summary.get("special_register_hardware_acquisition_established") is False
         and summary.get("hardware_instruction_semantics_established") is False
         and summary.get("expression_call_string_depth_overflow_free")
         == (summary.get("expression_reaching_definition_summary", {}).get("abstracted_call_overflow_count") == 0)
@@ -1116,7 +1310,9 @@ def _semantic_binding_consistent(
 
 
 def _selection_graph_consistent(
-    selection: dict[str, Any], snapshot: dict[str, Any]
+    selection: dict[str, Any],
+    snapshot: dict[str, Any],
+    launch_coordinate_domains: dict[str, Any],
 ) -> bool:
     nodes = selection.get("expression_nodes", [])
     identifiers = {node.get("node_sha256") for node in nodes}
@@ -1138,6 +1334,7 @@ def _selection_graph_consistent(
     instruction_nodes = [
         node for node in nodes if node.get("kind") == "instruction_definition"
     ]
+    special_nodes = [node for node in nodes if node.get("kind") == "special_register"]
     proof_backed_nodes = [node for node in instruction_nodes if node.get("semantic_binding")]
     unmodeled_opcodes = Counter(
         node["opcode"] for node in instruction_nodes if not node.get("semantic_binding")
@@ -1161,8 +1358,19 @@ def _selection_graph_consistent(
         == sum(node.get("kind") == "reaching_definition_join" for node in nodes)
         and selection.get("cyclic_reaching_definition_node_count")
         == sum(node.get("kind") == "cyclic_reaching_definition" for node in nodes)
-        and selection.get("special_register_leaf_count")
-        == sum(node.get("kind") == "special_register" for node in nodes)
+        and selection.get("special_register_leaf_count") == len(special_nodes)
+        and selection.get("coordinate_special_register_leaf_count")
+        == sum(
+            node.get("register") in SPECIAL_REGISTER_COORDINATES
+            for node in special_nodes
+        )
+        and selection.get("launch_domain_bound_special_register_leaf_count")
+        == sum(node.get("launch_domain_assumption") is not None for node in special_nodes)
+        and all(
+            node.get("launch_domain_assumption")
+            == launch_coordinate_domains.get("registers", {}).get(node.get("register"))
+            for node in special_nodes
+        )
         and selection.get("instruction_definition_node_count") == len(instruction_nodes)
         and selection.get("proof_backed_instruction_node_count") == len(proof_backed_nodes)
         and selection.get("unmodeled_instruction_node_count")
@@ -1189,11 +1397,21 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
     ) and certificate.get("sass_semantics_certificate_sha256") == semantics_snapshot.get(
         "sass_semantics_certificate_sha256"
     )
+    launch_coordinate_domains = certificate.get("launch_coordinate_domains", {})
+    launch_coordinate_domains_valid = _verify_launch_coordinate_domains(
+        launch_coordinate_domains
+    ) and certificate.get("nsight_certificate_sha256") == launch_coordinate_domains.get(
+        "nsight_certificate_sha256"
+    )
     boundaries_preserved = (
         certificate.get("selected_sass_address_expression_dags_established") is True
         and certificate.get("bounded_call_string_expression_reaching_definitions_established") is True
         and certificate.get("proposed_semantics_proof_bindings_established") is True
         and certificate.get("proof_premises_established_for_bound_instructions") is False
+        and certificate.get("special_register_launch_domain_assumptions_bound") is True
+        and certificate.get("special_register_coordinate_correspondence_established") is False
+        and certificate.get("special_register_concrete_values_established") is False
+        and certificate.get("special_register_hardware_acquisition_established") is False
         and certificate.get("hardware_instruction_semantics_established") is False
         and certificate.get("expression_call_string_depth_overflow_free")
         == (
@@ -1221,7 +1439,9 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
     selections = certificate.get("selections", [])
     selection_graphs_consistent = (
         all(
-            _selection_graph_consistent(selection, semantics_snapshot)
+            _selection_graph_consistent(
+                selection, semantics_snapshot, launch_coordinate_domains
+            )
             for selection in selections
         )
         and certificate.get("all_expression_instruction_semantics_bound")
@@ -1232,6 +1452,12 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("proposed_semantics_proof_bindings_established")
         == any(
             selection.get("proof_backed_instruction_node_count", 0) > 0
+            for selection in selections
+        )
+        and certificate.get("special_register_launch_domain_assumptions_bound")
+        == all(
+            selection.get("launch_domain_bound_special_register_leaf_count")
+            == selection.get("coordinate_special_register_leaf_count")
             for selection in selections
         )
         and certificate.get("selected_sass_address_expression_dags_established")
@@ -1255,6 +1481,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
             and checks_consistent
             and boundaries_preserved
             and semantics_snapshot_valid
+            and launch_coordinate_domains_valid
             and closed_formulas_consistent
             and selection_graphs_consistent
             and node_hashes_valid
@@ -1264,6 +1491,7 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         "checks_consistent": checks_consistent,
         "boundaries_preserved": boundaries_preserved,
         "semantics_snapshot_valid": semantics_snapshot_valid,
+        "launch_coordinate_domains_valid": launch_coordinate_domains_valid,
         "closed_formulas_consistent": closed_formulas_consistent,
         "selection_graphs_consistent": selection_graphs_consistent,
         "node_hashes_valid": node_hashes_valid,

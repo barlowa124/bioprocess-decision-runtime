@@ -433,6 +433,7 @@
     "context_transition_count": 14807,
     "cyclic_reaching_definition_nodes": 65,
     "fixed_point_context_iterations": 10522,
+    "launch_domain_bound_special_register_nodes": 5,
     "maximum_call_depth": 4,
     "maximum_observed_call_depth": 4,
     "reachable_basic_block_count": 161,
@@ -443,7 +444,88 @@
   "hardware_instruction_semantics_established": false,
   "kernel_memory_safety_established": false,
   "kernel_name": "_Z43fmha_cutlassF_bf16_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIN7cutlass10bfloat16_tENS1_4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+  "launch_coordinate_domains": {
+    "block_size": [
+      32,
+      4,
+      1
+    ],
+    "dimension_products_match_reported_metrics": true,
+    "domain_sha256": "71b9290ba82db9bcf0ea2103147941e93cd5a01c9a2e1828ae12fd7978db74ed",
+    "grid_size": [
+      1,
+      4,
+      1
+    ],
+    "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
+    "registers": {
+      "SR_CTAID.X": {
+        "axis": "X",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "grid_size",
+        "maximum_exclusive": 1,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      },
+      "SR_CTAID.Y": {
+        "axis": "Y",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "grid_size",
+        "maximum_exclusive": 4,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      },
+      "SR_CTAID.Z": {
+        "axis": "Z",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "grid_size",
+        "maximum_exclusive": 1,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      },
+      "SR_TID.X": {
+        "axis": "X",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "block_size",
+        "maximum_exclusive": 32,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      },
+      "SR_TID.Y": {
+        "axis": "Y",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "block_size",
+        "maximum_exclusive": 4,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      },
+      "SR_TID.Z": {
+        "axis": "Z",
+        "bit_width": 32,
+        "coordinate_correspondence_established": false,
+        "hardware_acquisition_established": false,
+        "launch_dimension": "block_size",
+        "maximum_exclusive": 1,
+        "minimum_inclusive": 0,
+        "symbolic": true
+      }
+    },
+    "reported_block_volume": 128,
+    "reported_grid_volume": 4,
+    "scope": "Launch-coordinate domain assumptions derived from retained Nsight grid/block dimensions; SR naming correspondence, runtime values, and hardware acquisition are not established."
+  },
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
+  "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
   "proof_premises_established_for_bound_instructions": false,
   "proposed_semantics_proof_bindings_established": true,
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
@@ -452,7 +534,7 @@
   "sass_memory_certificate_sha256": "0af4d01c4aa68014868fd020002982c8bf711699c1df2a4110d30d4c9bc2040b",
   "sass_semantics_certificate_sha256": "6c463440e34c600f2d8159829b0e400fd856a92fc610981d7ebb81ad85d1ba56",
   "sass_to_logical_stride_correspondence_established": false,
-  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Record binding does not establish each proof premise, NVIDIA instruction semantics, or hardware conformance. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Observed TID/CTAID leaves retain launch-dimension-derived symbolic domain assumptions, but SR naming correspondence, concrete values, acquisition semantics, and hardware behavior are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
   "selected_sass_address_expression_dags_established": true,
   "selections": [
     {
@@ -465,11 +547,13 @@
       "available": true,
       "available_call_context_count": 5,
       "closed_supported_formula": false,
+      "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 0,
-      "expression_graph_sha256": "8022099f2b8100ebc739c9711501d58fee2df756927a4e0c079b4b91d7bd2baa",
+      "expression_graph_sha256": "e98e4cb7d44837ed73a014625eee3602f7d7ac9d91809db1b23c5a52e6ab0c20",
       "field": "query_ptr",
       "instruction_definition_node_count": 58,
       "instruction_offset": 8432,
+      "launch_domain_bound_special_register_leaf_count": 5,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 133,
@@ -500,8 +584,8 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "d22e638bebb5f474edbc051ec57150dda3f59339f96eacb679386deb98b5ddf3",
-        "74f468f442f6dfce0744f95fe1e8e43069e01157175ac33ffdbad13c471f3929"
+        "11fa727126b7a3c4f2950467814a96e3f1d98c2a7e242766431c767ca85a0fa5",
+        "969337a81610e76721b3d6f2e67d0c27b9faf158969c4e15fbb14a9bf69a42a4"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
@@ -539,11 +623,13 @@
       "available": true,
       "available_call_context_count": 5,
       "closed_supported_formula": false,
+      "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "c4e82dd65828249e66d8e61839a1dce545310d4b7a8d325dc4a6825f200a61c8",
+      "expression_graph_sha256": "53612e4ac2ce4604ba2b49d53d950803d20865120384efb68a822d4df3659485",
       "field": "key_ptr",
       "instruction_definition_node_count": 66,
       "instruction_offset": 8512,
+      "launch_domain_bound_special_register_leaf_count": 4,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 150,
@@ -572,8 +658,8 @@
         "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "a9ce6ac10513df324ef9d4f72714ba430bafcd3114a4d77daf2bc196dbe66263",
-        "38959a271a9622d006359c73ab787af800dcc410e0a7fc9be81ca8ccfb767e73"
+        "4ccdece7999847d60f4bb4f21485a8e08652d594e52bcc095e69140c9df4ee7b",
+        "f44391b240c4ddedfd71984b77a31beb12ad0350955804980eab9765993ee11c"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
@@ -614,11 +700,13 @@
       "available": true,
       "available_call_context_count": 5,
       "closed_supported_formula": false,
+      "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "223b648cd57d7882bfbbbac8ffba512ea8d9c97adce4bbe1768f3655771f0b59",
+      "expression_graph_sha256": "0a7ac88e94e6842c5ca04afcc7c4c9424757ae53d63d88210dd61081e30c93b8",
       "field": "value_ptr",
       "instruction_definition_node_count": 63,
       "instruction_offset": 13792,
+      "launch_domain_bound_special_register_leaf_count": 4,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 144,
@@ -646,8 +734,8 @@
         "value_ptr"
       ],
       "root_nodes": [
-        "0b3c7e6c2a507f393a4f9d4aca73210421174f2f7dccf24d19d406ccc9d5ad2e",
-        "9baeb28a40511bd35b9568cc4f65968ebd20b97424a67aa29e326c479c41d7a7"
+        "abbfcf4e243e1b31cdc3fdfe10645b5aa5a196aa5adfeac2288bab24230e3863",
+        "682b0a6b707fe55cf3828330a8f5c85d5c39733ca093dc38d4ca8073fc9e74ea"
       ],
       "selected_block_index": 22,
       "selected_call_stack": [],
@@ -687,11 +775,13 @@
       "available": true,
       "available_call_context_count": 5,
       "closed_supported_formula": false,
+      "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "c5d8906836644899997ce3a94ffec0b0dc39f2c955e9f590bf04e8db9ac89426",
+      "expression_graph_sha256": "c63293467b919aeb6dd57e7be6815130db55986d24a02ccab49c20f278270a35",
       "field": "output_ptr",
       "instruction_definition_node_count": 76,
       "instruction_offset": 43408,
+      "launch_domain_bound_special_register_leaf_count": 5,
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
       "node_count": 172,
@@ -723,8 +813,8 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "3f3bf3b5f91717e07acd2a897b1370b6fc4135daba89b9d1c6c158929f6b52b3",
-        "d574225aa116729ecf3a9a7aa247b4e5ccde11191b9b395ecee6475f70149826"
+        "438b287f11655b2eab5c0c68144d336e1249a441831b90f41fb7496586e11ce3",
+        "a5382928b1f97bef0a3951632584b1b1c08265eb0b29e30ead043cc006ea6083"
       ],
       "selected_block_index": 78,
       "selected_call_stack": [],
@@ -763,11 +853,13 @@
       "available": true,
       "available_call_context_count": 5,
       "closed_supported_formula": false,
+      "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "7ede60839b20bf23ec7c040963746627dec67f3ac853dbe72486a7b45b2950e2",
+      "expression_graph_sha256": "27a1f3144952f45378afcc578723511bb151d310bca21508127aa4ff2732b70b",
       "field": "output_accum_ptr",
       "instruction_definition_node_count": 106,
       "instruction_offset": 47072,
+      "launch_domain_bound_special_register_leaf_count": 5,
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
       "node_count": 241,
@@ -803,8 +895,8 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "85ace9893b226b2da7268f5f1f4cce6e48b4dc8a47b4ab913b440fc2cd555ff3",
-        "0dfec9fd633011e1a5e384e782bccc9e3dadb308e78c543b2c1cb96b10e94865"
+        "d6a7c033f967cf8a2f4d5dc3618dc992d80247e47260b4ee7e13be83670eb44d",
+        "49f490f5154cd65cbb0c9d1d834d51cfa10f019c1d751f48830d8edc0a6543a5"
       ],
       "selected_block_index": 92,
       "selected_call_stack": [],
@@ -833,8 +925,12 @@
       "unsupported_or_entry_node_count": 59
     }
   ],
-  "source_certificate_sha256": "443216cc4e2a5c699c07e2054490ff0a83960bccbb9e08477545bdd1395f5b27",
-  "summary_sha256": "602b2533bf2531d0d284e0d961bba5dc858239f86a858400cd91d538e1b9fcc3",
+  "source_certificate_sha256": "59e2b53120511f2908155b50870cc3b3cb5a992beb08b95a3e61c96ecc5ab4e6",
+  "special_register_concrete_values_established": false,
+  "special_register_coordinate_correspondence_established": false,
+  "special_register_hardware_acquisition_established": false,
+  "special_register_launch_domain_assumptions_bound": true,
+  "summary_sha256": "fa875a831b96c7d0f00d0da4b2179a4e6df3344a80131dbcfd6695f708025bb0",
   "total_selections": 5,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }
