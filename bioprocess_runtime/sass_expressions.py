@@ -2181,6 +2181,167 @@ def _verify_root_predicate_pair_binding(binding: dict[str, Any]) -> bool:
     )
 
 
+def _build_carry_capture_protocol(
+    nsight_certificate: dict[str, Any], pair_bindings: list[dict[str, Any]]
+) -> dict[str, Any]:
+    pair_capture_requirements = []
+    for binding in pair_bindings:
+        low = binding.get("low_root") or {}
+        high = binding.get("high_root") or {}
+        predicates = sorted(
+            item.get("predicate") for item in binding.get("predicate_bindings", [])
+        )
+        body = {
+            "field": binding.get("field"),
+            "pair_binding_sha256": binding.get("binding_sha256"),
+            "low_instruction_offset": low.get("instruction_offset"),
+            "low_opcode": low.get("opcode"),
+            "high_instruction_offset": high.get("instruction_offset"),
+            "high_opcode": high.get("opcode"),
+            "predicates": predicates,
+            "required_reference_carry_classes": list(
+                range(len(predicates) + 1)
+            ),
+            "minimum_distinct_observed_predicate_patterns": len(predicates) + 1,
+            "capture_points": [
+                "before_low_instruction",
+                "after_low_instruction",
+                "before_high_instruction",
+                "after_high_instruction",
+            ],
+            "required_values": [
+                "active_lane_mask",
+                "block_coordinates",
+                "thread_coordinates",
+                "source_register_values",
+                "destination_register_values",
+                "predicate_values",
+            ],
+        }
+        pair_capture_requirements.append(
+            {
+                **body,
+                "capture_requirement_sha256": hashlib.sha256(
+                    canonical_json(body).encode("utf-8")
+                ).hexdigest(),
+            }
+        )
+    body = {
+        "protocol_version": 1,
+        "scope": "Dynamic observation protocol for characterizing selected SASS predicate/carry pairs; observations do not by themselves establish hardware semantics.",
+        "compute_capability": nsight_certificate.get("details", {}).get(
+            "compute_capability"
+        ),
+        "nsight_certificate_sha256": nsight_certificate.get("certificate_sha256"),
+        "required_host_os": "Linux",
+        "instrumentation_backend": "NVBit-compatible dynamic SASS instrumentation",
+        "minimum_repetitions_per_vector": 3,
+        "pair_capture_requirements": pair_capture_requirements,
+        "evidence_bundle_required_fields": [
+            "backend_version",
+            "capture_tool_sha256",
+            "cubin_sha256",
+            "driver_version",
+            "kernel_name",
+            "nvcc_version",
+            "observation_records",
+            "protocol_sha256",
+        ],
+        "dynamic_observations_present": False,
+        "truth_tables_complete": False,
+        "independent_reproduction_complete": False,
+        "hardware_semantics_established": False,
+    }
+    body["protocol_sha256"] = hashlib.sha256(
+        canonical_json(body).encode("utf-8")
+    ).hexdigest()
+    return body
+
+
+def _verify_carry_capture_protocol(protocol: dict[str, Any]) -> bool:
+    body = {
+        key: value for key, value in protocol.items() if key != "protocol_sha256"
+    }
+    requirements = protocol.get("pair_capture_requirements", [])
+    return bool(
+        hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        == protocol.get("protocol_sha256")
+        and protocol.get("protocol_version") == 1
+        and protocol.get("compute_capability") == "8.9"
+        and bool(
+            re.fullmatch(
+                r"[0-9a-f]{64}", protocol.get("nsight_certificate_sha256", "")
+            )
+        )
+        and protocol.get("required_host_os") == "Linux"
+        and protocol.get("instrumentation_backend")
+        == "NVBit-compatible dynamic SASS instrumentation"
+        and protocol.get("minimum_repetitions_per_vector", 0) >= 3
+        and bool(requirements)
+        and all(
+            bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    requirement.get("pair_binding_sha256", ""),
+                )
+            )
+            and requirement.get("low_opcode") in {"LEA", "IADD3"}
+            and requirement.get("high_opcode") in {"LEA.HI.X", "IADD3.X"}
+            and isinstance(requirement.get("low_instruction_offset"), int)
+            and isinstance(requirement.get("high_instruction_offset"), int)
+            and requirement["low_instruction_offset"]
+            < requirement["high_instruction_offset"]
+            and len(requirement.get("predicates", [])) in {1, 2}
+            and requirement.get("required_reference_carry_classes")
+            == list(range(len(requirement.get("predicates", [])) + 1))
+            and requirement.get("minimum_distinct_observed_predicate_patterns")
+            == len(requirement.get("predicates", [])) + 1
+            and requirement.get("capture_points")
+            == [
+                "before_low_instruction",
+                "after_low_instruction",
+                "before_high_instruction",
+                "after_high_instruction",
+            ]
+            and requirement.get("required_values")
+            == [
+                "active_lane_mask",
+                "block_coordinates",
+                "thread_coordinates",
+                "source_register_values",
+                "destination_register_values",
+                "predicate_values",
+            ]
+            and hashlib.sha256(
+                canonical_json(
+                    {
+                        key: value
+                        for key, value in requirement.items()
+                        if key != "capture_requirement_sha256"
+                    }
+                ).encode("utf-8")
+            ).hexdigest()
+            == requirement.get("capture_requirement_sha256")
+            for requirement in requirements
+        )
+        and protocol.get("evidence_bundle_required_fields")
+        == [
+            "backend_version",
+            "capture_tool_sha256",
+            "cubin_sha256",
+            "driver_version",
+            "kernel_name",
+            "nvcc_version",
+            "observation_records",
+            "protocol_sha256",
+        ]
+        and protocol.get("dynamic_observations_present") is False
+        and protocol.get("truth_tables_complete") is False
+        and protocol.get("independent_reproduction_complete") is False
+        and protocol.get("hardware_semantics_established") is False
+    )
+
+
 def _build_carry_semantics_qualification(
     nsight_certificate: dict[str, Any],
     pair_bindings: list[dict[str, Any]],
@@ -2210,6 +2371,9 @@ def _build_carry_semantics_qualification(
                 ).hexdigest(),
             }
         )
+    carry_capture_protocol = _build_carry_capture_protocol(
+        nsight_certificate, pair_bindings
+    )
     requirements = [
         {
             "name": "exact_selected_root_pair_bindings",
@@ -2271,6 +2435,10 @@ def _build_carry_semantics_qualification(
             "compute_capability"
         ),
         "expected_fields": sorted(expected_fields),
+        "carry_capture_protocol": carry_capture_protocol,
+        "carry_capture_protocol_established": _verify_carry_capture_protocol(
+            carry_capture_protocol
+        ),
         "pair_qualification_records": pair_records,
         "requirements": requirements,
         "unsatisfied_requirements": [
@@ -2309,6 +2477,23 @@ def _verify_carry_semantics_qualification(
             == expected_nsight_certificate_sha256
         )
         and qualification.get("compute_capability") == "8.9"
+        and _verify_carry_capture_protocol(
+            qualification.get("carry_capture_protocol", {})
+        )
+        and qualification.get("carry_capture_protocol", {}).get(
+            "nsight_certificate_sha256"
+        )
+        == qualification.get("nsight_certificate_sha256")
+        and qualification.get("carry_capture_protocol_established") is True
+        and {
+            requirement["field"]: requirement["pair_binding_sha256"]
+            for requirement in qualification.get("carry_capture_protocol", {}).get(
+                "pair_capture_requirements", []
+            )
+        }
+        == {
+            record["field"]: record["pair_binding_sha256"] for record in records
+        }
         and bool(qualification.get("expected_fields"))
         and len(records) == len(qualification.get("expected_fields", []))
         and {record.get("field") for record in records}
@@ -2836,6 +3021,10 @@ def build_sass_expression_certificate(
         ],
         "carry_semantics_qualified": False,
         "carry_equation_activation_allowed": False,
+        "carry_capture_protocol_established": carry_semantics_qualification[
+            "carry_capture_protocol_established"
+        ],
+        "dynamic_carry_observations_bound": False,
         "partial_proposed_symbolic_formulas_established": all(
             bool(selection.get("partial_symbolic_formula", {}).get("formula_nodes"))
             for selection in selections
@@ -3037,6 +3226,10 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         ],
         "carry_semantics_qualified": False,
         "carry_equation_activation_allowed": False,
+        "carry_capture_protocol_established": certificate[
+            "carry_capture_protocol_established"
+        ],
+        "dynamic_carry_observations_bound": False,
         "partial_proposed_symbolic_formulas_established": certificate[
             "partial_proposed_symbolic_formulas_established"
         ],
@@ -3302,6 +3495,8 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("carry_semantics_qualification_gate_established") is True
         and summary.get("carry_semantics_qualified") is False
         and summary.get("carry_equation_activation_allowed") is False
+        and summary.get("carry_capture_protocol_established") is True
+        and summary.get("dynamic_carry_observations_bound") is False
         and summary.get("partial_proposed_symbolic_formulas_established")
         == all(bool(selection.get("partial_formula_sha256")) for selection in selections)
         and summary.get("partial_formula_ordered_operands_preserved") is True
@@ -3377,6 +3572,8 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("carry_semantics_qualification_gate_established") is True
         and summary.get("carry_semantics_qualified") is False
         and summary.get("carry_equation_activation_allowed") is False
+        and summary.get("carry_capture_protocol_established") is True
+        and summary.get("dynamic_carry_observations_bound") is False
         and summary.get("partial_proposed_symbolic_formulas_established") is True
         and summary.get("partial_formula_ordered_operands_preserved") is True
         and summary.get("partial_formula_well_typed") is True
@@ -3661,6 +3858,8 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("carry_semantics_qualification_gate_established") is True
         and certificate.get("carry_semantics_qualified") is False
         and certificate.get("carry_equation_activation_allowed") is False
+        and certificate.get("carry_capture_protocol_established") is True
+        and certificate.get("dynamic_carry_observations_bound") is False
         and certificate.get("partial_proposed_symbolic_formulas_established") is True
         and certificate.get("partial_formula_ordered_operands_preserved") is True
         and certificate.get("partial_formula_well_typed") is True

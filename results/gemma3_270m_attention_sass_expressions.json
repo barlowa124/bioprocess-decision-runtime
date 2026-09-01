@@ -6,8 +6,193 @@
   "available_selections": 5,
   "bounded_call_string_expression_reaching_definitions_established": true,
   "bounded_predicate_reaching_definitions_established": true,
+  "carry_capture_protocol_established": true,
   "carry_equation_activation_allowed": false,
   "carry_semantics_qualification": {
+    "carry_capture_protocol": {
+      "compute_capability": "8.9",
+      "dynamic_observations_present": false,
+      "evidence_bundle_required_fields": [
+        "backend_version",
+        "capture_tool_sha256",
+        "cubin_sha256",
+        "driver_version",
+        "kernel_name",
+        "nvcc_version",
+        "observation_records",
+        "protocol_sha256"
+      ],
+      "hardware_semantics_established": false,
+      "independent_reproduction_complete": false,
+      "instrumentation_backend": "NVBit-compatible dynamic SASS instrumentation",
+      "minimum_repetitions_per_vector": 3,
+      "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
+      "pair_capture_requirements": [
+        {
+          "capture_points": [
+            "before_low_instruction",
+            "after_low_instruction",
+            "before_high_instruction",
+            "after_high_instruction"
+          ],
+          "capture_requirement_sha256": "faf98fec405093389a3d9a3678f6345adbb9b3ad30a84f8e643c4df163a4a919",
+          "field": "query_ptr",
+          "high_instruction_offset": 6064,
+          "high_opcode": "LEA.HI.X",
+          "low_instruction_offset": 6000,
+          "low_opcode": "LEA",
+          "minimum_distinct_observed_predicate_patterns": 2,
+          "pair_binding_sha256": "c36a1da6aefe9a1ec5fb70bb3a1f5686be5ce20fa62fe927cdbf2d636dd7f796",
+          "predicates": [
+            "P0"
+          ],
+          "required_reference_carry_classes": [
+            0,
+            1
+          ],
+          "required_values": [
+            "active_lane_mask",
+            "block_coordinates",
+            "thread_coordinates",
+            "source_register_values",
+            "destination_register_values",
+            "predicate_values"
+          ]
+        },
+        {
+          "capture_points": [
+            "before_low_instruction",
+            "after_low_instruction",
+            "before_high_instruction",
+            "after_high_instruction"
+          ],
+          "capture_requirement_sha256": "7a3c672fd2878d3ecf1bea2b373e569770cfa3640cf59882ae97128a0d8753fd",
+          "field": "key_ptr",
+          "high_instruction_offset": 8128,
+          "high_opcode": "LEA.HI.X",
+          "low_instruction_offset": 8096,
+          "low_opcode": "LEA",
+          "minimum_distinct_observed_predicate_patterns": 2,
+          "pair_binding_sha256": "4a3da4e968de4f99691e093dbdcacb68cdf695906eff89517417fbefdb0b1d49",
+          "predicates": [
+            "P3"
+          ],
+          "required_reference_carry_classes": [
+            0,
+            1
+          ],
+          "required_values": [
+            "active_lane_mask",
+            "block_coordinates",
+            "thread_coordinates",
+            "source_register_values",
+            "destination_register_values",
+            "predicate_values"
+          ]
+        },
+        {
+          "capture_points": [
+            "before_low_instruction",
+            "after_low_instruction",
+            "before_high_instruction",
+            "after_high_instruction"
+          ],
+          "capture_requirement_sha256": "837f54eb394d6128386da29e614dea91d72ef945009794c4e74057e114350c5f",
+          "field": "value_ptr",
+          "high_instruction_offset": 13200,
+          "high_opcode": "LEA.HI.X",
+          "low_instruction_offset": 13136,
+          "low_opcode": "LEA",
+          "minimum_distinct_observed_predicate_patterns": 2,
+          "pair_binding_sha256": "452817b1474b65c697cf7edb572a4dae41c8440c6ec8b6ada575341ce47dc0f1",
+          "predicates": [
+            "P6"
+          ],
+          "required_reference_carry_classes": [
+            0,
+            1
+          ],
+          "required_values": [
+            "active_lane_mask",
+            "block_coordinates",
+            "thread_coordinates",
+            "source_register_values",
+            "destination_register_values",
+            "predicate_values"
+          ]
+        },
+        {
+          "capture_points": [
+            "before_low_instruction",
+            "after_low_instruction",
+            "before_high_instruction",
+            "after_high_instruction"
+          ],
+          "capture_requirement_sha256": "60ee5ffb4f473c5fb08513568c64da567e727fe749ae4da0d4943ae9cfcc8f63",
+          "field": "output_ptr",
+          "high_instruction_offset": 42752,
+          "high_opcode": "IADD3.X",
+          "low_instruction_offset": 42656,
+          "low_opcode": "IADD3",
+          "minimum_distinct_observed_predicate_patterns": 3,
+          "pair_binding_sha256": "b0255a1d0b91fe101021d542731d4b9ba07fedd241a72a6fde0c8a58e2cbaa17",
+          "predicates": [
+            "P4",
+            "P6"
+          ],
+          "required_reference_carry_classes": [
+            0,
+            1,
+            2
+          ],
+          "required_values": [
+            "active_lane_mask",
+            "block_coordinates",
+            "thread_coordinates",
+            "source_register_values",
+            "destination_register_values",
+            "predicate_values"
+          ]
+        },
+        {
+          "capture_points": [
+            "before_low_instruction",
+            "after_low_instruction",
+            "before_high_instruction",
+            "after_high_instruction"
+          ],
+          "capture_requirement_sha256": "6c4c9f54bd9afd679b2461e3cbf72354bd8831f6f48de0e449f4ea781568f332",
+          "field": "output_accum_ptr",
+          "high_instruction_offset": 46496,
+          "high_opcode": "IADD3.X",
+          "low_instruction_offset": 46480,
+          "low_opcode": "IADD3",
+          "minimum_distinct_observed_predicate_patterns": 2,
+          "pair_binding_sha256": "f2477f9ea6ff7e770acbc4471221850f6b85167b36d378093c3a2b2b7979e558",
+          "predicates": [
+            "P1"
+          ],
+          "required_reference_carry_classes": [
+            0,
+            1
+          ],
+          "required_values": [
+            "active_lane_mask",
+            "block_coordinates",
+            "thread_coordinates",
+            "source_register_values",
+            "destination_register_values",
+            "predicate_values"
+          ]
+        }
+      ],
+      "protocol_sha256": "a50a3dd4a5fda721d2d970355dd71795af40d428d0f1c97a599a23118976bafe",
+      "protocol_version": 1,
+      "required_host_os": "Linux",
+      "scope": "Dynamic observation protocol for characterizing selected SASS predicate/carry pairs; observations do not by themselves establish hardware semantics.",
+      "truth_tables_complete": false
+    },
+    "carry_capture_protocol_established": true,
     "carry_equation_activation_allowed": false,
     "compute_capability": "8.9",
     "expected_fields": [
@@ -83,7 +268,7 @@
     ],
     "proposed_carry_equations_activated": false,
     "qualification_passed": false,
-    "qualification_sha256": "2c2749aff7b6d5af4a319e3b602f8d8ab9fa94ec9539065954eed7eced09082e",
+    "qualification_sha256": "1a9663e09487e55ddaae2b67e1b130813bb8e454328daf9169444edbe2006017",
     "requirements": [
       {
         "evidence": "Root predicate-pair binding hashes retained in this certificate.",
@@ -147,6 +332,7 @@
   "closed_supported_formulas": 0,
   "closed_supported_sass_formulas_established": false,
   "cubin_sha256": "5a3ed505e5a4be7556d7656f926d0bbed2a31cb78cf953a9aa79172314fd9a45",
+  "dynamic_carry_observations_bound": false,
   "expression_call_string_depth_overflow_free": false,
   "expression_opcode_semantics": {
     "conditional_opcode_obligations": [
@@ -1852,12 +2038,12 @@
       "unsupported_or_entry_node_count": 77
     }
   ],
-  "source_certificate_sha256": "bbb9d5d3cb26aa1c2614ef8e937f0458e0e3ca9fdba553027298cce31e05e08e",
+  "source_certificate_sha256": "b2a648bfaea154a2865ab8de8f9ee8ba84a1364044160a41128a107bbc9df759",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "5456dd7fbb257d5920724dc9fd184a5a504b677503feef76c63b11330aa7f156",
+  "summary_sha256": "f65a8c85c08c82cbba5e5a174a9cdfeac3e36643a12e72b04fbfb12bbcab5cb9",
   "total_selections": 5,
   "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false

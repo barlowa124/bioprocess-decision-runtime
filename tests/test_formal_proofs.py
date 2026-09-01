@@ -295,6 +295,7 @@ class SassExpressionTests(unittest.TestCase):
             _analyze_partial_formula_blockers,
             _analyze_partial_formula_intervals,
             _analyze_partial_symbolic_formula,
+            _build_carry_capture_protocol,
             _build_carry_semantics_qualification,
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
@@ -312,6 +313,7 @@ class SassExpressionTests(unittest.TestCase):
             _unsupported_expression_nodes,
             build_sass_expression_summary,
             _verify_blocker_record,
+            _verify_carry_capture_protocol,
             _verify_carry_semantics_qualification,
             _verify_interval_record,
             _verify_launch_coordinate_domains,
@@ -565,8 +567,15 @@ class SassExpressionTests(unittest.TestCase):
         root_predicate_pair_binding = _build_root_predicate_pair_binding(
             "query_ptr", nodes, partial_formula_blocker_analysis
         )
+        carry_capture_protocol = _build_carry_capture_protocol(
+            nsight, [root_predicate_pair_binding]
+        )
         carry_semantics_qualification = _build_carry_semantics_qualification(
             nsight, [root_predicate_pair_binding], ["query_ptr"]
+        )
+        self.assertEqual(
+            carry_semantics_qualification["carry_capture_protocol"],
+            carry_capture_protocol,
         )
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
@@ -601,6 +610,19 @@ class SassExpressionTests(unittest.TestCase):
         self.assertTrue(_verify_root_predicate_pair_binding(root_predicate_pair_binding))
         self.assertEqual(len(root_predicate_pair_binding["predicate_bindings"]), 1)
         self.assertFalse(root_predicate_pair_binding["carry_arithmetic_established"])
+        self.assertTrue(_verify_carry_capture_protocol(carry_capture_protocol))
+        self.assertEqual(
+            carry_capture_protocol["pair_capture_requirements"][0][
+                "minimum_distinct_observed_predicate_patterns"
+            ],
+            2,
+        )
+        self.assertEqual(
+            carry_capture_protocol["pair_capture_requirements"][0][
+                "required_reference_carry_classes"
+            ],
+            [0, 1],
+        )
         self.assertTrue(
             _verify_carry_semantics_qualification(
                 carry_semantics_qualification, nsight["certificate_sha256"]
@@ -641,6 +663,17 @@ class SassExpressionTests(unittest.TestCase):
                 wrong_architecture_link, nsight["certificate_sha256"]
             )
         )
+        weakened_protocol = copy.deepcopy(carry_capture_protocol)
+        weakened_protocol["minimum_repetitions_per_vector"] = 2
+        weakened_body = {
+            key: value
+            for key, value in weakened_protocol.items()
+            if key != "protocol_sha256"
+        }
+        weakened_protocol["protocol_sha256"] = hashlib.sha256(
+            canonical_json(weakened_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(_verify_carry_capture_protocol(weakened_protocol))
         negated_nodes = copy.deepcopy(nodes)
         negated_consumer = next(
             node
@@ -879,6 +912,8 @@ class SassExpressionTests(unittest.TestCase):
             "carry_semantics_qualification_gate_established": True,
             "carry_semantics_qualified": False,
             "carry_equation_activation_allowed": False,
+            "carry_capture_protocol_established": True,
+            "dynamic_carry_observations_bound": False,
             "partial_proposed_symbolic_formulas_established": True,
             "partial_formula_ordered_operands_preserved": True,
             "partial_formula_well_typed": True,
