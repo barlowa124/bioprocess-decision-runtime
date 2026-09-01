@@ -1,6 +1,6 @@
 {
   "abstract_memory_address_width_bits": 8,
-  "certificate_sha256": "dd429270a0c0993380067cdb46af3b44434051cac26b631229340a1978c4b516",
+  "certificate_sha256": "6c463440e34c600f2d8159829b0e400fd856a92fc610981d7ebb81ad85d1ba56",
   "covered_base_opcodes": [
     "BRA",
     "BRA.U",
@@ -40,6 +40,9 @@
     "LOP3.LUT",
     "MOV",
     "NOP",
+    "R2UR",
+    "S2R",
+    "S2UR",
     "SEL",
     "SHF.R.U32.HI",
     "STG",
@@ -64,11 +67,12 @@
     "register width and type variants beyond the stated formulas",
     "Memory forms beyond the declared fixed-width abstract byte-array equations",
     "LEA versus ULEA uniform-register and warp-uniform behavior; shared arithmetic is an explicit premise",
+    "Special-register values, acquisition semantics, and lane or warp uniformity of SR sources",
     "Barrier, warp, reconvergence, and complete control-flow semantics",
     "NVIDIA hardware conformance to these proposed equations"
   ],
   "proof_strength_summary": {
-    "full_width_definitional_or_compositional_instances": 8,
+    "full_width_definitional_or_compositional_instances": 9,
     "independent_reduced_width_references": 4
   },
   "proofs": [
@@ -119,6 +123,23 @@
     },
     {
       "counterexample": null,
+      "name": "register_transfer_shares_proposed_bit_copy_equation",
+      "proved": true,
+      "scope": {
+        "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all 8-bit abstract source values",
+        "opcodes": [
+          "S2R",
+          "S2UR",
+          "R2UR"
+        ],
+        "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+        "proof_strength": "Reduced-width identity within the proposed equation."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
       "name": "uniform_iadd3_matches_ripple_carry_sum",
       "proved": true,
       "scope": {
@@ -140,6 +161,27 @@
         "opcode": "UIMAD",
         "premise": "IMAD and UIMAD share the modeled low-word arithmetic; uniform-register selection and warp-uniform behavior are excluded.",
         "proof_strength": "Independent reduced-width shift-add reference."
+      },
+      "solver_result": "unsat"
+    },
+    {
+      "counterexample": null,
+      "name": "register_transfer_full_32bit_definition_instance",
+      "proved": true,
+      "scope": {
+        "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+        "input": "all 32-bit abstract source values",
+        "modeled_widths": {
+          "result_bits": 32,
+          "source_bits": 32
+        },
+        "opcodes": [
+          "S2R",
+          "S2UR",
+          "R2UR"
+        ],
+        "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+        "proof_strength": "Full-width definitional instance of the proposed equation; not an independent transfer or hardware reference."
       },
       "solver_result": "unsat"
     },
@@ -841,11 +883,11 @@
     "STG.E.128": 16,
     "STG.E.64": 8
   },
-  "proved": 52,
+  "proved": 54,
   "scope": "Proposed bitvector, abstract IEEE-754, control, and byte-array memory semantics for selected opcode forms observed in attested CUDA functions; not NVIDIA-certified SASS semantics.",
   "solver": {
     "name": "Z3",
     "version": "4.15.3"
   },
-  "total": 52
+  "total": 54
 }

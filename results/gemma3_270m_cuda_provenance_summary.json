@@ -167,8 +167,8 @@
   ],
   "scope": "Observed CUDA launch names plus binary and compatible-image fingerprints; not instruction-level semantic verification.",
   "syntactic_proposed_semantics_opcode_coverage": {
-    "coverage_fraction": 0.7606827325340497,
-    "covered_instruction_lines": 56912,
+    "coverage_fraction": 0.7730863306467781,
+    "covered_instruction_lines": 57840,
     "exact_covered_opcodes_present": [
       "BRA",
       "EXIT",
@@ -193,11 +193,14 @@
       "LOP3.LUT",
       "MOV",
       "NOP",
+      "S2R",
       "SEL",
       "SHF.R.U32.HI",
       "STG.E.128",
       "STG.E.64",
-      "ULDC.64"
+      "ULDC",
+      "ULDC.64",
+      "ULDC.U8"
     ],
     "scope": "Syntactic exact-base-opcode coverage only; no modifier folding or hardware-semantic claim.",
     "total_instruction_lines": 74817

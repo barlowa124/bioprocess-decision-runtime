@@ -30,6 +30,18 @@ from .serialization import canonical_json
 EXPRESSION_OPCODE_SEMANTICS = {
     "MOV": ["mov_is_identity"],
     "UMOV": ["uniform_move_shares_proposed_identity_equation"],
+    "S2R": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance",
+    ],
+    "S2UR": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance",
+    ],
+    "R2UR": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance",
+    ],
     "IADD3": ["iadd3_matches_ripple_carry_sum"],
     "UIADD3": [
         "uniform_iadd3_matches_ripple_carry_sum",
@@ -82,9 +94,15 @@ UNIFORM_VALUE_OPCODES = {
 CONSTANT_LOAD_OPCODES = {"ULDC", "ULDC.64", "ULDC.U8"}
 
 
+TRANSFER_VALUE_OPCODES = {"S2R", "S2UR", "R2UR"}
+
+
 EXPRESSION_OPCODE_OPERAND_COUNTS = {
     "MOV": 2,
     "UMOV": 2,
+    "S2R": 2,
+    "S2UR": 2,
+    "R2UR": 2,
     "IADD3": 4,
     "UIADD3": 4,
     "IMAD": 4,
@@ -119,6 +137,17 @@ def _semantic_requirement(opcode: str, operands: str) -> list[str] | None:
                 shape_matches
                 and re.fullmatch(r"ur\d+", tokens[0])
                 and re.fullmatch(r"c\[0x0\]\[0x[0-9a-f]+\]", tokens[1])
+            )
+        if opcode in TRANSFER_VALUE_OPCODES:
+            transfer_patterns = {
+                "S2R": (r"r\d+", r"sr_[a-z0-9_]+(?:\.[a-z0-9_]+)*"),
+                "S2UR": (r"ur\d+", r"sr_[a-z0-9_]+(?:\.[a-z0-9_]+)*"),
+                "R2UR": (r"ur\d+", r"r\d+"),
+            }
+            shape_matches = bool(
+                shape_matches
+                and re.fullmatch(transfer_patterns[opcode][0], tokens[0])
+                and re.fullmatch(transfer_patterns[opcode][1], tokens[1])
             )
         if shape_matches:
             return EXPRESSION_OPCODE_SEMANTICS[opcode]
@@ -184,6 +213,7 @@ def _build_expression_semantics_snapshot(
         "exact_opcode_operand_counts": EXPRESSION_OPCODE_OPERAND_COUNTS,
         "uniform_value_opcodes": sorted(UNIFORM_VALUE_OPCODES),
         "constant_load_opcodes": sorted(CONSTANT_LOAD_OPCODES),
+        "transfer_value_opcodes": sorted(TRANSFER_VALUE_OPCODES),
         "conditional_opcode_obligations": [
             {
                 "opcode": opcode,
@@ -243,6 +273,7 @@ def _verify_expression_semantics_snapshot(snapshot: dict[str, Any]) -> bool:
         == EXPRESSION_OPCODE_OPERAND_COUNTS
         and snapshot.get("uniform_value_opcodes") == sorted(UNIFORM_VALUE_OPCODES)
         and snapshot.get("constant_load_opcodes") == sorted(CONSTANT_LOAD_OPCODES)
+        and snapshot.get("transfer_value_opcodes") == sorted(TRANSFER_VALUE_OPCODES)
         and snapshot.get("conditional_opcode_obligations")
         == [
             {
@@ -300,6 +331,10 @@ class _NodeRegistry:
         identifier = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
         self.nodes.setdefault(identifier, {"node_sha256": identifier, **body})
         return identifier
+
+
+def _special_registers(value: str) -> list[str]:
+    return re.findall(r"\bSR_[A-Z0-9_]+(?:\.[A-Z0-9_]+)*\b", value)
 
 
 NON_DEFINING_BASE_OPCODES = {
@@ -522,6 +557,7 @@ def _call_string_expression_snapshots(
                         "predicate": instruction.get("predicate"),
                         "output_index": output_index,
                         "source_definitions": source_definitions,
+                        "special_registers": sorted(set(_special_registers(remaining))),
                     }
             state = _transfer_definitions(instruction, instruction_index, context, state)
     registry = _NodeRegistry()
@@ -558,6 +594,10 @@ def _call_string_expression_snapshots(
                     }
                 )
             )
+        source_nodes.extend(
+            registry.add({"kind": "special_register", "register": register})
+            for register in spec["special_registers"]
+        )
         parameter_fields = []
         for constant_offset in _constant_offsets(instructions[spec["instruction_index"]]):
             parameter_offset = constant_offset - parameter_base
@@ -577,7 +617,10 @@ def _call_string_expression_snapshots(
                 "predicate": spec["predicate"],
                 "block_index": spec["block_index"],
                 "call_stack": spec["call_stack"],
-                "source_registers": sorted(spec["source_definitions"]),
+                "source_registers": [
+                    *sorted(spec["source_definitions"]),
+                    *spec["special_registers"],
+                ],
                 "source_nodes": source_nodes,
                 "parameter_fields": sorted(set(parameter_fields)),
                 "semantic_binding": _instruction_semantic_binding(
@@ -627,6 +670,9 @@ def _call_string_expression_snapshots(
         "cyclic_reaching_definition_nodes": sum(
             node["kind"] == "cyclic_reaching_definition" for node in registry.nodes.values()
         ),
+        "special_register_nodes": sum(
+            node["kind"] == "special_register" for node in registry.nodes.values()
+        ),
     }
     return snapshots, registry, graph
 
@@ -652,6 +698,7 @@ def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str,
         for node in nodes
         if node["kind"] in {
             "entry_register",
+            "special_register",
             "reaching_definition_join",
             "cyclic_reaching_definition",
         }
@@ -763,6 +810,9 @@ def build_sass_expression_certificate(
                     "cyclic_reaching_definition_node_count": sum(
                         node["kind"] == "cyclic_reaching_definition" for node in nodes
                     ),
+                    "special_register_leaf_count": sum(
+                        node["kind"] == "special_register" for node in nodes
+                    ),
                     "instruction_definition_node_count": len(instruction_nodes),
                     "proof_backed_instruction_node_count": len(proof_backed_nodes),
                     "unmodeled_instruction_node_count": len(instruction_nodes)
@@ -792,6 +842,9 @@ def build_sass_expression_certificate(
     )
     expression_graph["cyclic_reaching_definition_nodes"] = sum(
         node["kind"] == "cyclic_reaching_definition" for node in registry.nodes.values()
+    )
+    expression_graph["special_register_nodes"] = sum(
+        node["kind"] == "special_register" for node in registry.nodes.values()
     )
     checks = {
         "cubin_hash_matches": hashlib.sha256(cubin.read_bytes()).hexdigest()
@@ -1108,6 +1161,8 @@ def _selection_graph_consistent(
         == sum(node.get("kind") == "reaching_definition_join" for node in nodes)
         and selection.get("cyclic_reaching_definition_node_count")
         == sum(node.get("kind") == "cyclic_reaching_definition" for node in nodes)
+        and selection.get("special_register_leaf_count")
+        == sum(node.get("kind") == "special_register" for node in nodes)
         and selection.get("instruction_definition_node_count") == len(instruction_nodes)
         and selection.get("proof_backed_instruction_node_count") == len(proof_backed_nodes)
         and selection.get("unmodeled_instruction_node_count")

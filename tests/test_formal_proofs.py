@@ -63,13 +63,15 @@ class SassSemanticsTests(unittest.TestCase):
 
         certificate = build_sass_semantics_certificate()
         self.assertEqual(certificate["proved"], certificate["total"])
-        self.assertGreaterEqual(certificate["total"], 52)
+        self.assertGreaterEqual(certificate["total"], 54)
         self.assertEqual(certificate["proof_strength_summary"]["independent_reduced_width_references"], 4)
-        self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 8)
+        self.assertEqual(certificate["proof_strength_summary"]["full_width_definitional_or_compositional_instances"], 9)
         self.assertTrue(
             {
                 "uldc_matches_little_endian_constant_memory_read",
                 "uldc_u8_matches_little_endian_constant_memory_read",
+                "register_transfer_shares_proposed_bit_copy_equation",
+                "register_transfer_full_32bit_definition_instance",
             }.issubset({proof["name"] for proof in certificate["proofs"]})
         )
         self.assertTrue(
@@ -92,6 +94,9 @@ class SassSemanticsTests(unittest.TestCase):
                 "UMOV",
                 "ULDC",
                 "ULDC.U8",
+                "S2R",
+                "S2UR",
+                "R2UR",
                 "ULEA",
                 "ULEA.HI.X",
                 "ULEA.HI.X.SX32",
@@ -289,6 +294,7 @@ class SassExpressionTests(unittest.TestCase):
             _call_string_expression_snapshots,
             _reachable_nodes,
             _semantic_requirement,
+            _special_registers,
             _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
@@ -354,6 +360,25 @@ class SassExpressionTests(unittest.TestCase):
             _semantic_requirement("ULDC.U8", "UR17,c[0x0][0x1d4]"),
             ["uldc_u8_matches_little_endian_constant_memory_read"],
         )
+        transfer_obligations = [
+            "register_transfer_shares_proposed_bit_copy_equation",
+            "register_transfer_full_32bit_definition_instance",
+        ]
+        self.assertEqual(_semantic_requirement("S2R", "R5,SR_TID.Y"), transfer_obligations)
+        self.assertEqual(
+            _semantic_requirement("S2UR", "UR19,SR_CTAID.X"),
+            transfer_obligations,
+        )
+        self.assertEqual(_semantic_requirement("R2UR", "UR28,R6"), transfer_obligations)
+        self.assertIsNone(_semantic_requirement("S2R", "UR5,SR_TID.Y"))
+        self.assertEqual(_special_registers("R5,SR_TID.Y"), ["SR_TID.Y"])
+        self.assertEqual(
+            _special_registers("R5,SR_MACHINE_ID_0"), ["SR_MACHINE_ID_0"]
+        )
+        self.assertEqual(
+            _semantic_requirement("S2R", "R5,SR_MACHINE_ID_0"),
+            transfer_obligations,
+        )
         self.assertEqual(
             _semantic_requirement("LOP3.LUT", "R4,R5,R6,RZ,0x96,!PT"),
             ["lop3_lut_0x96_is_three_input_xor"],
@@ -388,6 +413,21 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(len(predicated["R4"]), 2)
         nodes = _reachable_nodes(roots, registry)
         self.assertIn("query_ptr", {field for node in nodes for field in node.get("parameter_fields", [])})
+        special_instructions = [
+            {"offset": 0, "predicate": None, "opcode": "S2R", "operands": "R4,SR_TID.X"},
+            {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R6,R4"},
+            {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R8,[R6.64]"},
+        ]
+        special_snapshots, special_registry, _ = _call_string_expression_snapshots(
+            special_instructions, 0x160, semantics_snapshot=semantics_snapshot
+        )
+        special_roots = [
+            definition
+            for definitions in special_snapshots[32][0]["definitions"].values()
+            for definition in definitions
+        ]
+        special_nodes = _reachable_nodes(special_roots, special_registry)
+        self.assertIn("special_register", {node["kind"] for node in special_nodes})
         certificate = {
             "scope": "synthetic expression DAG",
             "kernel_name": "kernel",
@@ -410,6 +450,7 @@ class SassExpressionTests(unittest.TestCase):
                     "target_field_represented": True,
                     "ambiguous_reaching_definition_node_count": 0,
                     "cyclic_reaching_definition_node_count": 0,
+                    "special_register_leaf_count": 0,
                     "instruction_definition_node_count": 2,
                     "proof_backed_instruction_node_count": 2,
                     "unmodeled_instruction_node_count": 0,

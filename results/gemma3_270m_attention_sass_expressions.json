@@ -52,6 +52,18 @@
       "MOV": [
         "mov_is_identity"
       ],
+      "R2UR": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance"
+      ],
+      "S2R": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance"
+      ],
+      "S2UR": [
+        "register_transfer_shares_proposed_bit_copy_equation",
+        "register_transfer_full_32bit_definition_instance"
+      ],
       "UIADD3": [
         "uniform_iadd3_matches_ripple_carry_sum",
         "uniform_iadd3_full_32bit_definition_instance"
@@ -89,6 +101,9 @@
       "IMAD.WIDE": 4,
       "IMAD.WIDE.U32": 4,
       "MOV": 2,
+      "R2UR": 2,
+      "S2R": 2,
+      "S2UR": 2,
       "UIADD3": 4,
       "UIMAD": 4,
       "UIMAD.WIDE": 4,
@@ -238,6 +253,44 @@
         "solver_result": "unsat"
       },
       {
+        "name": "register_transfer_full_32bit_definition_instance",
+        "proof_record_sha256": "15d30311a811f98d3cadec593a2df413185d3b1aea5486b58ea55cdd7b15e751",
+        "proved": true,
+        "scope": {
+          "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+          "input": "all 32-bit abstract source values",
+          "modeled_widths": {
+            "result_bits": 32,
+            "source_bits": 32
+          },
+          "opcodes": [
+            "S2R",
+            "S2UR",
+            "R2UR"
+          ],
+          "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+          "proof_strength": "Full-width definitional instance of the proposed equation; not an independent transfer or hardware reference."
+        },
+        "solver_result": "unsat"
+      },
+      {
+        "name": "register_transfer_shares_proposed_bit_copy_equation",
+        "proof_record_sha256": "1e21a529d05e421b8b9b9fbcb1eb01b7c74a7ebf534f8b7699c97d01d297e157",
+        "proved": true,
+        "scope": {
+          "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+          "input": "all 8-bit abstract source values",
+          "opcodes": [
+            "S2R",
+            "S2UR",
+            "R2UR"
+          ],
+          "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+          "proof_strength": "Reduced-width identity within the proposed equation."
+        },
+        "solver_result": "unsat"
+      },
+      {
         "name": "uldc64_matches_little_endian_constant_memory_read",
         "proof_record_sha256": "30134d0970f0e0165b4b5136759d81682b2492e9820b2e982ef21c92eed0254a",
         "proved": true,
@@ -357,8 +410,13 @@
       }
     ],
     "registry_version": 1,
-    "sass_semantics_certificate_sha256": "dd429270a0c0993380067cdb46af3b44434051cac26b631229340a1978c4b516",
-    "snapshot_sha256": "247274c44c4f89a6a86154f3cdcb909961cf7c48d95ad28bfc694142c8400699",
+    "sass_semantics_certificate_sha256": "6c463440e34c600f2d8159829b0e400fd856a92fc610981d7ebb81ad85d1ba56",
+    "snapshot_sha256": "9def9b4824336a6e6b0ff020dbee0cfd501b494ef4174cd05b01d41e84ef9771",
+    "transfer_value_opcodes": [
+      "R2UR",
+      "S2R",
+      "S2UR"
+    ],
     "uniform_value_opcodes": [
       "UIADD3",
       "UIMAD",
@@ -379,6 +437,7 @@
     "maximum_observed_call_depth": 4,
     "reachable_basic_block_count": 161,
     "reachable_instruction_count": 3570,
+    "special_register_nodes": 5,
     "unresolved_return_context_count": 0
   },
   "hardware_instruction_semantics_established": false,
@@ -390,8 +449,8 @@
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
   "sass_effective_address_bounds_established": false,
   "sass_effective_address_formula_bound": false,
-  "sass_memory_certificate_sha256": "bd5cba8368e6bd2b400d75969c5af22a7ccfc183f7676c705600b421a7906e71",
-  "sass_semantics_certificate_sha256": "dd429270a0c0993380067cdb46af3b44434051cac26b631229340a1978c4b516",
+  "sass_memory_certificate_sha256": "0af4d01c4aa68014868fd020002982c8bf711699c1df2a4110d30d4c9bc2040b",
+  "sass_semantics_certificate_sha256": "6c463440e34c600f2d8159829b0e400fd856a92fc610981d7ebb81ad85d1ba56",
   "sass_to_logical_stride_correspondence_established": false,
   "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Record binding does not establish each proof premise, NVIDIA instruction semantics, or hardware conformance. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
   "selected_sass_address_expression_dags_established": true,
@@ -407,14 +466,14 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 0,
-      "expression_graph_sha256": "31d52b6e51fa73c33079863141c92708cb4aa0284eea0405b4c0cab50d1e1fa4",
+      "expression_graph_sha256": "8022099f2b8100ebc739c9711501d58fee2df756927a4e0c079b4b91d7bd2baa",
       "field": "query_ptr",
       "instruction_definition_node_count": 58,
       "instruction_offset": 8432,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 128,
-      "proof_backed_instruction_node_count": 24,
+      "node_count": 133,
+      "proof_backed_instruction_node_count": 30,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
@@ -423,6 +482,8 @@
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
         "imad_wide_unsigned_matches_shift_add_widened_product",
         "mov_is_identity",
+        "register_transfer_full_32bit_definition_instance",
+        "register_transfer_shares_proposed_bit_copy_equation",
         "uldc64_matches_little_endian_constant_memory_read",
         "uldc_matches_little_endian_constant_memory_read",
         "uniform_iadd3_full_32bit_definition_instance",
@@ -439,14 +500,15 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "05b32281e9dfe87905c07a23b31264b7146638615bd286fd9d038b1e06726ac7",
-        "a9dded8401bd5cc2d3d272f2ad27d97d0cf5cef49383f4c8f6339a3ec05f078d"
+        "d22e638bebb5f474edbc051ec57150dda3f59339f96eacb679386deb98b5ddf3",
+        "74f468f442f6dfce0744f95fe1e8e43069e01157175ac33ffdbad13c471f3929"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
+      "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 34,
+      "unmodeled_instruction_node_count": 28,
       "unmodeled_opcode_histogram": {
         "IMAD.SHL.U32": 2,
         "LDG.E": 1,
@@ -456,9 +518,6 @@
         "LEA.HI.X": 1,
         "LOP3.LUT": 2,
         "PRMT": 1,
-        "R2UR": 1,
-        "S2R": 2,
-        "S2UR": 3,
         "SHF.R.S32.HI": 4,
         "UIADD3": 2,
         "UIADD3.X": 2,
@@ -468,7 +527,7 @@
         "USHF.R.S32.HI": 2,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 39
+      "unsupported_or_entry_node_count": 38
     },
     {
       "access_class": "candidate_read",
@@ -481,19 +540,21 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "7f387c4b0c90c7d522248e59bd293a19d49d3f8ae0791e56d072cab93d44c8e6",
+      "expression_graph_sha256": "c4e82dd65828249e66d8e61839a1dce545310d4b7a8d325dc4a6825f200a61c8",
       "field": "key_ptr",
       "instruction_definition_node_count": 66,
       "instruction_offset": 8512,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 146,
-      "proof_backed_instruction_node_count": 31,
+      "node_count": 150,
+      "proof_backed_instruction_node_count": 36,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
         "imad_wide_unsigned_matches_shift_add_widened_product",
+        "register_transfer_full_32bit_definition_instance",
+        "register_transfer_shares_proposed_bit_copy_equation",
         "uldc64_matches_little_endian_constant_memory_read",
         "uldc_matches_little_endian_constant_memory_read",
         "uniform_iadd3_full_32bit_definition_instance",
@@ -511,14 +572,15 @@
         "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "ce77e307b5633df29a49882ebaaaf73e3f535c58c9766bc72ff5429128b0aea3",
-        "2f94e0c6d7cddb91d7f83eb0ac232657e27c620accef9614f5ed5e919285b40a"
+        "a9ce6ac10513df324ef9d4f72714ba430bafcd3114a4d77daf2bc196dbe66263",
+        "38959a271a9622d006359c73ab787af800dcc410e0a7fc9be81ca8ccfb767e73"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
+      "special_register_leaf_count": 4,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 35,
+      "unmodeled_instruction_node_count": 30,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IMAD.MOV.U32": 2,
@@ -531,9 +593,6 @@
         "LEA.HI.X.SX32": 1,
         "LOP3.LUT": 2,
         "PRMT": 1,
-        "R2UR": 1,
-        "S2R": 2,
-        "S2UR": 2,
         "SHF.R.S32.HI": 5,
         "UIADD3": 1,
         "UIADD3.X": 1,
@@ -543,7 +602,7 @@
         "USHF.R.S32.HI": 2,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 42
+      "unsupported_or_entry_node_count": 41
     },
     {
       "access_class": "candidate_read",
@@ -556,19 +615,21 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "a5f0b952f46d72896a60861e67f750908a7555c55720173349e41af09fc54192",
+      "expression_graph_sha256": "223b648cd57d7882bfbbbac8ffba512ea8d9c97adce4bbe1768f3655771f0b59",
       "field": "value_ptr",
       "instruction_definition_node_count": 63,
       "instruction_offset": 13792,
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
-      "node_count": 140,
-      "proof_backed_instruction_node_count": 29,
+      "node_count": 144,
+      "proof_backed_instruction_node_count": 34,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
         "imad_wide_unsigned_matches_shift_add_widened_product",
+        "register_transfer_full_32bit_definition_instance",
+        "register_transfer_shares_proposed_bit_copy_equation",
         "uldc64_matches_little_endian_constant_memory_read",
         "uldc_matches_little_endian_constant_memory_read",
         "uniform_iadd3_full_32bit_definition_instance",
@@ -585,14 +646,15 @@
         "value_ptr"
       ],
       "root_nodes": [
-        "c1b46c35680f0fc70ff4f8418c3434a43406d4b5f9211e5b8a07d3228f3f44ae",
-        "3312efc7b6ec82cc349fa9c17e1821dbd9f674812514cb1501fbab2f8f23ca19"
+        "0b3c7e6c2a507f393a4f9d4aca73210421174f2f7dccf24d19d406ccc9d5ad2e",
+        "9baeb28a40511bd35b9568cc4f65968ebd20b97424a67aa29e326c479c41d7a7"
       ],
       "selected_block_index": 22,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
+      "special_register_leaf_count": 4,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 34,
+      "unmodeled_instruction_node_count": 29,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
@@ -604,9 +666,6 @@
         "LEA.HI.X": 1,
         "LOP3.LUT": 2,
         "PRMT": 1,
-        "R2UR": 1,
-        "S2R": 2,
-        "S2UR": 2,
         "SHF.R.S32.HI": 5,
         "UIADD3": 1,
         "UIADD3.X": 1,
@@ -616,7 +675,7 @@
         "USHF.R.S32.HI": 3,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 41
+      "unsupported_or_entry_node_count": 40
     },
     {
       "access_class": "candidate_write",
@@ -629,14 +688,14 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "9c3d3a8751a020faf995cff179c8fefe4c1afee696aaed44a2ecc06d863959d1",
+      "expression_graph_sha256": "c5d8906836644899997ce3a94ffec0b0dc39f2c955e9f590bf04e8db9ac89426",
       "field": "output_ptr",
       "instruction_definition_node_count": 76,
       "instruction_offset": 43408,
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
-      "node_count": 167,
-      "proof_backed_instruction_node_count": 33,
+      "node_count": 172,
+      "proof_backed_instruction_node_count": 39,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -646,6 +705,8 @@
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
         "imad_wide_unsigned_matches_shift_add_widened_product",
         "mov_is_identity",
+        "register_transfer_full_32bit_definition_instance",
+        "register_transfer_shares_proposed_bit_copy_equation",
         "uldc64_matches_little_endian_constant_memory_read",
         "uldc_matches_little_endian_constant_memory_read",
         "uniform_iadd3_full_32bit_definition_instance",
@@ -662,14 +723,15 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "c8f5967913106715bd65b6a92e38c5e6132bd440cc6c5b1b18cc5d7576a8ba91",
-        "332becc4ae0cfec0b47b7a9b6c0e5c8335ff765839facbdbf66a56da1a5195a1"
+        "3f3bf3b5f91717e07acd2a897b1370b6fc4135daba89b9d1c6c158929f6b52b3",
+        "d574225aa116729ecf3a9a7aa247b4e5ccde11191b9b395ecee6475f70149826"
       ],
       "selected_block_index": 78,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
+      "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 43,
+      "unmodeled_instruction_node_count": 37,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
@@ -679,9 +741,6 @@
         "LEA.HI.SX32": 1,
         "LOP3.LUT": 5,
         "PRMT": 1,
-        "R2UR": 1,
-        "S2R": 2,
-        "S2UR": 3,
         "SHF.L.U64.HI": 1,
         "SHF.R.S32.HI": 5,
         "UIADD3": 2,
@@ -692,7 +751,7 @@
         "USHF.R.S32.HI": 3,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 51
+      "unsupported_or_entry_node_count": 50
     },
     {
       "access_class": "candidate_write",
@@ -705,14 +764,14 @@
       "available_call_context_count": 5,
       "closed_supported_formula": false,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "dceb2ecf62c9b2c59de4a85d05a2683928bfbc79b82dbe06683b5ec72ef0d1db",
+      "expression_graph_sha256": "7ede60839b20bf23ec7c040963746627dec67f3ac853dbe72486a7b45b2950e2",
       "field": "output_accum_ptr",
       "instruction_definition_node_count": 106,
       "instruction_offset": 47072,
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
-      "node_count": 236,
-      "proof_backed_instruction_node_count": 58,
+      "node_count": 241,
+      "proof_backed_instruction_node_count": 64,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -722,6 +781,8 @@
         "imad_wide_unsigned_full_32x32_to_64_definition_instance",
         "imad_wide_unsigned_matches_shift_add_widened_product",
         "mov_is_identity",
+        "register_transfer_full_32bit_definition_instance",
+        "register_transfer_shares_proposed_bit_copy_equation",
         "uldc64_matches_little_endian_constant_memory_read",
         "uldc_matches_little_endian_constant_memory_read",
         "uldc_u8_matches_little_endian_constant_memory_read",
@@ -742,14 +803,15 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "f24140248355f79aced2fdfc7acde50979f60d01fe176d8ab523073591fd67c7",
-        "ec74d2a3dbdae14c91bcc3f19a02585fdcfe61d9197159fafb57cc877a68ae5a"
+        "85ace9893b226b2da7268f5f1f4cce6e48b4dc8a47b4ab913b440fc2cd555ff3",
+        "0dfec9fd633011e1a5e384e782bccc9e3dadb308e78c543b2c1cb96b10e94865"
       ],
       "selected_block_index": 92,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
+      "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 48,
+      "unmodeled_instruction_node_count": 42,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
@@ -759,9 +821,6 @@
         "LEA.HI.SX32": 1,
         "LOP3.LUT": 5,
         "PRMT": 1,
-        "R2UR": 1,
-        "S2R": 2,
-        "S2UR": 3,
         "SHF.R.S32.HI": 6,
         "UIADD3": 2,
         "UIADD3.X": 2,
@@ -771,11 +830,11 @@
         "USHF.R.S32.HI": 5,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 60
+      "unsupported_or_entry_node_count": 59
     }
   ],
-  "source_certificate_sha256": "77f084b895a74fbb690e5eb9b9ea2f032e157faa0694c0d983578a2ef99326de",
-  "summary_sha256": "8d1a16987e0d4ff128e08bcd4f86ce06a42dc0241f1e2e9068e9c690311a5a9a",
+  "source_certificate_sha256": "443216cc4e2a5c699c07e2054490ff0a83960bccbb9e08477545bdd1395f5b27",
+  "summary_sha256": "602b2533bf2531d0d284e0d961bba5dc858239f86a858400cd91d538e1b9fcc3",
   "total_selections": 5,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }

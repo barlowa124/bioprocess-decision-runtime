@@ -293,6 +293,9 @@ PROPOSED_SEMANTICS_OPCODES = {
     "NOP",
     "SEL",
     "SHF.R.U32.HI",
+    "S2R",
+    "S2UR",
+    "R2UR",
     "STG",
     "STG.E.64",
     "STG.E.128",
@@ -374,6 +377,19 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
     )
     proofs.append(
         _prove(
+            "register_transfer_shares_proposed_bit_copy_equation",
+            sass_mov(first) == first,
+            {
+                "opcodes": ["S2R", "S2UR", "R2UR"],
+                "input": "all 8-bit abstract source values",
+                "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+                "proof_strength": "Reduced-width identity within the proposed equation.",
+                "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
+    proofs.append(
+        _prove(
             "uniform_iadd3_matches_ripple_carry_sum",
             sass_iadd3(first, second, third, width) == independent_sum,
             {
@@ -401,6 +417,20 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
     uniform_full_first = z3.BitVec("sass_uniform_full_first", 32)
     uniform_full_second = z3.BitVec("sass_uniform_full_second", 32)
     uniform_full_third = z3.BitVec("sass_uniform_full_third", 32)
+    proofs.append(
+        _prove(
+            "register_transfer_full_32bit_definition_instance",
+            sass_mov(uniform_full_first) == uniform_full_first,
+            {
+                "opcodes": ["S2R", "S2UR", "R2UR"],
+                "input": "all 32-bit abstract source values",
+                "modeled_widths": {"source_bits": 32, "result_bits": 32},
+                "premise": "The selected transfer forms preserve the modeled source bits; special-register acquisition, register-file selection, and uniform behavior are excluded.",
+                "proof_strength": "Full-width definitional instance of the proposed equation; not an independent transfer or hardware reference.",
+                "boundary": "Special-register values, destination selection, width encoding, modifiers, uniformity, and hardware behavior are excluded.",
+            },
+        )
+    )
     proofs.append(
         _prove(
             "uniform_iadd3_full_32bit_definition_instance",
@@ -1044,6 +1074,7 @@ def build_sass_semantics_certificate() -> dict[str, Any]:
             "register width and type variants beyond the stated formulas",
             "Memory forms beyond the declared fixed-width abstract byte-array equations",
             "LEA versus ULEA uniform-register and warp-uniform behavior; shared arithmetic is an explicit premise",
+            "Special-register values, acquisition semantics, and lane or warp uniformity of SR sources",
             "Barrier, warp, reconvergence, and complete control-flow semantics",
             "NVIDIA hardware conformance to these proposed equations",
         ],
