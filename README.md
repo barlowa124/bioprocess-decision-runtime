@@ -626,17 +626,29 @@ The checked summary selects one operand for each target:
 
 | Field | SASS offset | DAG nodes | Proof-record-bound instructions | Unbound instructions | Joins | Cycles | Special-register leaves | Unsupported/unresolved nodes |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `query_ptr` | `0x20f0` | 133 | 30/58 | 28 | 5 | 0 | 5 | 38 |
-| `key_ptr` | `0x2140` | 150 | 36/66 | 30 | 6 | 1 | 4 | 41 |
-| `value_ptr` | `0x35e0` | 144 | 34/63 | 29 | 6 | 1 | 4 | 40 |
-| `output_ptr` | `0xa990` | 172 | 39/76 | 37 | 7 | 1 | 5 | 50 |
-| `output_accum_ptr` | `0xb7e0` | 241 | 64/106 | 42 | 11 | 1 | 5 | 59 |
+| `query_ptr` | `0x20f0` | 133 | 28/58 | 30 | 5 | 0 | 5 | 40 |
+| `key_ptr` | `0x2140` | 150 | 34/66 | 32 | 6 | 1 | 4 | 43 |
+| `value_ptr` | `0x35e0` | 144 | 32/63 | 31 | 6 | 1 | 4 | 42 |
+| `output_ptr` | `0xa990` | 172 | 36/76 | 40 | 7 | 1 | 5 | 53 |
+| `output_accum_ptr` | `0xb7e0` | 241 | 61/106 | 45 | 11 | 1 | 5 | 62 |
 
 The expression fixed point visits the same 855 bounded block/call-stack contexts and 161 reachable blocks as the taint analysis. Its state lattice converges separately after 10,522 context iterations and records 12 distinct overflow contexts, 230 hash-consed ambiguous-join nodes, 65 cyclic-definition leaves, and five explicit special-register leaves across materialized contexts. Consequently `expression_call_string_depth_overflow_free` and `unbounded_context_sensitive_expression_reaching_definitions_established` are false. Selection minimizes aggregate source-field count before instruction offset, then chooses the first bounded context containing the target field.
 
 The exact Nsight launch records block dimensions `[32,4,1]` and grid dimensions `[1,4,1]`. The expression certificate therefore binds launch-coordinate domain assumptions `TID.X∈[0,32)`, `TID.Y∈[0,4)`, `TID.Z∈[0,1)`, `CTAID.X∈[0,1)`, `CTAID.Y∈[0,4)`, and `CTAID.Z∈[0,1)` to the five observed special-register leaves and verifies dimension products against Nsight's scalar block/grid metrics. `special_register_launch_domain_assumptions_bound` is true, but `special_register_coordinate_correspondence_established`, `special_register_concrete_values_established`, and `special_register_hardware_acquisition_established` remain false. The leaves therefore remain unresolved for closed-form accounting.
 
 An exact-opcode registry binds selected `MOV`, `UMOV`, four-operand `IADD3`/`UIADD3`, four-operand `IMAD`/`UIMAD`, `IMAD.IADD`, `IMAD.U32`, signed/unsigned `IMAD.WIDE` and `UIMAD.WIDE`, strict `S2R`/`S2UR`/`R2UR` transfers, and 8/32/64-bit `ULDC` nodes to named proved records and retained scopes from the exact SASS-semantics certificate. A node binds only when both its exact opcode and expected operand-token count match; uniform value forms additionally require a numbered `UR` destination and uniform-register, zero-register, or immediate inputs; constant loads require a numbered `UR` destination and exact `c[0x0][0xHEX]` source; transfer forms require exact destination/source register classes and retain `SR_*` sources as unresolved special-register leaves; `LOP3.LUT` requires the standard six-token form with LUT literal `0x96` or `0xe8`. The expression verifiers recompute every node binding, proof-record hash, per-selection bound/unbound count, and unbound-opcode histogram, but remain integrity/consistency checks over retained records; `sass-semantics-verify` is the re-execution check for the underlying obligations. These are proposed-semantics record references: `proof_premises_established_for_bound_instructions`, `all_expression_instruction_semantics_bound`, and `hardware_instruction_semantics_established` remain false.
+
+A second hash-consed layer now lowers ordered semantic operands into partial proposed bit-vector formulas. It retains register references in operand order, immediate and zero values, signed or unsigned wide multiply-add, 32-bit modular arithmetic, and constant-memory reads. Low/high register-pair concatenation and output-word projection remain explicit opaque operations because register-pair placement is unestablished. Unbound operations and reaching-definition joins preserve recursively lowered children as opaque operations/joins; negated register operands, subword extension, cycles, entry registers, unsupported operands, and SR symbols also remain opaque. The compact summary commits the following full-artifact formula graphs:
+
+| Field | Formula nodes | Lowered proposed operations | Opaque nodes |
+|---|---:|---:|---:|
+| `query_ptr` | 93 | 21 | 60 |
+| `key_ptr` | 105 | 27 | 64 |
+| `value_ptr` | 99 | 24 | 62 |
+| `output_ptr` | 121 | 27 | 76 |
+| `output_accum_ptr` | 154 | 43 | 94 |
+
+`partial_proposed_symbolic_formulas_established` and `partial_formula_ordered_operands_preserved` are true. Every partial formula remains non-closed because it contains opaque nodes. The full-certificate verifier reconstructs each formula from the retained expression DAG and rejects formula, operand-order, width, and hash inconsistencies; the compact-summary verifier checks retained commitments, counts, and boundaries without the omitted full node graphs.
 
 Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory, SASS-semantics, and logical-bounds certificates. None is closed over the currently record-bound operations, unbound instructions, joins, recurrences, or entry symbols. Therefore `proposed_semantics_proof_bindings_established`, `bounded_call_string_expression_reaching_definitions_established`, and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 

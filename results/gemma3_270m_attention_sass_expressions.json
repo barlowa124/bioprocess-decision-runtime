@@ -526,6 +526,8 @@
   },
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
   "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
+  "partial_formula_ordered_operands_preserved": true,
+  "partial_proposed_symbolic_formulas_established": true,
   "proof_premises_established_for_bound_instructions": false,
   "proposed_semantics_proof_bindings_established": true,
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
@@ -549,7 +551,7 @@
       "closed_supported_formula": false,
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 0,
-      "expression_graph_sha256": "e98e4cb7d44837ed73a014625eee3602f7d7ac9d91809db1b23c5a52e6ab0c20",
+      "expression_graph_sha256": "89d6154258b8b27d494a8533165ecd26d50320224d0977a1b3d42018ce93c3fd",
       "field": "query_ptr",
       "instruction_definition_node_count": 58,
       "instruction_offset": 8432,
@@ -557,7 +559,16 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 133,
-      "proof_backed_instruction_node_count": 30,
+      "partial_formula_closed": false,
+      "partial_formula_lowered_operation_node_count": 21,
+      "partial_formula_node_count": 93,
+      "partial_formula_opaque_node_count": 60,
+      "partial_formula_root_nodes": [
+        "09b50d317e49bece596e4450a30ac665e18493fd6cb4b32205ee808c6eee15dd",
+        "fa269daba5b87ae2fcd5c06e804b594048be297c247cb622c5a5122a25874a2c"
+      ],
+      "partial_formula_sha256": "2a05bbc2bc6d7ccad0ebcf473092c687ce4fd82bc803fcbe9b38cfa2a5396ba4",
+      "proof_backed_instruction_node_count": 28,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
@@ -584,16 +595,17 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "11fa727126b7a3c4f2950467814a96e3f1d98c2a7e242766431c767ca85a0fa5",
-        "969337a81610e76721b3d6f2e67d0c27b9faf158969c4e15fbb14a9bf69a42a4"
+        "471a2a2ec3fd681a9d39e38bffbaba4be4cab1aedb948195bf0abedfebc445f9",
+        "522f7f7b4c0ba8349b4c68f58468820d6b8cba9e6404e7d7caa789e99fefba67"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 28,
+      "unmodeled_instruction_node_count": 30,
       "unmodeled_opcode_histogram": {
+        "IMAD.IADD": 2,
         "IMAD.SHL.U32": 2,
         "LDG.E": 1,
         "LEA": 1,
@@ -611,7 +623,7 @@
         "USHF.R.S32.HI": 2,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 38
+      "unsupported_or_entry_node_count": 40
     },
     {
       "access_class": "candidate_read",
@@ -625,7 +637,7 @@
       "closed_supported_formula": false,
       "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "53612e4ac2ce4604ba2b49d53d950803d20865120384efb68a822d4df3659485",
+      "expression_graph_sha256": "71f7a1eb6f68bb45617e140a47b3ae41ed7d125afe73bbd27ee9469eacfe702b",
       "field": "key_ptr",
       "instruction_definition_node_count": 66,
       "instruction_offset": 8512,
@@ -633,7 +645,16 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 150,
-      "proof_backed_instruction_node_count": 36,
+      "partial_formula_closed": false,
+      "partial_formula_lowered_operation_node_count": 27,
+      "partial_formula_node_count": 105,
+      "partial_formula_opaque_node_count": 64,
+      "partial_formula_root_nodes": [
+        "219205f45663b32aa721106b4835550c371f45840d8679b8e66477e8794d1a4d",
+        "7343392fb69b17ec3fb1a6286a310369f7058735f1bfe7ae752dc00fa80131cb"
+      ],
+      "partial_formula_sha256": "0592891ed951c5369a3638bd61d98cc3ff0dbf67cee535c10fbea483148a19de",
+      "proof_backed_instruction_node_count": 34,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
@@ -658,17 +679,18 @@
         "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "4ccdece7999847d60f4bb4f21485a8e08652d594e52bcc095e69140c9df4ee7b",
-        "f44391b240c4ddedfd71984b77a31beb12ad0350955804980eab9765993ee11c"
+        "7d3f9c71f1b82363003f0038981b68733a04a83632c1d5b4a39c5eee22a8914a",
+        "73c5702c80c38c4c0cfe41c58e40c9d897bfee6560d71fa3107b2e07e988664e"
       ],
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "special_register_leaf_count": 4,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 30,
+      "unmodeled_instruction_node_count": 32,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
+        "IMAD.IADD": 2,
         "IMAD.MOV.U32": 2,
         "IMAD.SHL.U32": 2,
         "LDG.E": 1,
@@ -688,7 +710,7 @@
         "USHF.R.S32.HI": 2,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 41
+      "unsupported_or_entry_node_count": 43
     },
     {
       "access_class": "candidate_read",
@@ -702,7 +724,7 @@
       "closed_supported_formula": false,
       "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "0a7ac88e94e6842c5ca04afcc7c4c9424757ae53d63d88210dd61081e30c93b8",
+      "expression_graph_sha256": "7231337782a0668719eb4fd0eb95e1f73180b76493065ccfea1ffff2c2300c4f",
       "field": "value_ptr",
       "instruction_definition_node_count": 63,
       "instruction_offset": 13792,
@@ -710,7 +732,16 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 144,
-      "proof_backed_instruction_node_count": 34,
+      "partial_formula_closed": false,
+      "partial_formula_lowered_operation_node_count": 24,
+      "partial_formula_node_count": 99,
+      "partial_formula_opaque_node_count": 62,
+      "partial_formula_root_nodes": [
+        "11b0091fbf0e91fd76c5ac6bbbf0a553a6968460417c0678a65428298c2211d5",
+        "b92ed2c925ee8072f1d6b1ce3586e94c36da7beb4707a9c32dcf58d18870f92e"
+      ],
+      "partial_formula_sha256": "e2cbbc492d5c53f0893064cd6507d5bef18d6a93cbfefb9a1abdb0885a988831",
+      "proof_backed_instruction_node_count": 32,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
         "imad_matches_shift_add_multiply_accumulate",
@@ -734,18 +765,19 @@
         "value_ptr"
       ],
       "root_nodes": [
-        "abbfcf4e243e1b31cdc3fdfe10645b5aa5a196aa5adfeac2288bab24230e3863",
-        "682b0a6b707fe55cf3828330a8f5c85d5c39733ca093dc38d4ca8073fc9e74ea"
+        "cc3da18b491a9d6ba50708756bf533a9276b2a04f2b2e6c30696cde976371724",
+        "a21102c750d167499e0348215bd80c6d6a8df150d673b3658860532795cc8911"
       ],
       "selected_block_index": 22,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "special_register_leaf_count": 4,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 29,
+      "unmodeled_instruction_node_count": 31,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
+        "IMAD.IADD": 2,
         "IMAD.SHL.U32": 2,
         "LDG.E": 1,
         "LEA": 1,
@@ -763,7 +795,7 @@
         "USHF.R.S32.HI": 3,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 40
+      "unsupported_or_entry_node_count": 42
     },
     {
       "access_class": "candidate_write",
@@ -777,7 +809,7 @@
       "closed_supported_formula": false,
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "c63293467b919aeb6dd57e7be6815130db55986d24a02ccab49c20f278270a35",
+      "expression_graph_sha256": "47dea0de832bdba0d25fc875b9c41de1990adb0c58764172e7cdc1bc88c3517b",
       "field": "output_ptr",
       "instruction_definition_node_count": 76,
       "instruction_offset": 43408,
@@ -785,7 +817,16 @@
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
       "node_count": 172,
-      "proof_backed_instruction_node_count": 39,
+      "partial_formula_closed": false,
+      "partial_formula_lowered_operation_node_count": 27,
+      "partial_formula_node_count": 121,
+      "partial_formula_opaque_node_count": 76,
+      "partial_formula_root_nodes": [
+        "103cda66f4e22abb9b0e022453422734596930726b6e9dd010d586aca543ed4b",
+        "5208856fba5a690673a5d3066ba274b3dc7ba01b903e1a50abacbeaff38054e8"
+      ],
+      "partial_formula_sha256": "6ad0be4c519cff9f38d19d0f6b8c37ec72719934becd477e68a4363a05e514b8",
+      "proof_backed_instruction_node_count": 36,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -813,18 +854,19 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "438b287f11655b2eab5c0c68144d336e1249a441831b90f41fb7496586e11ce3",
-        "a5382928b1f97bef0a3951632584b1b1c08265eb0b29e30ead043cc006ea6083"
+        "c7119e3e7602e523aa616cc50a9bf8912bb9971b0e4ee358a0abf77eba369998",
+        "7449bceb1782260caa8fe36f3ec8aacffa0cf870398f309ad7a86a0d5484e0e5"
       ],
       "selected_block_index": 78,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 37,
+      "unmodeled_instruction_node_count": 40,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
+        "IMAD.IADD": 3,
         "IMAD.SHL.U32": 3,
         "LDG.E": 1,
         "LEA.HI": 4,
@@ -841,7 +883,7 @@
         "USHF.R.S32.HI": 3,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 50
+      "unsupported_or_entry_node_count": 53
     },
     {
       "access_class": "candidate_write",
@@ -855,7 +897,7 @@
       "closed_supported_formula": false,
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
-      "expression_graph_sha256": "27a1f3144952f45378afcc578723511bb151d310bca21508127aa4ff2732b70b",
+      "expression_graph_sha256": "df730650ea787ce6c26529acc8cfaf83c6989c62f4be07d33442d10b2131b2e7",
       "field": "output_accum_ptr",
       "instruction_definition_node_count": 106,
       "instruction_offset": 47072,
@@ -863,7 +905,16 @@
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
       "node_count": 241,
-      "proof_backed_instruction_node_count": 64,
+      "partial_formula_closed": false,
+      "partial_formula_lowered_operation_node_count": 43,
+      "partial_formula_node_count": 154,
+      "partial_formula_opaque_node_count": 94,
+      "partial_formula_root_nodes": [
+        "698ff15ff414927b58871b4aa124bff594a539529c07bed4f1f0e393151f0a2c",
+        "87875ec85d2d8abe2820a829487fe27317f80c42202f7ff0231af01b77b071c3"
+      ],
+      "partial_formula_sha256": "f0daca6d048c1e1d165887b90d1fdff2f912b48f85ced329057882ef9eb8664b",
+      "proof_backed_instruction_node_count": 61,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -895,18 +946,19 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "d6a7c033f967cf8a2f4d5dc3618dc992d80247e47260b4ee7e13be83670eb44d",
-        "49f490f5154cd65cbb0c9d1d834d51cfa10f019c1d751f48830d8edc0a6543a5"
+        "ceabd45de6c0616a0d7196631e7d55783b1c0786c95ed33a25af25b6ac08ec1f",
+        "ad6a1b6feabc7c124583cc3405f6c77cf10dd1ed121fcc4a342593abfaf9a7ae"
       ],
       "selected_block_index": 92,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
       "special_register_leaf_count": 5,
       "target_field_represented": true,
-      "unmodeled_instruction_node_count": 42,
+      "unmodeled_instruction_node_count": 45,
       "unmodeled_opcode_histogram": {
         "IADD3": 1,
         "IADD3.X": 1,
+        "IMAD.IADD": 3,
         "IMAD.SHL.U32": 2,
         "LDG.E": 1,
         "LEA.HI": 4,
@@ -922,15 +974,15 @@
         "USHF.R.S32.HI": 5,
         "USHF.R.U32.HI": 1
       },
-      "unsupported_or_entry_node_count": 59
+      "unsupported_or_entry_node_count": 62
     }
   ],
-  "source_certificate_sha256": "59e2b53120511f2908155b50870cc3b3cb5a992beb08b95a3e61c96ecc5ab4e6",
+  "source_certificate_sha256": "980ddba9223ff1256e63dc3ad8664742ee8573fcc5f86c6f9c0ec7e07d21c113",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "fa875a831b96c7d0f00d0da4b2179a4e6df3344a80131dbcfd6695f708025bb0",
+  "summary_sha256": "315468b906f4ce532c4d988e49107c64f67c373ea7dbc446a02a8f78dd4bbd29",
   "total_selections": 5,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }

@@ -292,7 +292,9 @@ class SassExpressionTests(unittest.TestCase):
         from bioprocess_runtime.sass_expressions import (
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
+            _build_partial_symbolic_formula,
             _call_string_expression_snapshots,
+            _ordered_semantic_operands,
             _reachable_nodes,
             _semantic_requirement,
             _special_registers,
@@ -326,6 +328,18 @@ class SassExpressionTests(unittest.TestCase):
         damaged_launch_domains = copy.deepcopy(launch_domains)
         damaged_launch_domains["block_size"][0] = 31
         self.assertFalse(_verify_launch_coordinate_domains(damaged_launch_domains))
+        ordered = _ordered_semantic_operands(
+            "IADD3",
+            "R4,R3,0x2,R1",
+            {"R3": "first", "R1": "third"},
+            {},
+            0x160,
+        )
+        self.assertEqual(
+            [item.get("source_node") for item in ordered],
+            ["first", None, "third"],
+        )
+        self.assertEqual(ordered[1]["value"], 2)
         missing_obligation = copy.deepcopy(semantics)
         missing_obligation["proofs"] = [
             proof
@@ -347,6 +361,7 @@ class SassExpressionTests(unittest.TestCase):
         )
         self.assertIsNone(_semantic_requirement("LOP3.LUT", "R4,0x96,!PT"))
         self.assertIsNone(_semantic_requirement("IMAD.U32", "R4,R5"))
+        self.assertIsNone(_semantic_requirement("IMAD.IADD", "R4,R5,0x1,-R6"))
         self.assertIsNone(
             _semantic_requirement("UIADD3", "UR8,UP1,UR11,UR8,URZ")
         )
@@ -474,6 +489,43 @@ class SassExpressionTests(unittest.TestCase):
         unknown_nodes = _reachable_nodes(unknown_roots, unknown_registry)
         unknown_leaf = next(node for node in unknown_nodes if node["kind"] == "special_register")
         self.assertIsNone(unknown_leaf["launch_domain_assumption"])
+        partial_formula = _build_partial_symbolic_formula(roots, nodes)
+        self.assertFalse(partial_formula["closed_formula"])
+        self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
+        self.assertIn(
+            "unmodeled_register_pair_projection",
+            {
+                node.get("opcode")
+                for node in partial_formula["formula_nodes"]
+                if node["kind"] == "opaque_operation"
+            },
+        )
+        subword_instructions = [
+            {"offset": 0, "predicate": None, "opcode": "ULDC.U8", "operands": "UR2,c[0x0][0x1d4]"},
+            {"offset": 16, "predicate": None, "opcode": "MOV", "operands": "R4,UR2"},
+            {"offset": 32, "predicate": None, "opcode": "LDG.E", "operands": "R6,[R4.64]"},
+        ]
+        subword_snapshots, subword_registry, _ = _call_string_expression_snapshots(
+            subword_instructions,
+            0x160,
+            semantics_snapshot=semantics_snapshot,
+            launch_coordinate_domains=launch_domains,
+        )
+        subword_roots = [
+            definition
+            for definitions in subword_snapshots[32][0]["definitions"].values()
+            for definition in definitions
+        ]
+        subword_nodes = _reachable_nodes(subword_roots, subword_registry)
+        subword_formula = _build_partial_symbolic_formula(subword_roots, subword_nodes)
+        self.assertIn(
+            "unmodeled_register_extension",
+            {
+                node.get("opcode")
+                for node in subword_formula["formula_nodes"]
+                if node["kind"] == "opaque_operation"
+            },
+        )
         certificate = {
             "scope": "synthetic expression DAG",
             "kernel_name": "kernel",
@@ -492,6 +544,13 @@ class SassExpressionTests(unittest.TestCase):
                     "available": True,
                     "closed_supported_formula": False,
                     "expression_nodes": nodes,
+                    "partial_symbolic_formula": partial_formula,
+                    "partial_formula_lowered_operation_node_count": partial_formula[
+                        "lowered_operation_node_count"
+                    ],
+                    "partial_formula_opaque_node_count": partial_formula[
+                        "opaque_node_count"
+                    ],
                     "root_nodes": roots,
                     "node_count": len(nodes),
                     "represented_parameter_fields": ["query_ptr"],
@@ -516,6 +575,8 @@ class SassExpressionTests(unittest.TestCase):
             "all_checks_pass": True,
             "selected_sass_address_expression_dags_established": True,
             "bounded_call_string_expression_reaching_definitions_established": True,
+            "partial_proposed_symbolic_formulas_established": True,
+            "partial_formula_ordered_operands_preserved": True,
             "proposed_semantics_proof_bindings_established": True,
             "proof_premises_established_for_bound_instructions": False,
             "special_register_launch_domain_assumptions_bound": True,
@@ -585,6 +646,31 @@ class SassExpressionTests(unittest.TestCase):
             canonical_json(damaged_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_expression_certificate(damaged_domain)["valid"])
+        forged_formula = copy.deepcopy(certificate)
+        formula = forged_formula["selections"][0]["partial_symbolic_formula"]
+        formula_node = formula["formula_nodes"][0]
+        formula_node["kind"] = "forged_formula"
+        formula_node_body = {
+            key: value
+            for key, value in formula_node.items()
+            if key != "formula_node_sha256"
+        }
+        formula_node["formula_node_sha256"] = hashlib.sha256(
+            canonical_json(formula_node_body).encode("utf-8")
+        ).hexdigest()
+        formula_body = {
+            key: value for key, value in formula.items() if key != "formula_sha256"
+        }
+        formula["formula_sha256"] = hashlib.sha256(
+            canonical_json(formula_body).encode("utf-8")
+        ).hexdigest()
+        forged_formula_body = {
+            key: value for key, value in forged_formula.items() if key != "certificate_sha256"
+        }
+        forged_formula["certificate_sha256"] = hashlib.sha256(
+            canonical_json(forged_formula_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_certificate(forged_formula)["valid"])
 
     def test_expression_reaching_definitions_preserve_branch_ambiguity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
@@ -706,6 +792,10 @@ class SassMemoryTests(unittest.TestCase):
         )
         self.assertEqual(
             _source_registers_for_opcode("IMAD.WIDE", ",R6,0x4,R20"),
+            ["R6", "R20", "R21"],
+        )
+        self.assertEqual(
+            _source_registers_for_opcode("IMAD.WIDE", ",R6,0x4,-R20"),
             ["R6", "R20", "R21"],
         )
         cleared = _transfer_taint(
