@@ -291,6 +291,7 @@ class CudaMetadataTests(unittest.TestCase):
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
+            _analyze_partial_formula_blockers,
             _analyze_partial_formula_intervals,
             _analyze_partial_symbolic_formula,
             _build_expression_semantics_snapshot,
@@ -305,6 +306,7 @@ class SassExpressionTests(unittest.TestCase):
             _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
+            _verify_blocker_record,
             _verify_interval_record,
             _verify_launch_coordinate_domains,
             verify_sass_expression_certificate,
@@ -500,6 +502,9 @@ class SassExpressionTests(unittest.TestCase):
         partial_formula_interval_analysis = _analyze_partial_formula_intervals(
             partial_formula
         )
+        partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
+            partial_formula
+        )
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
         self.assertTrue(partial_formula_analysis["type_check"]["well_typed"])
@@ -516,6 +521,18 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(partial_formula_interval_analysis["bounded_node_count"], 0)
         self.assertFalse(
             partial_formula_interval_analysis["effective_address_bounds_established"]
+        )
+        self.assertTrue(partial_formula_blocker_analysis["all_roots_blocked"])
+        self.assertEqual(partial_formula_blocker_analysis["roots_with_blockers"], 2)
+        self.assertEqual(
+            sorted(record["depth"] for record in partial_formula_blocker_analysis["root_frontier"]),
+            [0, 1],
+        )
+        self.assertTrue(
+            all(
+                _verify_blocker_record(record)
+                for record in partial_formula_blocker_analysis["root_frontier"]
+            )
         )
         interval_record = copy.deepcopy(
             partial_formula_interval_analysis["intervals"][0]
@@ -656,6 +673,13 @@ class SassExpressionTests(unittest.TestCase):
                     "partial_symbolic_formula": partial_formula,
                     "partial_formula_analysis": partial_formula_analysis,
                     "partial_formula_interval_analysis": partial_formula_interval_analysis,
+                    "partial_formula_blocker_analysis": partial_formula_blocker_analysis,
+                    "partial_formula_root_frontier_blocker_count": partial_formula_blocker_analysis[
+                        "root_frontier_blocker_count"
+                    ],
+                    "partial_formula_all_roots_blocked": partial_formula_blocker_analysis[
+                        "all_roots_blocked"
+                    ],
                     "partial_formula_bounded_interval_node_count": partial_formula_interval_analysis[
                         "bounded_node_count"
                     ],
@@ -707,6 +731,8 @@ class SassExpressionTests(unittest.TestCase):
             "partial_formula_interval_analysis_established": True,
             "all_selected_root_intervals_full_width_unknown": True,
             "assumption_conditioned_effective_address_bounds_established": False,
+            "root_opaque_blocker_frontiers_established": True,
+            "all_selected_roots_have_opaque_blockers": True,
             "proposed_semantics_proof_bindings_established": True,
             "proof_premises_established_for_bound_instructions": False,
             "special_register_launch_domain_assumptions_bound": True,
@@ -776,6 +802,20 @@ class SassExpressionTests(unittest.TestCase):
             canonical_json(misbound_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_expression_summary(misbound_intervals)["valid"])
+        forged_blocker_summary = copy.deepcopy(summary)
+        blocker = forged_blocker_summary["selections"][0][
+            "partial_formula_root_blocker_frontier"
+        ][0]
+        blocker["depth"] += 1
+        forged_blocker_body = {
+            key: value
+            for key, value in forged_blocker_summary.items()
+            if key != "summary_sha256"
+        }
+        forged_blocker_summary["summary_sha256"] = hashlib.sha256(
+            canonical_json(forged_blocker_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_summary(forged_blocker_summary)["valid"])
         damaged = copy.deepcopy(certificate)
         damaged["selections"][0]["expression_nodes"][0]["kind"] = "forged"
         body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}

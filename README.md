@@ -664,6 +664,18 @@ A conservative unsigned interval pass covers every formula node. Literals are ex
 
 `partial_formula_interval_analysis_established` is true, but both 32-bit root intervals for every target remain full `[0,2^32-1]` because opaque operations intervene. Therefore `all_selected_root_intervals_full_width_unknown` is true while `assumption_conditioned_effective_address_bounds_established` remains false. These intermediate intervals are diagnostics over proposed operators and explicit assumptions, not SASS hardware or memory-safety bounds.
 
+A nearest-opaque-cut pass identifies the exact depth-zero blocker at each root:
+
+| Field | Low root blocker | High root blocker |
+|---|---|---|
+| `query_ptr` | `LEA` | `LEA.HI.X` |
+| `key_ptr` | `LEA` | `LEA.HI.X` |
+| `value_ptr` | `LEA` | `LEA.HI.X` |
+| `output_ptr` | `IADD3` | `IADD3.X` |
+| `output_accum_ptr` | `IADD3` | `IADD3.X` |
+
+`root_opaque_blocker_frontiers_established` and `all_selected_roots_have_opaque_blockers` are true. This does not establish the missing semantics. In each pair, the low instruction produces predicate/carry state consumed by the `.X` high instruction; the current expression dataflow does not bind that predicate production, identity, or consumption. Existing arithmetic composition obligations are therefore insufficient on their own. A future root-closing increment must first add bounded predicate/carry reaching definitions and connect each low/high pair without assuming predicate truth or NVIDIA hardware conformance.
+
 Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory, SASS-semantics, and logical-bounds certificates. None is closed over the currently record-bound operations, unbound instructions, joins, recurrences, or entry symbols. Therefore `proposed_semantics_proof_bindings_established`, `bounded_call_string_expression_reaching_definitions_established`, and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 
 ### SASS memory-address provenance

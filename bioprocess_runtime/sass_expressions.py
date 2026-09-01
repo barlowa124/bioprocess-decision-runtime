@@ -1719,6 +1719,99 @@ def _verify_interval_record(record: dict[str, Any]) -> bool:
     )
 
 
+def _analyze_partial_formula_blockers(formula: dict[str, Any]) -> dict[str, Any]:
+    nodes = {node["formula_node_sha256"]: node for node in formula["formula_nodes"]}
+
+    def label(node: dict[str, Any]) -> str:
+        if node["kind"] == "opaque_operation":
+            return node.get("opcode", "opaque_operation")
+        if node["kind"] == "opaque_symbol":
+            return f"opaque_symbol:{node.get('symbol')}"
+        if node["kind"] == "opaque_leaf":
+            return f"opaque_leaf:{node.get('reason')}"
+        if node["kind"] == "opaque_operand":
+            return f"opaque_operand:{node.get('descriptor', {}).get('kind')}"
+        return node["kind"]
+
+    frontier = []
+    for root_index, root in enumerate(formula["root_nodes"]):
+        queue = deque([(root, 0)])
+        visited = set()
+        while queue:
+            node_id, depth = queue.popleft()
+            if node_id in visited:
+                continue
+            visited.add(node_id)
+            node = nodes[node_id]
+            if node["kind"] in OPAQUE_FORMULA_KINDS:
+                body = {
+                    "root_index": root_index,
+                    "root_formula_node_sha256": root,
+                    "formula_node_sha256": node_id,
+                    "depth": depth,
+                    "kind": node["kind"],
+                    "label": label(node),
+                    "expression_node_sha256": node.get("expression_node_sha256"),
+                    "width_bits": node["width_bits"],
+                    "argument_count": len(node.get("arguments", [])),
+                }
+                frontier.append(
+                    {
+                        **body,
+                        "blocker_sha256": hashlib.sha256(
+                            canonical_json(body).encode("utf-8")
+                        ).hexdigest(),
+                    }
+                )
+                continue
+            queue.extend(
+                (argument, depth + 1) for argument in node.get("arguments", [])
+            )
+    opaque_nodes = [
+        node for node in formula["formula_nodes"] if node["kind"] in OPAQUE_FORMULA_KINDS
+    ]
+    histogram = Counter(label(node) for node in opaque_nodes)
+    body = {
+        "scope": "First opaque node on each traversed root-to-leaf path plus a full opaque-node label histogram; this prioritizes missing proposed semantics but establishes none.",
+        "root_frontier": frontier,
+        "root_count": len(formula["root_nodes"]),
+        "roots_with_blockers": len({item["root_index"] for item in frontier}),
+        "root_frontier_blocker_count": len(frontier),
+        "all_opaque_node_count": len(opaque_nodes),
+        "all_opaque_label_histogram": dict(sorted(histogram.items())),
+        "all_roots_blocked": bool(formula["root_nodes"])
+        and len({item["root_index"] for item in frontier})
+        == len(formula["root_nodes"]),
+        "effective_address_formula_closed": False,
+        "hardware_semantics_established": False,
+    }
+    body["analysis_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    return body
+
+
+def _verify_blocker_record(record: dict[str, Any]) -> bool:
+    body = {key: value for key, value in record.items() if key != "blocker_sha256"}
+    return bool(
+        isinstance(record.get("root_index"), int)
+        and record["root_index"] >= 0
+        and isinstance(record.get("depth"), int)
+        and record["depth"] >= 0
+        and isinstance(record.get("width_bits"), int)
+        and record["width_bits"] > 0
+        and isinstance(record.get("argument_count"), int)
+        and record["argument_count"] >= 0
+        and record.get("kind") in OPAQUE_FORMULA_KINDS
+        and bool(re.fullmatch(r"[0-9a-f]{64}", record.get("formula_node_sha256", "")))
+        and bool(
+            re.fullmatch(
+                r"[0-9a-f]{64}", record.get("root_formula_node_sha256", "")
+            )
+        )
+        and hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        == record.get("blocker_sha256")
+    )
+
+
 def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         node
@@ -1827,6 +1920,9 @@ def build_sass_expression_certificate(
                 partial_formula_interval_analysis = _analyze_partial_formula_intervals(
                     partial_formula
                 )
+                partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
+                    partial_formula
+                )
                 candidate_selection = {
                     "field": field,
                     "available": True,
@@ -1879,6 +1975,13 @@ def build_sass_expression_certificate(
                     "partial_symbolic_formula": partial_formula,
                     "partial_formula_analysis": partial_formula_analysis,
                     "partial_formula_interval_analysis": partial_formula_interval_analysis,
+                    "partial_formula_blocker_analysis": partial_formula_blocker_analysis,
+                    "partial_formula_root_frontier_blocker_count": partial_formula_blocker_analysis[
+                        "root_frontier_blocker_count"
+                    ],
+                    "partial_formula_all_roots_blocked": partial_formula_blocker_analysis[
+                        "all_roots_blocked"
+                    ],
                     "partial_formula_bounded_interval_node_count": partial_formula_interval_analysis[
                         "bounded_node_count"
                     ],
@@ -2026,6 +2129,24 @@ def build_sass_expression_certificate(
             is False
             for selection in selections
         ),
+        "all_root_blocker_frontiers_recorded": all(
+            selection.get("partial_formula_blocker_analysis", {}).get(
+                "all_roots_blocked"
+            )
+            is True
+            for selection in selections
+        ),
+        "blocker_evidence_boundaries_preserved": all(
+            selection.get("partial_formula_blocker_analysis", {}).get(
+                "effective_address_formula_closed"
+            )
+            is False
+            and selection.get("partial_formula_blocker_analysis", {}).get(
+                "hardware_semantics_established"
+            )
+            is False
+            for selection in selections
+        ),
     }
     body = {
         "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
@@ -2086,6 +2207,17 @@ def build_sass_expression_certificate(
             for selection in selections
         ),
         "assumption_conditioned_effective_address_bounds_established": False,
+        "root_opaque_blocker_frontiers_established": all(
+            selection.get("partial_formula_blocker_analysis", {}).get(
+                "all_roots_blocked"
+            )
+            is True
+            for selection in selections
+        ),
+        "all_selected_roots_have_opaque_blockers": all(
+            selection.get("partial_formula_all_roots_blocked") is True
+            for selection in selections
+        ),
         "proposed_semantics_proof_bindings_established": any(
             selection.get("proof_backed_instruction_node_count", 0) > 0
             for selection in selections
@@ -2134,6 +2266,7 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
                 "partial_symbolic_formula",
                 "partial_formula_analysis",
                 "partial_formula_interval_analysis",
+                "partial_formula_blocker_analysis",
             }
         }
         | {
@@ -2176,6 +2309,15 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
             "partial_formula_assumption_conditioned_nontrivial_root_interval_count": selection.get(
                 "partial_formula_interval_analysis", {}
             ).get("assumption_conditioned_nontrivial_root_interval_count"),
+            "partial_formula_blocker_analysis_sha256": selection.get(
+                "partial_formula_blocker_analysis", {}
+            ).get("analysis_sha256"),
+            "partial_formula_root_blocker_frontier": selection.get(
+                "partial_formula_blocker_analysis", {}
+            ).get("root_frontier", []),
+            "partial_formula_all_opaque_label_histogram": selection.get(
+                "partial_formula_blocker_analysis", {}
+            ).get("all_opaque_label_histogram", {}),
         }
         for selection in certificate["selections"]
     ]
@@ -2228,6 +2370,12 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
             "all_selected_root_intervals_full_width_unknown"
         ],
         "assumption_conditioned_effective_address_bounds_established": False,
+        "root_opaque_blocker_frontiers_established": certificate[
+            "root_opaque_blocker_frontiers_established"
+        ],
+        "all_selected_roots_have_opaque_blockers": certificate[
+            "all_selected_roots_have_opaque_blockers"
+        ],
         "proposed_semantics_proof_bindings_established": certificate[
             "proposed_semantics_proof_bindings_established"
         ],
@@ -2352,6 +2500,40 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
                 "partial_formula_assumption_bounded_interval_node_count", -1
             )
             <= selection.get("partial_formula_bounded_interval_node_count", -1)
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    selection.get("partial_formula_blocker_analysis_sha256", ""),
+                )
+            )
+            and selection.get("partial_formula_root_frontier_blocker_count")
+            == len(selection.get("partial_formula_root_blocker_frontier", []))
+            and all(
+                _verify_blocker_record(record)
+                and record["root_index"]
+                < len(selection.get("partial_formula_root_nodes", []))
+                and record["root_formula_node_sha256"]
+                == selection["partial_formula_root_nodes"][record["root_index"]]
+                for record in selection.get(
+                    "partial_formula_root_blocker_frontier", []
+                )
+            )
+            and selection.get("partial_formula_all_roots_blocked")
+            == (
+                len(
+                    {
+                        record["root_index"]
+                        for record in selection.get(
+                            "partial_formula_root_blocker_frontier", []
+                        )
+                    }
+                )
+                == len(selection.get("partial_formula_root_nodes", []))
+            )
+            and sum(
+                selection.get("partial_formula_all_opaque_label_histogram", {}).values()
+            )
+            == selection.get("partial_formula_opaque_node_count")
             for selection in selections
         )
         and summary.get("all_expression_instruction_semantics_bound")
@@ -2400,6 +2582,16 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         )
         and summary.get("assumption_conditioned_effective_address_bounds_established")
         is False
+        and summary.get("root_opaque_blocker_frontiers_established")
+        == all(
+            selection.get("partial_formula_all_roots_blocked") is True
+            for selection in selections
+        )
+        and summary.get("all_selected_roots_have_opaque_blockers")
+        == all(
+            selection.get("partial_formula_all_roots_blocked") is True
+            for selection in selections
+        )
         and _verify_expression_semantics_snapshot(
             summary.get("expression_opcode_semantics", {})
         )
@@ -2431,6 +2623,8 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("local_proposed_operator_lowering_equivalence_established") is True
         and summary.get("partial_formula_interval_analysis_established") is True
         and summary.get("assumption_conditioned_effective_address_bounds_established") is False
+        and summary.get("root_opaque_blocker_frontiers_established") is True
+        and summary.get("all_selected_roots_have_opaque_blockers") is True
         and summary.get("proposed_semantics_proof_bindings_established") is True
         and summary.get("proof_premises_established_for_bound_instructions") is False
         and summary.get("special_register_launch_domain_assumptions_bound") is True
@@ -2536,6 +2730,9 @@ def _selection_graph_consistent(
     expected_partial_formula_interval_analysis = _analyze_partial_formula_intervals(
         expected_partial_formula
     )
+    expected_partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
+        expected_partial_formula
+    )
     return bool(
         selection.get("available")
         and selection.get("node_count") == len(nodes)
@@ -2588,6 +2785,12 @@ def _selection_graph_consistent(
         == expected_partial_formula_interval_analysis["exact_node_count"]
         and selection.get("partial_formula_assumption_bounded_interval_node_count")
         == expected_partial_formula_interval_analysis["assumption_bounded_node_count"]
+        and selection.get("partial_formula_blocker_analysis")
+        == expected_partial_formula_blocker_analysis
+        and selection.get("partial_formula_root_frontier_blocker_count")
+        == expected_partial_formula_blocker_analysis["root_frontier_blocker_count"]
+        and selection.get("partial_formula_all_roots_blocked")
+        == expected_partial_formula_blocker_analysis["all_roots_blocked"]
         and all(
             _semantic_binding_consistent(node, snapshot) for node in instruction_nodes
         )
@@ -2622,6 +2825,8 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("local_proposed_operator_lowering_equivalence_established") is True
         and certificate.get("partial_formula_interval_analysis_established") is True
         and certificate.get("assumption_conditioned_effective_address_bounds_established") is False
+        and certificate.get("root_opaque_blocker_frontiers_established") is True
+        and certificate.get("all_selected_roots_have_opaque_blockers") is True
         and certificate.get("proposed_semantics_proof_bindings_established") is True
         and certificate.get("proof_premises_established_for_bound_instructions") is False
         and certificate.get("special_register_launch_domain_assumptions_bound") is True
@@ -2718,6 +2923,22 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         == all(
             selection.get("partial_formula_interval_analysis", {}).get(
                 "all_root_intervals_full_width_unknown"
+            )
+            is True
+            for selection in selections
+        )
+        and certificate.get("root_opaque_blocker_frontiers_established")
+        == all(
+            selection.get("partial_formula_blocker_analysis", {}).get(
+                "all_roots_blocked"
+            )
+            is True
+            for selection in selections
+        )
+        and certificate.get("all_selected_roots_have_opaque_blockers")
+        == all(
+            selection.get("partial_formula_blocker_analysis", {}).get(
+                "all_roots_blocked"
             )
             is True
             for selection in selections
