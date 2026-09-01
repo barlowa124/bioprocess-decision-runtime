@@ -28,7 +28,21 @@ from .sass_memory import (
     _registers,
     _source_registers_for_opcode,
 )
+from .sass_semantics import (
+    sass_iadd3,
+    sass_imad,
+    sass_imad_wide_signed,
+    sass_imad_wide_unsigned,
+    sass_lop3,
+    sass_mov,
+    sass_uldc,
+)
 from .serialization import canonical_json
+
+try:
+    import z3
+except ModuleNotFoundError:
+    z3 = None
 
 
 EXPRESSION_OPCODE_SEMANTICS = {
@@ -133,6 +147,10 @@ def _semantic_requirement(opcode: str, operands: str) -> list[str] | None:
                 re.fullmatch(r"-(?:ur|r)\d+", token) for token in tokens[1:]
             )
         )
+        if opcode not in (
+            UNIFORM_VALUE_OPCODES | CONSTANT_LOAD_OPCODES | TRANSFER_VALUE_OPCODES
+        ):
+            shape_matches = bool(shape_matches and re.fullmatch(r"r\d+", tokens[0]))
         if opcode in UNIFORM_VALUE_OPCODES:
             shape_matches = bool(
                 shape_matches
@@ -961,13 +979,13 @@ def _build_partial_symbolic_formula(
     registry = _FormulaRegistry()
     lowered: dict[str, str] = {}
 
-    def opaque(node_id: str, reason: str) -> str:
+    def opaque(node_id: str, reason: str, width_bits: int = 32) -> str:
         return registry.add(
             {
                 "kind": "opaque_leaf",
                 "expression_node_sha256": node_id,
                 "reason": reason,
-                "width_bits": 32,
+                "width_bits": width_bits,
             }
         )
 
@@ -992,7 +1010,7 @@ def _build_partial_symbolic_formula(
                     {
                         "kind": "opaque_operand",
                         "descriptor": descriptor,
-                        "width_bits": descriptor.get("width_bits", 32),
+                        "width_bits": descriptor.get("width_bits") or 32,
                     }
                 )
             value = lower(source)
@@ -1013,7 +1031,7 @@ def _build_partial_symbolic_formula(
                     {
                         "kind": "opaque_operand",
                         "descriptor": descriptor,
-                        "width_bits": descriptor.get("width_bits", 32),
+                        "width_bits": descriptor.get("width_bits") or 32,
                     }
                 )
             value = registry.add(
@@ -1040,7 +1058,7 @@ def _build_partial_symbolic_formula(
                     {
                         "kind": "opaque_operand",
                         "descriptor": descriptor,
-                        "width_bits": descriptor.get("width_bits", 32),
+                        "width_bits": descriptor.get("width_bits") or 32,
                     }
                 )
 
@@ -1155,7 +1173,11 @@ def _build_partial_symbolic_formula(
                             }
                         )
                     else:
-                        result = opaque(node_id, f"unsupported_lowering:{opcode}")
+                        result = opaque(
+                            node_id,
+                            f"unsupported_lowering:{opcode}",
+                            max(32, _destination_register_count(opcode) * 32),
+                        )
         elif kind == "reaching_definition_join":
             result = registry.add(
                 {
@@ -1220,6 +1242,270 @@ def _build_partial_symbolic_formula(
         ),
     }
     body["formula_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    return body
+
+
+LOWERED_FORMULA_KINDS = {
+    "identity",
+    "bvadd_mod",
+    "bvmul_add_mod",
+    "constant_memory_read",
+    "lop3",
+}
+
+
+OPAQUE_FORMULA_KINDS = {
+    "opaque_leaf",
+    "opaque_operand",
+    "opaque_symbol",
+    "opaque_operation",
+    "opaque_join",
+}
+
+
+def _type_check_partial_formula(formula: dict[str, Any]) -> dict[str, Any]:
+    nodes = {node["formula_node_sha256"]: node for node in formula.get("formula_nodes", [])}
+    errors = []
+    widths: dict[str, int] = {}
+    active: set[str] = set()
+
+    def width(node_id: str) -> int:
+        if node_id in widths:
+            return widths[node_id]
+        if node_id not in nodes:
+            errors.append(f"missing_node:{node_id}")
+            return 0
+        if node_id in active:
+            errors.append(f"formula_cycle:{node_id}")
+            return 0
+        active.add(node_id)
+        node = nodes[node_id]
+        kind = node.get("kind")
+        result_width = node.get("width_bits")
+        arguments = node.get("arguments", [])
+        argument_widths = [width(argument) for argument in arguments]
+        if not isinstance(result_width, int) or result_width <= 0:
+            errors.append(f"invalid_width:{node_id}")
+            result_width = 0
+        if kind == "bitvector_literal":
+            if arguments or not isinstance(node.get("value"), int) or not 0 <= node.get("value", -1) < 1 << result_width:
+                errors.append(f"invalid_literal:{node_id}")
+        elif kind == "identity":
+            if len(argument_widths) != 1 or argument_widths[0] != result_width:
+                errors.append(f"invalid_identity:{node_id}")
+        elif kind == "bvadd_mod":
+            if len(argument_widths) != 3 or any(item != result_width for item in argument_widths):
+                errors.append(f"invalid_add:{node_id}")
+        elif kind == "bvmul_add_mod":
+            if result_width == 32:
+                if len(argument_widths) != 3 or any(item != 32 for item in argument_widths):
+                    errors.append(f"invalid_imad32:{node_id}")
+            elif result_width == 64:
+                if len(argument_widths) != 3 or argument_widths != [32, 32, 64]:
+                    errors.append(f"invalid_imad64:{node_id}")
+                if node.get("factor_width_bits") != 32:
+                    errors.append(f"invalid_factor_width:{node_id}")
+                if node.get("factor_signedness") not in {"signed", "unsigned"}:
+                    errors.append(f"invalid_signedness:{node_id}")
+            else:
+                errors.append(f"invalid_imad_width:{node_id}")
+        elif kind == "constant_memory_read":
+            if arguments or result_width not in {8, 32, 64} or not isinstance(node.get("constant_offset"), int):
+                errors.append(f"invalid_constant_read:{node_id}")
+        elif kind == "lop3":
+            if len(argument_widths) != 3 or any(item != 32 for item in argument_widths):
+                errors.append(f"invalid_lop3:{node_id}")
+            if node.get("lut") not in {0x96, 0xE8}:
+                errors.append(f"invalid_lut:{node_id}")
+        elif kind in OPAQUE_FORMULA_KINDS:
+            if kind == "opaque_join" and any(item != result_width for item in argument_widths):
+                errors.append(f"invalid_opaque_join:{node_id}")
+        else:
+            errors.append(f"unknown_kind:{node_id}:{kind}")
+        active.remove(node_id)
+        widths[node_id] = result_width
+        return result_width
+
+    root_widths = [width(root) for root in formula.get("root_nodes", [])]
+    for node_id in sorted(nodes):
+        width(node_id)
+    if any(root not in nodes for root in formula.get("root_nodes", [])):
+        errors.append("missing_root")
+    if any(item != 32 for item in root_widths):
+        errors.append("invalid_root_width")
+    return {
+        "well_typed": not errors,
+        "errors": sorted(set(errors)),
+        "root_widths": root_widths,
+        "node_widths_sha256": hashlib.sha256(
+            canonical_json(dict(sorted(widths.items()))).encode("utf-8")
+        ).hexdigest(),
+    }
+
+
+def _translate_partial_formula_to_z3(
+    formula: dict[str, Any]
+) -> tuple[list[Any], list[Any]]:
+    if z3 is None:
+        raise RuntimeError("Install the proof dependencies to translate partial formulas")
+    type_check = _type_check_partial_formula(formula)
+    if not type_check["well_typed"]:
+        raise ValueError("Cannot translate an ill-typed partial formula")
+    nodes = {node["formula_node_sha256"]: node for node in formula["formula_nodes"]}
+    translated: dict[str, Any] = {}
+    symbols: dict[str, Any] = {}
+    constrained_symbols: set[str] = set()
+    assumptions = []
+
+    def lower(node_id: str) -> Any:
+        if node_id in translated:
+            return translated[node_id]
+        node = nodes[node_id]
+        kind = node["kind"]
+        width_bits = node["width_bits"]
+        arguments = [lower(argument) for argument in node.get("arguments", [])]
+        if kind == "bitvector_literal":
+            value = z3.BitVecVal(node["value"], width_bits)
+        elif kind == "identity":
+            value = arguments[0]
+        elif kind == "bvadd_mod":
+            value = sass_iadd3(arguments[0], arguments[1], arguments[2], width_bits)
+        elif kind == "bvmul_add_mod" and width_bits == 32:
+            value = sass_imad(arguments[0], arguments[1], arguments[2], 32)
+        elif kind == "bvmul_add_mod" and node["factor_signedness"] == "unsigned":
+            value = sass_imad_wide_unsigned(arguments[0], arguments[1], arguments[2], 32)
+        elif kind == "bvmul_add_mod":
+            value = sass_imad_wide_signed(arguments[0], arguments[1], arguments[2], 32)
+        elif kind == "constant_memory_read":
+            memory = z3.Array(
+                f"formula_memory_{node_id}", z3.BitVecSort(32), z3.BitVecSort(8)
+            )
+            address = z3.BitVecVal(node["constant_offset"] & 0xFFFFFFFF, 32)
+            value = sass_uldc(memory, address, width_bits // 8)
+        elif kind == "lop3":
+            value = sass_lop3(arguments[0], arguments[1], arguments[2], node["lut"], 32)
+        else:
+            if kind == "opaque_symbol":
+                symbol = node["symbol"]
+                value = symbols.setdefault(
+                    symbol, z3.BitVec(f"formula_symbol_{symbol}", width_bits)
+                )
+                domain = node.get("launch_domain_assumption")
+                if domain and symbol not in constrained_symbols:
+                    assumptions.extend(
+                        [
+                            z3.UGE(value, domain["minimum_inclusive"]),
+                            z3.ULT(value, domain["maximum_exclusive"]),
+                        ]
+                    )
+                    constrained_symbols.add(symbol)
+            else:
+                value = z3.BitVec(f"formula_opaque_{node_id}", width_bits)
+        translated[node_id] = value
+        return value
+
+    return [lower(root) for root in formula["root_nodes"]], assumptions
+
+
+def _local_lowering_obligations(formula: dict[str, Any]) -> list[dict[str, Any]]:
+    if z3 is None:
+        return []
+    obligations = []
+    for node in formula["formula_nodes"]:
+        if node["kind"] not in LOWERED_FORMULA_KINDS:
+            continue
+        width_bits = node["width_bits"]
+        arguments = [
+            z3.BitVec(f"local_{node['formula_node_sha256']}_{index}", 32 if node["kind"] == "bvmul_add_mod" and width_bits == 64 and index < 2 else width_bits)
+            for index, _ in enumerate(node.get("arguments", []))
+        ]
+        if node["kind"] == "identity":
+            implementation = arguments[0]
+            reference = sass_mov(arguments[0])
+        elif node["kind"] == "bvadd_mod":
+            implementation = z3.Extract(width_bits - 1, 0, arguments[0] + arguments[1] + arguments[2])
+            reference = sass_iadd3(arguments[0], arguments[1], arguments[2], width_bits)
+        elif node["kind"] == "bvmul_add_mod" and width_bits == 32:
+            implementation = z3.Extract(31, 0, arguments[0] * arguments[1] + arguments[2])
+            reference = sass_imad(arguments[0], arguments[1], arguments[2], 32)
+        elif node["kind"] == "bvmul_add_mod" and node["factor_signedness"] == "unsigned":
+            implementation = z3.Extract(
+                63,
+                0,
+                z3.ZeroExt(32, arguments[0]) * z3.ZeroExt(32, arguments[1]) + arguments[2],
+            )
+            reference = sass_imad_wide_unsigned(arguments[0], arguments[1], arguments[2], 32)
+        elif node["kind"] == "bvmul_add_mod":
+            implementation = z3.Extract(
+                63,
+                0,
+                z3.SignExt(32, arguments[0]) * z3.SignExt(32, arguments[1]) + arguments[2],
+            )
+            reference = sass_imad_wide_signed(arguments[0], arguments[1], arguments[2], 32)
+        elif node["kind"] == "constant_memory_read":
+            memory = z3.Array(
+                f"local_memory_{node['formula_node_sha256']}",
+                z3.BitVecSort(32),
+                z3.BitVecSort(8),
+            )
+            address = z3.BitVecVal(node["constant_offset"] & 0xFFFFFFFF, 32)
+            implementation = sass_uldc(memory, address, width_bits // 8)
+            reference_bytes = [
+                z3.Select(memory, address + index)
+                for index in range(width_bits // 8)
+            ]
+            reference = (
+                reference_bytes[0]
+                if len(reference_bytes) == 1
+                else z3.Concat(*reversed(reference_bytes))
+            )
+        else:
+            implementation = sass_lop3(arguments[0], arguments[1], arguments[2], node["lut"], 32)
+            reference = (
+                arguments[0] ^ arguments[1] ^ arguments[2]
+                if node["lut"] == 0x96
+                else (arguments[0] & arguments[1])
+                | (arguments[0] & arguments[2])
+                | (arguments[1] & arguments[2])
+            )
+        solver = z3.Solver()
+        solver.add(implementation != reference)
+        result = solver.check()
+        obligations.append(
+            {
+                "formula_node_sha256": node["formula_node_sha256"],
+                "formula_kind": node["kind"],
+                "solver_result": str(result),
+                "proved": result == z3.unsat,
+                "scope": "Local definitional equivalence to the proposed formula operator only; instruction premises and hardware behavior are excluded.",
+            }
+        )
+    return obligations
+
+
+def _analyze_partial_symbolic_formula(formula: dict[str, Any]) -> dict[str, Any]:
+    type_check = _type_check_partial_formula(formula)
+    obligations = _local_lowering_obligations(formula) if type_check["well_typed"] else []
+    translated_roots = 0
+    assumption_count = 0
+    if type_check["well_typed"] and z3 is not None:
+        roots, assumptions = _translate_partial_formula_to_z3(formula)
+        translated_roots = len(roots)
+        assumption_count = len(assumptions)
+    body = {
+        "type_check": type_check,
+        "z3_available": z3 is not None,
+        "translated_root_count": translated_roots,
+        "launch_domain_assumption_count": assumption_count,
+        "local_lowering_obligations": obligations,
+        "proved_local_lowering_obligations": sum(item["proved"] for item in obligations),
+        "total_local_lowering_obligations": len(obligations),
+        "all_local_lowering_obligations_proved": all(
+            item["proved"] for item in obligations
+        ),
+        "local_equivalence_scope": "Definitional correspondence between lowered formula-node operators and proposed equations; not instruction-premise, SASS, or hardware equivalence.",
+    }
+    body["analysis_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
     return body
 
 
@@ -1327,6 +1613,7 @@ def build_sass_expression_certificate(
                     if not node.get("semantic_binding")
                 )
                 partial_formula = _build_partial_symbolic_formula(roots, nodes)
+                partial_formula_analysis = _analyze_partial_symbolic_formula(partial_formula)
                 candidate_selection = {
                     "field": field,
                     "available": True,
@@ -1377,6 +1664,13 @@ def build_sass_expression_certificate(
                     "unsupported_or_entry_node_count": len(unsupported_nodes),
                     "expression_nodes": nodes,
                     "partial_symbolic_formula": partial_formula,
+                    "partial_formula_analysis": partial_formula_analysis,
+                    "partial_formula_well_typed": partial_formula_analysis["type_check"][
+                        "well_typed"
+                    ],
+                    "partial_formula_local_lowering_obligation_count": partial_formula_analysis[
+                        "total_local_lowering_obligations"
+                    ],
                     "partial_formula_lowered_operation_node_count": partial_formula[
                         "lowered_operation_node_count"
                     ],
@@ -1475,6 +1769,22 @@ def build_sass_expression_certificate(
         "all_target_fields_represented": all(
             selection.get("target_field_represented", False) for selection in selections
         ),
+        "all_partial_formulas_well_typed": all(
+            selection.get("partial_formula_well_typed") is True
+            for selection in selections
+        ),
+        "all_local_lowering_obligations_proved": all(
+            selection.get("partial_formula_analysis", {}).get(
+                "all_local_lowering_obligations_proved"
+            )
+            is True
+            for selection in selections
+        ),
+        "all_partial_formula_roots_translated": all(
+            selection.get("partial_formula_analysis", {}).get("translated_root_count")
+            == len(selection.get("partial_symbolic_formula", {}).get("root_nodes", []))
+            for selection in selections
+        ),
     }
     body = {
         "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Observed TID/CTAID leaves retain launch-dimension-derived symbolic domain assumptions, but SR naming correspondence, concrete values, acquisition semantics, and hardware behavior are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
@@ -1504,6 +1814,22 @@ def build_sass_expression_certificate(
             for selection in selections
         ),
         "partial_formula_ordered_operands_preserved": True,
+        "partial_formula_well_typed": all(
+            selection.get("partial_formula_well_typed") is True
+            for selection in selections
+        ),
+        "typed_z3_translation_established": all(
+            selection.get("partial_formula_analysis", {}).get("translated_root_count")
+            == len(selection.get("partial_symbolic_formula", {}).get("root_nodes", []))
+            for selection in selections
+        ),
+        "local_proposed_operator_lowering_equivalence_established": all(
+            selection.get("partial_formula_analysis", {}).get(
+                "all_local_lowering_obligations_proved"
+            )
+            is True
+            for selection in selections
+        ),
         "proposed_semantics_proof_bindings_established": any(
             selection.get("proof_backed_instruction_node_count", 0) > 0
             for selection in selections
@@ -1547,7 +1873,11 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         {
             key: value
             for key, value in selection.items()
-            if key not in {"expression_nodes", "partial_symbolic_formula"}
+            if key not in {
+                "expression_nodes",
+                "partial_symbolic_formula",
+                "partial_formula_analysis",
+            }
         }
         | {
             "expression_graph_sha256": hashlib.sha256(
@@ -1565,6 +1895,18 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
             "partial_formula_closed": selection.get("partial_symbolic_formula", {}).get(
                 "closed_formula"
             ),
+            "partial_formula_analysis_sha256": selection.get(
+                "partial_formula_analysis", {}
+            ).get("analysis_sha256"),
+            "partial_formula_all_local_lowering_obligations_proved": selection.get(
+                "partial_formula_analysis", {}
+            ).get("all_local_lowering_obligations_proved"),
+            "partial_formula_translated_root_count": selection.get(
+                "partial_formula_analysis", {}
+            ).get("translated_root_count"),
+            "partial_formula_launch_domain_assumption_count": selection.get(
+                "partial_formula_analysis", {}
+            ).get("launch_domain_assumption_count"),
         }
         for selection in certificate["selections"]
     ]
@@ -1603,6 +1945,13 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "partial_formula_ordered_operands_preserved": certificate[
             "partial_formula_ordered_operands_preserved"
         ],
+        "partial_formula_well_typed": certificate["partial_formula_well_typed"],
+        "typed_z3_translation_established": certificate[
+            "typed_z3_translation_established"
+        ],
+        "local_proposed_operator_lowering_equivalence_established": certificate[
+            "local_proposed_operator_lowering_equivalence_established"
+        ],
         "proposed_semantics_proof_bindings_established": certificate[
             "proposed_semantics_proof_bindings_established"
         ],
@@ -1639,6 +1988,9 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "summary_sha256"
     )
     selections = summary.get("selections", [])
+    source_certificate_link_valid = bool(
+        re.fullmatch(r"[0-9a-f]{64}", summary.get("source_certificate_sha256", ""))
+    )
     counts_consistent = (
         summary.get("total_selections") == len(selections)
         and summary.get("available_selections") == sum(selection["available"] for selection in selections)
@@ -1666,6 +2018,22 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
             >= len(selection.get("partial_formula_root_nodes", []))
             and selection.get("partial_formula_closed")
             == (selection.get("partial_formula_opaque_node_count") == 0)
+            and selection.get("partial_formula_well_typed") is True
+            and selection.get("partial_formula_all_local_lowering_obligations_proved")
+            is True
+            and selection.get("partial_formula_local_lowering_obligation_count")
+            == selection.get("partial_formula_lowered_operation_node_count")
+            and selection.get("partial_formula_translated_root_count")
+            == len(selection.get("partial_formula_root_nodes", []))
+            and isinstance(
+                selection.get("partial_formula_launch_domain_assumption_count"), int
+            )
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    selection.get("partial_formula_analysis_sha256", ""),
+                )
+            )
             for selection in selections
         )
         and summary.get("all_expression_instruction_semantics_bound")
@@ -1687,6 +2055,20 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("partial_proposed_symbolic_formulas_established")
         == all(bool(selection.get("partial_formula_sha256")) for selection in selections)
         and summary.get("partial_formula_ordered_operands_preserved") is True
+        and summary.get("partial_formula_well_typed")
+        == all(selection.get("partial_formula_well_typed") is True for selection in selections)
+        and summary.get("typed_z3_translation_established")
+        == all(
+            selection.get("partial_formula_translated_root_count")
+            == len(selection.get("partial_formula_root_nodes", []))
+            for selection in selections
+        )
+        and summary.get("local_proposed_operator_lowering_equivalence_established")
+        == all(
+            selection.get("partial_formula_all_local_lowering_obligations_proved")
+            is True
+            for selection in selections
+        )
         and _verify_expression_semantics_snapshot(
             summary.get("expression_opcode_semantics", {})
         )
@@ -1713,6 +2095,9 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("bounded_call_string_expression_reaching_definitions_established") is True
         and summary.get("partial_proposed_symbolic_formulas_established") is True
         and summary.get("partial_formula_ordered_operands_preserved") is True
+        and summary.get("partial_formula_well_typed") is True
+        and summary.get("typed_z3_translation_established") is True
+        and summary.get("local_proposed_operator_lowering_equivalence_established") is True
         and summary.get("proposed_semantics_proof_bindings_established") is True
         and summary.get("proof_premises_established_for_bound_instructions") is False
         and summary.get("special_register_launch_domain_assumptions_bound") is True
@@ -1729,8 +2114,15 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("kernel_memory_safety_established") is False
     )
     return {
-        "valid": bool(hash_valid and counts_consistent and boundaries_preserved and selections),
+        "valid": bool(
+            hash_valid
+            and source_certificate_link_valid
+            and counts_consistent
+            and boundaries_preserved
+            and selections
+        ),
         "summary_hash_valid": hash_valid,
+        "source_certificate_link_valid": source_certificate_link_valid,
         "counts_consistent": counts_consistent,
         "boundaries_preserved": boundaries_preserved,
     }
@@ -1805,6 +2197,9 @@ def _selection_graph_consistent(
     expected_partial_formula = _build_partial_symbolic_formula(
         selection.get("root_nodes", []), nodes
     )
+    expected_partial_formula_analysis = _analyze_partial_symbolic_formula(
+        expected_partial_formula
+    )
     return bool(
         selection.get("available")
         and selection.get("node_count") == len(nodes)
@@ -1843,6 +2238,12 @@ def _selection_graph_consistent(
         == expected_partial_formula["lowered_operation_node_count"]
         and selection.get("partial_formula_opaque_node_count")
         == expected_partial_formula["opaque_node_count"]
+        and selection.get("partial_formula_analysis")
+        == expected_partial_formula_analysis
+        and selection.get("partial_formula_well_typed")
+        == expected_partial_formula_analysis["type_check"]["well_typed"]
+        and selection.get("partial_formula_local_lowering_obligation_count")
+        == expected_partial_formula_analysis["total_local_lowering_obligations"]
         and all(
             _semantic_binding_consistent(node, snapshot) for node in instruction_nodes
         )
@@ -1872,6 +2273,9 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("bounded_call_string_expression_reaching_definitions_established") is True
         and certificate.get("partial_proposed_symbolic_formulas_established") is True
         and certificate.get("partial_formula_ordered_operands_preserved") is True
+        and certificate.get("partial_formula_well_typed") is True
+        and certificate.get("typed_z3_translation_established") is True
+        and certificate.get("local_proposed_operator_lowering_equivalence_established") is True
         and certificate.get("proposed_semantics_proof_bindings_established") is True
         and certificate.get("proof_premises_established_for_bound_instructions") is False
         and certificate.get("special_register_launch_domain_assumptions_bound") is True
@@ -1938,6 +2342,22 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("partial_proposed_symbolic_formulas_established")
         == all(
             bool(selection.get("partial_symbolic_formula", {}).get("formula_nodes"))
+            for selection in selections
+        )
+        and certificate.get("partial_formula_well_typed")
+        == all(selection.get("partial_formula_well_typed") is True for selection in selections)
+        and certificate.get("typed_z3_translation_established")
+        == all(
+            selection.get("partial_formula_analysis", {}).get("translated_root_count")
+            == len(selection.get("partial_symbolic_formula", {}).get("root_nodes", []))
+            for selection in selections
+        )
+        and certificate.get("local_proposed_operator_lowering_equivalence_established")
+        == all(
+            selection.get("partial_formula_analysis", {}).get(
+                "all_local_lowering_obligations_proved"
+            )
+            is True
             for selection in selections
         )
     )

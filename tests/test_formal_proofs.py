@@ -287,9 +287,11 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
+@unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
+            _analyze_partial_symbolic_formula,
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
             _build_partial_symbolic_formula,
@@ -362,6 +364,7 @@ class SassExpressionTests(unittest.TestCase):
         self.assertIsNone(_semantic_requirement("LOP3.LUT", "R4,0x96,!PT"))
         self.assertIsNone(_semantic_requirement("IMAD.U32", "R4,R5"))
         self.assertIsNone(_semantic_requirement("IMAD.IADD", "R4,R5,0x1,-R6"))
+        self.assertIsNone(_semantic_requirement("IMAD", "0x4,R5,R6,R7"))
         self.assertIsNone(
             _semantic_requirement("UIADD3", "UR8,UP1,UR11,UR8,URZ")
         )
@@ -490,8 +493,35 @@ class SassExpressionTests(unittest.TestCase):
         unknown_leaf = next(node for node in unknown_nodes if node["kind"] == "special_register")
         self.assertIsNone(unknown_leaf["launch_domain_assumption"])
         partial_formula = _build_partial_symbolic_formula(roots, nodes)
+        partial_formula_analysis = _analyze_partial_symbolic_formula(partial_formula)
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
+        self.assertTrue(partial_formula_analysis["type_check"]["well_typed"])
+        self.assertTrue(partial_formula_analysis["all_local_lowering_obligations_proved"])
+        self.assertEqual(partial_formula_analysis["translated_root_count"], len(roots))
+        self.assertEqual(
+            partial_formula_analysis["total_local_lowering_obligations"],
+            partial_formula["lowered_operation_node_count"],
+        )
+        ill_typed_formula = copy.deepcopy(partial_formula)
+        typed_node = next(
+            node
+            for node in ill_typed_formula["formula_nodes"]
+            if node["kind"] == "identity"
+        )
+        typed_node["width_bits"] = 31
+        self.assertFalse(
+            _analyze_partial_symbolic_formula(ill_typed_formula)["type_check"][
+                "well_typed"
+            ]
+        )
+        special_formula = _build_partial_symbolic_formula(special_roots, special_nodes)
+        self.assertEqual(
+            _analyze_partial_symbolic_formula(special_formula)[
+                "launch_domain_assumption_count"
+            ],
+            2,
+        )
         self.assertIn(
             "unmodeled_register_pair_projection",
             {
@@ -545,6 +575,11 @@ class SassExpressionTests(unittest.TestCase):
                     "closed_supported_formula": False,
                     "expression_nodes": nodes,
                     "partial_symbolic_formula": partial_formula,
+                    "partial_formula_analysis": partial_formula_analysis,
+                    "partial_formula_well_typed": True,
+                    "partial_formula_local_lowering_obligation_count": partial_formula_analysis[
+                        "total_local_lowering_obligations"
+                    ],
                     "partial_formula_lowered_operation_node_count": partial_formula[
                         "lowered_operation_node_count"
                     ],
@@ -577,6 +612,9 @@ class SassExpressionTests(unittest.TestCase):
             "bounded_call_string_expression_reaching_definitions_established": True,
             "partial_proposed_symbolic_formulas_established": True,
             "partial_formula_ordered_operands_preserved": True,
+            "partial_formula_well_typed": True,
+            "typed_z3_translation_established": True,
+            "local_proposed_operator_lowering_equivalence_established": True,
             "proposed_semantics_proof_bindings_established": True,
             "proof_premises_established_for_bound_instructions": False,
             "special_register_launch_domain_assumptions_bound": True,
@@ -607,6 +645,19 @@ class SassExpressionTests(unittest.TestCase):
             canonical_json(summary_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_expression_summary(forged_summary)["valid"])
+        forged_source_link = copy.deepcopy(summary)
+        forged_source_link["source_certificate_sha256"] = "invalid"
+        source_link_body = {
+            key: value
+            for key, value in forged_source_link.items()
+            if key != "summary_sha256"
+        }
+        forged_source_link["summary_sha256"] = hashlib.sha256(
+            canonical_json(source_link_body).encode("utf-8")
+        ).hexdigest()
+        source_link_verification = verify_sass_expression_summary(forged_source_link)
+        self.assertFalse(source_link_verification["valid"])
+        self.assertFalse(source_link_verification["source_certificate_link_valid"])
         damaged = copy.deepcopy(certificate)
         damaged["selections"][0]["expression_nodes"][0]["kind"] = "forged"
         body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}
@@ -649,7 +700,7 @@ class SassExpressionTests(unittest.TestCase):
         forged_formula = copy.deepcopy(certificate)
         formula = forged_formula["selections"][0]["partial_symbolic_formula"]
         formula_node = formula["formula_nodes"][0]
-        formula_node["kind"] = "forged_formula"
+        formula_node["width_bits"] = 31
         formula_node_body = {
             key: value
             for key, value in formula_node.items()

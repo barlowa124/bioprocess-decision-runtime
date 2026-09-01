@@ -524,9 +524,11 @@
     "reported_grid_volume": 4,
     "scope": "Launch-coordinate domain assumptions derived from retained Nsight grid/block dimensions; SR naming correspondence, runtime values, and hardware acquisition are not established."
   },
+  "local_proposed_operator_lowering_equivalence_established": true,
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
   "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
   "partial_formula_ordered_operands_preserved": true,
+  "partial_formula_well_typed": true,
   "partial_proposed_symbolic_formulas_established": true,
   "proof_premises_established_for_bound_instructions": false,
   "proposed_semantics_proof_bindings_established": true,
@@ -559,15 +561,21 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 133,
+      "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_analysis_sha256": "57ea278e59173e2ee1b0e830f6ac25073d7ba0914c9195d4963b74f09053ffc2",
       "partial_formula_closed": false,
+      "partial_formula_launch_domain_assumption_count": 10,
+      "partial_formula_local_lowering_obligation_count": 21,
       "partial_formula_lowered_operation_node_count": 21,
       "partial_formula_node_count": 93,
       "partial_formula_opaque_node_count": 60,
       "partial_formula_root_nodes": [
-        "09b50d317e49bece596e4450a30ac665e18493fd6cb4b32205ee808c6eee15dd",
-        "fa269daba5b87ae2fcd5c06e804b594048be297c247cb622c5a5122a25874a2c"
+        "4e838fcda3d011213f0e2277efc0a41d5d3b9e867d9af456c200dd25407b903e",
+        "dca25e37b0664df01d02bd892b8e640049dc88f2dc490c1edabc4ddf5338a021"
       ],
-      "partial_formula_sha256": "2a05bbc2bc6d7ccad0ebcf473092c687ce4fd82bc803fcbe9b38cfa2a5396ba4",
+      "partial_formula_sha256": "56d489d9de9f4a5317e051eb514881c23998eeb0298045f96d0898d8c8af3712",
+      "partial_formula_translated_root_count": 2,
+      "partial_formula_well_typed": true,
       "proof_backed_instruction_node_count": 28,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -645,15 +653,21 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 150,
+      "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_analysis_sha256": "881041ff94dce6a32f62d6635d4d26409cc281d0731b145b482035034b4ee4c6",
       "partial_formula_closed": false,
+      "partial_formula_launch_domain_assumption_count": 8,
+      "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
       "partial_formula_node_count": 105,
       "partial_formula_opaque_node_count": 64,
       "partial_formula_root_nodes": [
-        "219205f45663b32aa721106b4835550c371f45840d8679b8e66477e8794d1a4d",
-        "7343392fb69b17ec3fb1a6286a310369f7058735f1bfe7ae752dc00fa80131cb"
+        "0db9d7d36b254d3736247eae90045173be86c99a9ad7fd8ed433f6abe6c3a36e",
+        "1e98561c85affe4aa8cef32dcad7eed091c43c0349b51bd4a432af5e3f994208"
       ],
-      "partial_formula_sha256": "0592891ed951c5369a3638bd61d98cc3ff0dbf67cee535c10fbea483148a19de",
+      "partial_formula_sha256": "30f936abe34669ee54d5c937076a42ac5e0fe21a167a05dc6ccc9009bb60f6da",
+      "partial_formula_translated_root_count": 2,
+      "partial_formula_well_typed": true,
       "proof_backed_instruction_node_count": 34,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -732,15 +746,21 @@
       "memory_opcode": "LDGSTS.E.BYPASS.LTC128B.128",
       "memory_space": "global",
       "node_count": 144,
+      "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_analysis_sha256": "fc13413a165aa6cac62080ae8dcdae996aab37409433f9cc8f479b8266f43bde",
       "partial_formula_closed": false,
+      "partial_formula_launch_domain_assumption_count": 8,
+      "partial_formula_local_lowering_obligation_count": 24,
       "partial_formula_lowered_operation_node_count": 24,
       "partial_formula_node_count": 99,
       "partial_formula_opaque_node_count": 62,
       "partial_formula_root_nodes": [
-        "11b0091fbf0e91fd76c5ac6bbbf0a553a6968460417c0678a65428298c2211d5",
-        "b92ed2c925ee8072f1d6b1ce3586e94c36da7beb4707a9c32dcf58d18870f92e"
+        "ab6e75ba3994a478205578afb5f38e1ac7b8a0a17a1ecc068f479052fdf73ebf",
+        "13f9828e5b9c6f310be24d28cb788423e0ec8d1042675e212260de3bfa13d8b7"
       ],
-      "partial_formula_sha256": "e2cbbc492d5c53f0893064cd6507d5bef18d6a93cbfefb9a1abdb0885a988831",
+      "partial_formula_sha256": "84230126b5d5d9f99d68bb02c217c4969ebe40ddcb15e0b6b2660922bfe40ea5",
+      "partial_formula_translated_root_count": 2,
+      "partial_formula_well_typed": true,
       "proof_backed_instruction_node_count": 32,
       "referenced_semantics_obligations": [
         "imad_iadd_and_u32_share_modular_multiply_add_core",
@@ -817,15 +837,21 @@
       "memory_opcode": "STG.E.64",
       "memory_space": "global",
       "node_count": 172,
+      "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_analysis_sha256": "9126ac2185957096835074f893f7f1f2ea1d667a55bca271e082ee85bf95c9ff",
       "partial_formula_closed": false,
+      "partial_formula_launch_domain_assumption_count": 10,
+      "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
       "partial_formula_node_count": 121,
       "partial_formula_opaque_node_count": 76,
       "partial_formula_root_nodes": [
-        "103cda66f4e22abb9b0e022453422734596930726b6e9dd010d586aca543ed4b",
-        "5208856fba5a690673a5d3066ba274b3dc7ba01b903e1a50abacbeaff38054e8"
+        "b1fe29e7561b14ab7a2f214bb10210156534ad126f08e3512f37f12a1a25f889",
+        "174177fef6472d02be8652f1419f3d8c974f1dee660cbe5f1bb223ab5d8007e1"
       ],
-      "partial_formula_sha256": "6ad0be4c519cff9f38d19d0f6b8c37ec72719934becd477e68a4363a05e514b8",
+      "partial_formula_sha256": "ade6b6eae84a6907e85ad92ae896c791fef3032e713249caa8b1436f500da8e5",
+      "partial_formula_translated_root_count": 2,
+      "partial_formula_well_typed": true,
       "proof_backed_instruction_node_count": 36,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
@@ -905,15 +931,21 @@
       "memory_opcode": "STG.E.128",
       "memory_space": "global",
       "node_count": 241,
+      "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_analysis_sha256": "8cf2429b02169cd15c01075c6b7c54e375e2d8dbc67c2250671774d680987f8c",
       "partial_formula_closed": false,
+      "partial_formula_launch_domain_assumption_count": 10,
+      "partial_formula_local_lowering_obligation_count": 43,
       "partial_formula_lowered_operation_node_count": 43,
       "partial_formula_node_count": 154,
       "partial_formula_opaque_node_count": 94,
       "partial_formula_root_nodes": [
-        "698ff15ff414927b58871b4aa124bff594a539529c07bed4f1f0e393151f0a2c",
-        "87875ec85d2d8abe2820a829487fe27317f80c42202f7ff0231af01b77b071c3"
+        "76491e0ea6688bbc332c157263d8aa3a8e0bcc1a90da88a53cf2736f96a977a4",
+        "a5805bae1dc72fdb0f072333dd976b38ea583a6142324ff13b852dfe3040ea99"
       ],
-      "partial_formula_sha256": "f0daca6d048c1e1d165887b90d1fdff2f912b48f85ced329057882ef9eb8664b",
+      "partial_formula_sha256": "f1077113a40964c88031a7405d5282f9d4d88dc9c03533c4b39068b441ea2bea",
+      "partial_formula_translated_root_count": 2,
+      "partial_formula_well_typed": true,
       "proof_backed_instruction_node_count": 61,
       "referenced_semantics_obligations": [
         "iadd3_matches_ripple_carry_sum",
@@ -977,12 +1009,13 @@
       "unsupported_or_entry_node_count": 62
     }
   ],
-  "source_certificate_sha256": "980ddba9223ff1256e63dc3ad8664742ee8573fcc5f86c6f9c0ec7e07d21c113",
+  "source_certificate_sha256": "788021bac1e624908435bedefa8b47adb15e9589335fdf399108537ebefe7110",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "315468b906f4ce532c4d988e49107c64f67c373ea7dbc446a02a8f78dd4bbd29",
+  "summary_sha256": "e4f85660324c3b321a54cc72f9d1b457613db0630ab92314bbf66017c0d59805",
   "total_selections": 5,
+  "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
 }
