@@ -1,5 +1,7 @@
 {
   "all_expression_instruction_semantics_bound": false,
+  "all_selected_root_intervals_full_width_unknown": true,
+  "assumption_conditioned_effective_address_bounds_established": false,
   "available_selections": 5,
   "bounded_call_string_expression_reaching_definitions_established": true,
   "closed_supported_formulas": 0,
@@ -527,6 +529,7 @@
   "local_proposed_operator_lowering_equivalence_established": true,
   "logical_bounds_certificate_sha256": "48be34084e4bd8c4615805014846ae1c4475855395d3c10845885fd04f39dcfe",
   "nsight_certificate_sha256": "519ab0dd02f00ed10d1e466587ffbd0c832d1e0795aa0d6daba258956c792ccb",
+  "partial_formula_interval_analysis_established": true,
   "partial_formula_ordered_operands_preserved": true,
   "partial_formula_well_typed": true,
   "partial_proposed_symbolic_formulas_established": true,
@@ -538,7 +541,7 @@
   "sass_memory_certificate_sha256": "0af4d01c4aa68014868fd020002982c8bf711699c1df2a4110d30d4c9bc2040b",
   "sass_semantics_certificate_sha256": "6c463440e34c600f2d8159829b0e400fd856a92fc610981d7ebb81ad85d1ba56",
   "sass_to_logical_stride_correspondence_established": false,
-  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Observed TID/CTAID leaves retain launch-dimension-derived symbolic domain assumptions, but SR naming correspondence, concrete values, acquisition semantics, and hardware behavior are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+  "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
   "selected_sass_address_expression_dags_established": true,
   "selections": [
     {
@@ -562,13 +565,43 @@
       "memory_space": "global",
       "node_count": 133,
       "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_analysis_sha256": "57ea278e59173e2ee1b0e830f6ac25073d7ba0914c9195d4963b74f09053ffc2",
+      "partial_formula_assumption_bounded_interval_node_count": 11,
+      "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
+      "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
+      "partial_formula_exact_interval_node_count": 18,
+      "partial_formula_interval_analysis_sha256": "c886edc162dc3685473201ee2610d8691fcb3e712274d87c8ebc1a19ea6b26fc",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 21,
       "partial_formula_lowered_operation_node_count": 21,
       "partial_formula_node_count": 93,
       "partial_formula_opaque_node_count": 60,
+      "partial_formula_root_intervals": [
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "4e838fcda3d011213f0e2277efc0a41d5d3b9e867d9af456c200dd25407b903e",
+          "full_width_unknown": true,
+          "interval_sha256": "1a54e401f1a93ffc32017e33fdc3e9b4f3899805acc47be5c541f551a3b0a82e",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        },
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "dca25e37b0664df01d02bd892b8e640049dc88f2dc490c1edabc4ddf5338a021",
+          "full_width_unknown": true,
+          "interval_sha256": "629dec47bb1a65793a8bac73d67dbd69492cc8f36d32d819b6a68cdd04a31a6f",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        }
+      ],
       "partial_formula_root_nodes": [
         "4e838fcda3d011213f0e2277efc0a41d5d3b9e867d9af456c200dd25407b903e",
         "dca25e37b0664df01d02bd892b8e640049dc88f2dc490c1edabc4ddf5338a021"
@@ -654,13 +687,43 @@
       "memory_space": "global",
       "node_count": 150,
       "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_analysis_sha256": "881041ff94dce6a32f62d6635d4d26409cc281d0731b145b482035034b4ee4c6",
+      "partial_formula_assumption_bounded_interval_node_count": 9,
+      "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
+      "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
+      "partial_formula_exact_interval_node_count": 18,
+      "partial_formula_interval_analysis_sha256": "276c3696645020af5b58c67d1a5f6693c7c8feddcc979211bcab82b3c49acb9f",
       "partial_formula_launch_domain_assumption_count": 8,
       "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
       "partial_formula_node_count": 105,
       "partial_formula_opaque_node_count": 64,
+      "partial_formula_root_intervals": [
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "0db9d7d36b254d3736247eae90045173be86c99a9ad7fd8ed433f6abe6c3a36e",
+          "full_width_unknown": true,
+          "interval_sha256": "22a286cf3bacbfdf43a666220544941de45d4db9451124349fcfadf9271d23b4",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        },
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "1e98561c85affe4aa8cef32dcad7eed091c43c0349b51bd4a432af5e3f994208",
+          "full_width_unknown": true,
+          "interval_sha256": "ffbf683b13407766e76b7a880eedb44f1a1c3f7de7304621711f78185913a23a",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        }
+      ],
       "partial_formula_root_nodes": [
         "0db9d7d36b254d3736247eae90045173be86c99a9ad7fd8ed433f6abe6c3a36e",
         "1e98561c85affe4aa8cef32dcad7eed091c43c0349b51bd4a432af5e3f994208"
@@ -747,13 +810,43 @@
       "memory_space": "global",
       "node_count": 144,
       "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_analysis_sha256": "fc13413a165aa6cac62080ae8dcdae996aab37409433f9cc8f479b8266f43bde",
+      "partial_formula_assumption_bounded_interval_node_count": 9,
+      "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
+      "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
+      "partial_formula_exact_interval_node_count": 17,
+      "partial_formula_interval_analysis_sha256": "95ad2379535534473cb17d3b5f0c401098fb37e65924dc9cad0abdb79f6f27a1",
       "partial_formula_launch_domain_assumption_count": 8,
       "partial_formula_local_lowering_obligation_count": 24,
       "partial_formula_lowered_operation_node_count": 24,
       "partial_formula_node_count": 99,
       "partial_formula_opaque_node_count": 62,
+      "partial_formula_root_intervals": [
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "ab6e75ba3994a478205578afb5f38e1ac7b8a0a17a1ecc068f479052fdf73ebf",
+          "full_width_unknown": true,
+          "interval_sha256": "9f6ddd7f8ecf6ddb3f6061d679a9c5acdfd18535ab2c2b64665af36349cc8966",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        },
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "13f9828e5b9c6f310be24d28cb788423e0ec8d1042675e212260de3bfa13d8b7",
+          "full_width_unknown": true,
+          "interval_sha256": "d8614b367eaffbb9353d3df0752ef04b7fe8058adeac5ae33183a1e82e0bd7ad",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        }
+      ],
       "partial_formula_root_nodes": [
         "ab6e75ba3994a478205578afb5f38e1ac7b8a0a17a1ecc068f479052fdf73ebf",
         "13f9828e5b9c6f310be24d28cb788423e0ec8d1042675e212260de3bfa13d8b7"
@@ -838,13 +931,43 @@
       "memory_space": "global",
       "node_count": 172,
       "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_analysis_sha256": "9126ac2185957096835074f893f7f1f2ea1d667a55bca271e082ee85bf95c9ff",
+      "partial_formula_assumption_bounded_interval_node_count": 12,
+      "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
+      "partial_formula_bounded_interval_node_count": 31,
       "partial_formula_closed": false,
+      "partial_formula_exact_interval_node_count": 25,
+      "partial_formula_interval_analysis_sha256": "806525905a8c3645ce4f1ce305f293c999e055d5c0472615e3eb3c0f79e6cfbc",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
       "partial_formula_node_count": 121,
       "partial_formula_opaque_node_count": 76,
+      "partial_formula_root_intervals": [
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "b1fe29e7561b14ab7a2f214bb10210156534ad126f08e3512f37f12a1a25f889",
+          "full_width_unknown": true,
+          "interval_sha256": "327a1787600d8a24495045fcbffe998b792ae0d8118392716dd4020971626d02",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        },
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "174177fef6472d02be8652f1419f3d8c974f1dee660cbe5f1bb223ab5d8007e1",
+          "full_width_unknown": true,
+          "interval_sha256": "d5c0899702a6f66c9873193f6e74c214334d3b00acb01a9221762a07e0ac0ee4",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        }
+      ],
       "partial_formula_root_nodes": [
         "b1fe29e7561b14ab7a2f214bb10210156534ad126f08e3512f37f12a1a25f889",
         "174177fef6472d02be8652f1419f3d8c974f1dee660cbe5f1bb223ab5d8007e1"
@@ -932,13 +1055,43 @@
       "memory_space": "global",
       "node_count": 241,
       "partial_formula_all_local_lowering_obligations_proved": true,
+      "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_analysis_sha256": "8cf2429b02169cd15c01075c6b7c54e375e2d8dbc67c2250671774d680987f8c",
+      "partial_formula_assumption_bounded_interval_node_count": 14,
+      "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
+      "partial_formula_bounded_interval_node_count": 33,
       "partial_formula_closed": false,
+      "partial_formula_exact_interval_node_count": 27,
+      "partial_formula_interval_analysis_sha256": "ad8795c69a05911bcaf79ceca97a50edc7e3011393a4154071546ee14986894d",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 43,
       "partial_formula_lowered_operation_node_count": 43,
       "partial_formula_node_count": 154,
       "partial_formula_opaque_node_count": 94,
+      "partial_formula_root_intervals": [
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "76491e0ea6688bbc332c157263d8aa3a8e0bcc1a90da88a53cf2736f96a977a4",
+          "full_width_unknown": true,
+          "interval_sha256": "7e7ad28cce33081838678c65596287f42ae504f1eb5b480f40d06d36c7586c19",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        },
+        {
+          "basis": "unbounded_opaque_operation",
+          "bound_depends_on_assumption": false,
+          "exact": false,
+          "formula_node_sha256": "a5805bae1dc72fdb0f072333dd976b38ea583a6142324ff13b852dfe3040ea99",
+          "full_width_unknown": true,
+          "interval_sha256": "987d002c0e06e102065cbbf7b1f151526f03ac59c3cd2208bdb6bd1ce69efe0f",
+          "maximum_inclusive": 4294967295,
+          "minimum_inclusive": 0,
+          "width_bits": 32
+        }
+      ],
       "partial_formula_root_nodes": [
         "76491e0ea6688bbc332c157263d8aa3a8e0bcc1a90da88a53cf2736f96a977a4",
         "a5805bae1dc72fdb0f072333dd976b38ea583a6142324ff13b852dfe3040ea99"
@@ -1009,12 +1162,12 @@
       "unsupported_or_entry_node_count": 62
     }
   ],
-  "source_certificate_sha256": "788021bac1e624908435bedefa8b47adb15e9589335fdf399108537ebefe7110",
+  "source_certificate_sha256": "c3acb8911b52b69769837228c3283c0f516c2e413617a88912c44aaaa06b2244",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "e4f85660324c3b321a54cc72f9d1b457613db0630ab92314bbf66017c0d59805",
+  "summary_sha256": "50b93f9e62c20546a55982d6e0e97ca98eb06b4570e7c8a274751000acd4eef6",
   "total_selections": 5,
   "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false

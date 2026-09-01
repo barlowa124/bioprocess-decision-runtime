@@ -1320,6 +1320,16 @@ def _type_check_partial_formula(formula: dict[str, Any]) -> dict[str, Any]:
         elif kind in OPAQUE_FORMULA_KINDS:
             if kind == "opaque_join" and any(item != result_width for item in argument_widths):
                 errors.append(f"invalid_opaque_join:{node_id}")
+            if kind == "opaque_symbol" and node.get("launch_domain_assumption"):
+                domain = node["launch_domain_assumption"]
+                minimum = domain.get("minimum_inclusive")
+                maximum = domain.get("maximum_exclusive")
+                if not (
+                    isinstance(minimum, int)
+                    and isinstance(maximum, int)
+                    and 0 <= minimum < maximum <= 1 << result_width
+                ):
+                    errors.append(f"invalid_symbol_domain:{node_id}")
         else:
             errors.append(f"unknown_kind:{node_id}:{kind}")
         active.remove(node_id)
@@ -1509,6 +1519,206 @@ def _analyze_partial_symbolic_formula(formula: dict[str, Any]) -> dict[str, Any]
     return body
 
 
+def _analyze_partial_formula_intervals(formula: dict[str, Any]) -> dict[str, Any]:
+    type_check = _type_check_partial_formula(formula)
+    if not type_check["well_typed"]:
+        raise ValueError("Cannot analyze intervals for an ill-typed partial formula")
+    nodes = {node["formula_node_sha256"]: node for node in formula["formula_nodes"]}
+    intervals: dict[str, dict[str, Any]] = {}
+
+    def record(
+        node_id: str,
+        minimum: int,
+        maximum: int,
+        basis: str,
+        bound_depends_on_assumption: bool,
+    ) -> dict[str, Any]:
+        width_bits = nodes[node_id]["width_bits"]
+        maximum_value = (1 << width_bits) - 1
+        body = {
+            "formula_node_sha256": node_id,
+            "width_bits": width_bits,
+            "minimum_inclusive": minimum,
+            "maximum_inclusive": maximum,
+            "basis": basis,
+            "bound_depends_on_assumption": bound_depends_on_assumption,
+            "exact": minimum == maximum,
+            "full_width_unknown": minimum == 0 and maximum == maximum_value,
+        }
+        return {
+            **body,
+            "interval_sha256": hashlib.sha256(
+                canonical_json(body).encode("utf-8")
+            ).hexdigest(),
+        }
+
+    def full(node_id: str, basis: str) -> dict[str, Any]:
+        return record(
+            node_id,
+            0,
+            (1 << nodes[node_id]["width_bits"]) - 1,
+            basis,
+            False,
+        )
+
+    def analyze(node_id: str) -> dict[str, Any]:
+        if node_id in intervals:
+            return intervals[node_id]
+        node = nodes[node_id]
+        kind = node["kind"]
+        arguments = [analyze(argument) for argument in node.get("arguments", [])]
+        width_bits = node["width_bits"]
+        modulus = 1 << width_bits
+        bound_depends_on_assumption = any(
+            argument["bound_depends_on_assumption"] for argument in arguments
+        )
+        if kind == "bitvector_literal":
+            result = record(node_id, node["value"], node["value"], "literal", False)
+        elif kind == "opaque_symbol" and node.get("launch_domain_assumption"):
+            domain = node["launch_domain_assumption"]
+            result = record(
+                node_id,
+                domain["minimum_inclusive"],
+                domain["maximum_exclusive"] - 1,
+                "launch_domain_assumption",
+                True,
+            )
+        elif kind == "identity":
+            result = record(
+                node_id,
+                arguments[0]["minimum_inclusive"],
+                arguments[0]["maximum_inclusive"],
+                "identity",
+                bound_depends_on_assumption,
+            )
+        elif kind == "opaque_join" and arguments:
+            result = record(
+                node_id,
+                min(argument["minimum_inclusive"] for argument in arguments),
+                max(argument["maximum_inclusive"] for argument in arguments),
+                "reaching_definition_join_hull",
+                bound_depends_on_assumption,
+            )
+        elif kind == "bvadd_mod":
+            if all(argument["exact"] for argument in arguments):
+                value = sum(argument["minimum_inclusive"] for argument in arguments) % modulus
+                result = record(node_id, value, value, "exact_modular_addition", bound_depends_on_assumption)
+            else:
+                minimum = sum(argument["minimum_inclusive"] for argument in arguments)
+                maximum = sum(argument["maximum_inclusive"] for argument in arguments)
+                result = (
+                    record(
+                        node_id,
+                        minimum,
+                        maximum,
+                        "non_wrapping_modular_addition",
+                        bound_depends_on_assumption,
+                    )
+                    if maximum < modulus
+                    else full(node_id, "addition_wrap_or_unknown")
+                )
+        elif kind == "bvmul_add_mod":
+            if all(argument["exact"] for argument in arguments):
+                factors = [argument["minimum_inclusive"] for argument in arguments[:2]]
+                if width_bits == 64 and node.get("factor_signedness") == "signed":
+                    factors = [
+                        value - (1 << 32) if value >= 1 << 31 else value
+                        for value in factors
+                    ]
+                value = (factors[0] * factors[1] + arguments[2]["minimum_inclusive"]) % modulus
+                result = record(node_id, value, value, "exact_modular_multiply_add", bound_depends_on_assumption)
+            else:
+                signed_nonnegative = not (
+                    width_bits == 64
+                    and node.get("factor_signedness") == "signed"
+                    and any(argument["maximum_inclusive"] >= 1 << 31 for argument in arguments[:2])
+                )
+                minimum = (
+                    arguments[0]["minimum_inclusive"]
+                    * arguments[1]["minimum_inclusive"]
+                    + arguments[2]["minimum_inclusive"]
+                )
+                maximum = (
+                    arguments[0]["maximum_inclusive"]
+                    * arguments[1]["maximum_inclusive"]
+                    + arguments[2]["maximum_inclusive"]
+                )
+                result = (
+                    record(
+                        node_id,
+                        minimum,
+                        maximum,
+                        "non_wrapping_modular_multiply_add",
+                        bound_depends_on_assumption,
+                    )
+                    if signed_nonnegative and maximum < modulus
+                    else full(node_id, "multiply_add_wrap_signed_or_unknown")
+                )
+        elif kind == "lop3" and all(argument["exact"] for argument in arguments):
+            first, second, third = (
+                argument["minimum_inclusive"] for argument in arguments
+            )
+            value = (
+                first ^ second ^ third
+                if node["lut"] == 0x96
+                else (first & second) | (first & third) | (second & third)
+            )
+            result = record(node_id, value, value, "exact_lop3", bound_depends_on_assumption)
+        else:
+            result = full(node_id, f"unbounded_{kind}")
+        intervals[node_id] = result
+        return result
+
+    root_intervals = [analyze(root) for root in formula["root_nodes"]]
+    for node_id in sorted(nodes):
+        analyze(node_id)
+    records = [intervals[node_id] for node_id in sorted(intervals)]
+    body = {
+        "scope": "Unsigned conservative intervals over proposed partial formula operators; launch-coordinate ranges are assumptions and opaque values remain full-width.",
+        "intervals": records,
+        "root_intervals": root_intervals,
+        "node_count": len(records),
+        "bounded_node_count": sum(not item["full_width_unknown"] for item in records),
+        "exact_node_count": sum(item["exact"] for item in records),
+        "assumption_bounded_node_count": sum(
+            not item["full_width_unknown"] and item["bound_depends_on_assumption"]
+            for item in records
+        ),
+        "all_nodes_analyzed": len(records) == len(nodes),
+        "all_root_intervals_full_width_unknown": all(
+            item["full_width_unknown"] for item in root_intervals
+        ),
+        "assumption_conditioned_nontrivial_root_interval_count": sum(
+            not item["full_width_unknown"] and item["bound_depends_on_assumption"]
+            for item in root_intervals
+        ),
+        "effective_address_bounds_established": False,
+        "hardware_semantics_established": False,
+    }
+    body["analysis_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    return body
+
+
+def _verify_interval_record(record: dict[str, Any]) -> bool:
+    body = {key: value for key, value in record.items() if key != "interval_sha256"}
+    width_bits = record.get("width_bits")
+    minimum = record.get("minimum_inclusive")
+    maximum = record.get("maximum_inclusive")
+    return bool(
+        isinstance(width_bits, int)
+        and width_bits > 0
+        and isinstance(minimum, int)
+        and isinstance(maximum, int)
+        and 0 <= minimum <= maximum < 1 << width_bits
+        and record.get("exact") == (minimum == maximum)
+        and record.get("full_width_unknown")
+        == (minimum == 0 and maximum == (1 << width_bits) - 1)
+        and isinstance(record.get("bound_depends_on_assumption"), bool)
+        and hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        == record.get("interval_sha256")
+    )
+
+
 def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         node
@@ -1614,6 +1824,9 @@ def build_sass_expression_certificate(
                 )
                 partial_formula = _build_partial_symbolic_formula(roots, nodes)
                 partial_formula_analysis = _analyze_partial_symbolic_formula(partial_formula)
+                partial_formula_interval_analysis = _analyze_partial_formula_intervals(
+                    partial_formula
+                )
                 candidate_selection = {
                     "field": field,
                     "available": True,
@@ -1665,6 +1878,16 @@ def build_sass_expression_certificate(
                     "expression_nodes": nodes,
                     "partial_symbolic_formula": partial_formula,
                     "partial_formula_analysis": partial_formula_analysis,
+                    "partial_formula_interval_analysis": partial_formula_interval_analysis,
+                    "partial_formula_bounded_interval_node_count": partial_formula_interval_analysis[
+                        "bounded_node_count"
+                    ],
+                    "partial_formula_exact_interval_node_count": partial_formula_interval_analysis[
+                        "exact_node_count"
+                    ],
+                    "partial_formula_assumption_bounded_interval_node_count": partial_formula_interval_analysis[
+                        "assumption_bounded_node_count"
+                    ],
                     "partial_formula_well_typed": partial_formula_analysis["type_check"][
                         "well_typed"
                     ],
@@ -1785,9 +2008,27 @@ def build_sass_expression_certificate(
             == len(selection.get("partial_symbolic_formula", {}).get("root_nodes", []))
             for selection in selections
         ),
+        "all_partial_formula_intervals_analyzed": all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "all_nodes_analyzed"
+            )
+            is True
+            for selection in selections
+        ),
+        "interval_evidence_boundaries_preserved": all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "effective_address_bounds_established"
+            )
+            is False
+            and selection.get("partial_formula_interval_analysis", {}).get(
+                "hardware_semantics_established"
+            )
+            is False
+            for selection in selections
+        ),
     }
     body = {
-        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Observed TID/CTAID leaves retain launch-dimension-derived symbolic domain assumptions, but SR naming correspondence, concrete values, acquisition semantics, and hardware behavior are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit, and no closed SASS formula or logical correspondence is claimed.",
+        "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
         "kernel_name": kernel,
         "cubin_sha256": hashlib.sha256(cubin.read_bytes()).hexdigest(),
         "sass_canonical_sha256": summary["canonical_sha256"],
@@ -1830,6 +2071,21 @@ def build_sass_expression_certificate(
             is True
             for selection in selections
         ),
+        "partial_formula_interval_analysis_established": all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "all_nodes_analyzed"
+            )
+            is True
+            for selection in selections
+        ),
+        "all_selected_root_intervals_full_width_unknown": all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "all_root_intervals_full_width_unknown"
+            )
+            is True
+            for selection in selections
+        ),
+        "assumption_conditioned_effective_address_bounds_established": False,
         "proposed_semantics_proof_bindings_established": any(
             selection.get("proof_backed_instruction_node_count", 0) > 0
             for selection in selections
@@ -1877,6 +2133,7 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
                 "expression_nodes",
                 "partial_symbolic_formula",
                 "partial_formula_analysis",
+                "partial_formula_interval_analysis",
             }
         }
         | {
@@ -1907,6 +2164,18 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
             "partial_formula_launch_domain_assumption_count": selection.get(
                 "partial_formula_analysis", {}
             ).get("launch_domain_assumption_count"),
+            "partial_formula_interval_analysis_sha256": selection.get(
+                "partial_formula_interval_analysis", {}
+            ).get("analysis_sha256"),
+            "partial_formula_root_intervals": selection.get(
+                "partial_formula_interval_analysis", {}
+            ).get("root_intervals", []),
+            "partial_formula_all_root_intervals_full_width_unknown": selection.get(
+                "partial_formula_interval_analysis", {}
+            ).get("all_root_intervals_full_width_unknown"),
+            "partial_formula_assumption_conditioned_nontrivial_root_interval_count": selection.get(
+                "partial_formula_interval_analysis", {}
+            ).get("assumption_conditioned_nontrivial_root_interval_count"),
         }
         for selection in certificate["selections"]
     ]
@@ -1952,6 +2221,13 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "local_proposed_operator_lowering_equivalence_established": certificate[
             "local_proposed_operator_lowering_equivalence_established"
         ],
+        "partial_formula_interval_analysis_established": certificate[
+            "partial_formula_interval_analysis_established"
+        ],
+        "all_selected_root_intervals_full_width_unknown": certificate[
+            "all_selected_root_intervals_full_width_unknown"
+        ],
+        "assumption_conditioned_effective_address_bounds_established": False,
         "proposed_semantics_proof_bindings_established": certificate[
             "proposed_semantics_proof_bindings_established"
         ],
@@ -2034,6 +2310,48 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
                     selection.get("partial_formula_analysis_sha256", ""),
                 )
             )
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    selection.get("partial_formula_interval_analysis_sha256", ""),
+                )
+            )
+            and len(selection.get("partial_formula_root_intervals", []))
+            == len(selection.get("partial_formula_root_nodes", []))
+            and all(
+                root == interval.get("formula_node_sha256")
+                for root, interval in zip(
+                    selection.get("partial_formula_root_nodes", []),
+                    selection.get("partial_formula_root_intervals", []),
+                    strict=True,
+                )
+            )
+            and all(
+                _verify_interval_record(record)
+                for record in selection.get("partial_formula_root_intervals", [])
+            )
+            and selection.get("partial_formula_all_root_intervals_full_width_unknown")
+            == all(
+                record.get("full_width_unknown")
+                for record in selection.get("partial_formula_root_intervals", [])
+            )
+            and selection.get(
+                "partial_formula_assumption_conditioned_nontrivial_root_interval_count"
+            )
+            == sum(
+                not record.get("full_width_unknown")
+                and record.get("bound_depends_on_assumption")
+                for record in selection.get("partial_formula_root_intervals", [])
+            )
+            and 0
+            <= selection.get("partial_formula_exact_interval_node_count", -1)
+            <= selection.get("partial_formula_bounded_interval_node_count", -1)
+            <= selection.get("partial_formula_node_count", -1)
+            and 0
+            <= selection.get(
+                "partial_formula_assumption_bounded_interval_node_count", -1
+            )
+            <= selection.get("partial_formula_bounded_interval_node_count", -1)
             for selection in selections
         )
         and summary.get("all_expression_instruction_semantics_bound")
@@ -2069,6 +2387,19 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
             is True
             for selection in selections
         )
+        and summary.get("partial_formula_interval_analysis_established")
+        == all(
+            bool(selection.get("partial_formula_interval_analysis_sha256"))
+            for selection in selections
+        )
+        and summary.get("all_selected_root_intervals_full_width_unknown")
+        == all(
+            selection.get("partial_formula_all_root_intervals_full_width_unknown")
+            is True
+            for selection in selections
+        )
+        and summary.get("assumption_conditioned_effective_address_bounds_established")
+        is False
         and _verify_expression_semantics_snapshot(
             summary.get("expression_opcode_semantics", {})
         )
@@ -2098,6 +2429,8 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("partial_formula_well_typed") is True
         and summary.get("typed_z3_translation_established") is True
         and summary.get("local_proposed_operator_lowering_equivalence_established") is True
+        and summary.get("partial_formula_interval_analysis_established") is True
+        and summary.get("assumption_conditioned_effective_address_bounds_established") is False
         and summary.get("proposed_semantics_proof_bindings_established") is True
         and summary.get("proof_premises_established_for_bound_instructions") is False
         and summary.get("special_register_launch_domain_assumptions_bound") is True
@@ -2200,6 +2533,9 @@ def _selection_graph_consistent(
     expected_partial_formula_analysis = _analyze_partial_symbolic_formula(
         expected_partial_formula
     )
+    expected_partial_formula_interval_analysis = _analyze_partial_formula_intervals(
+        expected_partial_formula
+    )
     return bool(
         selection.get("available")
         and selection.get("node_count") == len(nodes)
@@ -2244,6 +2580,14 @@ def _selection_graph_consistent(
         == expected_partial_formula_analysis["type_check"]["well_typed"]
         and selection.get("partial_formula_local_lowering_obligation_count")
         == expected_partial_formula_analysis["total_local_lowering_obligations"]
+        and selection.get("partial_formula_interval_analysis")
+        == expected_partial_formula_interval_analysis
+        and selection.get("partial_formula_bounded_interval_node_count")
+        == expected_partial_formula_interval_analysis["bounded_node_count"]
+        and selection.get("partial_formula_exact_interval_node_count")
+        == expected_partial_formula_interval_analysis["exact_node_count"]
+        and selection.get("partial_formula_assumption_bounded_interval_node_count")
+        == expected_partial_formula_interval_analysis["assumption_bounded_node_count"]
         and all(
             _semantic_binding_consistent(node, snapshot) for node in instruction_nodes
         )
@@ -2276,6 +2620,8 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("partial_formula_well_typed") is True
         and certificate.get("typed_z3_translation_established") is True
         and certificate.get("local_proposed_operator_lowering_equivalence_established") is True
+        and certificate.get("partial_formula_interval_analysis_established") is True
+        and certificate.get("assumption_conditioned_effective_address_bounds_established") is False
         and certificate.get("proposed_semantics_proof_bindings_established") is True
         and certificate.get("proof_premises_established_for_bound_instructions") is False
         and certificate.get("special_register_launch_domain_assumptions_bound") is True
@@ -2356,6 +2702,22 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         == all(
             selection.get("partial_formula_analysis", {}).get(
                 "all_local_lowering_obligations_proved"
+            )
+            is True
+            for selection in selections
+        )
+        and certificate.get("partial_formula_interval_analysis_established")
+        == all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "all_nodes_analyzed"
+            )
+            is True
+            for selection in selections
+        )
+        and certificate.get("all_selected_root_intervals_full_width_unknown")
+        == all(
+            selection.get("partial_formula_interval_analysis", {}).get(
+                "all_root_intervals_full_width_unknown"
             )
             is True
             for selection in selections

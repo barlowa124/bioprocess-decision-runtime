@@ -291,11 +291,13 @@ class CudaMetadataTests(unittest.TestCase):
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:
         from bioprocess_runtime.sass_expressions import (
+            _analyze_partial_formula_intervals,
             _analyze_partial_symbolic_formula,
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
             _build_partial_symbolic_formula,
             _call_string_expression_snapshots,
+            _FormulaRegistry,
             _ordered_semantic_operands,
             _reachable_nodes,
             _semantic_requirement,
@@ -303,6 +305,7 @@ class SassExpressionTests(unittest.TestCase):
             _transfer_definitions,
             _unsupported_expression_nodes,
             build_sass_expression_summary,
+            _verify_interval_record,
             _verify_launch_coordinate_domains,
             verify_sass_expression_certificate,
             verify_sass_expression_summary,
@@ -494,6 +497,9 @@ class SassExpressionTests(unittest.TestCase):
         self.assertIsNone(unknown_leaf["launch_domain_assumption"])
         partial_formula = _build_partial_symbolic_formula(roots, nodes)
         partial_formula_analysis = _analyze_partial_symbolic_formula(partial_formula)
+        partial_formula_interval_analysis = _analyze_partial_formula_intervals(
+            partial_formula
+        )
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
         self.assertTrue(partial_formula_analysis["type_check"]["well_typed"])
@@ -502,6 +508,69 @@ class SassExpressionTests(unittest.TestCase):
         self.assertEqual(
             partial_formula_analysis["total_local_lowering_obligations"],
             partial_formula["lowered_operation_node_count"],
+        )
+        self.assertTrue(partial_formula_interval_analysis["all_nodes_analyzed"])
+        self.assertTrue(
+            partial_formula_interval_analysis["all_root_intervals_full_width_unknown"]
+        )
+        self.assertEqual(partial_formula_interval_analysis["bounded_node_count"], 0)
+        self.assertFalse(
+            partial_formula_interval_analysis["effective_address_bounds_established"]
+        )
+        interval_record = copy.deepcopy(
+            partial_formula_interval_analysis["intervals"][0]
+        )
+        self.assertTrue(_verify_interval_record(interval_record))
+        interval_record["maximum_inclusive"] += 1
+        self.assertFalse(_verify_interval_record(interval_record))
+        wrap_registry = _FormulaRegistry()
+        maximum = wrap_registry.add(
+            {"kind": "bitvector_literal", "width_bits": 32, "value": 0xFFFFFFFF}
+        )
+        one = wrap_registry.add(
+            {"kind": "bitvector_literal", "width_bits": 32, "value": 1}
+        )
+        zero = wrap_registry.add(
+            {"kind": "bitvector_literal", "width_bits": 32, "value": 0}
+        )
+        wrapping_add = wrap_registry.add(
+            {
+                "kind": "bvadd_mod",
+                "width_bits": 32,
+                "arguments": [maximum, one, zero],
+            }
+        )
+        wrap_formula = {
+            "root_nodes": [wrapping_add],
+            "formula_nodes": [
+                wrap_registry.nodes[node_id] for node_id in sorted(wrap_registry.nodes)
+            ],
+        }
+        wrap_interval = _analyze_partial_formula_intervals(wrap_formula)[
+            "root_intervals"
+        ][0]
+        self.assertTrue(wrap_interval["exact"])
+        self.assertEqual(wrap_interval["minimum_inclusive"], 0)
+        unknown = wrap_registry.add(
+            {"kind": "opaque_leaf", "width_bits": 32, "reason": "test"}
+        )
+        unknown_add = wrap_registry.add(
+            {
+                "kind": "bvadd_mod",
+                "width_bits": 32,
+                "arguments": [unknown, one, zero],
+            }
+        )
+        unknown_formula = {
+            "root_nodes": [unknown_add],
+            "formula_nodes": [
+                wrap_registry.nodes[node_id] for node_id in sorted(wrap_registry.nodes)
+            ],
+        }
+        self.assertTrue(
+            _analyze_partial_formula_intervals(unknown_formula)["root_intervals"][0][
+                "full_width_unknown"
+            ]
         )
         ill_typed_formula = copy.deepcopy(partial_formula)
         typed_node = next(
@@ -521,6 +590,16 @@ class SassExpressionTests(unittest.TestCase):
                 "launch_domain_assumption_count"
             ],
             2,
+        )
+        special_intervals = _analyze_partial_formula_intervals(special_formula)
+        self.assertGreater(special_intervals["assumption_bounded_node_count"], 0)
+        self.assertIn(
+            31,
+            [
+                interval["maximum_inclusive"]
+                for interval in special_intervals["intervals"]
+                if interval["basis"] == "launch_domain_assumption"
+            ],
         )
         self.assertIn(
             "unmodeled_register_pair_projection",
@@ -576,6 +655,16 @@ class SassExpressionTests(unittest.TestCase):
                     "expression_nodes": nodes,
                     "partial_symbolic_formula": partial_formula,
                     "partial_formula_analysis": partial_formula_analysis,
+                    "partial_formula_interval_analysis": partial_formula_interval_analysis,
+                    "partial_formula_bounded_interval_node_count": partial_formula_interval_analysis[
+                        "bounded_node_count"
+                    ],
+                    "partial_formula_exact_interval_node_count": partial_formula_interval_analysis[
+                        "exact_node_count"
+                    ],
+                    "partial_formula_assumption_bounded_interval_node_count": partial_formula_interval_analysis[
+                        "assumption_bounded_node_count"
+                    ],
                     "partial_formula_well_typed": True,
                     "partial_formula_local_lowering_obligation_count": partial_formula_analysis[
                         "total_local_lowering_obligations"
@@ -615,6 +704,9 @@ class SassExpressionTests(unittest.TestCase):
             "partial_formula_well_typed": True,
             "typed_z3_translation_established": True,
             "local_proposed_operator_lowering_equivalence_established": True,
+            "partial_formula_interval_analysis_established": True,
+            "all_selected_root_intervals_full_width_unknown": True,
+            "assumption_conditioned_effective_address_bounds_established": False,
             "proposed_semantics_proof_bindings_established": True,
             "proof_premises_established_for_bound_instructions": False,
             "special_register_launch_domain_assumptions_bound": True,
@@ -658,6 +750,32 @@ class SassExpressionTests(unittest.TestCase):
         source_link_verification = verify_sass_expression_summary(forged_source_link)
         self.assertFalse(source_link_verification["valid"])
         self.assertFalse(source_link_verification["source_certificate_link_valid"])
+        forged_interval_summary = copy.deepcopy(summary)
+        forged_interval_summary["selections"][0]["partial_formula_root_intervals"][0][
+            "maximum_inclusive"
+        ] -= 1
+        interval_summary_body = {
+            key: value
+            for key, value in forged_interval_summary.items()
+            if key != "summary_sha256"
+        }
+        forged_interval_summary["summary_sha256"] = hashlib.sha256(
+            canonical_json(interval_summary_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_expression_summary(forged_interval_summary)["valid"]
+        )
+        misbound_intervals = copy.deepcopy(summary)
+        misbound_intervals["selections"][0]["partial_formula_root_intervals"].reverse()
+        misbound_body = {
+            key: value
+            for key, value in misbound_intervals.items()
+            if key != "summary_sha256"
+        }
+        misbound_intervals["summary_sha256"] = hashlib.sha256(
+            canonical_json(misbound_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_expression_summary(misbound_intervals)["valid"])
         damaged = copy.deepcopy(certificate)
         damaged["selections"][0]["expression_nodes"][0]["kind"] = "forged"
         body = {key: value for key, value in damaged.items() if key != "certificate_sha256"}

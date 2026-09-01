@@ -652,6 +652,18 @@ A second hash-consed layer now lowers ordered semantic operands into partial pro
 
 Every partial formula remains non-closed because it contains opaque nodes. The full-certificate verifier reconstructs each formula and analysis from the retained expression DAG and rejects formula, operand-order, type, width, solver-result, and hash inconsistencies; the compact-summary verifier checks retained commitments, counts, and boundaries without the omitted full node graphs.
 
+A conservative unsigned interval pass covers every formula node. Literals are exact, coordinate symbols use their launch-domain assumptions, joins take the hull of reaching alternatives, and modular addition or multiply-add narrows only for exact inputs or when integer endpoint arithmetic proves no wrap. Constant-memory values and other opaque operations remain full-width. The retained interval counts are:
+
+| Field | Bounded nodes | Exact nodes | Assumption-dependent bounded nodes | Nontrivial root intervals |
+|---|---:|---:|---:|---:|
+| `query_ptr` | 24 | 18 | 11 | 0 |
+| `key_ptr` | 24 | 18 | 9 | 0 |
+| `value_ptr` | 24 | 17 | 9 | 0 |
+| `output_ptr` | 31 | 25 | 12 | 0 |
+| `output_accum_ptr` | 33 | 27 | 14 | 0 |
+
+`partial_formula_interval_analysis_established` is true, but both 32-bit root intervals for every target remain full `[0,2^32-1]` because opaque operations intervene. Therefore `all_selected_root_intervals_full_width_unknown` is true while `assumption_conditioned_effective_address_bounds_established` remains false. These intermediate intervals are diagnostics over proposed operators and explicit assumptions, not SASS hardware or memory-safety bounds.
+
 Every selected graph contains its target source field and is bound to the exact cubin, canonical SASS, SASS-memory, SASS-semantics, and logical-bounds certificates. None is closed over the currently record-bound operations, unbound instructions, joins, recurrences, or entry symbols. Therefore `proposed_semantics_proof_bindings_established`, `bounded_call_string_expression_reaching_definitions_established`, and `selected_sass_address_expression_dags_established` are true while `closed_supported_sass_formulas_established`, `sass_effective_address_formula_bound`, `sass_to_logical_stride_correspondence_established`, `sass_effective_address_bounds_established`, and `kernel_memory_safety_established` remain false.
 
 ### SASS memory-address provenance
