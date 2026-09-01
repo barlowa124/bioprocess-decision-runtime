@@ -320,6 +320,7 @@ class SassExpressionTests(unittest.TestCase):
             _verify_launch_coordinate_domains,
             _verify_root_predicate_pair_binding,
             verify_carry_evidence_bundle,
+            verify_carry_evidence_reproduction,
             verify_sass_expression_certificate,
             verify_sass_expression_summary,
         )
@@ -954,6 +955,10 @@ class SassExpressionTests(unittest.TestCase):
         self.assertFalse(evidence_verification["syntactic_dynamic_coverage_complete"])
         self.assertFalse(evidence_verification["semantic_coverage_verified"])
         self.assertFalse(evidence_verification["qualification_eligible"])
+        self.assertFalse(verify_carry_evidence_bundle([], certificate)["valid"])
+        self.assertFalse(
+            verify_carry_evidence_reproduction([], {}, certificate)["valid"]
+        )
         damaged_evidence = copy.deepcopy(evidence_template)
         damaged_evidence["protocol_sha256"] = "b" * 64
         damaged_evidence_body = {
@@ -993,6 +998,153 @@ class SassExpressionTests(unittest.TestCase):
         )
         self.assertFalse(malformed_verification["valid"])
         self.assertFalse(malformed_verification["observation_structure_valid"])
+        complete_evidence = copy.deepcopy(evidence_template)
+        complete_evidence["backend_version"] = "test-backend-1"
+        complete_evidence["capture_tool_sha256"] = "c" * 64
+        complete_evidence["driver_version"] = "test-driver"
+        complete_evidence["nvcc_version"] = "test-nvcc"
+        complete_record = complete_evidence["observation_records"][0]
+        requirement = carry_capture_protocol["pair_capture_requirements"][0]
+        for item in complete_record["reference_carry_classes"]:
+            carry_class = item["reference_carry_class"]
+            for repetition in range(3):
+                point = {
+                    "active_lane_mask": 1,
+                    "block_coordinates": [0, 0, 0],
+                    "thread_coordinates": [0, 0, 0],
+                    "source_register_values": {"R1": carry_class},
+                    "destination_register_values": {"R2": carry_class},
+                    "predicate_values": {"P0": carry_class},
+                }
+                observation = {
+                    "reference_carry_class": carry_class,
+                    "repetition_index": repetition,
+                    "capture_points": {
+                        capture_point: copy.deepcopy(point)
+                        for capture_point in requirement["capture_points"]
+                    },
+                }
+                observation["observation_sha256"] = hashlib.sha256(
+                    canonical_json(observation).encode("utf-8")
+                ).hexdigest()
+                item["observations"].append(observation)
+        complete_record_body = {
+            key: value
+            for key, value in complete_record.items()
+            if key != "observation_record_sha256"
+        }
+        complete_record["observation_record_sha256"] = hashlib.sha256(
+            canonical_json(complete_record_body).encode("utf-8")
+        ).hexdigest()
+        complete_evidence["syntactic_dynamic_coverage_complete"] = True
+        complete_evidence_body = {
+            key: value
+            for key, value in complete_evidence.items()
+            if key != "bundle_sha256"
+        }
+        complete_evidence["bundle_sha256"] = hashlib.sha256(
+            canonical_json(complete_evidence_body).encode("utf-8")
+        ).hexdigest()
+        complete_verification = verify_carry_evidence_bundle(
+            complete_evidence, certificate
+        )
+        self.assertTrue(complete_verification["valid"], complete_verification)
+        self.assertTrue(
+            complete_verification["syntactic_dynamic_coverage_complete"]
+        )
+        self.assertFalse(complete_verification["semantic_coverage_verified"])
+        malformed_predicates = copy.deepcopy(complete_evidence)
+        malformed_predicate_record = malformed_predicates["observation_records"][0]
+        malformed_predicate_observation = malformed_predicate_record[
+            "reference_carry_classes"
+        ][0]["observations"][0]
+        malformed_predicate_observation["capture_points"][
+            "after_low_instruction"
+        ]["predicate_values"] = ["P0"]
+        malformed_predicate_observation["observation_sha256"] = hashlib.sha256(
+            canonical_json(
+                {
+                    key: value
+                    for key, value in malformed_predicate_observation.items()
+                    if key != "observation_sha256"
+                }
+            ).encode("utf-8")
+        ).hexdigest()
+        malformed_predicate_record["observation_record_sha256"] = hashlib.sha256(
+            canonical_json(
+                {
+                    key: value
+                    for key, value in malformed_predicate_record.items()
+                    if key != "observation_record_sha256"
+                }
+            ).encode("utf-8")
+        ).hexdigest()
+        malformed_predicates["bundle_sha256"] = hashlib.sha256(
+            canonical_json(
+                {
+                    key: value
+                    for key, value in malformed_predicates.items()
+                    if key != "bundle_sha256"
+                }
+            ).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_carry_evidence_bundle(malformed_predicates, certificate)["valid"]
+        )
+        replicate_evidence = copy.deepcopy(complete_evidence)
+        replicate_evidence["capture_tool_sha256"] = "d" * 64
+        replicate_body = {
+            key: value
+            for key, value in replicate_evidence.items()
+            if key != "bundle_sha256"
+        }
+        replicate_evidence["bundle_sha256"] = hashlib.sha256(
+            canonical_json(replicate_body).encode("utf-8")
+        ).hexdigest()
+        reproduction = verify_carry_evidence_reproduction(
+            complete_evidence, replicate_evidence, certificate
+        )
+        self.assertTrue(reproduction["valid"], reproduction)
+        self.assertTrue(reproduction["cross_capture_reproduction_complete"])
+        self.assertFalse(reproduction["independent_reproduction_complete"])
+        self.assertFalse(reproduction["semantic_coverage_verified"])
+        disagreeing_evidence = copy.deepcopy(replicate_evidence)
+        disagreeing_record = disagreeing_evidence["observation_records"][0]
+        disagreeing_observation = disagreeing_record["reference_carry_classes"][0][
+            "observations"
+        ][0]
+        disagreeing_observation["capture_points"]["after_high_instruction"][
+            "destination_register_values"
+        ]["R2"] = 99
+        disagreeing_observation_body = {
+            key: value
+            for key, value in disagreeing_observation.items()
+            if key != "observation_sha256"
+        }
+        disagreeing_observation["observation_sha256"] = hashlib.sha256(
+            canonical_json(disagreeing_observation_body).encode("utf-8")
+        ).hexdigest()
+        disagreeing_record_body = {
+            key: value
+            for key, value in disagreeing_record.items()
+            if key != "observation_record_sha256"
+        }
+        disagreeing_record["observation_record_sha256"] = hashlib.sha256(
+            canonical_json(disagreeing_record_body).encode("utf-8")
+        ).hexdigest()
+        disagreeing_bundle_body = {
+            key: value
+            for key, value in disagreeing_evidence.items()
+            if key != "bundle_sha256"
+        }
+        disagreeing_evidence["bundle_sha256"] = hashlib.sha256(
+            canonical_json(disagreeing_bundle_body).encode("utf-8")
+        ).hexdigest()
+        disagreement = verify_carry_evidence_reproduction(
+            complete_evidence, disagreeing_evidence, certificate
+        )
+        self.assertFalse(disagreement["valid"])
+        self.assertFalse(disagreement["observations_match"])
         summary = build_sass_expression_summary(certificate)
         self.assertTrue(verify_sass_expression_summary(summary)["valid"])
         forged_summary = copy.deepcopy(summary)

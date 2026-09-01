@@ -718,6 +718,19 @@ def command_sass_carry_evidence_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_sass_carry_reproduction_verify(args: argparse.Namespace) -> int:
+    from .sass_expressions import verify_carry_evidence_reproduction
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    primary = json.loads(args.primary.read_text(encoding="utf-8"))
+    replicate = json.loads(args.replicate.read_text(encoding="utf-8"))
+    verification = verify_carry_evidence_reproduction(
+        primary, replicate, certificate
+    )
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_attention_bounds(args: argparse.Namespace) -> int:
     from .attention_bounds import (
         build_attention_logical_bounds_certificate,
@@ -1247,6 +1260,12 @@ def build_parser() -> argparse.ArgumentParser:
     sass_carry_verify_parser.add_argument("certificate", type=Path)
     sass_carry_verify_parser.add_argument("bundle", type=Path)
     sass_carry_verify_parser.set_defaults(handler=command_sass_carry_evidence_verify)
+
+    sass_carry_reproduction_parser = subparsers.add_parser("attention-sass-carry-reproduction-verify", help="Compare two distinct-tool carry captures without qualifying semantics")
+    sass_carry_reproduction_parser.add_argument("certificate", type=Path)
+    sass_carry_reproduction_parser.add_argument("primary", type=Path)
+    sass_carry_reproduction_parser.add_argument("replicate", type=Path)
+    sass_carry_reproduction_parser.set_defaults(handler=command_sass_carry_reproduction_verify)
 
     attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
     attention_bounds_parser.add_argument("--artifact", type=Path, required=True)

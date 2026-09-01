@@ -2568,6 +2568,18 @@ def _verify_carry_semantics_qualification(
     )
 
 
+def _canonical_hash_matches(record: dict[str, Any], hash_field: str) -> bool:
+    if not isinstance(record, dict):
+        return False
+    try:
+        body = {key: value for key, value in record.items() if key != hash_field}
+        return hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest() == record.get(
+            hash_field
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 def build_carry_evidence_template(
     expression_certificate: dict[str, Any]
 ) -> dict[str, Any]:
@@ -2631,33 +2643,67 @@ def build_carry_evidence_template(
 def verify_carry_evidence_bundle(
     bundle: dict[str, Any], expression_certificate: dict[str, Any]
 ) -> dict[str, Any]:
-    expression_certificate_valid = verify_sass_expression_certificate(
-        expression_certificate
-    )["valid"]
+    invalid_result = {
+        "valid": False,
+        "expression_certificate_valid": False,
+        "bundle_hash_valid": False,
+        "identity_links_valid": False,
+        "observation_structure_valid": False,
+        "tool_identity_complete": False,
+        "syntactic_dynamic_coverage_complete": False,
+        "semantic_coverage_verified": False,
+        "independent_capture_replay_verified": False,
+        "qualification_eligible": False,
+        "carry_equation_activation_allowed": False,
+        "hardware_semantics_established": False,
+        "boundaries_preserved": False,
+    }
+    if not isinstance(bundle, dict) or not isinstance(expression_certificate, dict):
+        return invalid_result
+    try:
+        expression_certificate_valid = verify_sass_expression_certificate(
+            expression_certificate
+        )["valid"]
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return invalid_result
     qualification = expression_certificate.get("carry_semantics_qualification", {})
     protocol = qualification.get("carry_capture_protocol", {})
     body = {
         key: value for key, value in bundle.items() if key != "bundle_sha256"
     }
-    bundle_hash_valid = hashlib.sha256(
-        canonical_json(body).encode("utf-8")
-    ).hexdigest() == bundle.get("bundle_sha256")
+    try:
+        bundle_hash_valid = hashlib.sha256(
+            canonical_json(body).encode("utf-8")
+        ).hexdigest() == bundle.get("bundle_sha256")
+    except (TypeError, ValueError):
+        return invalid_result
     identity_links_valid = bool(
         bundle.get("expression_certificate_sha256")
         == expression_certificate.get("certificate_sha256")
         and bundle.get("protocol_sha256") == protocol.get("protocol_sha256")
         and bundle.get("nsight_certificate_sha256")
         == expression_certificate.get("nsight_certificate_sha256")
-        and bundle.get("compute_capability") == "8.9"
+        and bundle.get("compute_capability")
+        == protocol.get("compute_capability")
         and bundle.get("cubin_sha256") == expression_certificate.get("cubin_sha256")
         and bundle.get("kernel_name") == expression_certificate.get("kernel_name")
-        and bundle.get("host_os") == "Linux"
+        and bundle.get("host_os") == protocol.get("required_host_os")
     )
     requirement_by_field = {
         requirement["field"]: requirement
         for requirement in protocol.get("pair_capture_requirements", [])
     }
     records = bundle.get("observation_records", [])
+    if not isinstance(records, list) or not all(
+        isinstance(record, dict) for record in records
+    ):
+        return {
+            **invalid_result,
+            "expression_certificate_valid": expression_certificate_valid,
+            "bundle_hash_valid": bundle_hash_valid,
+            "identity_links_valid": identity_links_valid,
+            "boundaries_preserved": True,
+        }
     record_fields = {record.get("field") for record in records}
     observation_structure_valid = bool(
         bundle.get("schema_version") == 1
@@ -2668,6 +2714,11 @@ def verify_carry_evidence_bundle(
             == requirement_by_field[record["field"]]["pair_binding_sha256"]
             and record.get("capture_requirement_sha256")
             == requirement_by_field[record["field"]]["capture_requirement_sha256"]
+            and isinstance(record.get("reference_carry_classes"), list)
+            and all(
+                isinstance(item, dict)
+                for item in record.get("reference_carry_classes", [])
+            )
             and [
                 item.get("reference_carry_class")
                 for item in record.get("reference_carry_classes", [])
@@ -2683,16 +2734,9 @@ def verify_carry_evidence_bundle(
                 )
                 for item in record.get("reference_carry_classes", [])
             )
-            and hashlib.sha256(
-                canonical_json(
-                    {
-                        key: value
-                        for key, value in record.items()
-                        if key != "observation_record_sha256"
-                    }
-                ).encode("utf-8")
-            ).hexdigest()
-            == record.get("observation_record_sha256")
+            and _canonical_hash_matches(
+                record, "observation_record_sha256"
+            )
             for record in records
         )
     )
@@ -2716,11 +2760,6 @@ def verify_carry_evidence_bundle(
             isinstance(point, dict) for point in capture_points.values()
         ):
             return False
-        observation_body = {
-            key: value
-            for key, value in observation.items()
-            if key != "observation_sha256"
-        }
         return bool(
             observation.get("reference_carry_class") == carry_class
             and isinstance(observation.get("repetition_index"), int)
@@ -2763,7 +2802,8 @@ def verify_carry_evidence_bundle(
                         "destination_register_values"
                     ].items()
                 )
-                and set(point.get("predicate_values", {}))
+                and isinstance(point.get("predicate_values"), dict)
+                and set(point["predicate_values"])
                 == set(requirement["predicates"])
                 and all(
                     value in {0, 1}
@@ -2771,10 +2811,7 @@ def verify_carry_evidence_bundle(
                 )
                 for point in capture_points.values()
             )
-            and hashlib.sha256(
-                canonical_json(observation_body).encode("utf-8")
-            ).hexdigest()
-            == observation.get("observation_sha256")
+            and _canonical_hash_matches(observation, "observation_sha256")
         )
 
     def record_coverage_complete(record: dict[str, Any]) -> bool:
@@ -2839,7 +2876,145 @@ def verify_carry_evidence_bundle(
         "semantic_coverage_verified": False,
         "independent_capture_replay_verified": False,
         "qualification_eligible": False,
+        "carry_equation_activation_allowed": False,
+        "hardware_semantics_established": False,
         "boundaries_preserved": boundaries_preserved,
+    }
+
+
+def _canonical_carry_observations(bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    if not isinstance(bundle, dict) or not isinstance(
+        bundle.get("observation_records"), list
+    ):
+        return []
+    records = []
+    for record in bundle["observation_records"]:
+        if not isinstance(record, dict):
+            continue
+        classes = []
+        for item in record.get("reference_carry_classes", []):
+            if not isinstance(item, dict):
+                continue
+            observations = [
+                {
+                    key: value
+                    for key, value in observation.items()
+                    if key not in {"observation_sha256", "repetition_index"}
+                }
+                for observation in item.get("observations", [])
+                if isinstance(observation, dict)
+            ]
+            classes.append(
+                {
+                    "reference_carry_class": item.get("reference_carry_class"),
+                    "observations": sorted(
+                        observations, key=lambda observation: canonical_json(observation)
+                    ),
+                }
+            )
+        records.append(
+            {
+                "field": record.get("field"),
+                "pair_binding_sha256": record.get("pair_binding_sha256"),
+                "reference_carry_classes": sorted(
+                    classes, key=lambda item: item["reference_carry_class"]
+                ),
+            }
+        )
+    return sorted(records, key=lambda record: record["field"])
+
+
+def verify_carry_evidence_reproduction(
+    primary_bundle: dict[str, Any],
+    replicate_bundle: dict[str, Any],
+    expression_certificate: dict[str, Any],
+) -> dict[str, Any]:
+    if not all(
+        isinstance(value, dict)
+        for value in (primary_bundle, replicate_bundle, expression_certificate)
+    ):
+        return {
+            "valid": False,
+            "primary_bundle_valid": False,
+            "replicate_bundle_valid": False,
+            "primary_syntactic_coverage_complete": False,
+            "replicate_syntactic_coverage_complete": False,
+            "identity_links_match": False,
+            "environment_identity_match": False,
+            "distinct_capture_tool_binaries": False,
+            "observations_match": False,
+            "cross_capture_reproduction_complete": False,
+            "independent_reproduction_complete": False,
+            "semantic_coverage_verified": False,
+            "qualification_eligible": False,
+            "carry_equation_activation_allowed": False,
+            "hardware_semantics_established": False,
+        }
+    primary = verify_carry_evidence_bundle(
+        primary_bundle, expression_certificate
+    )
+    replicate = verify_carry_evidence_bundle(
+        replicate_bundle, expression_certificate
+    )
+    identity_links_match = all(
+        primary_bundle.get(field) == replicate_bundle.get(field)
+        for field in (
+            "expression_certificate_sha256",
+            "protocol_sha256",
+            "nsight_certificate_sha256",
+            "compute_capability",
+            "cubin_sha256",
+            "kernel_name",
+        )
+    )
+    environment_identity_match = all(
+        primary_bundle.get(field) == replicate_bundle.get(field)
+        for field in ("backend_version", "driver_version", "nvcc_version")
+    )
+    distinct_capture_tool_binaries = bool(
+        re.fullmatch(
+            r"[0-9a-f]{64}", primary_bundle.get("capture_tool_sha256") or ""
+        )
+        and re.fullmatch(
+            r"[0-9a-f]{64}", replicate_bundle.get("capture_tool_sha256") or ""
+        )
+        and primary_bundle.get("capture_tool_sha256")
+        != replicate_bundle.get("capture_tool_sha256")
+    )
+    observations_match = (
+        _canonical_carry_observations(primary_bundle)
+        == _canonical_carry_observations(replicate_bundle)
+    )
+    reproduction_complete = bool(
+        primary["valid"]
+        and replicate["valid"]
+        and primary["syntactic_dynamic_coverage_complete"]
+        and replicate["syntactic_dynamic_coverage_complete"]
+        and identity_links_match
+        and environment_identity_match
+        and distinct_capture_tool_binaries
+        and observations_match
+    )
+    return {
+        "valid": reproduction_complete,
+        "primary_bundle_valid": primary["valid"],
+        "replicate_bundle_valid": replicate["valid"],
+        "primary_syntactic_coverage_complete": primary[
+            "syntactic_dynamic_coverage_complete"
+        ],
+        "replicate_syntactic_coverage_complete": replicate[
+            "syntactic_dynamic_coverage_complete"
+        ],
+        "identity_links_match": identity_links_match,
+        "environment_identity_match": environment_identity_match,
+        "distinct_capture_tool_binaries": distinct_capture_tool_binaries,
+        "observations_match": observations_match,
+        "cross_capture_reproduction_complete": reproduction_complete,
+        "independent_reproduction_complete": False,
+        "semantic_coverage_verified": False,
+        "qualification_eligible": False,
+        "carry_equation_activation_allowed": False,
+        "hardware_semantics_established": False,
     }
 
 
