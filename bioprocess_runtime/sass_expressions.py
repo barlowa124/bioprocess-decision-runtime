@@ -1011,6 +1011,7 @@ def _call_string_expression_snapshots(
                 "predicate": spec["predicate"],
                 "block_index": spec["block_index"],
                 "call_stack": spec["call_stack"],
+                "output_index": spec["output_index"],
                 "output_name": spec["output_name"],
                 "output_kind": spec["output_kind"],
                 "output_width_bits": spec["output_width_bits"],
@@ -1995,6 +1996,191 @@ def _verify_blocker_record(record: dict[str, Any]) -> bool:
     )
 
 
+def _build_root_predicate_pair_binding(
+    field: str,
+    expression_nodes: list[dict[str, Any]],
+    blocker_analysis: dict[str, Any],
+) -> dict[str, Any]:
+    node_by_id = {node["node_sha256"]: node for node in expression_nodes}
+    blockers = {
+        record["root_index"]: record
+        for record in blocker_analysis.get("root_frontier", [])
+        if record.get("depth") == 0
+    }
+    reasons = []
+    if set(blockers) != {0, 1}:
+        reasons.append("expected_two_depth_zero_root_blockers")
+    low = node_by_id.get(blockers.get(0, {}).get("expression_node_sha256"))
+    high = node_by_id.get(blockers.get(1, {}).get("expression_node_sha256"))
+    expected_pairs = {("LEA", "LEA.HI.X"), ("IADD3", "IADD3.X")}
+    if not low or not high or (low.get("opcode"), high.get("opcode")) not in expected_pairs:
+        reasons.append("unsupported_root_opcode_pair")
+    low_predicate_definitions = (
+        sorted(
+            [
+                node
+                for node in expression_nodes
+                if node.get("kind") == "instruction_definition"
+                and node.get("instruction_offset") == low.get("instruction_offset")
+                and node.get("opcode") == low.get("opcode")
+                and node.get("output_kind") == "predicate"
+            ],
+            key=lambda node: node["output_index"],
+        )
+        if low
+        else []
+    )
+    high_predicate_operands = (
+        [
+            descriptor
+            for descriptor in high.get("ordered_semantic_operands", [])
+            if descriptor.get("kind") == "predicate"
+        ]
+        if high
+        else []
+    )
+    low_names = [node["output_name"] for node in low_predicate_definitions]
+    high_names = [descriptor["predicate"] for descriptor in high_predicate_operands]
+    if sorted(low_names) != sorted(high_names) or not low_names:
+        reasons.append("predicate_name_sets_do_not_match")
+    predicate_bindings = []
+    low_definition_ids = {node["node_sha256"] for node in low_predicate_definitions}
+    for descriptor in high_predicate_operands:
+        source_node = node_by_id.get(descriptor.get("source_node"))
+        producer_definition = (
+            node_by_id.get(source_node.get("definition_node"))
+            if source_node and source_node.get("kind") == "instruction_output"
+            else None
+        )
+        producer_matches = bool(
+            source_node
+            and source_node.get("output_kind") == "predicate"
+            and source_node.get("output_name") == descriptor["predicate"]
+            and producer_definition
+            and producer_definition.get("node_sha256") in low_definition_ids
+            and producer_definition.get("output_name") == descriptor["predicate"]
+        )
+        if descriptor.get("negated"):
+            reasons.append(f"negated_predicate_consumer:{descriptor['predicate']}")
+        if not producer_matches:
+            reasons.append(f"predicate_source_not_from_low_root:{descriptor['predicate']}")
+        predicate_bindings.append(
+            {
+                "predicate": descriptor["predicate"],
+                "consumer_negated": descriptor.get("negated", False),
+                "consumer_source_node_sha256": descriptor.get("source_node"),
+                "producer_output_node_sha256": (
+                    source_node.get("node_sha256") if source_node else None
+                ),
+                "producer_definition_node_sha256": (
+                    producer_definition.get("node_sha256")
+                    if producer_definition
+                    else None
+                ),
+                "producer_matches_low_root_instruction": producer_matches,
+            }
+        )
+    if low and high and low.get("instruction_offset") >= high.get("instruction_offset"):
+        reasons.append("low_root_not_before_high_root")
+    body = {
+        "field": field,
+        "available": not reasons,
+        "failure_reasons": sorted(set(reasons)),
+        "low_root": (
+            {
+                "opcode": low.get("opcode"),
+                "instruction_offset": low.get("instruction_offset"),
+                "expression_node_sha256": low.get("node_sha256"),
+                "formula_node_sha256": blockers[0]["formula_node_sha256"],
+                "predicate_outputs": low_names,
+            }
+            if low and 0 in blockers
+            else None
+        ),
+        "high_root": (
+            {
+                "opcode": high.get("opcode"),
+                "instruction_offset": high.get("instruction_offset"),
+                "expression_node_sha256": high.get("node_sha256"),
+                "formula_node_sha256": blockers[1]["formula_node_sha256"],
+                "predicate_inputs": high_names,
+            }
+            if high and 1 in blockers
+            else None
+        ),
+        "predicate_bindings": predicate_bindings,
+        "predicate_identity_set_matches": sorted(low_names) == sorted(high_names)
+        and bool(low_names),
+        "producer_consumer_order_established": bool(
+            low
+            and high
+            and low.get("instruction_offset") < high.get("instruction_offset")
+        ),
+        "predicate_encoding_established": False,
+        "carry_arithmetic_established": False,
+        "hardware_semantics_established": False,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded.",
+    }
+    body["binding_sha256"] = hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+    return body
+
+
+def _verify_root_predicate_pair_binding(binding: dict[str, Any]) -> bool:
+    body = {key: value for key, value in binding.items() if key != "binding_sha256"}
+    low = binding.get("low_root") or {}
+    high = binding.get("high_root") or {}
+    predicate_bindings = binding.get("predicate_bindings", [])
+    return bool(
+        hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+        == binding.get("binding_sha256")
+        and binding.get("available") is True
+        and binding.get("failure_reasons") == []
+        and (low.get("opcode"), high.get("opcode"))
+        in {("LEA", "LEA.HI.X"), ("IADD3", "IADD3.X")}
+        and all(
+            bool(re.fullmatch(r"[0-9a-f]{64}", root.get(field, "")))
+            for root in (low, high)
+            for field in ("expression_node_sha256", "formula_node_sha256")
+        )
+        and isinstance(low.get("instruction_offset"), int)
+        and isinstance(high.get("instruction_offset"), int)
+        and low["instruction_offset"] < high["instruction_offset"]
+        and sorted(low.get("predicate_outputs", []))
+        == sorted(high.get("predicate_inputs", []))
+        and bool(low.get("predicate_outputs"))
+        and len(predicate_bindings) == len(high.get("predicate_inputs", []))
+        and all(
+            item.get("predicate") in high.get("predicate_inputs", [])
+            and item.get("producer_matches_low_root_instruction") is True
+            and item.get("consumer_negated") is False
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    item.get("consumer_source_node_sha256", ""),
+                )
+            )
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    item.get("producer_output_node_sha256", ""),
+                )
+            )
+            and bool(
+                re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    item.get("producer_definition_node_sha256", ""),
+                )
+            )
+            for item in predicate_bindings
+        )
+        and binding.get("predicate_identity_set_matches") is True
+        and binding.get("producer_consumer_order_established") is True
+        and binding.get("predicate_encoding_established") is False
+        and binding.get("carry_arithmetic_established") is False
+        and binding.get("hardware_semantics_established") is False
+    )
+
+
 def _unsupported_expression_nodes(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         node
@@ -2106,6 +2292,9 @@ def build_sass_expression_certificate(
                 partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
                     partial_formula
                 )
+                root_predicate_pair_binding = _build_root_predicate_pair_binding(
+                    field, nodes, partial_formula_blocker_analysis
+                )
                 candidate_selection = {
                     "field": field,
                     "available": True,
@@ -2180,6 +2369,13 @@ def build_sass_expression_certificate(
                     "partial_formula_analysis": partial_formula_analysis,
                     "partial_formula_interval_analysis": partial_formula_interval_analysis,
                     "partial_formula_blocker_analysis": partial_formula_blocker_analysis,
+                    "root_predicate_pair_binding": root_predicate_pair_binding,
+                    "root_predicate_pair_binding_available": root_predicate_pair_binding[
+                        "available"
+                    ],
+                    "root_predicate_pair_binding_predicate_count": len(
+                        root_predicate_pair_binding["predicate_bindings"]
+                    ),
                     "partial_formula_root_frontier_blocker_count": partial_formula_blocker_analysis[
                         "root_frontier_blocker_count"
                     ],
@@ -2369,6 +2565,25 @@ def build_sass_expression_certificate(
             and selection.get("predicate_source_edge_count", 0) > 0
             for selection in selections
         ),
+        "all_root_predicate_pairs_bound": all(
+            selection.get("root_predicate_pair_binding_available") is True
+            for selection in selections
+        ),
+        "root_predicate_pair_boundaries_preserved": all(
+            selection.get("root_predicate_pair_binding", {}).get(
+                "predicate_encoding_established"
+            )
+            is False
+            and selection.get("root_predicate_pair_binding", {}).get(
+                "carry_arithmetic_established"
+            )
+            is False
+            and selection.get("root_predicate_pair_binding", {}).get(
+                "hardware_semantics_established"
+            )
+            is False
+            for selection in selections
+        ),
     }
     body = {
         "scope": "One hash-consed bounded-call-string reaching-definition address-expression DAG selected per target field; selected instruction nodes bind exact opcode and retained operand text to proved records in the proposed SASS-semantics certificate. Typed partial formulas retain conservative unsigned interval records, with launch dimensions used only as symbolic assumptions. SR naming correspondence, concrete values, acquisition semantics, hardware behavior, closed formulas, effective-address bounds, and logical correspondence are not established. Ambiguous joins, cyclic definitions, unsupported operations, and entry registers remain explicit.",
@@ -2401,6 +2616,11 @@ def build_sass_expression_certificate(
         "predicate_values_established": False,
         "predicate_carry_equations_established": False,
         "predicate_hardware_semantics_established": False,
+        "root_predicate_pair_bindings_established": checks[
+            "all_root_predicate_pairs_bound"
+        ],
+        "root_predicate_pair_encoding_established": False,
+        "root_carry_arithmetic_established": False,
         "partial_proposed_symbolic_formulas_established": all(
             bool(selection.get("partial_symbolic_formula", {}).get("formula_nodes"))
             for selection in selections
@@ -2589,6 +2809,11 @@ def build_sass_expression_summary(certificate: dict[str, Any]) -> dict[str, Any]
         "predicate_values_established": False,
         "predicate_carry_equations_established": False,
         "predicate_hardware_semantics_established": False,
+        "root_predicate_pair_bindings_established": certificate[
+            "root_predicate_pair_bindings_established"
+        ],
+        "root_predicate_pair_encoding_established": False,
+        "root_carry_arithmetic_established": False,
         "partial_proposed_symbolic_formulas_established": certificate[
             "partial_proposed_symbolic_formulas_established"
         ],
@@ -2783,6 +3008,16 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
                     "predicate_join_node_count",
                 )
             )
+            and _verify_root_predicate_pair_binding(
+                selection.get("root_predicate_pair_binding", {})
+            )
+            and selection.get("root_predicate_pair_binding_available") is True
+            and selection.get("root_predicate_pair_binding_predicate_count")
+            == len(
+                selection.get("root_predicate_pair_binding", {}).get(
+                    "predicate_bindings", []
+                )
+            )
             for selection in selections
         )
         and summary.get("all_expression_instruction_semantics_bound")
@@ -2808,6 +3043,13 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
             and selection.get("predicate_source_edge_count", 0) > 0
             for selection in selections
         )
+        and summary.get("root_predicate_pair_bindings_established")
+        == all(
+            selection.get("root_predicate_pair_binding_available") is True
+            for selection in selections
+        )
+        and summary.get("root_predicate_pair_encoding_established") is False
+        and summary.get("root_carry_arithmetic_established") is False
         and summary.get("partial_proposed_symbolic_formulas_established")
         == all(bool(selection.get("partial_formula_sha256")) for selection in selections)
         and summary.get("partial_formula_ordered_operands_preserved") is True
@@ -2877,6 +3119,9 @@ def verify_sass_expression_summary(summary: dict[str, Any]) -> dict[str, Any]:
         and summary.get("predicate_values_established") is False
         and summary.get("predicate_carry_equations_established") is False
         and summary.get("predicate_hardware_semantics_established") is False
+        and summary.get("root_predicate_pair_bindings_established") is True
+        and summary.get("root_predicate_pair_encoding_established") is False
+        and summary.get("root_carry_arithmetic_established") is False
         and summary.get("partial_proposed_symbolic_formulas_established") is True
         and summary.get("partial_formula_ordered_operands_preserved") is True
         and summary.get("partial_formula_well_typed") is True
@@ -2994,6 +3239,9 @@ def _selection_graph_consistent(
     expected_partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
         expected_partial_formula
     )
+    expected_root_predicate_pair_binding = _build_root_predicate_pair_binding(
+        selection.get("field", ""), nodes, expected_partial_formula_blocker_analysis
+    )
     node_by_id = {node["node_sha256"]: node for node in nodes}
     predicate_descriptors = [
         descriptor
@@ -3088,6 +3336,15 @@ def _selection_graph_consistent(
         == expected_partial_formula_blocker_analysis["root_frontier_blocker_count"]
         and selection.get("partial_formula_all_roots_blocked")
         == expected_partial_formula_blocker_analysis["all_roots_blocked"]
+        and _verify_root_predicate_pair_binding(
+            selection.get("root_predicate_pair_binding", {})
+        )
+        and selection.get("root_predicate_pair_binding")
+        == expected_root_predicate_pair_binding
+        and selection.get("root_predicate_pair_binding_available")
+        == expected_root_predicate_pair_binding["available"]
+        and selection.get("root_predicate_pair_binding_predicate_count")
+        == len(expected_root_predicate_pair_binding["predicate_bindings"])
         and all(
             _semantic_binding_consistent(node, snapshot) for node in instruction_nodes
         )
@@ -3120,6 +3377,9 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         and certificate.get("predicate_values_established") is False
         and certificate.get("predicate_carry_equations_established") is False
         and certificate.get("predicate_hardware_semantics_established") is False
+        and certificate.get("root_predicate_pair_bindings_established") is True
+        and certificate.get("root_predicate_pair_encoding_established") is False
+        and certificate.get("root_carry_arithmetic_established") is False
         and certificate.get("partial_proposed_symbolic_formulas_established") is True
         and certificate.get("partial_formula_ordered_operands_preserved") is True
         and certificate.get("partial_formula_well_typed") is True
@@ -3191,6 +3451,11 @@ def verify_sass_expression_certificate(certificate: dict[str, Any]) -> dict[str,
         == any(
             selection.get("predicate_definition_node_count", 0) > 0
             and selection.get("predicate_source_edge_count", 0) > 0
+            for selection in selections
+        )
+        and certificate.get("root_predicate_pair_bindings_established")
+        == all(
+            selection.get("root_predicate_pair_binding_available") is True
             for selection in selections
         )
         and certificate.get("selected_sass_address_expression_dags_established")

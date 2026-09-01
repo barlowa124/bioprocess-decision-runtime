@@ -298,6 +298,7 @@ class SassExpressionTests(unittest.TestCase):
             _build_expression_semantics_snapshot,
             _build_launch_coordinate_domains,
             _build_partial_symbolic_formula,
+            _build_root_predicate_pair_binding,
             _call_string_expression_snapshots,
             _FormulaRegistry,
             _instruction_predicate_outputs,
@@ -312,6 +313,7 @@ class SassExpressionTests(unittest.TestCase):
             _verify_blocker_record,
             _verify_interval_record,
             _verify_launch_coordinate_domains,
+            _verify_root_predicate_pair_binding,
             verify_sass_expression_certificate,
             verify_sass_expression_summary,
         )
@@ -557,6 +559,9 @@ class SassExpressionTests(unittest.TestCase):
         partial_formula_blocker_analysis = _analyze_partial_formula_blockers(
             partial_formula
         )
+        root_predicate_pair_binding = _build_root_predicate_pair_binding(
+            "query_ptr", nodes, partial_formula_blocker_analysis
+        )
         self.assertFalse(partial_formula["closed_formula"])
         self.assertGreater(partial_formula["lowered_operation_node_count"], 0)
         self.assertTrue(partial_formula_analysis["type_check"]["well_typed"])
@@ -585,6 +590,28 @@ class SassExpressionTests(unittest.TestCase):
                 _verify_blocker_record(record)
                 for record in partial_formula_blocker_analysis["root_frontier"]
             )
+        )
+        self.assertTrue(root_predicate_pair_binding["available"])
+        self.assertTrue(_verify_root_predicate_pair_binding(root_predicate_pair_binding))
+        self.assertEqual(len(root_predicate_pair_binding["predicate_bindings"]), 1)
+        self.assertFalse(root_predicate_pair_binding["carry_arithmetic_established"])
+        negated_nodes = copy.deepcopy(nodes)
+        negated_consumer = next(
+            node
+            for node in negated_nodes
+            if node.get("kind") == "instruction_definition"
+            and node.get("opcode") == "LEA.HI.X"
+            and node.get("output_kind") == "register"
+        )
+        next(
+            descriptor
+            for descriptor in negated_consumer["ordered_semantic_operands"]
+            if descriptor.get("kind") == "predicate"
+        )["negated"] = True
+        self.assertFalse(
+            _build_root_predicate_pair_binding(
+                "query_ptr", negated_nodes, partial_formula_blocker_analysis
+            )["available"]
         )
         interval_record = copy.deepcopy(
             partial_formula_interval_analysis["intervals"][0]
@@ -737,6 +764,9 @@ class SassExpressionTests(unittest.TestCase):
                     "partial_formula_analysis": partial_formula_analysis,
                     "partial_formula_interval_analysis": partial_formula_interval_analysis,
                     "partial_formula_blocker_analysis": partial_formula_blocker_analysis,
+                    "root_predicate_pair_binding": root_predicate_pair_binding,
+                    "root_predicate_pair_binding_available": True,
+                    "root_predicate_pair_binding_predicate_count": 1,
                     "partial_formula_root_frontier_blocker_count": partial_formula_blocker_analysis[
                         "root_frontier_blocker_count"
                     ],
@@ -796,6 +826,9 @@ class SassExpressionTests(unittest.TestCase):
             "predicate_values_established": False,
             "predicate_carry_equations_established": False,
             "predicate_hardware_semantics_established": False,
+            "root_predicate_pair_bindings_established": True,
+            "root_predicate_pair_encoding_established": False,
+            "root_carry_arithmetic_established": False,
             "partial_proposed_symbolic_formulas_established": True,
             "partial_formula_ordered_operands_preserved": True,
             "partial_formula_well_typed": True,
@@ -953,6 +986,30 @@ class SassExpressionTests(unittest.TestCase):
         ).hexdigest()
         self.assertFalse(
             verify_sass_expression_certificate(damaged_predicate_link)["valid"]
+        )
+        damaged_pair_binding = copy.deepcopy(certificate)
+        pair_binding = damaged_pair_binding["selections"][0][
+            "root_predicate_pair_binding"
+        ]
+        pair_binding["predicate_bindings"][0][
+            "producer_matches_low_root_instruction"
+        ] = False
+        pair_body = {
+            key: value for key, value in pair_binding.items() if key != "binding_sha256"
+        }
+        pair_binding["binding_sha256"] = hashlib.sha256(
+            canonical_json(pair_body).encode("utf-8")
+        ).hexdigest()
+        damaged_pair_body = {
+            key: value
+            for key, value in damaged_pair_binding.items()
+            if key != "certificate_sha256"
+        }
+        damaged_pair_binding["certificate_sha256"] = hashlib.sha256(
+            canonical_json(damaged_pair_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_expression_certificate(damaged_pair_binding)["valid"]
         )
         forged_formula = copy.deepcopy(certificate)
         formula = forged_formula["selections"][0]["partial_symbolic_formula"]

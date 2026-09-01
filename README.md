@@ -654,6 +654,18 @@ Every partial formula remains non-closed because it contains opaque nodes. The f
 
 Numbered `P` and `UP` state now participates in the same bounded call-string reaching definitions as general and uniform registers. Low `LEA`/`ULEA` and `IADD3`/`UIADD3` forms create explicit one-bit predicate outputs; `.X` consumers and instruction guards retain source edges to the reaching predicate definitions. The selected query/key/value/output/output-accumulator DAGs contain 5/5, 5/5, 6/6, 6/6, and 9/9 predicate definitions/source edges respectively, with no entry-predicate leaf or predicate join. `bounded_predicate_reaching_definitions_established` and `predicate_producer_consumer_dependencies_established` are true, while `predicate_values_established`, `predicate_carry_equations_established`, and `predicate_hardware_semantics_established` remain false.
 
+Each selected low/high root pair is additionally bound to its exact observed predicate identities:
+
+| Field | Low root | High root | Bound predicates |
+|---|---|---|---|
+| `query_ptr` | `LEA` at 6000 | `LEA.HI.X` at 6064 | `P0` |
+| `key_ptr` | `LEA` at 8096 | `LEA.HI.X` at 8128 | `P3` |
+| `value_ptr` | `LEA` at 13136 | `LEA.HI.X` at 13200 | `P6` |
+| `output_ptr` | `IADD3` at 42656 | `IADD3.X` at 42752 | `P4`, `P6` |
+| `output_accum_ptr` | `IADD3` at 46480 | `IADD3.X` at 46496 | `P1` |
+
+`root_predicate_pair_bindings_established` is true: every consumer predicate resolves to an output from the corresponding low-root instruction and the producer precedes the consumer. Public NVIDIA documentation does not specify the predicate encoding at this level, while available reverse-engineered descriptions remain uncertain about the dual-predicate fields. Therefore `root_predicate_pair_encoding_established` and `root_carry_arithmetic_established` remain false; no guessed carry equation is introduced.
+
 A conservative unsigned interval pass covers every formula node. Literals are exact, coordinate symbols use their launch-domain assumptions, joins take the hull of reaching alternatives, and modular addition or multiply-add narrows only for exact inputs or when integer endpoint arithmetic proves no wrap. Constant-memory values and other opaque operations remain full-width. The retained interval counts are:
 
 | Field | Bounded nodes | Exact nodes | Assumption-dependent bounded nodes | Nontrivial root intervals |

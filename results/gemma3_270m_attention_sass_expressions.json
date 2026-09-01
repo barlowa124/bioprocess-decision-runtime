@@ -545,7 +545,10 @@
   "predicate_values_established": false,
   "proof_premises_established_for_bound_instructions": false,
   "proposed_semantics_proof_bindings_established": true,
+  "root_carry_arithmetic_established": false,
   "root_opaque_blocker_frontiers_established": true,
+  "root_predicate_pair_bindings_established": true,
+  "root_predicate_pair_encoding_established": false,
   "sass_canonical_sha256": "8447c46a0713e2d64a850dc05c9a284f4b7611d41f57f16570a2e31c9a339841",
   "sass_effective_address_bounds_established": false,
   "sass_effective_address_formula_bound": false,
@@ -568,7 +571,7 @@
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 0,
       "entry_predicate_leaf_count": 0,
-      "expression_graph_sha256": "9336260161d9be6c5eafcabb933c83703af601ad97f554c3260c88ee3117995b",
+      "expression_graph_sha256": "60d30ee8d3553a742fcd8a40f8b4fca922e0314de8258072775868d71f415a16",
       "field": "query_ptr",
       "instruction_definition_node_count": 70,
       "instruction_offset": 8432,
@@ -608,14 +611,14 @@
       },
       "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_all_roots_blocked": true,
-      "partial_formula_analysis_sha256": "db4bc6903c43e518e532ff4549721dcae717023df1193ae7d99289eb94edad2f",
+      "partial_formula_analysis_sha256": "10a2c5eda959891771387aed0859502f41f09466ceb23e8fe0229d27e7cea474",
       "partial_formula_assumption_bounded_interval_node_count": 11,
       "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
-      "partial_formula_blocker_analysis_sha256": "daae7180d1015b93ab75d56c1722276ca4c017735ce3ae74d8c33721d005f241",
+      "partial_formula_blocker_analysis_sha256": "85898e56039702dbe4aebcc308553518ff8782b189350925d53992dc0d5e48b9",
       "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
       "partial_formula_exact_interval_node_count": 18,
-      "partial_formula_interval_analysis_sha256": "ef27d1152d845fbe6d0cd3da5fbb28ebcf0fd741a60e45de277c175e61aa5b95",
+      "partial_formula_interval_analysis_sha256": "5aa7501ed7c24185c0b69e0cd8e4deb169110bae9ea636a7786db761bf5bcdd9",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 21,
       "partial_formula_lowered_operation_node_count": 21,
@@ -624,25 +627,25 @@
       "partial_formula_root_blocker_frontier": [
         {
           "argument_count": 3,
-          "blocker_sha256": "c30fba2800cdc049e927217e920b738ec934f5ab3e469116c3cc40ed4a90bbb5",
+          "blocker_sha256": "623132672708444fe7465319a7ecf82a95c7bb0de154678584eba7ac9053450a",
           "depth": 0,
-          "expression_node_sha256": "fd2fa6979dd04c27dd551657bf946eb2e81123bbf0edffee42ec24878b7f84fd",
-          "formula_node_sha256": "d4c17bca5131d1e0ad1b2df61e8861386c5da63908ac97e5b85574fd0e636bdd",
+          "expression_node_sha256": "b68233ba17436e8670d8a8abbc04f4290cfebf2e825b52dfc2e5337ff99a989a",
+          "formula_node_sha256": "ffcb259c01e234c0aa8268dbee2034e3db74bc1a7b980d4915435c4e9e562caa",
           "kind": "opaque_operation",
           "label": "LEA",
-          "root_formula_node_sha256": "d4c17bca5131d1e0ad1b2df61e8861386c5da63908ac97e5b85574fd0e636bdd",
+          "root_formula_node_sha256": "ffcb259c01e234c0aa8268dbee2034e3db74bc1a7b980d4915435c4e9e562caa",
           "root_index": 0,
           "width_bits": 32
         },
         {
           "argument_count": 5,
-          "blocker_sha256": "ac2dd5586f17b5650e318d2e25ca8d7eefc975617cc11945906286dfeb3c22de",
+          "blocker_sha256": "ae7c1ede1b870e4a0bc08e6b071fca1bf96173fc127dcff6479461e2d54d272f",
           "depth": 0,
-          "expression_node_sha256": "fae29f17a63fb5cf331a92662a264e1882ec14fd50c6cf42c1fa14e82db85332",
-          "formula_node_sha256": "e03a9d7dc1be2f2220fbabc7fc8255ef264bfc66a360c9999c60c7ebb9f4f7b8",
+          "expression_node_sha256": "859c93b8efdb827fd8116da0173acd4d6851aceac08a9daf38b4ab1761871e97",
+          "formula_node_sha256": "a565ba41bf46d1eb211d9a980a5697cdb4c6021cd860d46eb7322ecd6898caec",
           "kind": "opaque_operation",
           "label": "LEA.HI.X",
-          "root_formula_node_sha256": "e03a9d7dc1be2f2220fbabc7fc8255ef264bfc66a360c9999c60c7ebb9f4f7b8",
+          "root_formula_node_sha256": "a565ba41bf46d1eb211d9a980a5697cdb4c6021cd860d46eb7322ecd6898caec",
           "root_index": 1,
           "width_bits": 32
         }
@@ -653,9 +656,9 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "d4c17bca5131d1e0ad1b2df61e8861386c5da63908ac97e5b85574fd0e636bdd",
+          "formula_node_sha256": "ffcb259c01e234c0aa8268dbee2034e3db74bc1a7b980d4915435c4e9e562caa",
           "full_width_unknown": true,
-          "interval_sha256": "5a9c0e998b88a59b492cf1eaac9e41bda1d21cdac9b797ed3e1afbb10c6c9cde",
+          "interval_sha256": "30a1ab4459fbcea12b8d53c221a36d83347de2b58ea439367d17cff6a8a83202",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
@@ -664,19 +667,19 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "e03a9d7dc1be2f2220fbabc7fc8255ef264bfc66a360c9999c60c7ebb9f4f7b8",
+          "formula_node_sha256": "a565ba41bf46d1eb211d9a980a5697cdb4c6021cd860d46eb7322ecd6898caec",
           "full_width_unknown": true,
-          "interval_sha256": "3526320c8380d6e42fca38e1f3307084eab5b8cd3f46a691cde8f61702e11eac",
+          "interval_sha256": "c0c2e05dff59a39c4a39c90a5f5473bd3c3192d2e86355bacfb5e5fe2f803db4",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
         }
       ],
       "partial_formula_root_nodes": [
-        "d4c17bca5131d1e0ad1b2df61e8861386c5da63908ac97e5b85574fd0e636bdd",
-        "e03a9d7dc1be2f2220fbabc7fc8255ef264bfc66a360c9999c60c7ebb9f4f7b8"
+        "ffcb259c01e234c0aa8268dbee2034e3db74bc1a7b980d4915435c4e9e562caa",
+        "a565ba41bf46d1eb211d9a980a5697cdb4c6021cd860d46eb7322ecd6898caec"
       ],
-      "partial_formula_sha256": "927289c2aa9ebef4c2baf55a6017c8f74947201795a6c0a41957766d8dcfcd38",
+      "partial_formula_sha256": "f39fd25b270766010304656fb80ef8d7c631d4cf55ec736d3b7a79671c75cdef",
       "partial_formula_translated_root_count": 2,
       "partial_formula_well_typed": true,
       "predicate_definition_node_count": 5,
@@ -709,9 +712,51 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "8ff27505fdbafc385e4298bfd0aabb602d19bb62c43b1224e51959c8104af43a",
-        "695b8ed36c8c2dbda5588de8db6d4f64a1ddb4f35e2cc5e86a60dc6a15d9a0c4"
+        "9d34d9446aa27299b5d3b2b0595c255774c469eb1f6e74dd796f8867a49caf86",
+        "5f84939b1923d5104af694d46c7dc095392c9f4845173d98d194e4364deb2b69"
       ],
+      "root_predicate_pair_binding": {
+        "available": true,
+        "binding_sha256": "c36a1da6aefe9a1ec5fb70bb3a1f5686be5ce20fa62fe927cdbf2d636dd7f796",
+        "carry_arithmetic_established": false,
+        "failure_reasons": [],
+        "field": "query_ptr",
+        "hardware_semantics_established": false,
+        "high_root": {
+          "expression_node_sha256": "859c93b8efdb827fd8116da0173acd4d6851aceac08a9daf38b4ab1761871e97",
+          "formula_node_sha256": "a565ba41bf46d1eb211d9a980a5697cdb4c6021cd860d46eb7322ecd6898caec",
+          "instruction_offset": 6064,
+          "opcode": "LEA.HI.X",
+          "predicate_inputs": [
+            "P0"
+          ]
+        },
+        "low_root": {
+          "expression_node_sha256": "b68233ba17436e8670d8a8abbc04f4290cfebf2e825b52dfc2e5337ff99a989a",
+          "formula_node_sha256": "ffcb259c01e234c0aa8268dbee2034e3db74bc1a7b980d4915435c4e9e562caa",
+          "instruction_offset": 6000,
+          "opcode": "LEA",
+          "predicate_outputs": [
+            "P0"
+          ]
+        },
+        "predicate_bindings": [
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "390933b442030cbef6ef9a672ade15ae131665bb5363d33fea0e1243d736a5be",
+            "predicate": "P0",
+            "producer_definition_node_sha256": "8e7bf4f62359bc282aef77e03dbd9ec43112ab2d5a5f26e6e34e3cf6a0145a61",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "390933b442030cbef6ef9a672ade15ae131665bb5363d33fea0e1243d736a5be"
+          }
+        ],
+        "predicate_encoding_established": false,
+        "predicate_identity_set_matches": true,
+        "producer_consumer_order_established": true,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded."
+      },
+      "root_predicate_pair_binding_available": true,
+      "root_predicate_pair_binding_predicate_count": 1,
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
@@ -752,7 +797,7 @@
       "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
       "entry_predicate_leaf_count": 0,
-      "expression_graph_sha256": "382d7cce0681c1052569af581544828bc830dd0ac8a6f4a232176e7b596a2379",
+      "expression_graph_sha256": "62532f5457beeed3ac858f7e1fde3e3fd3714445046ce3843c8c9e215a4cd67c",
       "field": "key_ptr",
       "instruction_definition_node_count": 78,
       "instruction_offset": 8512,
@@ -792,14 +837,14 @@
       },
       "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_all_roots_blocked": true,
-      "partial_formula_analysis_sha256": "e09b8daab70b280e53703740441ff590dc28d109b6e454c085e0df66da7b13b7",
+      "partial_formula_analysis_sha256": "823d729a1d6a6363582001a9a8a99faf5a845e7869dfa743c42f54ba433520e1",
       "partial_formula_assumption_bounded_interval_node_count": 9,
       "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
-      "partial_formula_blocker_analysis_sha256": "8be98f5087d834899943f24d69cc208a918a180fb67efe18653f5bbb1108270f",
+      "partial_formula_blocker_analysis_sha256": "25a0fe7113b21c45d93de62c52d7c0d3cf3ee8d98c8e7a78623d4d9b60bf46b2",
       "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
       "partial_formula_exact_interval_node_count": 18,
-      "partial_formula_interval_analysis_sha256": "b460d51d4994a5ce501cb6070a03767289cf07db9088183c00a7588d06fa6e1c",
+      "partial_formula_interval_analysis_sha256": "c782d02d2906a3e8df9ee163b574676df6a7f012b5395a79439736476a04e6f1",
       "partial_formula_launch_domain_assumption_count": 8,
       "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
@@ -808,25 +853,25 @@
       "partial_formula_root_blocker_frontier": [
         {
           "argument_count": 3,
-          "blocker_sha256": "7f1feada34230804fcf9dd53b9d5d861be8219940de87159f5f8df972f148a4a",
+          "blocker_sha256": "a4120b3fc0879d648587f5ea3c4aec115faad25884f088ada73f1c6dae1cec0c",
           "depth": 0,
-          "expression_node_sha256": "6e5f1b122f9ecf52650ab33dce23c0050f2aa33e0e7dc89535bae39388b6ebbc",
-          "formula_node_sha256": "955f8f2f5ed0c6b22de73f19882d69b38fd7c41d7c19337392e67903700a16e9",
+          "expression_node_sha256": "75c7b6cde496c363ad359c2c43b277bad5863b7b7452005eb258760d788c1cea",
+          "formula_node_sha256": "adcc45f6ec47e5dcb7b10c44bef33de12a4a5402444bec9d7c92760533942250",
           "kind": "opaque_operation",
           "label": "LEA",
-          "root_formula_node_sha256": "955f8f2f5ed0c6b22de73f19882d69b38fd7c41d7c19337392e67903700a16e9",
+          "root_formula_node_sha256": "adcc45f6ec47e5dcb7b10c44bef33de12a4a5402444bec9d7c92760533942250",
           "root_index": 0,
           "width_bits": 32
         },
         {
           "argument_count": 5,
-          "blocker_sha256": "a11b9ccd3e6c8850a4e0362b5d6e4721977b1a66ba9fd0394984dc9ca7d3a5e2",
+          "blocker_sha256": "71d4f7886072bfcee20644594b0346b062ea7cf8425c16d8b97175aa30c6a1c8",
           "depth": 0,
-          "expression_node_sha256": "14af331c5ac3cc2704f13a5eaf1399de4154f8de352cd5796d32779351bc35cd",
-          "formula_node_sha256": "6cc8e20ba07ba36dcae22c4479eb7ededbf84ac818a19951bd37492ed8f6cfa4",
+          "expression_node_sha256": "a2de3d529280c7a8ab43ddf14fb97089cf34236ee39644cafbed15911e69f30c",
+          "formula_node_sha256": "a25b8e2ba01e88fe41b17b53078c5f220af9438a66fbb2bfbcdc79a3e36641ab",
           "kind": "opaque_operation",
           "label": "LEA.HI.X",
-          "root_formula_node_sha256": "6cc8e20ba07ba36dcae22c4479eb7ededbf84ac818a19951bd37492ed8f6cfa4",
+          "root_formula_node_sha256": "a25b8e2ba01e88fe41b17b53078c5f220af9438a66fbb2bfbcdc79a3e36641ab",
           "root_index": 1,
           "width_bits": 32
         }
@@ -837,9 +882,9 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "955f8f2f5ed0c6b22de73f19882d69b38fd7c41d7c19337392e67903700a16e9",
+          "formula_node_sha256": "adcc45f6ec47e5dcb7b10c44bef33de12a4a5402444bec9d7c92760533942250",
           "full_width_unknown": true,
-          "interval_sha256": "db6837c02c8c7958a38c3f868285bc9d062a0f4709cb3994fa1279a426a4bb1d",
+          "interval_sha256": "0efaf99aba2f7c496583c273a042157f76756524fcc984edf03cf94b6565c155",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
@@ -848,19 +893,19 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "6cc8e20ba07ba36dcae22c4479eb7ededbf84ac818a19951bd37492ed8f6cfa4",
+          "formula_node_sha256": "a25b8e2ba01e88fe41b17b53078c5f220af9438a66fbb2bfbcdc79a3e36641ab",
           "full_width_unknown": true,
-          "interval_sha256": "850e5272341c8023e4e70d7cd59cc5d8dbeb7c53b899b959055de612879631b0",
+          "interval_sha256": "88e46653fece265d76c7697fef2e8b4bc81b594dec8af1fd78a8525dff838dfc",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
         }
       ],
       "partial_formula_root_nodes": [
-        "955f8f2f5ed0c6b22de73f19882d69b38fd7c41d7c19337392e67903700a16e9",
-        "6cc8e20ba07ba36dcae22c4479eb7ededbf84ac818a19951bd37492ed8f6cfa4"
+        "adcc45f6ec47e5dcb7b10c44bef33de12a4a5402444bec9d7c92760533942250",
+        "a25b8e2ba01e88fe41b17b53078c5f220af9438a66fbb2bfbcdc79a3e36641ab"
       ],
-      "partial_formula_sha256": "acd634cb2684701247bd8314dfc8f54e9bf61993bc689d59b78bedb7e52b165b",
+      "partial_formula_sha256": "246e6ccde7726af18bb6029fd2bc79a54200d5a4f3b76bf11bd7ea7a970e71f1",
       "partial_formula_translated_root_count": 2,
       "partial_formula_well_typed": true,
       "predicate_definition_node_count": 5,
@@ -891,9 +936,51 @@
         "seqstart_k_ptr"
       ],
       "root_nodes": [
-        "75802ee9409b3d5cc2455f4df93fc8a1c568bb448da9e77c525144a17c85ff5f",
-        "fa9872cfe3ef1ccb56e693b5c5a976652b565a239076ed492f354424de0c05fe"
+        "b114643cbc38fd11ffe6ff53a6a7649f07bf7a177d631ef809a99cf24f550da4",
+        "81b31f946b5499b6dcd85ac86a69836c27ee9236cdea136bc4ce0afe9d00317b"
       ],
+      "root_predicate_pair_binding": {
+        "available": true,
+        "binding_sha256": "4a3da4e968de4f99691e093dbdcacb68cdf695906eff89517417fbefdb0b1d49",
+        "carry_arithmetic_established": false,
+        "failure_reasons": [],
+        "field": "key_ptr",
+        "hardware_semantics_established": false,
+        "high_root": {
+          "expression_node_sha256": "a2de3d529280c7a8ab43ddf14fb97089cf34236ee39644cafbed15911e69f30c",
+          "formula_node_sha256": "a25b8e2ba01e88fe41b17b53078c5f220af9438a66fbb2bfbcdc79a3e36641ab",
+          "instruction_offset": 8128,
+          "opcode": "LEA.HI.X",
+          "predicate_inputs": [
+            "P3"
+          ]
+        },
+        "low_root": {
+          "expression_node_sha256": "75c7b6cde496c363ad359c2c43b277bad5863b7b7452005eb258760d788c1cea",
+          "formula_node_sha256": "adcc45f6ec47e5dcb7b10c44bef33de12a4a5402444bec9d7c92760533942250",
+          "instruction_offset": 8096,
+          "opcode": "LEA",
+          "predicate_outputs": [
+            "P3"
+          ]
+        },
+        "predicate_bindings": [
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "515dd4f2de62a6c5bf2904080d5d7cc76e4b0f775be83c55a4dd07dc53b5ae13",
+            "predicate": "P3",
+            "producer_definition_node_sha256": "003c0b96de4fc7231515a8f039d770886777cf26830c57fe8a9318babbae3943",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "515dd4f2de62a6c5bf2904080d5d7cc76e4b0f775be83c55a4dd07dc53b5ae13"
+          }
+        ],
+        "predicate_encoding_established": false,
+        "predicate_identity_set_matches": true,
+        "producer_consumer_order_established": true,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded."
+      },
+      "root_predicate_pair_binding_available": true,
+      "root_predicate_pair_binding_predicate_count": 1,
       "selected_block_index": 19,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
@@ -937,7 +1024,7 @@
       "coordinate_special_register_leaf_count": 4,
       "cyclic_reaching_definition_node_count": 1,
       "entry_predicate_leaf_count": 0,
-      "expression_graph_sha256": "d2698010e87768622cd7f2354dbb8be1ab1091be663409976f61b8eef8ac90e7",
+      "expression_graph_sha256": "5088bc56bde47ed2c6ca7294e21ef5f1af5253a0aa6030fac22c02fdcd326496",
       "field": "value_ptr",
       "instruction_definition_node_count": 76,
       "instruction_offset": 13792,
@@ -976,14 +1063,14 @@
       },
       "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_all_roots_blocked": true,
-      "partial_formula_analysis_sha256": "197e0c758ede2e11f700cac3dba04a5c97bc4d389803084bbded0cc1b04033e8",
+      "partial_formula_analysis_sha256": "92beddea8010b7bae4ef9a2d9c681f70043e44d0c867f7c791d6d272e9c0fcde",
       "partial_formula_assumption_bounded_interval_node_count": 9,
       "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
-      "partial_formula_blocker_analysis_sha256": "54b19840586d48c4b314642d11c73ef40cafdb3840182ffa45753c8e35aa76bf",
+      "partial_formula_blocker_analysis_sha256": "9ca13b702cdb7f366345457c82ecc8fa951e826ecd82ff0115773eebcbb377f6",
       "partial_formula_bounded_interval_node_count": 24,
       "partial_formula_closed": false,
       "partial_formula_exact_interval_node_count": 17,
-      "partial_formula_interval_analysis_sha256": "75e6d15bb256efaf3aea607c910871fd2f138c7b0011f1f3e9bc067e1198669d",
+      "partial_formula_interval_analysis_sha256": "0ef5b00ea0fa06ec22af64592614fa7357246d88cdd5af5c45b41797d1e4717b",
       "partial_formula_launch_domain_assumption_count": 8,
       "partial_formula_local_lowering_obligation_count": 24,
       "partial_formula_lowered_operation_node_count": 24,
@@ -992,25 +1079,25 @@
       "partial_formula_root_blocker_frontier": [
         {
           "argument_count": 3,
-          "blocker_sha256": "7b1f6fdcafdb26211f0ff13ce43ed41ce70891da41603e03b039495019e5dcc0",
+          "blocker_sha256": "ab855b7e238f44bd2a085ce30975dc8da0be158d4cae76921f2742d37c5c5ff2",
           "depth": 0,
-          "expression_node_sha256": "809294d4c1f9dddf615450d42061e0906fd23d3c3e3a52e91c51e35e1a8bf924",
-          "formula_node_sha256": "6329c0a42ef49e3ba6c07029c26c0ad9f943dc037299e7b2ff3f3d55a92f02d5",
+          "expression_node_sha256": "a572f0c07f8438a3f91ea8a0930b2af08970ac447e9199dda5850c0eae65bd9b",
+          "formula_node_sha256": "6adc5d1f835c1aa00f041d5423c1f10f47354916d46af4135f3bb9e77754e999",
           "kind": "opaque_operation",
           "label": "LEA",
-          "root_formula_node_sha256": "6329c0a42ef49e3ba6c07029c26c0ad9f943dc037299e7b2ff3f3d55a92f02d5",
+          "root_formula_node_sha256": "6adc5d1f835c1aa00f041d5423c1f10f47354916d46af4135f3bb9e77754e999",
           "root_index": 0,
           "width_bits": 32
         },
         {
           "argument_count": 5,
-          "blocker_sha256": "2896ab3ff0b55eae08d140853f043d4673d5bbf11b4566f1e2e5d6dd97fd01f3",
+          "blocker_sha256": "3db2ebc39fe468bf5c36b1fe83d5b9f56f4620a68cff3474041535ba844d4c35",
           "depth": 0,
-          "expression_node_sha256": "d784ea5a283057644cb318a9cbced56a064b359b7543841f88157b76c10cdcf7",
-          "formula_node_sha256": "6db9bf0c389a2b98b8ba5554d18b2657fab274b4099999ee882207c20681c023",
+          "expression_node_sha256": "ff8e30db473ec0c0f987a71c6ffbbd57deb249b1ecb62933553caea11846cd5f",
+          "formula_node_sha256": "9dce146c0754f1393fbf1dac315796d7ea8e5286a1de6e56a38fed97ba895194",
           "kind": "opaque_operation",
           "label": "LEA.HI.X",
-          "root_formula_node_sha256": "6db9bf0c389a2b98b8ba5554d18b2657fab274b4099999ee882207c20681c023",
+          "root_formula_node_sha256": "9dce146c0754f1393fbf1dac315796d7ea8e5286a1de6e56a38fed97ba895194",
           "root_index": 1,
           "width_bits": 32
         }
@@ -1021,9 +1108,9 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "6329c0a42ef49e3ba6c07029c26c0ad9f943dc037299e7b2ff3f3d55a92f02d5",
+          "formula_node_sha256": "6adc5d1f835c1aa00f041d5423c1f10f47354916d46af4135f3bb9e77754e999",
           "full_width_unknown": true,
-          "interval_sha256": "80297cc73e594c9d2569806826eec554b31cfde98f5770e2f02252532c36bc00",
+          "interval_sha256": "b5a96a4af87bf9b8558bbcb57d0f801bd7ffc5ad3f9b8395946eb60ef763ce04",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
@@ -1032,19 +1119,19 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "6db9bf0c389a2b98b8ba5554d18b2657fab274b4099999ee882207c20681c023",
+          "formula_node_sha256": "9dce146c0754f1393fbf1dac315796d7ea8e5286a1de6e56a38fed97ba895194",
           "full_width_unknown": true,
-          "interval_sha256": "12a4b43b43c7cfe81ffa719c50d1fd48cf6e021747e8e8daea7d398dcaa42cc2",
+          "interval_sha256": "8a48e97eb9b9959d13788d4c227c0bc27793c454db83e42ad0fbf8ee3d18bd54",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
         }
       ],
       "partial_formula_root_nodes": [
-        "6329c0a42ef49e3ba6c07029c26c0ad9f943dc037299e7b2ff3f3d55a92f02d5",
-        "6db9bf0c389a2b98b8ba5554d18b2657fab274b4099999ee882207c20681c023"
+        "6adc5d1f835c1aa00f041d5423c1f10f47354916d46af4135f3bb9e77754e999",
+        "9dce146c0754f1393fbf1dac315796d7ea8e5286a1de6e56a38fed97ba895194"
       ],
-      "partial_formula_sha256": "1e21a862441c0a3ffbb15a8df717c6997b56320222b76dd50a8de3b7bc09a60d",
+      "partial_formula_sha256": "8e7a80d1a711285ea862d3cd4feda9d5c57d80b11c9b7d8da7a5690e0dda7203",
       "partial_formula_translated_root_count": 2,
       "partial_formula_well_typed": true,
       "predicate_definition_node_count": 6,
@@ -1074,9 +1161,51 @@
         "value_ptr"
       ],
       "root_nodes": [
-        "d6eb2098b87a9c9a8b995b205f0323f67555a804f4bfadd55fbff96e1b74d540",
-        "a4ecea932ca2a3e7c2bbf80071528f562edd6d587092c7efc21d663c5dd14302"
+        "a9e0d1bfd658a6c833b2826aaa13a3ea05efd7b2b78b13923f3c2a195aecbf25",
+        "af86514ec76511afd10cc5349edf8d0f4e8122a12e7b3967d536c8088b303802"
       ],
+      "root_predicate_pair_binding": {
+        "available": true,
+        "binding_sha256": "452817b1474b65c697cf7edb572a4dae41c8440c6ec8b6ada575341ce47dc0f1",
+        "carry_arithmetic_established": false,
+        "failure_reasons": [],
+        "field": "value_ptr",
+        "hardware_semantics_established": false,
+        "high_root": {
+          "expression_node_sha256": "ff8e30db473ec0c0f987a71c6ffbbd57deb249b1ecb62933553caea11846cd5f",
+          "formula_node_sha256": "9dce146c0754f1393fbf1dac315796d7ea8e5286a1de6e56a38fed97ba895194",
+          "instruction_offset": 13200,
+          "opcode": "LEA.HI.X",
+          "predicate_inputs": [
+            "P6"
+          ]
+        },
+        "low_root": {
+          "expression_node_sha256": "a572f0c07f8438a3f91ea8a0930b2af08970ac447e9199dda5850c0eae65bd9b",
+          "formula_node_sha256": "6adc5d1f835c1aa00f041d5423c1f10f47354916d46af4135f3bb9e77754e999",
+          "instruction_offset": 13136,
+          "opcode": "LEA",
+          "predicate_outputs": [
+            "P6"
+          ]
+        },
+        "predicate_bindings": [
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "a25cbf574d6949c02756816c15a1eb2a1bc807d0dcc8e7f9f88daeba9e22638b",
+            "predicate": "P6",
+            "producer_definition_node_sha256": "b82a51e96eed6da77f680e4aa53903049c837e850b9d5995762578b8e89afda4",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "a25cbf574d6949c02756816c15a1eb2a1bc807d0dcc8e7f9f88daeba9e22638b"
+          }
+        ],
+        "predicate_encoding_established": false,
+        "predicate_identity_set_matches": true,
+        "producer_consumer_order_established": true,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded."
+      },
+      "root_predicate_pair_binding_available": true,
+      "root_predicate_pair_binding_predicate_count": 1,
       "selected_block_index": 22,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
@@ -1119,7 +1248,7 @@
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
       "entry_predicate_leaf_count": 0,
-      "expression_graph_sha256": "9c4b7bfc06ca2a2a223ce89c68c2201d39a7f89904aa40df3acd108ff64d290d",
+      "expression_graph_sha256": "ddb2c07e12a2c5af3ba53b998bf6089fb2df3943639071cc72a0d130b489998f",
       "field": "output_ptr",
       "instruction_definition_node_count": 89,
       "instruction_offset": 43408,
@@ -1161,14 +1290,14 @@
       },
       "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_all_roots_blocked": true,
-      "partial_formula_analysis_sha256": "47b739a103270b90f21c45b38fcbf705bb729a8775f9e75237163a99ac0858e3",
+      "partial_formula_analysis_sha256": "742bb71e73d1212db6e68b34d60e2d39b38d075d4256349e2449d0d1e5979822",
       "partial_formula_assumption_bounded_interval_node_count": 12,
       "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
-      "partial_formula_blocker_analysis_sha256": "789ac7fd5829c59aa1b5575dcf661d1d6e34c190b885c398019a1dc4b892cce8",
+      "partial_formula_blocker_analysis_sha256": "5885ebd67ab86dab2208990d41c23c1705e39ef4690a0a713c4fa0590d447295",
       "partial_formula_bounded_interval_node_count": 31,
       "partial_formula_closed": false,
       "partial_formula_exact_interval_node_count": 25,
-      "partial_formula_interval_analysis_sha256": "ca201c24e14d524feeeb551c9b19bf72b94d1e98c8d77d2cbb3711bfdd84b4c0",
+      "partial_formula_interval_analysis_sha256": "123b43acaf53df037c023e55c77a21c0f80699c16fc3943311938261bbecd9a7",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 27,
       "partial_formula_lowered_operation_node_count": 27,
@@ -1177,25 +1306,25 @@
       "partial_formula_root_blocker_frontier": [
         {
           "argument_count": 3,
-          "blocker_sha256": "f18508f6db7406cbe76f00cfbccd3d8b38e8ac99679b9750b471c4b5176cb7d5",
+          "blocker_sha256": "2f1dcddb5ac83c554bad05594ab8fc7d9ba07051847a4d635cdc558ab8fc760d",
           "depth": 0,
-          "expression_node_sha256": "02c81780efb9474b0cff6b461e632a1248c6a1bb3cfab59cceec9546bc208aaa",
-          "formula_node_sha256": "f4b8b0f7175f5e057064898723151d665a74bbb626a61efe70ed11222aa3065c",
+          "expression_node_sha256": "49dd601493d689f2948085cb399e5c387fed0a2bc409d87042af86e27c7883c9",
+          "formula_node_sha256": "e127bdc87ed7022f5384b7aeca7cb2ac48691b24f1ee49ad1d11e8ccbf2602b8",
           "kind": "opaque_operation",
           "label": "IADD3",
-          "root_formula_node_sha256": "f4b8b0f7175f5e057064898723151d665a74bbb626a61efe70ed11222aa3065c",
+          "root_formula_node_sha256": "e127bdc87ed7022f5384b7aeca7cb2ac48691b24f1ee49ad1d11e8ccbf2602b8",
           "root_index": 0,
           "width_bits": 32
         },
         {
           "argument_count": 5,
-          "blocker_sha256": "04b35ba2379c6e6369f3d78f0e330a7c7a44a67870b2f36aa0cbfd9ea2d4fd2d",
+          "blocker_sha256": "35e7e5aaf2590154b873ea8d261b1b2bc1f96820a5cbfd61a00e5e784605a34c",
           "depth": 0,
-          "expression_node_sha256": "dadda9959760ad0a950c31f68aa88b51cf20784b66b0cd7f61719510828c337d",
-          "formula_node_sha256": "8c1736252c7c2bb2a38048d732b81b399bfe16a4bbc20107729ad9b579dbf770",
+          "expression_node_sha256": "5b7d0002a478245ec9b3b9e914a62d7f3c5df8738a06a572b9204960e5cf228d",
+          "formula_node_sha256": "c8bc8bca60f6c83a782b6f564a94b2f27d94af289b66d69b922bcf96fe7bd690",
           "kind": "opaque_operation",
           "label": "IADD3.X",
-          "root_formula_node_sha256": "8c1736252c7c2bb2a38048d732b81b399bfe16a4bbc20107729ad9b579dbf770",
+          "root_formula_node_sha256": "c8bc8bca60f6c83a782b6f564a94b2f27d94af289b66d69b922bcf96fe7bd690",
           "root_index": 1,
           "width_bits": 32
         }
@@ -1206,9 +1335,9 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "f4b8b0f7175f5e057064898723151d665a74bbb626a61efe70ed11222aa3065c",
+          "formula_node_sha256": "e127bdc87ed7022f5384b7aeca7cb2ac48691b24f1ee49ad1d11e8ccbf2602b8",
           "full_width_unknown": true,
-          "interval_sha256": "1da83d9a4966d1247086772c24a87304e1b7fe3f804a80d12c062df46caea190",
+          "interval_sha256": "b4f4d606315757f6972baacf56c42c750b54063687a6de8fa0765afe8134a724",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
@@ -1217,19 +1346,19 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "8c1736252c7c2bb2a38048d732b81b399bfe16a4bbc20107729ad9b579dbf770",
+          "formula_node_sha256": "c8bc8bca60f6c83a782b6f564a94b2f27d94af289b66d69b922bcf96fe7bd690",
           "full_width_unknown": true,
-          "interval_sha256": "f287ecbb4c78edd7ef945c6a6fc07a666bba63dd3c20f8a70b508421fa6f4448",
+          "interval_sha256": "928defe0700107b279d54da2fda95f60efea7beae50e815b29bee28f7b4f52b8",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
         }
       ],
       "partial_formula_root_nodes": [
-        "f4b8b0f7175f5e057064898723151d665a74bbb626a61efe70ed11222aa3065c",
-        "8c1736252c7c2bb2a38048d732b81b399bfe16a4bbc20107729ad9b579dbf770"
+        "e127bdc87ed7022f5384b7aeca7cb2ac48691b24f1ee49ad1d11e8ccbf2602b8",
+        "c8bc8bca60f6c83a782b6f564a94b2f27d94af289b66d69b922bcf96fe7bd690"
       ],
-      "partial_formula_sha256": "0265360e377310dfee46de2999029e06819ba0e4b187b82a0ea8b6bd3ae81ec1",
+      "partial_formula_sha256": "a72639532fb9364e9a5d4128bfb05d3662b96c3fbd9893aa0a79c4e487d596e0",
       "partial_formula_translated_root_count": 2,
       "partial_formula_well_typed": true,
       "predicate_definition_node_count": 6,
@@ -1263,9 +1392,61 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "b3a746277c339aa5594c4c629020be9d2dc0cdf6ec9f772648e9415e0c55ed90",
-        "9f4daf57b172fef23959b26ddee62a6c0d3f059b983950c1731744cb2b962e31"
+        "848a70cd8a17ee084f2d3d5af780f8c012ee0844105812be05f1ed6d91bb6273",
+        "6c918178b282aac120e4dc78b03eadcd098138de40ca89ebc2383ad315b778a0"
       ],
+      "root_predicate_pair_binding": {
+        "available": true,
+        "binding_sha256": "b0255a1d0b91fe101021d542731d4b9ba07fedd241a72a6fde0c8a58e2cbaa17",
+        "carry_arithmetic_established": false,
+        "failure_reasons": [],
+        "field": "output_ptr",
+        "hardware_semantics_established": false,
+        "high_root": {
+          "expression_node_sha256": "5b7d0002a478245ec9b3b9e914a62d7f3c5df8738a06a572b9204960e5cf228d",
+          "formula_node_sha256": "c8bc8bca60f6c83a782b6f564a94b2f27d94af289b66d69b922bcf96fe7bd690",
+          "instruction_offset": 42752,
+          "opcode": "IADD3.X",
+          "predicate_inputs": [
+            "P6",
+            "P4"
+          ]
+        },
+        "low_root": {
+          "expression_node_sha256": "49dd601493d689f2948085cb399e5c387fed0a2bc409d87042af86e27c7883c9",
+          "formula_node_sha256": "e127bdc87ed7022f5384b7aeca7cb2ac48691b24f1ee49ad1d11e8ccbf2602b8",
+          "instruction_offset": 42656,
+          "opcode": "IADD3",
+          "predicate_outputs": [
+            "P6",
+            "P4"
+          ]
+        },
+        "predicate_bindings": [
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "1738c77b918371e73db0641d654d3d930f1be2f6fe6bb7564d1f098258132a9f",
+            "predicate": "P6",
+            "producer_definition_node_sha256": "be2a7d86b139400089a409bf547f7a6fc1edcc0de6fd8350a05355859a9ebbec",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "1738c77b918371e73db0641d654d3d930f1be2f6fe6bb7564d1f098258132a9f"
+          },
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "f11310ce8c1c3fb79c60fe213a894b3a0a4879c0ea3acae5a359220d0f185dbe",
+            "predicate": "P4",
+            "producer_definition_node_sha256": "4c75583a709fb99cdc96a867cbba1c4ebcc98876d20ce06f47805c9553175577",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "f11310ce8c1c3fb79c60fe213a894b3a0a4879c0ea3acae5a359220d0f185dbe"
+          }
+        ],
+        "predicate_encoding_established": false,
+        "predicate_identity_set_matches": true,
+        "producer_consumer_order_established": true,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded."
+      },
+      "root_predicate_pair_binding_available": true,
+      "root_predicate_pair_binding_predicate_count": 2,
       "selected_block_index": 78,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
@@ -1307,7 +1488,7 @@
       "coordinate_special_register_leaf_count": 5,
       "cyclic_reaching_definition_node_count": 1,
       "entry_predicate_leaf_count": 0,
-      "expression_graph_sha256": "520d86fa330c7493ec45fa851f210adc6d8f14bc7dda2b3b28a269a40d2ddf62",
+      "expression_graph_sha256": "ad0d120d7f30725a820a7df27cfd5112901da8cd6606b3abdef5891ff628c7c3",
       "field": "output_accum_ptr",
       "instruction_definition_node_count": 146,
       "instruction_offset": 47072,
@@ -1349,14 +1530,14 @@
       },
       "partial_formula_all_root_intervals_full_width_unknown": true,
       "partial_formula_all_roots_blocked": true,
-      "partial_formula_analysis_sha256": "8a2e5c20d583c8cdc5f752edad001e673045b00f30e6da213cc12c8ed8ebab47",
+      "partial_formula_analysis_sha256": "a39b280c0db849af5b159ae1a3863995941b9fc7522cd6899242dbaffdbc7507",
       "partial_formula_assumption_bounded_interval_node_count": 14,
       "partial_formula_assumption_conditioned_nontrivial_root_interval_count": 0,
-      "partial_formula_blocker_analysis_sha256": "8996648eb243f43e44f9c49a568d7c7b7981b7839271bf2fc1a334b3a5bf5b49",
+      "partial_formula_blocker_analysis_sha256": "fad43e03d245e58adfc31f893ca64ec6fa82dcbcdd9fb67d911afb030807134a",
       "partial_formula_bounded_interval_node_count": 33,
       "partial_formula_closed": false,
       "partial_formula_exact_interval_node_count": 27,
-      "partial_formula_interval_analysis_sha256": "7c8ff0ad92b2b80c400ec9790f66153c5615d3de471c7f8f348f40408bfc392d",
+      "partial_formula_interval_analysis_sha256": "22c1552cc53f70b94db26516b8c671bcdd3e325d2ba227a1b8a8e8fc83380a38",
       "partial_formula_launch_domain_assumption_count": 10,
       "partial_formula_local_lowering_obligation_count": 43,
       "partial_formula_lowered_operation_node_count": 43,
@@ -1365,25 +1546,25 @@
       "partial_formula_root_blocker_frontier": [
         {
           "argument_count": 3,
-          "blocker_sha256": "11fe675a94e5cf49527f501f8f969ab64c1d4c0172aa9f4a731aac9a038a80c9",
+          "blocker_sha256": "c69744bba95a69d4d1d2d2342799c93c1f53abead65d66d121c00a9baf49d0f8",
           "depth": 0,
-          "expression_node_sha256": "db511786cefa832f1583d441e678fe3595cbd5af3843f127a2219a72ba826f72",
-          "formula_node_sha256": "8ae1733694404f49dbb772cd1de9270f7db18da50cc66eb03c85cf34b859ced6",
+          "expression_node_sha256": "e85b6b9cad5193d98cfbe981d3185dea49043eabbc2d784b7f1108e1b1cb16dd",
+          "formula_node_sha256": "1475647653f28f201b523ce9db47e6dcf76ae4ebea8b7a29dae35efa7cc8e2d0",
           "kind": "opaque_operation",
           "label": "IADD3",
-          "root_formula_node_sha256": "8ae1733694404f49dbb772cd1de9270f7db18da50cc66eb03c85cf34b859ced6",
+          "root_formula_node_sha256": "1475647653f28f201b523ce9db47e6dcf76ae4ebea8b7a29dae35efa7cc8e2d0",
           "root_index": 0,
           "width_bits": 32
         },
         {
           "argument_count": 5,
-          "blocker_sha256": "d0b31ac4ebacee9af14c6c2115e2038ee37b78b0220bcf1343ce182e4497845a",
+          "blocker_sha256": "c6c241ad761a757f1522506cfa4ab5a0f059954fc6f239d5ba18f1529b9a4da9",
           "depth": 0,
-          "expression_node_sha256": "2cb98053ac7976bc6e16fe6fb9d612ac7e5ae363c4e4cdc86788ef22d61481be",
-          "formula_node_sha256": "630848e455014ef0e6482231d9e2f82892ed6dafc4e334bd3f51467bd27e6314",
+          "expression_node_sha256": "69dfb743c43b9cb3c716904bb23ee7df0a71ef11e1b2d582399e3230f9a2e675",
+          "formula_node_sha256": "468f88ad1296674fd569e39fa6dd0d7bebe3cf81b60a1d87b1a49b3c826d625c",
           "kind": "opaque_operation",
           "label": "IADD3.X",
-          "root_formula_node_sha256": "630848e455014ef0e6482231d9e2f82892ed6dafc4e334bd3f51467bd27e6314",
+          "root_formula_node_sha256": "468f88ad1296674fd569e39fa6dd0d7bebe3cf81b60a1d87b1a49b3c826d625c",
           "root_index": 1,
           "width_bits": 32
         }
@@ -1394,9 +1575,9 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "8ae1733694404f49dbb772cd1de9270f7db18da50cc66eb03c85cf34b859ced6",
+          "formula_node_sha256": "1475647653f28f201b523ce9db47e6dcf76ae4ebea8b7a29dae35efa7cc8e2d0",
           "full_width_unknown": true,
-          "interval_sha256": "44e0fc3b1a410aa2d10ef4c27eed68bc276b2d13550c50a84ea0f3d835d17dfe",
+          "interval_sha256": "dd23b5445c89437bcb5e1a5e61f6cad70f548c7d693b4ee1ee4ff283e83ff755",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
@@ -1405,19 +1586,19 @@
           "basis": "unbounded_opaque_operation",
           "bound_depends_on_assumption": false,
           "exact": false,
-          "formula_node_sha256": "630848e455014ef0e6482231d9e2f82892ed6dafc4e334bd3f51467bd27e6314",
+          "formula_node_sha256": "468f88ad1296674fd569e39fa6dd0d7bebe3cf81b60a1d87b1a49b3c826d625c",
           "full_width_unknown": true,
-          "interval_sha256": "727c38c0875de95a1d33e333b3f28b62684fe50ff04b6652f3dcf1ca44a10e64",
+          "interval_sha256": "426248d26b3d28f5f47da47e817717a11e7445c9fe61e8ff22c8b3ea3cbac3e4",
           "maximum_inclusive": 4294967295,
           "minimum_inclusive": 0,
           "width_bits": 32
         }
       ],
       "partial_formula_root_nodes": [
-        "8ae1733694404f49dbb772cd1de9270f7db18da50cc66eb03c85cf34b859ced6",
-        "630848e455014ef0e6482231d9e2f82892ed6dafc4e334bd3f51467bd27e6314"
+        "1475647653f28f201b523ce9db47e6dcf76ae4ebea8b7a29dae35efa7cc8e2d0",
+        "468f88ad1296674fd569e39fa6dd0d7bebe3cf81b60a1d87b1a49b3c826d625c"
       ],
-      "partial_formula_sha256": "843123971b7122f3758dd06070adb6ff172b1e1d0198d954ef25508117e7f6d4",
+      "partial_formula_sha256": "8bdaf9ecb1afccd2bdb1bd316702917365892f3239013b43c0e33f8fc748832d",
       "partial_formula_translated_root_count": 2,
       "partial_formula_well_typed": true,
       "predicate_definition_node_count": 9,
@@ -1460,9 +1641,51 @@
         "seqstart_q_ptr"
       ],
       "root_nodes": [
-        "7d5c7583f958e17de9ea7531b39845160d65a3ab9909c1dca483d5737a4acb5f",
-        "281bf8e5573467516b60b4c80a2b493ec1e09c6019468a079baac5adde943882"
+        "d5570d3d0289e0ce809c53774fcf054f1ed665fd96c34056b3d82f1e59d13910",
+        "b71fdf23549d2ff5d19dcf2cb7639b9b166199bf5641d7048fb1ec9a1f8063e1"
       ],
+      "root_predicate_pair_binding": {
+        "available": true,
+        "binding_sha256": "f2477f9ea6ff7e770acbc4471221850f6b85167b36d378093c3a2b2b7979e558",
+        "carry_arithmetic_established": false,
+        "failure_reasons": [],
+        "field": "output_accum_ptr",
+        "hardware_semantics_established": false,
+        "high_root": {
+          "expression_node_sha256": "69dfb743c43b9cb3c716904bb23ee7df0a71ef11e1b2d582399e3230f9a2e675",
+          "formula_node_sha256": "468f88ad1296674fd569e39fa6dd0d7bebe3cf81b60a1d87b1a49b3c826d625c",
+          "instruction_offset": 46496,
+          "opcode": "IADD3.X",
+          "predicate_inputs": [
+            "P1"
+          ]
+        },
+        "low_root": {
+          "expression_node_sha256": "e85b6b9cad5193d98cfbe981d3185dea49043eabbc2d784b7f1108e1b1cb16dd",
+          "formula_node_sha256": "1475647653f28f201b523ce9db47e6dcf76ae4ebea8b7a29dae35efa7cc8e2d0",
+          "instruction_offset": 46480,
+          "opcode": "IADD3",
+          "predicate_outputs": [
+            "P1"
+          ]
+        },
+        "predicate_bindings": [
+          {
+            "consumer_negated": false,
+            "consumer_source_node_sha256": "ebb3840ccc3780e8cbcf988d3e9b4039e994699629857f4e1146ddcc1d07ef38",
+            "predicate": "P1",
+            "producer_definition_node_sha256": "7fb57e1695674e1e18acfdd5ef40527f3c8605fbd9ba9e0d6c85c028ffa12369",
+            "producer_matches_low_root_instruction": true,
+            "producer_output_node_sha256": "ebb3840ccc3780e8cbcf988d3e9b4039e994699629857f4e1146ddcc1d07ef38"
+          }
+        ],
+        "predicate_encoding_established": false,
+        "predicate_identity_set_matches": true,
+        "producer_consumer_order_established": true,
+        "scope": "Exact observed root-pair and one-bit predicate-identity binding only; predicate encoding, carry arithmetic, instruction semantics, and hardware conformance are excluded."
+      },
+      "root_predicate_pair_binding_available": true,
+      "root_predicate_pair_binding_predicate_count": 1,
       "selected_block_index": 92,
       "selected_call_stack": [],
       "selection_criterion": "Fewest aggregate source parameter fields, then lowest instruction offset, then first bounded call context containing the target field.",
@@ -1491,12 +1714,12 @@
       "unsupported_or_entry_node_count": 77
     }
   ],
-  "source_certificate_sha256": "786408b81a3055c73fe2b5b3c9cfd8f27304e6ae873b118ff23257f7957786f3",
+  "source_certificate_sha256": "ea747a532d0dd232f82ab797da5bbe98a22d1a08889d3cc691c6b04f82d8d8ee",
   "special_register_concrete_values_established": false,
   "special_register_coordinate_correspondence_established": false,
   "special_register_hardware_acquisition_established": false,
   "special_register_launch_domain_assumptions_bound": true,
-  "summary_sha256": "ba6013c9ced3f05fbbfcee9c8fa3c1a4b5d757dcb3a66a9c6ba2708d147ab9cd",
+  "summary_sha256": "2929a4755d07774ed2cb84611f37bad7babfd72d30985f6f29ee4c95bea09463",
   "total_selections": 5,
   "typed_z3_translation_established": true,
   "unbounded_context_sensitive_expression_reaching_definitions_established": false
