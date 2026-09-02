@@ -731,6 +731,37 @@ def command_sass_carry_reproduction_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_sass_dynamic_summary(args: argparse.Namespace) -> int:
+    from .sass_dynamic import build_sass_dynamic_summary
+
+    reports = {
+        "encoding": json.loads(args.encoding.read_text(encoding="utf-8")),
+        "low": json.loads(args.low.read_text(encoding="utf-8")),
+        "high": json.loads(args.high.read_text(encoding="utf-8")),
+        "query_pair": json.loads(args.query_pair.read_text(encoding="utf-8")),
+        "key_pair": json.loads(args.key_pair.read_text(encoding="utf-8")),
+        "value_triple": json.loads(args.value_triple.read_text(encoding="utf-8")),
+        "p2r_encoding": json.loads(
+            args.p2r_encoding.read_text(encoding="utf-8")
+        ),
+        "combined": json.loads(args.combined.read_text(encoding="utf-8")),
+    }
+    summary = build_sass_dynamic_summary(
+        reports, args.tool_directory, args.acquisition_tool_sha256
+    )
+    _write_json(args.output, summary)
+    return 0
+
+
+def command_sass_dynamic_summary_verify(args: argparse.Namespace) -> int:
+    from .sass_dynamic import verify_sass_dynamic_summary
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_sass_dynamic_summary(summary, args.tool_directory)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_attention_bounds(args: argparse.Namespace) -> int:
     from .attention_bounds import (
         build_attention_logical_bounds_certificate,
@@ -1266,6 +1297,25 @@ def build_parser() -> argparse.ArgumentParser:
     sass_carry_reproduction_parser.add_argument("primary", type=Path)
     sass_carry_reproduction_parser.add_argument("replicate", type=Path)
     sass_carry_reproduction_parser.set_defaults(handler=command_sass_carry_reproduction_verify)
+
+    sass_dynamic_summary_parser = subparsers.add_parser("attention-sass-dynamic-summary", help="Build compact commitments from isolated NVBit carry reports")
+    sass_dynamic_summary_parser.add_argument("--encoding", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--low", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--high", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--query-pair", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--key-pair", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--value-triple", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--p2r-encoding", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--combined", type=Path, required=True)
+    sass_dynamic_summary_parser.add_argument("--tool-directory", type=Path, default=Path("tools/nvbit_carry_trace"))
+    sass_dynamic_summary_parser.add_argument("--acquisition-tool-sha256", required=True)
+    sass_dynamic_summary_parser.add_argument("--output", type=Path, required=True)
+    sass_dynamic_summary_parser.set_defaults(handler=command_sass_dynamic_summary)
+
+    sass_dynamic_verify_parser = subparsers.add_parser("attention-sass-dynamic-summary-verify", help="Verify compact isolated NVBit carry commitments and boundaries")
+    sass_dynamic_verify_parser.add_argument("summary", type=Path)
+    sass_dynamic_verify_parser.add_argument("--tool-directory", type=Path, default=Path("tools/nvbit_carry_trace"))
+    sass_dynamic_verify_parser.set_defaults(handler=command_sass_dynamic_summary_verify)
 
     attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
     attention_bounds_parser.add_argument("--artifact", type=Path, required=True)

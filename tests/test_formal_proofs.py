@@ -288,6 +288,148 @@ class CudaMetadataTests(unittest.TestCase):
         self.assertTrue(verify_cuda_metadata_conformance(certificate)["valid"])
 
 
+class SassDynamicSummaryTests(unittest.TestCase):
+    def test_dynamic_summary_preserves_observational_boundaries(self) -> None:
+        from bioprocess_runtime.sass_dynamic import (
+            build_sass_dynamic_summary,
+            verify_sass_dynamic_summary,
+        )
+
+        encoding = {
+            "torch": "2.7.1+cu128",
+            "torch_cuda": "12.8",
+            "all_runtime_selected_encodings_match": True,
+            "runtime_instruction_comparisons": [
+                {"offset": index * 16, "encoding_matches": True, "sass_matches": True}
+                for index in range(10)
+            ],
+        }
+        observations = [
+            {
+                "field": field,
+                "carry_class": carry_class,
+                "valid": True,
+                "controlled_launch_repetitions": 3,
+                "controlled_active_lane_count": 1536,
+                "controlled_coverage_valid": True,
+                "controlled_gpr_valid": True,
+                "controlled_ureg_valid": True,
+                "controlled_low_result_valid": True,
+                "controlled_predicate_valid": True,
+                "runtime_encoding_matches_attested_instruction": True,
+                "repeated_attention_outputs_identical": True,
+            }
+            for field in ("query_ptr", "key_ptr", "value_ptr")
+            for carry_class in (0, 1)
+        ]
+        high_observations = [
+            {
+                **copy.deepcopy(observation),
+                "controlled_zero_high_sources_valid": True,
+                "controlled_predicate_input_valid": True,
+                "controlled_high_result_valid": True,
+            }
+            for observation in observations
+        ]
+        pair_results = [
+            {
+                "carry_class": carry_class,
+                "valid": True,
+                "controlled_launch_repetitions": 3,
+                "controlled_low_active_lane_count": 1536,
+                "controlled_high_active_lane_count": 1536,
+                "controlled_coverage_valid": True,
+                "controlled_low_state_valid": True,
+                "controlled_high_state_valid": True,
+                "predicate_flows_low_to_high_valid": True,
+                "same_launch_recomposition_valid": True,
+                "low_runtime_encoding_matches": True,
+                "high_runtime_encoding_matches": True,
+                "repeated_attention_outputs_identical": True,
+            }
+            for carry_class in (0, 1)
+        ]
+        reports = {
+            "encoding": encoding,
+            "low": {"all_qkv_classes_valid": True, "results": observations},
+            "high": {
+                "all_qkv_high_classes_valid": True,
+                "results": high_observations,
+            },
+            "query_pair": {
+                "field": "query",
+                "same_launch_sequential_pair_recomposition_established": True,
+                "results": pair_results,
+            },
+            "key_pair": {
+                "field": "key",
+                "same_launch_sequential_pair_recomposition_established": True,
+                "results": copy.deepcopy(pair_results),
+            },
+            "value_triple": {
+                "same_launch_sequential_value_recomposition_established": True,
+                "p2r_output_invariant_to_p6_classes_for_observed_vectors": True,
+                "results": [
+                    {
+                        "carry_class": carry_class,
+                        "valid": True,
+                        "controlled_launch_repetitions": 3,
+                        "controlled_records_per_role": {
+                            "low": 48,
+                            "middle": 48,
+                            "high": 48,
+                        },
+                        "all_pair_slots_ready": True,
+                        "controlled_low_state_valid": True,
+                        "controlled_high_state_valid": True,
+                        "p6_state_valid_at_p2r": True,
+                        "p2r_repetitions_stable": True,
+                        "same_launch_recomposition_valid": True,
+                        "low_runtime_encoding_matches": True,
+                        "high_runtime_encoding_matches": True,
+                        "repeated_attention_outputs_identical": True,
+                    }
+                    for carry_class in (0, 1)
+                ],
+            },
+            "p2r_encoding": {
+                "valid": True,
+                "instruction_offset": 0x3370,
+                "attested_cubin_hash_valid": True,
+                "instruction_text_matches": True,
+                "instruction_encoding_matches": True,
+            },
+            "combined": {
+                "all_isolated_qkv_sequential_observations_valid": True
+            },
+        }
+        tool_directory = Path(__file__).parents[1] / "tools" / "nvbit_carry_trace"
+        summary = build_sass_dynamic_summary(reports, tool_directory, "a" * 64)
+        verification = verify_sass_dynamic_summary(summary, tool_directory)
+        self.assertTrue(verification["valid"], verification)
+        self.assertFalse(verify_sass_dynamic_summary(summary)["valid"])
+        self.assertFalse(summary["source_reports_independently_replayed"])
+        self.assertFalse(summary["carry_semantics_qualified"])
+        weakened_reports = copy.deepcopy(reports)
+        weakened_reports["low"]["results"][0]["controlled_ureg_valid"] = False
+        with self.assertRaises(ValueError):
+            build_sass_dynamic_summary(
+                weakened_reports, tool_directory, "a" * 64
+            )
+        with self.assertRaises(ValueError):
+            build_sass_dynamic_summary(reports, tool_directory, "invalid")
+        self.assertFalse(summary["carry_equation_activation_allowed"])
+        damaged = copy.deepcopy(summary)
+        damaged["carry_equation_activation_allowed"] = True
+        damaged_body = {
+            key: value for key, value in damaged.items() if key != "summary_sha256"
+        }
+        damaged["summary_sha256"] = hashlib.sha256(
+            canonical_json(damaged_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(verify_sass_dynamic_summary(damaged)["valid"])
+
+
 @unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")
 class SassExpressionTests(unittest.TestCase):
     def test_expression_dag_and_compact_summary_integrity(self) -> None:

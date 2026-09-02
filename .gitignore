@@ -10,3 +10,9 @@ dist/
 .mypy_cache/
 .ruff_cache/
 artifacts/
+tools/nvbit_carry_trace/*.so
+tools/nvbit_carry_trace/*.o
+tools/nvbit_carry_trace/tool_func/*.fatbin
+tools/nvbit_carry_trace/tool_func/*.c
+tools/nvbit_carry_trace/test_apps/carry_test
+tools/nvbit_carry_trace/test_apps/lea_test
