@@ -278,7 +278,9 @@ def build_sass_dynamic_summary(
 
 
 def verify_sass_dynamic_summary(
-    summary: dict[str, Any], tool_directory: Path | None = None
+    summary: dict[str, Any],
+    tool_directory: Path | None = None,
+    acquisition_tool_binary_sha256: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(summary, dict):
         return {"valid": False}
@@ -291,6 +293,17 @@ def verify_sass_dynamic_summary(
         ) == summary.get("summary_sha256")
     except (TypeError, ValueError):
         return {"valid": False}
+    acquisition_tool_valid = bool(
+        re.fullmatch(
+            r"[0-9a-f]{64}",
+            summary.get("acquisition_tool_binary_sha256", ""),
+        )
+        and (
+            acquisition_tool_binary_sha256 is None
+            or summary.get("acquisition_tool_binary_sha256")
+            == acquisition_tool_binary_sha256
+        )
+    )
     source_hashes = summary.get("tool_source_sha256")
     source_commitment_valid = bool(
         isinstance(source_hashes, dict)
@@ -364,6 +377,7 @@ def verify_sass_dynamic_summary(
     valid = all(
         (
             summary_hash_valid,
+            acquisition_tool_valid,
             source_commitment_valid,
             local_source_hashes_valid,
             source_report_commitments_valid,
@@ -374,6 +388,7 @@ def verify_sass_dynamic_summary(
     return {
         "valid": valid,
         "summary_hash_valid": summary_hash_valid,
+        "acquisition_tool_valid": acquisition_tool_valid,
         "source_commitment_valid": source_commitment_valid,
         "local_source_hashes_valid": local_source_hashes_valid,
         "source_report_commitments_valid": source_report_commitments_valid,

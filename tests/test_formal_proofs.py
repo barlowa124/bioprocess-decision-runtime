@@ -404,9 +404,28 @@ class SassDynamicSummaryTests(unittest.TestCase):
             },
         }
         tool_directory = Path(__file__).parents[1] / "tools" / "nvbit_carry_trace"
+        inject_source = (tool_directory / "inject_funcs.cu").read_text(encoding="utf-8")
+        self.assertIn("baseline_destination[16384]", inject_source)
+        self.assertIn("pair_low_offset == 0x1770", inject_source)
+        self.assertIn("pair_low_offset == 0x1fa0", inject_source)
+        self.assertIn("pair_low_offset == 0x3350", inject_source)
+        self.assertNotIn("pair_low_offset == 0xa6a0", inject_source)
+        self.assertNotIn("pair_low_offset == 0xb590", inject_source)
+        self.assertIn("intervention_offset_allowed", inject_source)
+        self.assertNotIn("intervention_offset == 0xa6a0", inject_source)
+        self.assertNotIn("intervention_offset == 0xb590", inject_source)
+        self.assertIn("pair_baseline_ready[0][state_index] == 1", inject_source)
+        self.assertIn("baseline_ready[state_index] == 1", inject_source)
         summary = build_sass_dynamic_summary(reports, tool_directory, "a" * 64)
-        verification = verify_sass_dynamic_summary(summary, tool_directory)
+        verification = verify_sass_dynamic_summary(
+            summary, tool_directory, "a" * 64
+        )
         self.assertTrue(verification["valid"], verification)
+        self.assertFalse(
+            verify_sass_dynamic_summary(summary, tool_directory, "b" * 64)[
+                "valid"
+            ]
+        )
         self.assertFalse(verify_sass_dynamic_summary(summary)["valid"])
         self.assertFalse(summary["source_reports_independently_replayed"])
         self.assertFalse(summary["carry_semantics_qualified"])
@@ -428,6 +447,81 @@ class SassDynamicSummaryTests(unittest.TestCase):
             canonical_json(damaged_body).encode("utf-8")
         ).hexdigest()
         self.assertFalse(verify_sass_dynamic_summary(damaged)["valid"])
+
+    def test_output_reachability_summary_blocks_intervention(self) -> None:
+        from bioprocess_runtime.sass_output_reachability import (
+            build_sass_output_reachability_summary,
+            verify_sass_output_reachability_summary,
+        )
+
+        lengths = [30, 64, 128, 129, 256, 257, 512, 1024]
+        grids = [1, 2, 4, 5, 8, 9, 16, 32]
+        records = []
+        for length, grid_x in zip(lengths, grids):
+            output_reached = length >= 129
+            accum_reached = length >= 257
+            counts = {
+                "output_low": int(output_reached),
+                "output_high": int(output_reached),
+                "output_accum_low": int(accum_reached),
+                "output_accum_high": int(accum_reached),
+            }
+            records.append(
+                {
+                    "length": length,
+                    "grid": [grid_x, 4, 1],
+                    "block": [32, 4, 1],
+                    "finite": True,
+                    "instruction_after_record_counts": counts,
+                    "output_pair_reached": output_reached,
+                    "output_accum_pair_reached": accum_reached,
+                }
+            )
+        report = {
+            "records": records,
+            "all_outputs_finite": True,
+            "long_sweep_repeat_deterministic": True,
+            "minimum_output_pair_length_observed": 129,
+            "minimum_output_accum_pair_length_observed": 257,
+            "register_writes_performed": False,
+            "output_pair_semantics_established": False,
+            "kernel_memory_safety_established": False,
+            "carry_semantics_qualified": False,
+            "carry_equation_activation_allowed": False,
+        }
+        summary = build_sass_output_reachability_summary(report, "b" * 64)
+        verification = verify_sass_output_reachability_summary(
+            summary, "b" * 64
+        )
+        self.assertTrue(verification["valid"], verification)
+        self.assertFalse(summary["dynamic_occurrence_indexing_established"])
+        self.assertFalse(summary["output_pair_intervention_allowed"])
+        damaged = copy.deepcopy(summary)
+        damaged["output_pair_intervention_allowed"] = True
+        damaged_body = {
+            key: value for key, value in damaged.items() if key != "summary_sha256"
+        }
+        damaged["summary_sha256"] = hashlib.sha256(
+            canonical_json(damaged_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_output_reachability_summary(damaged)["valid"]
+        )
+        damaged_count = copy.deepcopy(summary)
+        damaged_count["records"][3]["instruction_after_record_counts"][
+            "output_low"
+        ] = 0
+        damaged_count_body = {
+            key: value
+            for key, value in damaged_count.items()
+            if key != "summary_sha256"
+        }
+        damaged_count["summary_sha256"] = hashlib.sha256(
+            canonical_json(damaged_count_body).encode("utf-8")
+        ).hexdigest()
+        self.assertFalse(
+            verify_sass_output_reachability_summary(damaged_count)["valid"]
+        )
 
 
 @unittest.skipUnless(Z3_AVAILABLE, "Proof optional dependencies are not installed")

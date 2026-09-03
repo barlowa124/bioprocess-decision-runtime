@@ -44,18 +44,18 @@
 /* contains definition of the mem_access_t structure */
 #include "common.h"
 
-__device__ uint32_t baseline_destination[4096];
-__device__ uint32_t baseline_predicate_register[4096];
-__device__ uint32_t saved_sources[4096][3];
-__device__ uint32_t baseline_ready[4096];
-__device__ uint32_t pair_baseline_destination[2][4096];
-__device__ uint32_t pair_baseline_predicate_register[2][4096];
-__device__ uint32_t pair_baseline_sources[2][4096][3];
-__device__ int32_t pair_operand_codes[2][4096][4];
-__device__ uint32_t pair_baseline_ready[2][4096];
-__device__ uint32_t middle_baseline_destination[4096];
-__device__ int32_t middle_destination_code[4096];
-__device__ uint32_t middle_baseline_ready[4096];
+__device__ uint32_t baseline_destination[16384];
+__device__ uint32_t baseline_predicate_register[16384];
+__device__ uint32_t saved_sources[16384][3];
+__device__ uint32_t baseline_ready[16384];
+__device__ uint32_t pair_baseline_destination[2][16384];
+__device__ uint32_t pair_baseline_predicate_register[2][16384];
+__device__ uint32_t pair_baseline_sources[2][16384][3];
+__device__ int32_t pair_operand_codes[2][16384][4];
+__device__ uint32_t pair_baseline_ready[2][16384];
+__device__ uint32_t middle_baseline_destination[16384];
+__device__ int32_t middle_destination_code[16384];
+__device__ uint32_t middle_baseline_ready[16384];
 
 __device__ __forceinline__ void write_operand(int32_t operand, uint32_t value) {
     if (operand >= 0 && operand < InstrType::RZ) {
@@ -90,7 +90,8 @@ extern "C" __device__ __noinline__ void record_reg_val(
     int32_t intervention_class,
     uint32_t baseline_target_launch, uint32_t intervention_target_launch,
     uint32_t intervention_repetitions, int32_t instruction_is_high,
-    int32_t intervention_predicate_num, int32_t destination_reg,
+    int32_t instruction_is_iadd, int32_t intervention_predicate_num,
+    int32_t destination_reg,
     int32_t source_reg_0, int32_t source_reg_1,
     int32_t source_reg_2, int32_t num_preds, int32_t num_regs...) {
     if (!pred || num_preds < 0 || num_preds > 8 || num_regs < 0 ||
@@ -156,15 +157,25 @@ extern "C" __device__ __noinline__ void record_reg_val(
         threadIdx.x + blockDim.x * (threadIdx.y + blockDim.y * threadIdx.z);
     uint32_t state_index =
         block_index * (blockDim.x * blockDim.y * blockDim.z) + thread_index;
+    bool pair_offsets_authorized =
+        (pair_low_offset == 0xd0 && pair_high_offset == 0xe0) ||
+        (pair_low_offset == 0xf0 && pair_high_offset == 0x100) ||
+        (pair_low_offset == 0x1770 && pair_high_offset == 0x17b0) ||
+        (pair_low_offset == 0x1fa0 && pair_high_offset == 0x1fc0) ||
+        (pair_low_offset == 0x3350 && pair_middle_offset == 0x3370 &&
+         pair_high_offset == 0x3390);
     bool pair_mode =
-        pair_low_offset != 0xffffffff && pair_high_offset != 0xffffffff &&
+        pair_offsets_authorized && pair_low_offset != 0xffffffff &&
+        pair_high_offset != 0xffffffff &&
         (instruction_offset == pair_low_offset ||
          instruction_offset == pair_middle_offset ||
          instruction_offset == pair_high_offset) &&
-        intervention_class >= 0 && intervention_class <= 1 &&
+        intervention_class >= 0 &&
+        intervention_class <=
+            (instruction_offset == pair_middle_offset ? 1 : num_preds) &&
         destination_reg >= 0 && source_reg_0 != -1 &&
         (instruction_offset == pair_middle_offset || source_reg_1 != -1) &&
-        state_index < 4096;
+        state_index < 16384;
     bool pair_is_low = instruction_offset == pair_low_offset;
     bool pair_is_middle = instruction_offset == pair_middle_offset;
     bool pair_is_high = instruction_offset == pair_high_offset;
@@ -172,33 +183,41 @@ extern "C" __device__ __noinline__ void record_reg_val(
     ri.pair_role = pair_is_low ? 0 : pair_is_middle ? 1 : pair_is_high ? 2 : -1;
     if (pair_mode && !pair_is_middle &&
         launch_index == baseline_target_launch && capture_point == 1) {
-        pair_baseline_destination[pair_slot][state_index] = local_reg_values[0];
-        pair_baseline_predicate_register[pair_slot][state_index] = predicate_reg;
-        pair_baseline_sources[pair_slot][state_index][0] = local_reg_values[1];
-        pair_baseline_sources[pair_slot][state_index][1] = local_reg_values[2];
-        pair_baseline_sources[pair_slot][state_index][2] =
-            source_reg_2 == -1 ? 0 : local_reg_values[3];
-        pair_operand_codes[pair_slot][state_index][0] = destination_reg;
-        pair_operand_codes[pair_slot][state_index][1] = source_reg_0;
-        pair_operand_codes[pair_slot][state_index][2] = source_reg_1;
-        pair_operand_codes[pair_slot][state_index][3] = source_reg_2;
-        pair_baseline_ready[pair_slot][state_index] = 1;
+        if (pair_baseline_ready[pair_slot][state_index] == 0) {
+            pair_baseline_destination[pair_slot][state_index] = local_reg_values[0];
+            pair_baseline_predicate_register[pair_slot][state_index] = predicate_reg;
+            pair_baseline_sources[pair_slot][state_index][0] = local_reg_values[1];
+            pair_baseline_sources[pair_slot][state_index][1] = local_reg_values[2];
+            pair_baseline_sources[pair_slot][state_index][2] =
+                source_reg_2 == -1 ? 0 : local_reg_values[3];
+            pair_operand_codes[pair_slot][state_index][0] = destination_reg;
+            pair_operand_codes[pair_slot][state_index][1] = source_reg_0;
+            pair_operand_codes[pair_slot][state_index][2] = source_reg_1;
+            pair_operand_codes[pair_slot][state_index][3] = source_reg_2;
+            pair_baseline_ready[pair_slot][state_index] = 1;
+        } else {
+            pair_baseline_ready[pair_slot][state_index] = 2;
+        }
         __threadfence_system();
     }
     if (pair_mode && pair_is_middle &&
         launch_index == baseline_target_launch && capture_point == 1) {
-        middle_baseline_destination[state_index] = local_reg_values[0];
-        middle_destination_code[state_index] = destination_reg;
-        middle_baseline_ready[state_index] = 1;
+        if (middle_baseline_ready[state_index] == 0) {
+            middle_baseline_destination[state_index] = local_reg_values[0];
+            middle_destination_code[state_index] = destination_reg;
+            middle_baseline_ready[state_index] = 1;
+        } else {
+            middle_baseline_ready[state_index] = 2;
+        }
         __threadfence_system();
     }
     bool pair_intervention =
         pair_mode && launch_index >= intervention_target_launch &&
         launch_index < intervention_target_launch + intervention_repetitions &&
-        pair_baseline_ready[0][state_index] &&
-        pair_baseline_ready[1][state_index] &&
+        pair_baseline_ready[0][state_index] == 1 &&
+        pair_baseline_ready[1][state_index] == 1 &&
         (pair_middle_offset == 0xffffffff ||
-         middle_baseline_ready[state_index]);
+         middle_baseline_ready[state_index] == 1);
     ri.pair_ready_mask =
         pair_baseline_ready[0][state_index] |
         (middle_baseline_ready[state_index] << 1) |
@@ -206,11 +225,22 @@ extern "C" __device__ __noinline__ void record_reg_val(
     ri.pair_intervention = pair_intervention;
     if (pair_intervention && capture_point == 0) {
         if (pair_is_low) {
-            write_operand(source_reg_0, 1);
-            write_operand(source_reg_1,
-                          intervention_class == 0 ? 2 : 0xffffffff);
+            if (instruction_is_iadd) {
+                uint32_t first = intervention_class == 0 ? 1 : 0xffffffff;
+                uint32_t second = intervention_class == 0 ? 2 :
+                                  intervention_class == 1 ? 1 : 0xffffffff;
+                uint32_t third = intervention_class == 0 ? 3 :
+                                 intervention_class == 1 ? 0 : 0xffffffff;
+                write_operand(source_reg_0, first);
+                write_operand(source_reg_1, second);
+                write_operand(source_reg_2, third);
+            } else {
+                write_operand(source_reg_0, 1);
+                write_operand(source_reg_1,
+                              intervention_class == 0 ? 2 : 0xffffffff);
+            }
         } else if (pair_is_high) {
-            write_operand(source_reg_0, 1);
+            write_operand(source_reg_0, instruction_is_iadd ? 0 : 1);
             write_operand(source_reg_1, 0);
             if (source_reg_2 != -1) {
                 write_operand(source_reg_2, 0);
@@ -237,24 +267,35 @@ extern "C" __device__ __noinline__ void record_reg_val(
         nvbit_write_pred_reg(pair_baseline_predicate_register[1][state_index]);
     }
 
+    bool intervention_offset_allowed =
+        intervention_offset == 0xd0 || intervention_offset == 0xe0 ||
+        intervention_offset == 0xf0 || intervention_offset == 0x100 ||
+        intervention_offset == 0x1770 || intervention_offset == 0x17b0 ||
+        intervention_offset == 0x1fa0 || intervention_offset == 0x1fc0 ||
+        intervention_offset == 0x3350 || intervention_offset == 0x3390;
     bool intervention_valid =
-        !pair_mode && instruction_offset == intervention_offset &&
+        !pair_mode && intervention_offset_allowed &&
+        instruction_offset == intervention_offset &&
         intervention_class >= 0 &&
         intervention_class <=
             (instruction_is_high || source_reg_2 == -1 ? 1 : 2) &&
         (!instruction_is_high || intervention_predicate_num >= 0) &&
         destination_reg >= 0 && source_reg_0 != -1 && source_reg_1 != -1 &&
-        state_index < 4096;
+        state_index < 16384;
     if (intervention_valid && launch_index == baseline_target_launch &&
         capture_point == 1) {
-        baseline_destination[state_index] = local_reg_values[0];
-        baseline_predicate_register[state_index] = predicate_reg;
-        baseline_ready[state_index] = 1;
+        if (baseline_ready[state_index] == 0) {
+            baseline_destination[state_index] = local_reg_values[0];
+            baseline_predicate_register[state_index] = predicate_reg;
+            baseline_ready[state_index] = 1;
+        } else {
+            baseline_ready[state_index] = 2;
+        }
         __threadfence_system();
     }
     if (intervention_valid && launch_index >= intervention_target_launch &&
         launch_index < intervention_target_launch + intervention_repetitions &&
-        baseline_ready[state_index]) {
+        baseline_ready[state_index] == 1) {
         if (capture_point == 0) {
             saved_sources[state_index][0] = local_reg_values[1];
             saved_sources[state_index][1] = local_reg_values[2];

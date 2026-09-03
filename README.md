@@ -691,10 +691,17 @@ Isolated WSL experiments observed matching runtime instruction encodings, three 
 
 ```bash
 python -m bioprocess_runtime attention-sass-dynamic-summary --encoding <encoding-report> --low <low-report> --high <high-report> --query-pair <query-report> --key-pair <key-report> --value-triple <value-report> --p2r-encoding <p2r-report> --combined <combined-report> --acquisition-tool-sha256 <capture-binary-sha256> --output results/gemma3_270m_attention_sass_dynamic_summary.json
-python -m bioprocess_runtime attention-sass-dynamic-summary-verify results/gemma3_270m_attention_sass_dynamic_summary.json --tool-directory tools/nvbit_carry_trace
+python -m bioprocess_runtime attention-sass-dynamic-summary-verify results/gemma3_270m_attention_sass_dynamic_summary.json --tool-directory tools/nvbit_carry_trace --acquisition-tool-sha256 <capture-binary-sha256>
 ```
 
 The summary binds the exact acquisition-tool binary hash separately from the current versioned source commitment, so later safety hardening cannot be mistaken for the code that produced earlier observations. Because raw source reports are intentionally omitted, compact verification checks their hash commitments but reports `source_reports_independently_replayed: false`. Structural validity does not import observations into the exact-cubin evidence bundle and cannot activate carry equations.
+
+A non-writing head-dimension-256 sweep observed the output `IADD3/IADD3.X` pair beginning at sequence length 129 and the output-accumulator pair beginning at length 257. The smallest launch reaching both has 4,608 threads. Increasing tracer capacity to 16,384 allowed baseline capture, but the first controlled output-pointer experiment changed alternating replay hashes because the same instruction offset executes repeatedly within a thread and baseline state lacked a dynamic-occurrence dimension. Positive allowlists on both pair and single-instruction paths therefore exclude output offsets; attempts remain observation-only until occurrence-indexed restoration is implemented and validated.
+
+```bash
+python -m bioprocess_runtime attention-sass-output-reachability-summary --report <reachability-report> --acquisition-tool-sha256 <capture-binary-sha256> --output results/gemma3_270m_attention_sass_output_reachability.json
+python -m bioprocess_runtime attention-sass-output-reachability-verify results/gemma3_270m_attention_sass_output_reachability.json --acquisition-tool-sha256 <capture-binary-sha256>
+```
 
 A conservative unsigned interval pass covers every formula node. Literals are exact, coordinate symbols use their launch-domain assumptions, joins take the hull of reaching alternatives, and modular addition or multiply-add narrows only for exact inputs or when integer endpoint arithmetic proves no wrap. Constant-memory values and other opaque operations remain full-width. The retained interval counts are:
 

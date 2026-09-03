@@ -757,7 +757,31 @@ def command_sass_dynamic_summary_verify(args: argparse.Namespace) -> int:
     from .sass_dynamic import verify_sass_dynamic_summary
 
     summary = json.loads(args.summary.read_text(encoding="utf-8"))
-    verification = verify_sass_dynamic_summary(summary, args.tool_directory)
+    verification = verify_sass_dynamic_summary(
+        summary, args.tool_directory, args.acquisition_tool_sha256
+    )
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_sass_output_reachability_summary(args: argparse.Namespace) -> int:
+    from .sass_output_reachability import build_sass_output_reachability_summary
+
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    summary = build_sass_output_reachability_summary(
+        report, args.acquisition_tool_sha256
+    )
+    _write_json(args.output, summary)
+    return 0
+
+
+def command_sass_output_reachability_verify(args: argparse.Namespace) -> int:
+    from .sass_output_reachability import verify_sass_output_reachability_summary
+
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_sass_output_reachability_summary(
+        summary, args.acquisition_tool_sha256
+    )
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -1315,7 +1339,19 @@ def build_parser() -> argparse.ArgumentParser:
     sass_dynamic_verify_parser = subparsers.add_parser("attention-sass-dynamic-summary-verify", help="Verify compact isolated NVBit carry commitments and boundaries")
     sass_dynamic_verify_parser.add_argument("summary", type=Path)
     sass_dynamic_verify_parser.add_argument("--tool-directory", type=Path, default=Path("tools/nvbit_carry_trace"))
+    sass_dynamic_verify_parser.add_argument("--acquisition-tool-sha256", required=True)
     sass_dynamic_verify_parser.set_defaults(handler=command_sass_dynamic_summary_verify)
+
+    sass_output_reachability_parser = subparsers.add_parser("attention-sass-output-reachability-summary", help="Build compact non-writing output-pair reachability commitments")
+    sass_output_reachability_parser.add_argument("--report", type=Path, required=True)
+    sass_output_reachability_parser.add_argument("--acquisition-tool-sha256", required=True)
+    sass_output_reachability_parser.add_argument("--output", type=Path, required=True)
+    sass_output_reachability_parser.set_defaults(handler=command_sass_output_reachability_summary)
+
+    sass_output_reachability_verify_parser = subparsers.add_parser("attention-sass-output-reachability-verify", help="Verify compact output-pair reachability boundaries")
+    sass_output_reachability_verify_parser.add_argument("summary", type=Path)
+    sass_output_reachability_verify_parser.add_argument("--acquisition-tool-sha256", required=True)
+    sass_output_reachability_verify_parser.set_defaults(handler=command_sass_output_reachability_verify)
 
     attention_bounds_parser = subparsers.add_parser("attention-logical-bounds", help="Prove logical Q/K/V/output indices remain within retained storage")
     attention_bounds_parser.add_argument("--artifact", type=Path, required=True)

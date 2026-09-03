@@ -1,0 +1,190 @@
+{
+  "acquisition_tool_binary_sha256": "535bcc0e67fa2629a7114fc2220f1e3f1bc230363775d433851765bc3a9736d4",
+  "all_outputs_finite": true,
+  "carry_equation_activation_allowed": false,
+  "carry_semantics_qualified": false,
+  "dynamic_occurrence_indexing_established": false,
+  "kernel_memory_safety_established": false,
+  "long_sweep_repeat_deterministic": true,
+  "minimum_both_pairs_length_observed": 257,
+  "minimum_both_pairs_thread_count": 4608,
+  "minimum_output_accum_pair_length_observed": 257,
+  "minimum_output_pair_length_observed": 129,
+  "output_pair_intervention_allowed": false,
+  "output_pair_semantics_established": false,
+  "records": [
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        1,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 0,
+        "output_accum_low": 0,
+        "output_high": 0,
+        "output_low": 0
+      },
+      "length": 30,
+      "output_accum_pair_reached": false,
+      "output_pair_reached": false
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        2,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 0,
+        "output_accum_low": 0,
+        "output_high": 0,
+        "output_low": 0
+      },
+      "length": 64,
+      "output_accum_pair_reached": false,
+      "output_pair_reached": false
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        4,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 0,
+        "output_accum_low": 0,
+        "output_high": 0,
+        "output_low": 0
+      },
+      "length": 128,
+      "output_accum_pair_reached": false,
+      "output_pair_reached": false
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        5,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 0,
+        "output_accum_low": 0,
+        "output_high": 32,
+        "output_low": 32
+      },
+      "length": 129,
+      "output_accum_pair_reached": false,
+      "output_pair_reached": true
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        8,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 0,
+        "output_accum_low": 0,
+        "output_high": 128,
+        "output_low": 128
+      },
+      "length": 256,
+      "output_accum_pair_reached": false,
+      "output_pair_reached": true
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        9,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 32,
+        "output_accum_low": 32,
+        "output_high": 160,
+        "output_low": 160
+      },
+      "length": 257,
+      "output_accum_pair_reached": true,
+      "output_pair_reached": true
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        16,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 384,
+        "output_accum_low": 384,
+        "output_high": 384,
+        "output_low": 384
+      },
+      "length": 512,
+      "output_accum_pair_reached": true,
+      "output_pair_reached": true
+    },
+    {
+      "block": [
+        32,
+        4,
+        1
+      ],
+      "grid": [
+        32,
+        4,
+        1
+      ],
+      "instruction_after_record_counts": {
+        "output_accum_high": 2688,
+        "output_accum_low": 2688,
+        "output_high": 896,
+        "output_low": 896
+      },
+      "length": 1024,
+      "output_accum_pair_reached": true,
+      "output_pair_reached": true
+    }
+  ],
+  "register_writes_performed": false,
+  "schema_version": 1,
+  "scope": "Compact non-writing output-pair reachability commitments; no output-pair semantics, intervention safety, memory safety, qualification, or activation is established.",
+  "source_report_sha256": "9a08928ae7e23c5817a8153aa3e81c3b726b3035a181ff1e945d2599d44b5b3f",
+  "summary_sha256": "2b2578dc94351b16b895ee6af99ddeb8b53674352c6d924bee4c35d917459f03"
+}

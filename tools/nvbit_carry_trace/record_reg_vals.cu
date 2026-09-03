@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <exception>
 #include <iomanip>
 #include <map>
 #include <sstream>
@@ -123,6 +124,35 @@ std::string to_hex_reverse(const std::vector<uint8_t>& bytes) {
     return stream.str();
 }
 
+bool parse_offset(const std::string& raw, uint32_t* parsed) {
+    size_t begin = raw.find_first_not_of(" \t\r\n");
+    size_t end = raw.find_last_not_of(" \t\r\n");
+    if (begin == std::string::npos) {
+        return false;
+    }
+    std::string value = raw.substr(begin, end - begin + 1);
+    try {
+        size_t consumed = 0;
+        unsigned long result = std::stoul(value, &consumed, 0);
+        if (consumed != value.size() || result > UINT32_MAX) {
+            return false;
+        }
+        *parsed = static_cast<uint32_t>(result);
+        return true;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
+uint32_t require_offset(const char* name, const std::string& value) {
+    uint32_t parsed = 0;
+    if (!parse_offset(value, &parsed)) {
+        fprintf(stderr, "Invalid %s value: %s\n", name, value.c_str());
+        exit(EXIT_FAILURE);
+    }
+    return parsed;
+}
+
 void* recv_thread_fun(void* args);
 
 void nvbit_at_init() {
@@ -155,7 +185,7 @@ void nvbit_at_init() {
         while (start < value.size()) {
             size_t end = value.find(',', start);
             std::string token = value.substr(start, end - start);
-            target_offsets.insert(std::stoul(token, nullptr, 0));
+            target_offsets.insert(require_offset("TARGET_OFFSETS", token));
             if (end == std::string::npos) {
                 break;
             }
@@ -166,16 +196,20 @@ void nvbit_at_init() {
            "TARGET_OFFSETS", offsets ? offsets : "");
     const char* intervention = getenv("INTERVENTION_OFFSET");
     if (intervention) {
-        intervention_offset = std::stoul(intervention, nullptr, 0);
+        intervention_offset = require_offset("INTERVENTION_OFFSET", intervention);
     }
     const char* pair_low = getenv("PAIR_LOW_OFFSET");
     const char* pair_middle = getenv("PAIR_MIDDLE_OFFSET");
     const char* pair_high = getenv("PAIR_HIGH_OFFSET");
+    if ((pair_low == nullptr) != (pair_high == nullptr)) {
+        fprintf(stderr, "PAIR_LOW_OFFSET and PAIR_HIGH_OFFSET must be set together\n");
+        exit(EXIT_FAILURE);
+    }
     if (pair_low && pair_high) {
-        pair_low_offset = std::stoul(pair_low, nullptr, 0);
-        pair_high_offset = std::stoul(pair_high, nullptr, 0);
+        pair_low_offset = require_offset("PAIR_LOW_OFFSET", pair_low);
+        pair_high_offset = require_offset("PAIR_HIGH_OFFSET", pair_high);
         if (pair_middle) {
-            pair_middle_offset = std::stoul(pair_middle, nullptr, 0);
+            pair_middle_offset = require_offset("PAIR_MIDDLE_OFFSET", pair_middle);
         }
     }
     GET_VAR_INT(intervention_class, "INTERVENTION_CLASS", -1,
@@ -336,6 +370,8 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                 nvbit_add_call_arg_const_val32(instr, intervention_repetitions);
                 nvbit_add_call_arg_const_val32(
                     instr, opcode.find(".X") != std::string::npos);
+                nvbit_add_call_arg_const_val32(
+                    instr, opcode.compare(0, 5, "IADD3") == 0);
                 nvbit_add_call_arg_const_val32(
                     instr, pred_num_list.empty() ? -1 : pred_num_list[0]);
                 for (size_t position = 0; position < 4; position++) {
