@@ -368,11 +368,15 @@ Eight non-arithmetic primitives now have 610 independently replayed bounded conf
 ```powershell
 python -m bioprocess_runtime gemma-ir-primitive-qualification --output results/gemma3_270m_ir_primitive_qualification.json
 python -m bioprocess_runtime gemma-ir-primitive-qualification-verify results/gemma3_270m_ir_primitive_qualification.json
-python -m bioprocess_runtime gemma-ir-primitive-gate results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json --output results/gemma3_270m_ir_primitive_gate.json
-python -m bioprocess_runtime gemma-ir-primitive-gate-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json results/gemma3_270m_ir_primitive_gate.json
+python -m bioprocess_runtime gemma-bfloat16-semantics --output results/gemma3_270m_bfloat16_semantics.json
+python -m bioprocess_runtime gemma-bfloat16-semantics-verify results/gemma3_270m_bfloat16_semantics.json
+python -m bioprocess_runtime gemma-ir-primitive-gate results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json results/gemma3_270m_bfloat16_semantics.json --output results/gemma3_270m_ir_primitive_gate.json
+python -m bioprocess_runtime gemma-ir-primitive-gate-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json results/gemma3_270m_bfloat16_semantics.json results/gemma3_270m_ir_primitive_gate.json
 ```
 
-The tested primitives are `ARANGE`, `ARGMAX`, `CAUSAL_MASK`, `EMBEDDING`, `REPEAT_KV`, both head reshape/transposes, and last-token slicing. These tests establish exact conformance over their declared finite cases, not unrestricted-domain proofs. `ADD`, `MUL`, `SCALE`, `LINEAR`, both attention matrix multiplications, `RMS_NORM`, `SOFTMAX`, `GELU_TANH`, and rotary arithmetic remain unresolved at the independent bit-level-semantics boundary.
+The tested primitives are `ARANGE`, `ARGMAX`, `CAUSAL_MASK`, `EMBEDDING`, `REPEAT_KV`, both head reshape/transposes, and last-token slicing. These tests establish exact conformance over their declared finite cases, not unrestricted-domain proofs.
+
+Finite-input bfloat16 `ADD`, `MUL`, and `SCALE` now have an independent software specification: decode each IEEE-754 bfloat16 bit pattern to an exact dyadic rational, perform exact addition or multiplication, then encode once using round-to-nearest, ties-to-even. All 65,280 finite patterns round-trip through decode/encode, and 1,188 representative operations—including bfloat16 tensor-scalar and exactly representable Python-scalar `SCALE` paths—match both CPU and CUDA result bits. NaN/infinity inputs, complete pairwise truth tables, reductions, transcendental operations, and hardware-instruction behavior remain outside this certificate. The certificate records platform, PyTorch/CUDA versions, GPU name, and compute capability; verification re-executes in the current environment and requires an exact regenerated certificate. The gate records these three opcodes as independently specified and bounded-conformant but correctly leaves all 11 reached floating-point opcodes without unrestricted qualification.
 
 ### Expandable bounded-domain verification
 

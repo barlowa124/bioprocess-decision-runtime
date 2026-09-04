@@ -266,24 +266,25 @@ def verify_primitive_qualification_certificate(
     except (TypeError, ValueError):
         return {"valid": False}
     records = certificate.get("records")
-    records_valid = bool(
-        isinstance(records, list)
-        and records
-        and all(
-            isinstance(record, dict)
-            and record.get("opcode") in EXACT_INDEX_OPCODES
-            and record.get("exact") is True
-            and record.get("expected_sha256") == record.get("actual_sha256")
-            and record.get("record_sha256")
-            == _sha256(
-                {
-                    key: value
-                    for key, value in record.items()
-                    if key != "record_sha256"
-                }
+
+    def record_valid(record: Any) -> bool:
+        if not isinstance(record, dict):
+            return False
+        try:
+            body = {
+                key: value for key, value in record.items() if key != "record_sha256"
+            }
+            return bool(
+                record.get("opcode") in EXACT_INDEX_OPCODES
+                and record.get("exact") is True
+                and record.get("expected_sha256") == record.get("actual_sha256")
+                and record.get("record_sha256") == _sha256(body)
             )
-            for record in records
-        )
+        except (TypeError, ValueError, AttributeError):
+            return False
+
+    records_valid = bool(
+        isinstance(records, list) and records and all(record_valid(record) for record in records)
     )
     calculated_counts = {
         opcode: sum(
@@ -311,7 +312,10 @@ def verify_primitive_qualification_certificate(
     )
     reexecution_exact = True
     if reexecute:
-        reexecution_exact = certificate == build_primitive_qualification_certificate()
+        try:
+            reexecution_exact = certificate == build_primitive_qualification_certificate()
+        except (RuntimeError, TypeError, ValueError):
+            reexecution_exact = False
     valid = all(
         (
             certificate_hash_valid,
@@ -333,29 +337,46 @@ def verify_primitive_qualification_certificate(
 
 
 def build_primitive_qualification_gate(
-    program: dict[str, Any], certificate: dict[str, Any]
+    program: dict[str, Any],
+    certificate: dict[str, Any],
+    bfloat16_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
-    qualification = verify_primitive_qualification_certificate(
-        certificate, reexecute=False
-    )
+    qualification = verify_primitive_qualification_certificate(certificate)
     if not qualification["valid"]:
         raise ValueError("Primitive qualification certificate is invalid")
+    from .gemma_float_semantics import verify_bfloat16_semantics_certificate
+
+    bfloat16_qualification = verify_bfloat16_semantics_certificate(
+        bfloat16_certificate
+    )
+    if not bfloat16_qualification["valid"]:
+        raise ValueError("Bfloat16 semantics certificate is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
+    specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
     unresolved = sorted(set(reached) - EXACT_INDEX_OPCODES)
     body = {
         "schema_version": 1,
         "scope": "Qualification gate for primitive opcodes reached by one canonical Gemma IR; independently tested indexing/data-movement primitives remain distinct from unresolved floating-point semantics.",
         "program_sha256": program["program_sha256"],
         "primitive_certificate_sha256": certificate["certificate_sha256"],
+        "bfloat16_semantics_certificate_sha256": bfloat16_certificate[
+            "certificate_sha256"
+        ],
         "reached_opcodes": reached,
         "independently_tested_index_opcodes": independently_tested,
-        "unresolved_floating_point_opcodes": unresolved,
+        "independently_specified_finite_bfloat16_opcodes": specified_bfloat16,
+        "bounded_cpu_cuda_conformant_bfloat16_opcodes": specified_bfloat16,
+        "unrestricted_floating_point_opcodes": unresolved,
         "reached_opcode_count": len(reached),
         "independently_tested_opcode_count": len(independently_tested),
-        "all_reached_primitive_semantics_qualified": not unresolved,
+        "independently_specified_finite_bfloat16_opcode_count": len(
+            specified_bfloat16
+        ),
+        "all_reached_primitive_semantics_qualified": False,
+        "complete_bfloat16_binary_truth_tables_established": False,
         "bit_exact_numerical_execution_qualified": False,
         "global_exactness_activation_allowed": False,
     }
@@ -365,10 +386,13 @@ def build_primitive_qualification_gate(
 def verify_primitive_qualification_gate(
     program: dict[str, Any],
     certificate: dict[str, Any],
+    bfloat16_certificate: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
-        expected = build_primitive_qualification_gate(program, certificate)
+        expected = build_primitive_qualification_gate(
+            program, certificate, bfloat16_certificate
+        )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
     gate_hash_valid = _sha256(
@@ -388,7 +412,10 @@ def verify_primitive_qualification_gate(
         "independently_tested_opcode_count": expected[
             "independently_tested_opcode_count"
         ],
-        "unresolved_floating_point_opcode_count": len(
-            expected["unresolved_floating_point_opcodes"]
+        "independently_specified_finite_bfloat16_opcode_count": expected[
+            "independently_specified_finite_bfloat16_opcode_count"
+        ],
+        "unrestricted_floating_point_opcode_count": len(
+            expected["unrestricted_floating_point_opcodes"]
         ),
     }

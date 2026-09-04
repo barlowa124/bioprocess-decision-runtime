@@ -1,8 +1,21 @@
 {
   "all_reached_primitive_semantics_qualified": false,
+  "bfloat16_semantics_certificate_sha256": "570b7bb7db4e6681f203fd52ef9737e1a6c9f48757a6594c77bd1c4466bfc630",
   "bit_exact_numerical_execution_qualified": false,
-  "gate_sha256": "a679d99d840f2672fff79b9da80952cd42c2adc6f2d1f7794f63f26f52e36ab0",
+  "bounded_cpu_cuda_conformant_bfloat16_opcodes": [
+    "ADD",
+    "MUL",
+    "SCALE"
+  ],
+  "complete_bfloat16_binary_truth_tables_established": false,
+  "gate_sha256": "548fa56e6295f9013bf2361706366abed0dbc837a3722a4352016849a1ba6fb7",
   "global_exactness_activation_allowed": false,
+  "independently_specified_finite_bfloat16_opcode_count": 3,
+  "independently_specified_finite_bfloat16_opcodes": [
+    "ADD",
+    "MUL",
+    "SCALE"
+  ],
   "independently_tested_index_opcodes": [
     "ARANGE",
     "ARGMAX",
@@ -40,7 +53,7 @@
   ],
   "schema_version": 1,
   "scope": "Qualification gate for primitive opcodes reached by one canonical Gemma IR; independently tested indexing/data-movement primitives remain distinct from unresolved floating-point semantics.",
-  "unresolved_floating_point_opcodes": [
+  "unrestricted_floating_point_opcodes": [
     "ADD",
     "GELU_TANH",
     "LINEAR",

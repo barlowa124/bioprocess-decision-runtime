@@ -540,6 +540,28 @@ def command_gemma_ir_primitive_qualification_verify(args: argparse.Namespace) ->
     return 0 if verification["valid"] else 1
 
 
+def command_gemma_bfloat16_semantics(args: argparse.Namespace) -> int:
+    from .gemma_float_semantics import (
+        build_bfloat16_semantics_certificate,
+        verify_bfloat16_semantics_certificate,
+    )
+
+    certificate = build_bfloat16_semantics_certificate()
+    verification = verify_bfloat16_semantics_certificate(certificate)
+    _write_json(args.output, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_bfloat16_semantics_verify(args: argparse.Namespace) -> int:
+    from .gemma_float_semantics import verify_bfloat16_semantics_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_bfloat16_semantics_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     from .gemma_ir_primitives import (
         build_primitive_qualification_gate,
@@ -548,8 +570,15 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
 
     program = json.loads(args.program.read_text(encoding="utf-8"))
     certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
-    gate = build_primitive_qualification_gate(program, certificate)
-    verification = verify_primitive_qualification_gate(program, certificate, gate)
+    bfloat16_certificate = json.loads(
+        args.bfloat16_certificate.read_text(encoding="utf-8")
+    )
+    gate = build_primitive_qualification_gate(
+        program, certificate, bfloat16_certificate
+    )
+    verification = verify_primitive_qualification_gate(
+        program, certificate, bfloat16_certificate, gate
+    )
     _write_json(args.output, gate)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
@@ -560,8 +589,13 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
 
     program = json.loads(args.program.read_text(encoding="utf-8"))
     certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    bfloat16_certificate = json.loads(
+        args.bfloat16_certificate.read_text(encoding="utf-8")
+    )
     gate = json.loads(args.gate.read_text(encoding="utf-8"))
-    verification = verify_primitive_qualification_gate(program, certificate, gate)
+    verification = verify_primitive_qualification_gate(
+        program, certificate, bfloat16_certificate, gate
+    )
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -1430,15 +1464,25 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_qualification_verify_parser.add_argument("certificate", type=Path)
     primitive_qualification_verify_parser.set_defaults(handler=command_gemma_ir_primitive_qualification_verify)
 
+    bfloat16_semantics_parser = subparsers.add_parser("gemma-bfloat16-semantics", help="Build independent exact-rational bfloat16 semantics and bounded CPU/CUDA conformance evidence")
+    bfloat16_semantics_parser.add_argument("--output", type=Path, required=True)
+    bfloat16_semantics_parser.set_defaults(handler=command_gemma_bfloat16_semantics)
+
+    bfloat16_semantics_verify_parser = subparsers.add_parser("gemma-bfloat16-semantics-verify", help="Re-execute and verify bfloat16 software-semantics conformance evidence")
+    bfloat16_semantics_verify_parser.add_argument("certificate", type=Path)
+    bfloat16_semantics_verify_parser.set_defaults(handler=command_gemma_bfloat16_semantics_verify)
+
     primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
     primitive_gate_parser.add_argument("program", type=Path)
     primitive_gate_parser.add_argument("certificate", type=Path)
+    primitive_gate_parser.add_argument("bfloat16_certificate", type=Path)
     primitive_gate_parser.add_argument("--output", type=Path, required=True)
     primitive_gate_parser.set_defaults(handler=command_gemma_ir_primitive_gate)
 
     primitive_gate_verify_parser = subparsers.add_parser("gemma-ir-primitive-gate-verify", help="Verify an IR primitive-qualification gate and its negative activation boundaries")
     primitive_gate_verify_parser.add_argument("program", type=Path)
     primitive_gate_verify_parser.add_argument("certificate", type=Path)
+    primitive_gate_verify_parser.add_argument("bfloat16_certificate", type=Path)
     primitive_gate_verify_parser.add_argument("gate", type=Path)
     primitive_gate_verify_parser.set_defaults(handler=command_gemma_ir_primitive_gate_verify)
 
