@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import math
 from typing import Any, Mapping
 
 from .gemma_ir import HASH_PATTERN, verify_gemma_ir
@@ -76,7 +77,7 @@ def _execute_instruction(
     elif opcode == "ROTARY_TABLE":
         value, position_ids = inputs
         inverse_frequency = parameter_values[0]
-        expanded_frequency = inverse_frequency[None, :, None].float().expand(position_ids.shape[0], -1, 1).to(value.device)
+        expanded_frequency = inverse_frequency[None, :, None].float().expand(value.shape[0], -1, 1).to(value.device)
         expanded_position = position_ids[:, None, :].float()
         frequency = (expanded_frequency @ expanded_position).transpose(1, 2)
         embedding = torch.cat((frequency, frequency), dim=-1)
@@ -176,6 +177,11 @@ def execute_gemma_ir(
         raise ValueError("Cannot execute an invalid Gemma IR")
     if not isinstance(input_ids, torch.Tensor) or input_ids.dtype != torch.int64 or input_ids.ndim != 2:
         raise ValueError("Gemma IR input_ids must be a rank-two torch.int64 tensor")
+    vocabulary_size = program["configuration"]["vocabulary_size"]
+    if input_ids.numel() == 0 or bool(
+        torch.any((input_ids < 0) | (input_ids >= vocabulary_size)).item()
+    ):
+        raise ValueError("Gemma IR input_ids contain values outside the declared vocabulary")
     if set(parameters) != set(program["parameter_commitments"]):
         raise ValueError("Interpreter parameter names do not match the Gemma IR")
     states: dict[str, Any] = {"input_ids": input_ids}
@@ -259,6 +265,121 @@ def _sha256(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
+def _rectangular_integer_rows(value: Any) -> bool:
+    return bool(
+        isinstance(value, list)
+        and value
+        and all(
+            isinstance(row, list)
+            and row
+            and all(isinstance(token, int) and not isinstance(token, bool) for token in row)
+            for row in value
+        )
+        and len({len(row) for row in value}) == 1
+    )
+
+
+def _selection_proofs(logits: Any, selected_token_ids: Any) -> list[dict[str, Any]]:
+    proofs = []
+    for batch_index in range(logits.shape[0]):
+        values = logits[batch_index, -1, :]
+        selected_id = int(selected_token_ids[batch_index].item())
+        candidate_ids = torch.arange(values.shape[0], device=values.device)
+        candidate_ids = candidate_ids[candidate_ids != selected_id]
+        if candidate_ids.numel() == 0:
+            raise ValueError("Token-selection proof requires at least two vocabulary entries")
+        competitor_values = values[candidate_ids]
+        runner_up_position = int(torch.argmax(competitor_values).item())
+        runner_up_id = int(candidate_ids[runner_up_position].item())
+        selected_value = values[selected_id]
+        runner_up_value = values[runner_up_id]
+        selected_float = float(selected_value.float().item())
+        runner_up_float = float(runner_up_value.float().item())
+        proofs.append(
+            {
+                "batch_index": batch_index,
+                "selection_rule": "lowest token index attaining the maximum logit",
+                "selected_token_id": selected_id,
+                "selected_logit": selected_float,
+                "selected_logit_descriptor": tensor_descriptor(
+                    selected_value.reshape(1)
+                ),
+                "runner_up_token_id": runner_up_id,
+                "runner_up_logit": runner_up_float,
+                "runner_up_logit_descriptor": tensor_descriptor(
+                    runner_up_value.reshape(1)
+                ),
+                "winning_margin_float32": selected_float - runner_up_float,
+                "strict_winner": selected_float > runner_up_float,
+                "argmax_recomputed": int(torch.argmax(values).item()) == selected_id,
+                "all_competitors_not_greater": bool(
+                    torch.all(competitor_values <= selected_value).item()
+                ),
+            }
+        )
+    return proofs
+
+
+def _scalar_descriptor_matches(value: float, descriptor: Any) -> bool:
+    if not isinstance(descriptor, dict):
+        return False
+    dtype_name = descriptor.get("dtype")
+    if not isinstance(dtype_name, str) or not dtype_name.startswith("torch."):
+        return False
+    dtype = getattr(torch, dtype_name.removeprefix("torch."), None)
+    if dtype is None:
+        return False
+    reconstructed = tensor_descriptor(torch.tensor([value], dtype=dtype))
+    return bool(
+        descriptor.get("sha256") == reconstructed.get("sha256")
+        and descriptor.get("shape") == [1]
+        and descriptor.get("dtype") == reconstructed.get("dtype")
+    )
+
+
+def _selection_proofs_valid(
+    proofs: Any, predicted_token_ids: Any, vocabulary_size: int
+) -> bool:
+    return bool(
+        isinstance(proofs, list)
+        and isinstance(predicted_token_ids, list)
+        and len(proofs) == len(predicted_token_ids)
+        and all(
+            isinstance(proof, dict)
+            and isinstance(proof.get("batch_index"), int)
+            and not isinstance(proof.get("batch_index"), bool)
+            and proof.get("batch_index") == index
+            and isinstance(proof.get("selected_token_id"), int)
+            and not isinstance(proof.get("selected_token_id"), bool)
+            and proof.get("selected_token_id") == predicted_token_ids[index]
+            and 0 <= proof["selected_token_id"] < vocabulary_size
+            and isinstance(proof.get("runner_up_token_id"), int)
+            and not isinstance(proof.get("runner_up_token_id"), bool)
+            and 0 <= proof["runner_up_token_id"] < vocabulary_size
+            and proof.get("runner_up_token_id") != predicted_token_ids[index]
+            and isinstance(proof.get("selected_logit"), (int, float))
+            and not isinstance(proof.get("selected_logit"), bool)
+            and math.isfinite(proof["selected_logit"])
+            and isinstance(proof.get("runner_up_logit"), (int, float))
+            and not isinstance(proof.get("runner_up_logit"), bool)
+            and math.isfinite(proof["runner_up_logit"])
+            and proof.get("winning_margin_float32")
+            == proof["selected_logit"] - proof["runner_up_logit"]
+            and proof.get("strict_winner")
+            is (proof["selected_logit"] > proof["runner_up_logit"])
+            and proof.get("argmax_recomputed") is True
+            and proof.get("all_competitors_not_greater") is True
+            and _scalar_descriptor_matches(
+                proof["selected_logit"], proof.get("selected_logit_descriptor")
+            )
+            and _scalar_descriptor_matches(
+                proof["runner_up_logit"], proof.get("runner_up_logit_descriptor")
+            )
+            for index, proof in enumerate(proofs)
+        )
+    )
+
+
 def build_ir_execution_certificate(
     program: dict[str, Any],
     input_ids: Any,
@@ -296,6 +417,9 @@ def build_ir_execution_certificate(
         "observed_token_ids": observed_tokens,
         "logits_bit_exact": logits_exact,
         "selected_tokens_exact": token_exact,
+        "selection_proofs": _selection_proofs(
+            execution.logits, execution.selected_token_id
+        ),
         "first_divergence": None if logits_exact else "final_logits",
         "execution_records": list(execution.records),
         "execution_root_sha256": execution.root_sha256,
@@ -328,17 +452,36 @@ def verify_ir_execution_certificate(
         if isinstance(records, list)
         else {"valid": False}
     )
-    instruction_binding_valid = bool(
-        isinstance(records, list)
-        and len(records) == len(program.get("instructions", []))
-        and all(
+    def instruction_record_matches(
+        record: Any, instruction: dict[str, Any]
+    ) -> bool:
+        return bool(
             isinstance(record, dict)
             and isinstance(record.get("payload"), dict)
             and record["payload"].get("instruction_id") == instruction.get("id")
             and record["payload"].get("instruction_sha256")
             == instruction.get("instruction_sha256")
-            for record, instruction in zip(records, program.get("instructions", []))
+            and record["payload"].get("opcode") == instruction.get("opcode")
+            and record["payload"].get("layer") == instruction.get("layer")
+            and record["payload"].get("inputs") == instruction.get("inputs")
+            and record["payload"].get("parameter_refs")
+            == instruction.get("parameter_refs")
+            and isinstance(record["payload"].get("outputs"), dict)
+            and set(record["payload"]["outputs"])
+            == set(instruction.get("outputs", []))
         )
+
+    binding_mismatches = [
+        index
+        for index, (record, instruction) in enumerate(
+            zip(records if isinstance(records, list) else [], program.get("instructions", []))
+        )
+        if not instruction_record_matches(record, instruction)
+    ]
+    instruction_binding_valid = bool(
+        isinstance(records, list)
+        and len(records) == len(program.get("instructions", []))
+        and not binding_mismatches
     )
     predicted = certificate.get("predicted_logits")
     predicted_token_descriptor = certificate.get("predicted_token_ids_descriptor")
@@ -395,14 +538,7 @@ def verify_ir_execution_certificate(
     input_descriptor = certificate.get("input_ids")
     input_value_binding_valid = False
     if (
-        isinstance(input_values, list)
-        and input_values
-        and all(
-            isinstance(row, list)
-            and row
-            and all(isinstance(token, int) and not isinstance(token, bool) for token in row)
-            for row in input_values
-        )
+        _rectangular_integer_rows(input_values)
         and isinstance(input_descriptor, dict)
     ):
         reconstructed_input = tensor_descriptor(
@@ -413,6 +549,11 @@ def verify_ir_execution_certificate(
             and input_descriptor.get("shape") == reconstructed_input.get("shape")
             and input_descriptor.get("dtype") == reconstructed_input.get("dtype")
         )
+    selection_proofs_valid = _selection_proofs_valid(
+        certificate.get("selection_proofs"),
+        predicted_tokens,
+        program["configuration"]["vocabulary_size"],
+    )
     claims_consistent = bool(
         certificate.get("program_sha256") == program.get("program_sha256")
         and HASH_PATTERN.fullmatch(str(certificate.get("model_state_sha256", "")))
@@ -438,6 +579,7 @@ def verify_ir_execution_certificate(
             record_output_binding_valid,
             token_value_binding_valid,
             input_value_binding_valid,
+            selection_proofs_valid,
             claims_consistent,
             calculated_logits_exact,
             calculated_tokens_exact,
@@ -448,9 +590,13 @@ def verify_ir_execution_certificate(
         "certificate_hash_valid": certificate_hash_valid,
         "execution_chain_valid": chain.get("valid", False),
         "instruction_binding_valid": instruction_binding_valid,
+        "first_instruction_binding_mismatch": (
+            binding_mismatches[0] if binding_mismatches else None
+        ),
         "record_output_binding_valid": record_output_binding_valid,
         "token_value_binding_valid": token_value_binding_valid,
         "input_value_binding_valid": input_value_binding_valid,
+        "selection_proofs_valid": selection_proofs_valid,
         "claims_consistent": claims_consistent,
         "logits_bit_exact": calculated_logits_exact,
         "selected_tokens_exact": calculated_tokens_exact,
@@ -541,8 +687,9 @@ def summarize_ir_execution(
             "predicted_token_ids_descriptor"
         ],
         "observed_token_ids": certificate["observed_token_ids"],
-        "logits_bit_exact": True,
-        "selected_tokens_exact": True,
+        "logits_bit_exact": certificate["logits_bit_exact"],
+        "selected_tokens_exact": certificate["selected_tokens_exact"],
+        "selection_proofs": certificate["selection_proofs"],
         "first_divergence": None,
         "execution_root_sha256": certificate["execution_root_sha256"],
         "instruction_coverage_count": len(program["instructions"]),
@@ -556,11 +703,16 @@ def summarize_ir_execution(
 
 
 def verify_ir_execution_summary(
-    program: dict[str, Any], summary: dict[str, Any]
+    program: dict[str, Any],
+    summary: dict[str, Any],
+    source_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     _require_torch()
     if not verify_gemma_ir(program)["valid"] or not isinstance(summary, dict):
         return {"valid": False}
+    source_verification = verify_ir_execution_certificate(
+        program, source_certificate
+    )
     body = {key: value for key, value in summary.items() if key != "summary_sha256"}
     try:
         summary_hash_valid = _sha256(body) == summary.get("summary_sha256")
@@ -586,6 +738,11 @@ def verify_ir_execution_summary(
         and predicted_tokens == observed_tokens
         and all(isinstance(token, int) and not isinstance(token, bool) for token in predicted_tokens)
     )
+    selection_proofs_valid = _selection_proofs_valid(
+        summary.get("selection_proofs"),
+        predicted_tokens,
+        program["configuration"]["vocabulary_size"],
+    )
     token_descriptor = summary.get("predicted_token_ids_descriptor")
     reconstructed_token_descriptor = (
         tensor_descriptor(torch.tensor(predicted_tokens, dtype=torch.int64))
@@ -605,14 +762,7 @@ def verify_ir_execution_summary(
     input_descriptor = summary.get("input_ids")
     input_descriptor_valid = False
     if (
-        isinstance(input_values, list)
-        and input_values
-        and all(
-            isinstance(row, list)
-            and row
-            and all(isinstance(token, int) and not isinstance(token, bool) for token in row)
-            for row in input_values
-        )
+        _rectangular_integer_rows(input_values)
         and isinstance(input_descriptor, dict)
     ):
         reconstructed_input = tensor_descriptor(
@@ -623,6 +773,34 @@ def verify_ir_execution_summary(
             and input_descriptor.get("shape") == reconstructed_input.get("shape")
             and input_descriptor.get("dtype") == reconstructed_input.get("dtype")
         )
+    source_fields = (
+        "program_sha256",
+        "model_state_sha256",
+        "execution_profile",
+        "input_ids",
+        "input_token_ids",
+        "predicted_logits",
+        "observed_logits",
+        "predicted_token_ids",
+        "predicted_token_ids_descriptor",
+        "observed_token_ids",
+        "logits_bit_exact",
+        "selected_tokens_exact",
+        "selection_proofs",
+        "first_divergence",
+        "execution_root_sha256",
+        "instruction_coverage_count",
+        "instruction_coverage_complete",
+        "fixed_input_canonical_eager_prediction_established",
+        "deployed_sdpa_correspondence_established",
+        "hardware_instruction_semantics_established",
+    )
+    source_certificate_binding_valid = bool(
+        source_verification.get("valid")
+        and summary.get("source_certificate_sha256")
+        == source_certificate.get("certificate_sha256")
+        and all(summary.get(field) == source_certificate.get(field) for field in source_fields)
+    )
     claims_consistent = bool(
         summary.get("schema_version") == 1
         and summary.get("program_sha256") == program.get("program_sha256")
@@ -643,19 +821,23 @@ def verify_ir_execution_summary(
     valid = all(
         (
             summary_hash_valid,
+            source_certificate_binding_valid,
             logits_exact,
             tokens_exact,
             token_descriptor_valid,
             input_descriptor_valid,
+            selection_proofs_valid,
             claims_consistent,
         )
     )
     return {
         "valid": valid,
         "summary_hash_valid": summary_hash_valid,
+        "source_certificate_binding_valid": source_certificate_binding_valid,
         "logits_bit_exact": logits_exact,
         "selected_tokens_exact": tokens_exact,
         "token_descriptor_valid": token_descriptor_valid,
         "input_descriptor_valid": input_descriptor_valid,
+        "selection_proofs_valid": selection_proofs_valid,
         "claims_consistent": claims_consistent,
     }

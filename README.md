@@ -358,10 +358,21 @@ The independent dispatcher interprets the IR without calling Gemma `forward()`, 
 python -m bioprocess_runtime gemma-ir-predict results/gemma3_270m_execution_ir.json --model-path .models/gemma-3-270m-it --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --output artifacts/gemma3_270m_ir_execution_certificate.json
 python -m bioprocess_runtime gemma-ir-execution-verify results/gemma3_270m_execution_ir.json artifacts/gemma3_270m_ir_execution_certificate.json --model-path .models/gemma-3-270m-it
 python -m bioprocess_runtime gemma-ir-execution-summary results/gemma3_270m_execution_ir.json artifacts/gemma3_270m_ir_execution_certificate.json --output results/gemma3_270m_ir_execution_summary.json
-python -m bioprocess_runtime gemma-ir-execution-summary-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_execution_summary.json
+python -m bioprocess_runtime gemma-ir-execution-summary-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_execution_summary.json --certificate artifacts/gemma3_270m_ir_execution_certificate.json
 ```
 
-For the checked 30-token prompt, the IR interpreter covered all 533 instructions and predicted Hugging Face eager logits bit-for-bit, including the selected token. The full local certificate binds the model-state hash, literal input token IDs, final logits and selected-token descriptors to a hash-chained descriptor for every IR instruction output. A fresh model load reproduced the complete certificate exactly; verification without `--model-path` performs integrity checks only. The checked compact result omits full execution records. This establishes one fixed-input canonical-eager prediction, not SDPA or fused-kernel correspondence. The IR still marks bit-level primitive qualification false because its numerical dispatcher currently shares PyTorch primitive implementations with the comparator.
+For the checked 30-token prompt, the IR interpreter covered all 533 instructions and predicted Hugging Face eager logits bit-for-bit, including the selected token. The full local certificate binds the model-state hash, literal input token IDs, final logits and selected-token descriptors to a hash-chained descriptor for every IR instruction output. A fresh model load reproduced the complete certificate exactly; verification without `--model-path` performs integrity checks only. The checked compact result omits full execution records. Its numerical selection proof identifies token 10784 at bfloat16 logit 33.5, runner-up token 3771 at 29.625, and a strict float32 margin of 3.875 after checking every competitor. This establishes one fixed-input canonical-eager prediction, not SDPA or fused-kernel correspondence. The IR still marks bit-level primitive qualification false because its numerical dispatcher currently shares PyTorch primitive implementations with the comparator.
+
+Eight non-arithmetic primitives now have 610 independently replayed bounded conformance cases against pure-Python coordinate and selection oracles. The qualification gate separates them from 11 reached floating-point primitives and keeps both global exactness activation and bit-exact numerical qualification false:
+
+```powershell
+python -m bioprocess_runtime gemma-ir-primitive-qualification --output results/gemma3_270m_ir_primitive_qualification.json
+python -m bioprocess_runtime gemma-ir-primitive-qualification-verify results/gemma3_270m_ir_primitive_qualification.json
+python -m bioprocess_runtime gemma-ir-primitive-gate results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json --output results/gemma3_270m_ir_primitive_gate.json
+python -m bioprocess_runtime gemma-ir-primitive-gate-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_primitive_qualification.json results/gemma3_270m_ir_primitive_gate.json
+```
+
+The tested primitives are `ARANGE`, `ARGMAX`, `CAUSAL_MASK`, `EMBEDDING`, `REPEAT_KV`, both head reshape/transposes, and last-token slicing. These tests establish exact conformance over their declared finite cases, not unrestricted-domain proofs. `ADD`, `MUL`, `SCALE`, `LINEAR`, both attention matrix multiplications, `RMS_NORM`, `SOFTMAX`, `GELU_TANH`, and rotary arithmetic remain unresolved at the independent bit-level-semantics boundary.
 
 ### Expandable bounded-domain verification
 

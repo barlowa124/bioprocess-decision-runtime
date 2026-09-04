@@ -104,8 +104,12 @@ def append_chain_record(records: list[dict[str, Any]], payload: dict[str, Any]) 
 
 
 def verify_trace_chain(records: list[dict[str, Any]], expected_root: str | None = None) -> dict[str, Any]:
+    if not isinstance(records, list):
+        return {"valid": False, "records": 0, "reason": "Trace records must be a list"}
     previous_hash = GENESIS
     for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            return {"valid": False, "records": index, "reason": f"Record {index} is not a mapping"}
         if record.get("index") != index:
             return {"valid": False, "records": index, "reason": f"Unexpected index at record {index}"}
         if record.get("previous_hash") != previous_hash:

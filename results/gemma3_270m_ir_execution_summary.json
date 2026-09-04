@@ -103,6 +103,42 @@
   "schema_version": 1,
   "scope": "Compact fixed-input commitment to a bit-exact typed-IR prediction against pinned Hugging Face eager execution; full instruction records are omitted and no SDPA, fused-kernel, hardware-semantic, scientific, or regulatory equivalence is established.",
   "selected_tokens_exact": true,
-  "source_certificate_sha256": "3cdff8b6578aa96fcbda3d5d8dadca1f5ab1b163ffac1262af1223f19c97faa7",
-  "summary_sha256": "67b737b4d932c9c89436e6285f72c415787999e0921f0875bec24cd12a514e17"
+  "selection_proofs": [
+    {
+      "all_competitors_not_greater": true,
+      "argmax_recomputed": true,
+      "batch_index": 0,
+      "runner_up_logit": 29.625,
+      "runner_up_logit_descriptor": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 1,
+        "sha256": "65f6066084fbc06064cbe925b0834d51e40ce245b865994db15fe6f767ef7634",
+        "shape": [
+          1
+        ]
+      },
+      "runner_up_token_id": 3771,
+      "selected_logit": 33.5,
+      "selected_logit_descriptor": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 1,
+        "sha256": "82c34c60df34b65c17a22d61357405e5b609fe05e8599f074811994041ff1437",
+        "shape": [
+          1
+        ]
+      },
+      "selected_token_id": 10784,
+      "selection_rule": "lowest token index attaining the maximum logit",
+      "strict_winner": true,
+      "winning_margin_float32": 3.875
+    }
+  ],
+  "source_certificate_sha256": "cd3f1c72402fc0748e7ca779504040542863fd43548d9eb98dec296a3a5e625e",
+  "summary_sha256": "be9f84b181c8ab6210d6ddd29dc2454814dfa253839cd6ec30b9c86056349723"
 }

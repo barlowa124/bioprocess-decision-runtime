@@ -116,19 +116,73 @@ class ReferenceGemmaTests(unittest.TestCase):
         self.assertTrue(replay["reexecution_performed"])
         self.assertTrue(certificate["fixed_input_canonical_eager_prediction_established"])
         self.assertFalse(certificate["deployed_sdpa_correspondence_established"])
+        self.assertEqual(len(certificate["selection_proofs"]), 1)
+        self.assertEqual(
+            certificate["selection_proofs"][0]["selected_token_id"],
+            certificate["predicted_token_ids"][0],
+        )
+        self.assertTrue(certificate["selection_proofs"][0]["argmax_recomputed"])
+        self.assertTrue(
+            certificate["selection_proofs"][0]["all_competitors_not_greater"]
+        )
         summary = summarize_ir_execution(program, certificate)
-        self.assertTrue(verify_ir_execution_summary(program, summary)["valid"])
+        self.assertTrue(
+            verify_ir_execution_summary(program, summary, certificate)["valid"]
+        )
         self.assertFalse(summary["full_execution_records_committed"])
+        wrong_source = copy.deepcopy(certificate)
+        wrong_source["certificate_sha256"] = "0" * 64
+        wrong_source_verification = verify_ir_execution_summary(
+            program, summary, wrong_source
+        )
+        self.assertFalse(wrong_source_verification["valid"])
+        self.assertFalse(
+            wrong_source_verification["source_certificate_binding_valid"]
+        )
         damaged_summary = copy.deepcopy(summary)
         damaged_summary["predicted_token_ids"] = [
             (summary["observed_token_ids"][0] + 1) % 32
         ]
-        self.assertFalse(verify_ir_execution_summary(program, damaged_summary)["valid"])
+        self.assertFalse(
+            verify_ir_execution_summary(program, damaged_summary, certificate)["valid"]
+        )
         damaged_certificate = copy.deepcopy(certificate)
         damaged_certificate["observed_logits"]["sha256"] = "0" * 64
         self.assertFalse(
             verify_ir_execution_certificate(program, damaged_certificate)["valid"]
         )
+        ragged_certificate = copy.deepcopy(certificate)
+        ragged_certificate["input_token_ids"] = [[1, 2], [3]]
+        ragged_body = {
+            key: value
+            for key, value in ragged_certificate.items()
+            if key != "certificate_sha256"
+        }
+        ragged_certificate["certificate_sha256"] = hashlib.sha256(
+            canonical_json(ragged_body).encode("utf-8")
+        ).hexdigest()
+        ragged_verification = verify_ir_execution_certificate(
+            program, ragged_certificate
+        )
+        self.assertFalse(ragged_verification["valid"])
+        self.assertFalse(ragged_verification["input_value_binding_valid"])
+        forged_selection = copy.deepcopy(certificate)
+        forged_selection["selection_proofs"][0]["runner_up_token_id"] = (
+            forged_selection["predicted_token_ids"][0]
+        )
+        selection_body = {
+            key: value
+            for key, value in forged_selection.items()
+            if key != "certificate_sha256"
+        }
+        forged_selection["certificate_sha256"] = hashlib.sha256(
+            canonical_json(selection_body).encode("utf-8")
+        ).hexdigest()
+        selection_verification = verify_ir_execution_certificate(
+            program, forged_selection
+        )
+        self.assertFalse(selection_verification["valid"])
+        self.assertFalse(selection_verification["selection_proofs_valid"])
         forged_certificate = copy.deepcopy(certificate)
         logits_name = program["declared_outputs"][0]
         forged_payloads = [
@@ -169,6 +223,22 @@ class ReferenceGemmaTests(unittest.TestCase):
         divergence = compare_ir_execution(program, prediction, damaged_records)
         self.assertFalse(divergence["exact_match"])
         self.assertEqual(divergence["first_divergence"]["index"], 10)
+        batched_input = self.torch.cat((ir_input_ids, ir_input_ids.flip(1)), dim=0)
+        batched_prediction = execute_gemma_ir(program, parameters, batched_input)
+        with self.torch.no_grad():
+            batched_observed = self.model(
+                input_ids=batched_input,
+                attention_mask=self.torch.ones_like(batched_input),
+                use_cache=False,
+                logits_to_keep=1,
+            )
+        self.assertTrue(
+            self.torch.equal(batched_prediction.logits, batched_observed.logits)
+        )
+        invalid_input = ir_input_ids.clone()
+        invalid_input[0, 0] = 32
+        with self.assertRaisesRegex(ValueError, "declared vocabulary"):
+            execute_gemma_ir(program, parameters, invalid_input)
 
     def test_reference_matches_eager_beyond_sliding_window(self) -> None:
         from bioprocess_runtime.reference_gemma import fixed_input_equivalence_certificate

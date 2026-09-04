@@ -512,7 +512,56 @@ def command_gemma_ir_execution_summary_verify(args: argparse.Namespace) -> int:
 
     program = json.loads(args.program.read_text(encoding="utf-8"))
     summary = json.loads(args.summary.read_text(encoding="utf-8"))
-    verification = verify_ir_execution_summary(program, summary)
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_ir_execution_summary(program, summary, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_primitive_qualification(args: argparse.Namespace) -> int:
+    from .gemma_ir_primitives import (
+        build_primitive_qualification_certificate,
+        verify_primitive_qualification_certificate,
+    )
+
+    certificate = build_primitive_qualification_certificate()
+    verification = verify_primitive_qualification_certificate(certificate)
+    _write_json(args.output, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_primitive_qualification_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir_primitives import verify_primitive_qualification_certificate
+
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_primitive_qualification_certificate(certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
+    from .gemma_ir_primitives import (
+        build_primitive_qualification_gate,
+        verify_primitive_qualification_gate,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    gate = build_primitive_qualification_gate(program, certificate)
+    verification = verify_primitive_qualification_gate(program, certificate, gate)
+    _write_json(args.output, gate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir_primitives import verify_primitive_qualification_gate
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    gate = json.loads(args.gate.read_text(encoding="utf-8"))
+    verification = verify_primitive_qualification_gate(program, certificate, gate)
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
 
@@ -1370,7 +1419,28 @@ def build_parser() -> argparse.ArgumentParser:
     gemma_ir_summary_verify_parser = subparsers.add_parser("gemma-ir-execution-summary-verify", help="Verify a compact typed-IR prediction result")
     gemma_ir_summary_verify_parser.add_argument("program", type=Path)
     gemma_ir_summary_verify_parser.add_argument("summary", type=Path)
+    gemma_ir_summary_verify_parser.add_argument("--certificate", type=Path, required=True)
     gemma_ir_summary_verify_parser.set_defaults(handler=command_gemma_ir_execution_summary_verify)
+
+    primitive_qualification_parser = subparsers.add_parser("gemma-ir-primitive-qualification", help="Build independently replayable bounded conformance evidence for non-arithmetic IR primitives")
+    primitive_qualification_parser.add_argument("--output", type=Path, required=True)
+    primitive_qualification_parser.set_defaults(handler=command_gemma_ir_primitive_qualification)
+
+    primitive_qualification_verify_parser = subparsers.add_parser("gemma-ir-primitive-qualification-verify", help="Re-execute and verify non-arithmetic IR primitive conformance evidence")
+    primitive_qualification_verify_parser.add_argument("certificate", type=Path)
+    primitive_qualification_verify_parser.set_defaults(handler=command_gemma_ir_primitive_qualification_verify)
+
+    primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
+    primitive_gate_parser.add_argument("program", type=Path)
+    primitive_gate_parser.add_argument("certificate", type=Path)
+    primitive_gate_parser.add_argument("--output", type=Path, required=True)
+    primitive_gate_parser.set_defaults(handler=command_gemma_ir_primitive_gate)
+
+    primitive_gate_verify_parser = subparsers.add_parser("gemma-ir-primitive-gate-verify", help="Verify an IR primitive-qualification gate and its negative activation boundaries")
+    primitive_gate_verify_parser.add_argument("program", type=Path)
+    primitive_gate_verify_parser.add_argument("certificate", type=Path)
+    primitive_gate_verify_parser.add_argument("gate", type=Path)
+    primitive_gate_verify_parser.set_defaults(handler=command_gemma_ir_primitive_gate_verify)
 
     domain_parser = subparsers.add_parser("gemma-bounded-domain", help="Exhaustively verify a declared canonical oxygen-state grid")
     domain_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

@@ -108,6 +108,8 @@ class OperationalSemanticsTests(unittest.TestCase):
         damaged = copy.deepcopy(records)
         damaged[0]["payload"]["operator"] = "changed"
         self.assertFalse(verify_trace_chain(damaged, root)["valid"])
+        self.assertFalse(verify_trace_chain([[]], root)["valid"])
+        self.assertFalse(verify_trace_chain(None, root)["valid"])
 
     def test_architecture_manifest_records_tied_parameters(self) -> None:
         from bioprocess_runtime.operational_semantics import build_architecture_manifest

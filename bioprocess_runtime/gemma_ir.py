@@ -597,13 +597,26 @@ def verify_gemma_ir(program: dict[str, Any], manifest: dict[str, Any] | None = N
             elif layer is not None:
                 layer_coverage_valid = False
         dependency_valid &= all(output in produced for output in program["declared_outputs"])
+        dependency_valid &= set(tensors) == produced
         dependency_valid &= all(
-            isinstance(descriptor, dict)
+            isinstance(name, str)
+            and isinstance(descriptor, dict)
+            and isinstance(descriptor.get("shape"), list)
+            and all(
+                (isinstance(dimension, int) and not isinstance(dimension, bool) and dimension >= 0)
+                or (isinstance(dimension, str) and dimension in {"B", "S"})
+                for dimension in descriptor["shape"]
+            )
+            and isinstance(descriptor.get("dtype"), str)
             and descriptor.get("producer")
             == ("EXTERNAL" if name in program["external_inputs"] else output_producers.get(name))
             for name, descriptor in tensors.items()
         )
-        layer_coverage_valid &= bool(layer_counts and len(set(layer_counts.values())) == 1)
+        layer_coverage_valid &= bool(
+            layer_counts
+            and len(set(layer_counts.values())) == 1
+            and min(layer_counts.values()) > 0
+        )
         semantics_coverage_valid &= set(semantics) == set(ALLOWED_OPCODES)
         parameter_references_valid &= all(
             isinstance(descriptor, dict)
