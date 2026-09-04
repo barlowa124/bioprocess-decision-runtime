@@ -1,0 +1,2247 @@
+{
+  "candidate_profiles": [
+    "block16_float32_then_bfloat16",
+    "exact_sum_then_bfloat16",
+    "pairwise_float32_then_bfloat16",
+    "sequential_bfloat16",
+    "sequential_float32_then_bfloat16"
+  ],
+  "certificate_sha256": "640760f05eeb14fb056379edf39280839e5cbfc3f192c984d098bea6fed96e8a",
+  "discriminating_record_count": 75,
+  "environment": {
+    "cuda_available": true,
+    "cuda_device_capability": [
+      8,
+      9
+    ],
+    "cuda_device_name": "NVIDIA GeForce RTX 4090",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "torch_cuda_version": "12.8",
+    "torch_version": "2.7.1+cu128"
+  },
+  "hardware_instruction_semantics_established": false,
+  "input_domain": "finite bfloat16 vectors with inner dimensions 4, 8, 16, 32, 64, 128, 256, 640, and 2048",
+  "match_counts": {
+    "cpu": {
+      "LINEAR": {
+        "block16_float32_then_bfloat16": 13,
+        "exact_sum_then_bfloat16": 10,
+        "pairwise_float32_then_bfloat16": 10,
+        "sequential_bfloat16": 5,
+        "sequential_float32_then_bfloat16": 13
+      },
+      "MATMUL_AV": {
+        "block16_float32_then_bfloat16": 15,
+        "exact_sum_then_bfloat16": 12,
+        "pairwise_float32_then_bfloat16": 12,
+        "sequential_bfloat16": 15,
+        "sequential_float32_then_bfloat16": 23
+      },
+      "MATMUL_QK": {
+        "block16_float32_then_bfloat16": 15,
+        "exact_sum_then_bfloat16": 10,
+        "pairwise_float32_then_bfloat16": 10,
+        "sequential_bfloat16": 15,
+        "sequential_float32_then_bfloat16": 23
+      }
+    },
+    "cuda": {
+      "LINEAR": {
+        "block16_float32_then_bfloat16": 15,
+        "exact_sum_then_bfloat16": 11,
+        "pairwise_float32_then_bfloat16": 12,
+        "sequential_bfloat16": 13,
+        "sequential_float32_then_bfloat16": 21
+      },
+      "MATMUL_AV": {
+        "block16_float32_then_bfloat16": 15,
+        "exact_sum_then_bfloat16": 11,
+        "pairwise_float32_then_bfloat16": 12,
+        "sequential_bfloat16": 13,
+        "sequential_float32_then_bfloat16": 21
+      },
+      "MATMUL_QK": {
+        "block16_float32_then_bfloat16": 15,
+        "exact_sum_then_bfloat16": 11,
+        "pairwise_float32_then_bfloat16": 12,
+        "sequential_bfloat16": 13,
+        "sequential_float32_then_bfloat16": 21
+      }
+    }
+  },
+  "record_count": 81,
+  "records": [
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 4,
+      "left_sha256": "b04a49be467608e4f538c33deabb26c5de298e2dde632170612e2c6c18db288a",
+      "primitive": "LINEAR",
+      "record_sha256": "be70610baa91c391a9541ae687e20a2585fc8418ad6cbfe1c79197eed614cdf9",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 4,
+      "left_sha256": "b04a49be467608e4f538c33deabb26c5de298e2dde632170612e2c6c18db288a",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "28d48676f6bd2ff918761bfc4d36defb392ac415fdcbaee44b37cf9c7b54e9a5",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 4,
+      "left_sha256": "b04a49be467608e4f538c33deabb26c5de298e2dde632170612e2c6c18db288a",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "c7d5342d46d7a38019636223c7c6af1dfdeb470d1c59f16fa5d6c4a51ecd780a",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x4000",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 1,
+      "case": "grouped_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 4,
+      "left_sha256": "ac8750a58b4aa37d1cc5518d305f4dbf972b5cd64a9a5cb3c01faf1b92499911",
+      "primitive": "LINEAR",
+      "record_sha256": "5a8abe712438b4e87ff00eba682761cc7a263b7742b059a3642f3dfb7f2076d2",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x4000",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 1,
+      "case": "grouped_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 4,
+      "left_sha256": "ac8750a58b4aa37d1cc5518d305f4dbf972b5cd64a9a5cb3c01faf1b92499911",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "21a9f1e6a73eb9705f3897a23c42ecad9b4f91173f71ae7275398ff38bfa27df",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4000",
+        "pairwise_float32_then_bfloat16": "0x4000",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 1,
+      "case": "grouped_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 4,
+      "left_sha256": "ac8750a58b4aa37d1cc5518d305f4dbf972b5cd64a9a5cb3c01faf1b92499911",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "274c871c21cb0c7650dcbb2b845308b0b3a1ec81990bb2053540d9f79e92b245",
+      "right_sha256": "f082aa213edf347b0306189b6f317e9f267078a091e8065afc2093bd25036cee"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xbdf4",
+        "exact_sum_then_bfloat16": "0xbdf4",
+        "pairwise_float32_then_bfloat16": "0xbdf4",
+        "sequential_bfloat16": "0xbdf3",
+        "sequential_float32_then_bfloat16": "0xbdf4"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xbdf4",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xbdf4",
+      "inner_dimension": 4,
+      "left_sha256": "8af258f28056226b265fceecac60fe3ca213db94ff6a46dedab804480b6037e8",
+      "primitive": "LINEAR",
+      "record_sha256": "cd2dd9419d4526bf232e8b0042db5178e345534d5399bef9c36d531e19ea86a8",
+      "right_sha256": "34b87fa28930f156d3406ad63ec7cf13d7dd517e1075076ee1de0cd0731a7c8f"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xbdf4",
+        "exact_sum_then_bfloat16": "0xbdf4",
+        "pairwise_float32_then_bfloat16": "0xbdf4",
+        "sequential_bfloat16": "0xbdf3",
+        "sequential_float32_then_bfloat16": "0xbdf4"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xbdf4",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xbdf4",
+      "inner_dimension": 4,
+      "left_sha256": "8af258f28056226b265fceecac60fe3ca213db94ff6a46dedab804480b6037e8",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "f9e62a0bec2e350994fb1d7785cf8b791d13df1edb76ec84bd53f0083c291d0b",
+      "right_sha256": "34b87fa28930f156d3406ad63ec7cf13d7dd517e1075076ee1de0cd0731a7c8f"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xbdf4",
+        "exact_sum_then_bfloat16": "0xbdf4",
+        "pairwise_float32_then_bfloat16": "0xbdf4",
+        "sequential_bfloat16": "0xbdf3",
+        "sequential_float32_then_bfloat16": "0xbdf4"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_4",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xbdf4",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xbdf4",
+      "inner_dimension": 4,
+      "left_sha256": "8af258f28056226b265fceecac60fe3ca213db94ff6a46dedab804480b6037e8",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "01c9351677b5d997a214d82fa330b97dbe678738a2f9dcc92b61b03673759a38",
+      "right_sha256": "34b87fa28930f156d3406ad63ec7cf13d7dd517e1075076ee1de0cd0731a7c8f"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 8,
+      "left_sha256": "81aba889ccbeb00e1e1f79fe066c7298046dff34da5cf9904d07529feb6cfcfe",
+      "primitive": "LINEAR",
+      "record_sha256": "a8461e46b349646df3c80822b90ba8cc2fe577398d22c694d4b4d93d9a44fd05",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 8,
+      "left_sha256": "81aba889ccbeb00e1e1f79fe066c7298046dff34da5cf9904d07529feb6cfcfe",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "1cbdc1004092a55bc029f1d698fb4c915e39d712aa54b63a6918e1741c093091",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 8,
+      "left_sha256": "81aba889ccbeb00e1e1f79fe066c7298046dff34da5cf9904d07529feb6cfcfe",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "b524ecc6e51b899de733304a7c26d55f95605b5b7c3cf762a10877f356c7bd35",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x4080",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 8,
+      "left_sha256": "a56bd1d99d16793ab362cb85b1a3bca45227926b7b25f05e275cbae0a2546c94",
+      "primitive": "LINEAR",
+      "record_sha256": "4105ef235adf9533c2b4c59da5658b493b2c54d64bd4a722b80265204ec90fc1",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x4080",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 8,
+      "left_sha256": "a56bd1d99d16793ab362cb85b1a3bca45227926b7b25f05e275cbae0a2546c94",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "0bc33c64e5e9d6df99b24a62bff7a745ea894c283ba6a8e37169bdc6fcffb8c5",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4080",
+        "pairwise_float32_then_bfloat16": "0x4080",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 8,
+      "left_sha256": "a56bd1d99d16793ab362cb85b1a3bca45227926b7b25f05e275cbae0a2546c94",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "2ff87a3648f62b50dc29c140ba7a8f0f3a4d6f9951dd9258447ecd4a6e69b27f",
+      "right_sha256": "cafbcd98bf5b158e29c2372f71c382aacba907767a776bc6270ce80b31ba887d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc718",
+        "exact_sum_then_bfloat16": "0xc718",
+        "pairwise_float32_then_bfloat16": "0xc718",
+        "sequential_bfloat16": "0xc718",
+        "sequential_float32_then_bfloat16": "0xc718"
+      },
+      "candidate_results_distinct": 1,
+      "case": "pseudo_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc718",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc718",
+      "inner_dimension": 8,
+      "left_sha256": "8a2551b9f68a0ebe84940b62ba19e6fa92ff2b809d9b8d80708e98e6a52603e4",
+      "primitive": "LINEAR",
+      "record_sha256": "843b4f9901dec3aaa525bd65e8d6e8475716d0585f76b0372d85fb2cd395137f",
+      "right_sha256": "9ab56d6c90f6938dd2e1bd1bf2582b65a16f2e81c506454a62b904b1278b847d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc718",
+        "exact_sum_then_bfloat16": "0xc718",
+        "pairwise_float32_then_bfloat16": "0xc718",
+        "sequential_bfloat16": "0xc718",
+        "sequential_float32_then_bfloat16": "0xc718"
+      },
+      "candidate_results_distinct": 1,
+      "case": "pseudo_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc718",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc718",
+      "inner_dimension": 8,
+      "left_sha256": "8a2551b9f68a0ebe84940b62ba19e6fa92ff2b809d9b8d80708e98e6a52603e4",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "3dd229e35509a155016186844bec0fc24f12f81bc30acbbce445f77927674c01",
+      "right_sha256": "9ab56d6c90f6938dd2e1bd1bf2582b65a16f2e81c506454a62b904b1278b847d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc718",
+        "exact_sum_then_bfloat16": "0xc718",
+        "pairwise_float32_then_bfloat16": "0xc718",
+        "sequential_bfloat16": "0xc718",
+        "sequential_float32_then_bfloat16": "0xc718"
+      },
+      "candidate_results_distinct": 1,
+      "case": "pseudo_8",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc718",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc718",
+      "inner_dimension": 8,
+      "left_sha256": "8a2551b9f68a0ebe84940b62ba19e6fa92ff2b809d9b8d80708e98e6a52603e4",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "7d889e951d92cebd4a66aa6305540bc772b006eba88e29bb5817c8868a965010",
+      "right_sha256": "9ab56d6c90f6938dd2e1bd1bf2582b65a16f2e81c506454a62b904b1278b847d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_16",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 16,
+      "left_sha256": "f7819a91550b514c8d2a17c786f43afb17be38b42d53f6c916c34afb490cab38",
+      "primitive": "LINEAR",
+      "record_sha256": "dc206472772c3fe26f8a6bd067eab883339693e3dc973b05ab15c98c1d71c460",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 16,
+      "left_sha256": "f7819a91550b514c8d2a17c786f43afb17be38b42d53f6c916c34afb490cab38",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "b4e95fa05cb6d7bf049b35a5f5f8f3472c6b43dca046671bb03242148a91d8b2",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3f80",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 3,
+      "case": "cancellation_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 16,
+      "left_sha256": "f7819a91550b514c8d2a17c786f43afb17be38b42d53f6c916c34afb490cab38",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "556189565acf0d1ff3f820557d9b5d39b9c6f83071bd02ac7f0104d60be43320",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x4100",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_16",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4080",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 16,
+      "left_sha256": "a248aab60cba34e135aea672ad62c38df031c80685b67ea9a6509dc6f19524b6",
+      "primitive": "LINEAR",
+      "record_sha256": "55536b208cee54f990c464a4ed0960c72e9561799732bf5151f965cfa62dbc81",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x4100",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 16,
+      "left_sha256": "a248aab60cba34e135aea672ad62c38df031c80685b67ea9a6509dc6f19524b6",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "c70925d9db55027c14a49788e839db2201d64bb5f674720c9c320ab6762926d0",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4100",
+        "pairwise_float32_then_bfloat16": "0x4100",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 2,
+      "case": "grouped_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 16,
+      "left_sha256": "a248aab60cba34e135aea672ad62c38df031c80685b67ea9a6509dc6f19524b6",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "4a8b32169cccf0ee0ce3d92abacffbb90dce3d53985d4ca5db3561b67669d30e",
+      "right_sha256": "d6d7c5a3e146b693b221e81465a3c44e8bc35bbb086b998b20d29eea4e9e0cec"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc6dc",
+        "exact_sum_then_bfloat16": "0xc6dc",
+        "pairwise_float32_then_bfloat16": "0xc6dc",
+        "sequential_bfloat16": "0xc6dd",
+        "sequential_float32_then_bfloat16": "0xc6dc"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc6dc",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc6dc",
+      "inner_dimension": 16,
+      "left_sha256": "5c1c33fac1f9e278d6149efa8603efe037fd2e8a4a7578992ab5d0df5fe9ba9d",
+      "primitive": "LINEAR",
+      "record_sha256": "6aaa712f14614607625562b79e5c4486cb16ce1a3559235d2a348e023876e678",
+      "right_sha256": "d9a81dae5a132a00315bf49d1015716ada02fa2aeaf6666fac3cc51a8631e72d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc6dc",
+        "exact_sum_then_bfloat16": "0xc6dc",
+        "pairwise_float32_then_bfloat16": "0xc6dc",
+        "sequential_bfloat16": "0xc6dd",
+        "sequential_float32_then_bfloat16": "0xc6dc"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc6dc",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc6dc",
+      "inner_dimension": 16,
+      "left_sha256": "5c1c33fac1f9e278d6149efa8603efe037fd2e8a4a7578992ab5d0df5fe9ba9d",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "2491237108f1d4ff683982d191b385c5ccaa37fbbaf39466c0ff3f82ae6c8823",
+      "right_sha256": "d9a81dae5a132a00315bf49d1015716ada02fa2aeaf6666fac3cc51a8631e72d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc6dc",
+        "exact_sum_then_bfloat16": "0xc6dc",
+        "pairwise_float32_then_bfloat16": "0xc6dc",
+        "sequential_bfloat16": "0xc6dd",
+        "sequential_float32_then_bfloat16": "0xc6dc"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_16",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc6dc",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc6dc",
+      "inner_dimension": 16,
+      "left_sha256": "5c1c33fac1f9e278d6149efa8603efe037fd2e8a4a7578992ab5d0df5fe9ba9d",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "2ae167e95c781809ccb0d5c4b9820d7d527476d8bc8228b00bcc9038b0b25812",
+      "right_sha256": "d9a81dae5a132a00315bf49d1015716ada02fa2aeaf6666fac3cc51a8631e72d"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_32",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4080",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 32,
+      "left_sha256": "81b13e55506dfe0c160fd98019909342e9c13c98a3099a56737cf3b269d86507",
+      "primitive": "LINEAR",
+      "record_sha256": "7ca06ef1bf596ce2667329eb554b198459996b8c3f5ce5e82d34ed0984ca8952",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_32",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 32,
+      "left_sha256": "81b13e55506dfe0c160fd98019909342e9c13c98a3099a56737cf3b269d86507",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "733a29603d1e6678b5abc254d903cbd57253441204486ed30e4d0cf38da1f676",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4000",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_32",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 32,
+      "left_sha256": "81b13e55506dfe0c160fd98019909342e9c13c98a3099a56737cf3b269d86507",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "fcdbbe755a35200d380373c7b244e7383aa13c7a32fb38c7a393a98cc4c88fa5",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x4180",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_32",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4100",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 32,
+      "left_sha256": "05cd431453657571360e9de98820f76bc4072c59627fd40741ef178d99ffbd9a",
+      "primitive": "LINEAR",
+      "record_sha256": "8c8f4e68efb69f6f77ed153dec65aec6b7a6c7a29a1192c1ddbfe5bee882e8d5",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x4180",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_32",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 32,
+      "left_sha256": "05cd431453657571360e9de98820f76bc4072c59627fd40741ef178d99ffbd9a",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "c0769060879683b552f8b3a5f7d92cb7b17197f5a39b8497eac3ea8c47e65b66",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4180",
+        "pairwise_float32_then_bfloat16": "0x4180",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_32",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 32,
+      "left_sha256": "05cd431453657571360e9de98820f76bc4072c59627fd40741ef178d99ffbd9a",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "2ca0520c0bfd6c5fa818b18fb35069ea233ae7678bf1f6a3c8057d1ace7dbfb6",
+      "right_sha256": "59ac072489d1b3baf66f3f08cbf279e2113111e1314bc7e5a8d94d5509997b94"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc730",
+        "exact_sum_then_bfloat16": "0xc730",
+        "pairwise_float32_then_bfloat16": "0xc730",
+        "sequential_bfloat16": "0xc72f",
+        "sequential_float32_then_bfloat16": "0xc730"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_32",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc730",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc730",
+      "inner_dimension": 32,
+      "left_sha256": "a9ca020e2862cf0011944af1956ddc608ff9399803e872314ada1e16e47d548c",
+      "primitive": "LINEAR",
+      "record_sha256": "92b3b0852b363ad3dac6ebff978c07052c7652d7403109435b4c51517b9db70c",
+      "right_sha256": "b0ed382b58621b8a5972162fcc23fa8cb6f0674c60b7720ac8fbb863009c6fe3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc730",
+        "exact_sum_then_bfloat16": "0xc730",
+        "pairwise_float32_then_bfloat16": "0xc730",
+        "sequential_bfloat16": "0xc72f",
+        "sequential_float32_then_bfloat16": "0xc730"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_32",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc730",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc730",
+      "inner_dimension": 32,
+      "left_sha256": "a9ca020e2862cf0011944af1956ddc608ff9399803e872314ada1e16e47d548c",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "ba98fe2c29f8f90569403537b20ebb25967b38131769de65eb0263d5d2c8b221",
+      "right_sha256": "b0ed382b58621b8a5972162fcc23fa8cb6f0674c60b7720ac8fbb863009c6fe3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc730",
+        "exact_sum_then_bfloat16": "0xc730",
+        "pairwise_float32_then_bfloat16": "0xc730",
+        "sequential_bfloat16": "0xc72f",
+        "sequential_float32_then_bfloat16": "0xc730"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_32",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc730",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc730",
+      "inner_dimension": 32,
+      "left_sha256": "a9ca020e2862cf0011944af1956ddc608ff9399803e872314ada1e16e47d548c",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "3da685b099046ce3d2a3ef8802ebd764b3b64824e90785bffdd985600a973e00",
+      "right_sha256": "b0ed382b58621b8a5972162fcc23fa8cb6f0674c60b7720ac8fbb863009c6fe3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_64",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4100",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 64,
+      "left_sha256": "0477551d20c4642e777ae61f5fcef767b2dfe7b4ea72b9e417c95767d20abc6c",
+      "primitive": "LINEAR",
+      "record_sha256": "9baba2ef36e5c7cabdecedf47da2fc94537483864765c2bd514890f178375188",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_64",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 64,
+      "left_sha256": "0477551d20c4642e777ae61f5fcef767b2dfe7b4ea72b9e417c95767d20abc6c",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "f548dfa40dff353a384d22b2fb02524deef0f7ec657253b04dad169382fce270",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4080",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_64",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 64,
+      "left_sha256": "0477551d20c4642e777ae61f5fcef767b2dfe7b4ea72b9e417c95767d20abc6c",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "a6d4474bae5749b79e502e72438e32d9a4fa6df2ccb925aeb7dc20bdc5fa1714",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x4200",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_64",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4180",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 64,
+      "left_sha256": "be989e69caf8ffa737431f79a47a969629859de195ee6c21da4469d73e804913",
+      "primitive": "LINEAR",
+      "record_sha256": "aaf48b79ea4114e0e3c151d4407c5c143677455c122a59edb58d1dd93370bbed",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x4200",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_64",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 64,
+      "left_sha256": "be989e69caf8ffa737431f79a47a969629859de195ee6c21da4469d73e804913",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "9b4e5eabc32072398de651ecc685b717e4a3a5562c15393c964bd6dded167664",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4200",
+        "pairwise_float32_then_bfloat16": "0x4200",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_64",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 64,
+      "left_sha256": "be989e69caf8ffa737431f79a47a969629859de195ee6c21da4469d73e804913",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "266e54741e89aa9c289f7c9bf79d5d5d54660c0e5d4abd8fca1c1e1cc78d666f",
+      "right_sha256": "a1dea9f1a327bebc4e16a1598bc0c183c8f29f512aafad786d48ca643f15326a"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc7b2",
+        "exact_sum_then_bfloat16": "0xc7b2",
+        "pairwise_float32_then_bfloat16": "0xc7b2",
+        "sequential_bfloat16": "0xc7b1",
+        "sequential_float32_then_bfloat16": "0xc7b2"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_64",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc7b2",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc7b2",
+      "inner_dimension": 64,
+      "left_sha256": "584029ae9428576d5e4073aeec2d82800affc8919b97a2ebd08833ab0b0c098f",
+      "primitive": "LINEAR",
+      "record_sha256": "d1cfc19c2af400ce030822d070583d522df4a64464fc5b066dd561f10005be7a",
+      "right_sha256": "19b17b5a3aec225ccd49e888e75481c277db23e0d364fc6441653613292a01b0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc7b2",
+        "exact_sum_then_bfloat16": "0xc7b2",
+        "pairwise_float32_then_bfloat16": "0xc7b2",
+        "sequential_bfloat16": "0xc7b1",
+        "sequential_float32_then_bfloat16": "0xc7b2"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_64",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc7b2",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc7b2",
+      "inner_dimension": 64,
+      "left_sha256": "584029ae9428576d5e4073aeec2d82800affc8919b97a2ebd08833ab0b0c098f",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "c9ec9800474405c72d287a667f7c5591188e05be3229ce1767b56d647545795d",
+      "right_sha256": "19b17b5a3aec225ccd49e888e75481c277db23e0d364fc6441653613292a01b0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc7b2",
+        "exact_sum_then_bfloat16": "0xc7b2",
+        "pairwise_float32_then_bfloat16": "0xc7b2",
+        "sequential_bfloat16": "0xc7b1",
+        "sequential_float32_then_bfloat16": "0xc7b2"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_64",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc7b2",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc7b2",
+      "inner_dimension": 64,
+      "left_sha256": "584029ae9428576d5e4073aeec2d82800affc8919b97a2ebd08833ab0b0c098f",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "014e6fc648a0f6ad829afe9c5c1a5c7a7da5f192031f09010f0d74bb32ef4fbb",
+      "right_sha256": "19b17b5a3aec225ccd49e888e75481c277db23e0d364fc6441653613292a01b0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_128",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4180",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 128,
+      "left_sha256": "f9dcdf2f795bb8811a3ae8a0e52e057c7fa7dc7d8b93b7fc180310876c3811ac",
+      "primitive": "LINEAR",
+      "record_sha256": "3b51a0d3d1eaeb25cb7cd4d0ac885bfa8ebefebdbd3c329b1da65b254be94d93",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_128",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 128,
+      "left_sha256": "f9dcdf2f795bb8811a3ae8a0e52e057c7fa7dc7d8b93b7fc180310876c3811ac",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "2e2c42eae291d2e2e6499692a6bf005c44bb3406587605dd41df5c3650b8c92c",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4100",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_128",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 128,
+      "left_sha256": "f9dcdf2f795bb8811a3ae8a0e52e057c7fa7dc7d8b93b7fc180310876c3811ac",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "b2d2e1c17c0993e52e365c0a4fe80fd1fb652e04679db0cc87598c12b6d9c8dc",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x4280",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_128",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4200",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 128,
+      "left_sha256": "13d406d0242729c3abacc20a862f840a64192a4801bff5b9697fafa9a9c9d8c1",
+      "primitive": "LINEAR",
+      "record_sha256": "8f705dba5a20e6eab2a3f75577b610a388db54f1b8a98b568c62096680eb3088",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x4280",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_128",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 128,
+      "left_sha256": "13d406d0242729c3abacc20a862f840a64192a4801bff5b9697fafa9a9c9d8c1",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "8ac4d78369c259eb10b30ea214ba97ee8346189248eb5c57852d016c5e51025b",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4280",
+        "pairwise_float32_then_bfloat16": "0x4280",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_128",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4000",
+      "inner_dimension": 128,
+      "left_sha256": "13d406d0242729c3abacc20a862f840a64192a4801bff5b9697fafa9a9c9d8c1",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "f6a92c95484bc4e6642b10558d1da657fb7e067c9d1101514ba130d255721578",
+      "right_sha256": "4172e00d1337cff391ba5f9e7e6f5324a5ae4262a3ac81b5cc5255c6572d52f8"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc813",
+        "exact_sum_then_bfloat16": "0xc813",
+        "pairwise_float32_then_bfloat16": "0xc813",
+        "sequential_bfloat16": "0xc811",
+        "sequential_float32_then_bfloat16": "0xc813"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_128",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc813",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc813",
+      "inner_dimension": 128,
+      "left_sha256": "db1b884bab017fa804e322d5cf4d4ac465f07103f092732371d55a45a375cb8d",
+      "primitive": "LINEAR",
+      "record_sha256": "685ec16871810ed3fd528e05b696bdd17b452ae9ccdf7f2aa22bdb84f871819e",
+      "right_sha256": "ee3417a24356dd679444e61fb11c8022caacb95eff0ee3212bd22163427f7825"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc813",
+        "exact_sum_then_bfloat16": "0xc813",
+        "pairwise_float32_then_bfloat16": "0xc813",
+        "sequential_bfloat16": "0xc811",
+        "sequential_float32_then_bfloat16": "0xc813"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_128",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc813",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc813",
+      "inner_dimension": 128,
+      "left_sha256": "db1b884bab017fa804e322d5cf4d4ac465f07103f092732371d55a45a375cb8d",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "7b440b9172d42c5ed5b37e1c56291698dcd2e26bf5d35040c3d586b25c16a40c",
+      "right_sha256": "ee3417a24356dd679444e61fb11c8022caacb95eff0ee3212bd22163427f7825"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc813",
+        "exact_sum_then_bfloat16": "0xc813",
+        "pairwise_float32_then_bfloat16": "0xc813",
+        "sequential_bfloat16": "0xc811",
+        "sequential_float32_then_bfloat16": "0xc813"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_128",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc813",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc813",
+      "inner_dimension": 128,
+      "left_sha256": "db1b884bab017fa804e322d5cf4d4ac465f07103f092732371d55a45a375cb8d",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "0fa2ac695b6b85c6daa17df2f12f8555b9532bf4d97dc1fb5d1d61903e6de288",
+      "right_sha256": "ee3417a24356dd679444e61fb11c8022caacb95eff0ee3212bd22163427f7825"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_256",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4200",
+      "cuda_matching_candidates": [
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x0000",
+      "inner_dimension": 256,
+      "left_sha256": "ded0826d540a069e5e4ea978abb36c0c6c39b8faba80d7273447846f58d4965d",
+      "primitive": "LINEAR",
+      "record_sha256": "dba8b8bc770a14ab7d705e62e8281ba91af1803e214d3c4f55688b164bbc964a",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_256",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x0000",
+      "inner_dimension": 256,
+      "left_sha256": "ded0826d540a069e5e4ea978abb36c0c6c39b8faba80d7273447846f58d4965d",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "5f34cd2a0db445557f6f03ff84460da3ffbbba5ed3254b5eef97f5d266dafed0",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4180",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_256",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x3f80",
+      "cuda_matching_candidates": [
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x0000",
+      "inner_dimension": 256,
+      "left_sha256": "ded0826d540a069e5e4ea978abb36c0c6c39b8faba80d7273447846f58d4965d",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "54fd883562b0c4cc1d05397a65d3088e0b3335456b3ce1578404b5443ccb9eb1",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4200",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x4300",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_256",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4280",
+      "cuda_matching_candidates": [
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4300",
+      "inner_dimension": 256,
+      "left_sha256": "4aa361f4e6d6e3f452f1d8d10149192b060517dff347e8ffe12a471cc62fd3d4",
+      "primitive": "LINEAR",
+      "record_sha256": "c8779050abb2ccce2ea353aaf97bff9a1e711d8c7070296c99f8e8701f046a7e",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4200",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x4300",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_256",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4300",
+      "inner_dimension": 256,
+      "left_sha256": "4aa361f4e6d6e3f452f1d8d10149192b060517dff347e8ffe12a471cc62fd3d4",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "f4a2aa30d7659ad05cb5b0fa5c28e6849c1815484a386c2c3521df07bff216c5",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4200",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x4300",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_256",
+      "cpu_matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4000",
+      "cuda_matching_candidates": [
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cuda_result": "0x4300",
+      "inner_dimension": 256,
+      "left_sha256": "4aa361f4e6d6e3f452f1d8d10149192b060517dff347e8ffe12a471cc62fd3d4",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "8888faccfcf28e62ecaaa69c3ed71561bc059b1e60683556ce437c902781023e",
+      "right_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc83b",
+        "exact_sum_then_bfloat16": "0xc83b",
+        "pairwise_float32_then_bfloat16": "0xc83b",
+        "sequential_bfloat16": "0xc837",
+        "sequential_float32_then_bfloat16": "0xc83b"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_256",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc83b",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc83b",
+      "inner_dimension": 256,
+      "left_sha256": "ca9333a1ec708815bef027055d7b9d3e1a68f2d6e53f30bfac0431a8031a0c77",
+      "primitive": "LINEAR",
+      "record_sha256": "05b273cf4f2701623a0fa32e8f468947edad23240bb799d1fc2bce8f7d28f944",
+      "right_sha256": "de0963e099994486658a20b1d79edf0ad686b05a4093f3405173d1726a3875b3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc83b",
+        "exact_sum_then_bfloat16": "0xc83b",
+        "pairwise_float32_then_bfloat16": "0xc83b",
+        "sequential_bfloat16": "0xc837",
+        "sequential_float32_then_bfloat16": "0xc83b"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_256",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc83b",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc83b",
+      "inner_dimension": 256,
+      "left_sha256": "ca9333a1ec708815bef027055d7b9d3e1a68f2d6e53f30bfac0431a8031a0c77",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "d6881dc79ee0244490dc0e735f8f305d8378958159d2dfa13b798a91b081220e",
+      "right_sha256": "de0963e099994486658a20b1d79edf0ad686b05a4093f3405173d1726a3875b3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc83b",
+        "exact_sum_then_bfloat16": "0xc83b",
+        "pairwise_float32_then_bfloat16": "0xc83b",
+        "sequential_bfloat16": "0xc837",
+        "sequential_float32_then_bfloat16": "0xc83b"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_256",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc83b",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc83b",
+      "inner_dimension": 256,
+      "left_sha256": "ca9333a1ec708815bef027055d7b9d3e1a68f2d6e53f30bfac0431a8031a0c77",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "b6ce96496039459766131f5d91ac2431d1c49b903028a42071f22b818163b181",
+      "right_sha256": "de0963e099994486658a20b1d79edf0ad686b05a4093f3405173d1726a3875b3"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4220",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_640",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x42a0",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4000",
+      "inner_dimension": 640,
+      "left_sha256": "64e1fac186a7da9013820ce7ca96a5cf186434c58a987a703b2fa3ab8d299bac",
+      "primitive": "LINEAR",
+      "record_sha256": "2d4822bc5ce161ace963cbfe92572ec78b74ef5e2b3c8453f9402731481e52ea",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4220",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_640",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x42a0",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4000",
+      "inner_dimension": 640,
+      "left_sha256": "64e1fac186a7da9013820ce7ca96a5cf186434c58a987a703b2fa3ab8d299bac",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "13b257291cb3648a0d508cd595f0d77ed966bbd7e04768e595ca5a5e9d3f2411",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4220",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_640",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4320",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4000",
+      "inner_dimension": 640,
+      "left_sha256": "64e1fac186a7da9013820ce7ca96a5cf186434c58a987a703b2fa3ab8d299bac",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "83b712db0c54f19f5e27b1e5eaa18b44d78932995c9547d56bad0a31ffe39e95",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_640",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4320",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 640,
+      "left_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "primitive": "LINEAR",
+      "record_sha256": "0d5c5c72778dc76386bb526b3376426b081b34fd1c90265c79c925ece1da9a7b",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_640",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4320",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 640,
+      "left_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "827c3be63f9172aac9290bf9651ddfc364f194383c3970011af069a24a4e09e8",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_640",
+      "cpu_matching_candidates": [
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x43a0",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x3f80",
+      "inner_dimension": 640,
+      "left_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "6ed6147b501ae081946081eebe076a391a2b006b6b798aa0698b3d9a22d78abb",
+      "right_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc919",
+        "exact_sum_then_bfloat16": "0xc919",
+        "pairwise_float32_then_bfloat16": "0xc919",
+        "sequential_bfloat16": "0xc917",
+        "sequential_float32_then_bfloat16": "0xc919"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_640",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc919",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc919",
+      "inner_dimension": 640,
+      "left_sha256": "663ce0cde9e7b9b1bc91d3321be4223b3556a4ab7971bcc256e92c62445abe21",
+      "primitive": "LINEAR",
+      "record_sha256": "03190260c26026c1540bb9f627c55840ef4b19d65b293032265cad813b59a3d9",
+      "right_sha256": "d629f3a7ab5d30c6548cfd9b08047cd07d836ee0bd19752ef8a3f2b4a9065efd"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc919",
+        "exact_sum_then_bfloat16": "0xc919",
+        "pairwise_float32_then_bfloat16": "0xc919",
+        "sequential_bfloat16": "0xc917",
+        "sequential_float32_then_bfloat16": "0xc919"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_640",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc919",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc919",
+      "inner_dimension": 640,
+      "left_sha256": "663ce0cde9e7b9b1bc91d3321be4223b3556a4ab7971bcc256e92c62445abe21",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "02552497e558742305fe02c06559d1c3238a7b903648a5341e90189616b987b7",
+      "right_sha256": "d629f3a7ab5d30c6548cfd9b08047cd07d836ee0bd19752ef8a3f2b4a9065efd"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc919",
+        "exact_sum_then_bfloat16": "0xc919",
+        "pairwise_float32_then_bfloat16": "0xc919",
+        "sequential_bfloat16": "0xc917",
+        "sequential_float32_then_bfloat16": "0xc919"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_640",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc919",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc919",
+      "inner_dimension": 640,
+      "left_sha256": "663ce0cde9e7b9b1bc91d3321be4223b3556a4ab7971bcc256e92c62445abe21",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "5c1d31b19de528a7b32fb07cc4c595e5c5cde5d3209d2c9e004e2a8ea440febd",
+      "right_sha256": "d629f3a7ab5d30c6548cfd9b08047cd07d836ee0bd19752ef8a3f2b4a9065efd"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4300",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_2048",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4380",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4040",
+      "inner_dimension": 2048,
+      "left_sha256": "0e4fe00e849f3b58f8888db4cd179122867fdfc218111f4f92bb07e8d7f61aa9",
+      "primitive": "LINEAR",
+      "record_sha256": "278081695e681ab080ae9f57dc683a23a7e5757efa3e7e814a21646d1bcc06aa",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4300",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_2048",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4380",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4040",
+      "inner_dimension": 2048,
+      "left_sha256": "0e4fe00e849f3b58f8888db4cd179122867fdfc218111f4f92bb07e8d7f61aa9",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "657ef31f41e2f2594b9f3e9c65613db4f762425436842307463fbbda7e2dd6f5",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4300",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x0000",
+        "sequential_bfloat16": "0x3f80",
+        "sequential_float32_then_bfloat16": "0x3f80"
+      },
+      "candidate_results_distinct": 4,
+      "case": "cancellation_2048",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4400",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x4040",
+      "inner_dimension": 2048,
+      "left_sha256": "0e4fe00e849f3b58f8888db4cd179122867fdfc218111f4f92bb07e8d7f61aa9",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "462396760a99507b83160468f5db393285f432826ccc0ed86ba16c39505f6764",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4380",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x4480",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_2048",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4400",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x0000",
+      "inner_dimension": 2048,
+      "left_sha256": "7723a934161e4063652a23297219a17b37b05f7c6b4425c0707f3dc0e8034dd0",
+      "primitive": "LINEAR",
+      "record_sha256": "8f27162bbfdf6707dd47cb5aa4e8005395ccd68d1c0af147d1f4a8123f63c701",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4380",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x4480",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_2048",
+      "cpu_matching_candidates": [],
+      "cpu_result": "0x4400",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x0000",
+      "inner_dimension": 2048,
+      "left_sha256": "7723a934161e4063652a23297219a17b37b05f7c6b4425c0707f3dc0e8034dd0",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "9448b215b47d5e8a408ac235559c6b97304ea04ca8e583bdb95003d3e12feef4",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4380",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x4480",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "candidate_results_distinct": 3,
+      "case": "grouped_2048",
+      "cpu_matching_candidates": [
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16"
+      ],
+      "cpu_result": "0x4480",
+      "cuda_matching_candidates": [],
+      "cuda_result": "0x0000",
+      "inner_dimension": 2048,
+      "left_sha256": "7723a934161e4063652a23297219a17b37b05f7c6b4425c0707f3dc0e8034dd0",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "63cf0c0b89e8ad14c5a351f16906d10a4ddcbecc0b721d614a9cee624e124f45",
+      "right_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc998",
+        "exact_sum_then_bfloat16": "0xc998",
+        "pairwise_float32_then_bfloat16": "0xc998",
+        "sequential_bfloat16": "0xc98d",
+        "sequential_float32_then_bfloat16": "0xc998"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_2048",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc998",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc998",
+      "inner_dimension": 2048,
+      "left_sha256": "b95faa6cb9b4462fd0f76d57c6b971d7b62c4c3ccddbeda17b7303c80394ac89",
+      "primitive": "LINEAR",
+      "record_sha256": "6d867cd7e9bd0036bdce5afcc0c9998d56e2cf339356065bd68a15cc797fc3aa",
+      "right_sha256": "423efea0d48f59b50c9a8055eb5e0b5e7dec4a2a3c45884020eaf0cd14d67241"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc998",
+        "exact_sum_then_bfloat16": "0xc998",
+        "pairwise_float32_then_bfloat16": "0xc998",
+        "sequential_bfloat16": "0xc98d",
+        "sequential_float32_then_bfloat16": "0xc998"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_2048",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc998",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc998",
+      "inner_dimension": 2048,
+      "left_sha256": "b95faa6cb9b4462fd0f76d57c6b971d7b62c4c3ccddbeda17b7303c80394ac89",
+      "primitive": "MATMUL_QK",
+      "record_sha256": "33133a89bd80187de93b40cc79143ad357e91a1cf360cdbc4b36ce4f0d5229dd",
+      "right_sha256": "423efea0d48f59b50c9a8055eb5e0b5e7dec4a2a3c45884020eaf0cd14d67241"
+    },
+    {
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc998",
+        "exact_sum_then_bfloat16": "0xc998",
+        "pairwise_float32_then_bfloat16": "0xc998",
+        "sequential_bfloat16": "0xc98d",
+        "sequential_float32_then_bfloat16": "0xc998"
+      },
+      "candidate_results_distinct": 2,
+      "case": "pseudo_2048",
+      "cpu_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cpu_result": "0xc998",
+      "cuda_matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "cuda_result": "0xc998",
+      "inner_dimension": 2048,
+      "left_sha256": "b95faa6cb9b4462fd0f76d57c6b971d7b62c4c3ccddbeda17b7303c80394ac89",
+      "primitive": "MATMUL_AV",
+      "record_sha256": "96d63f56d71f89ba6d23a32f88e8565943ef2210f9a80c49bd935f316d529799",
+      "right_sha256": "423efea0d48f59b50c9a8055eb5e0b5e7dec4a2a3c45884020eaf0cd14d67241"
+    }
+  ],
+  "reduction_order_semantics_established": false,
+  "schema_version": 1,
+  "scope": "Bounded characterization of bfloat16 LINEAR, MATMUL_QK, and MATMUL_AV outputs against explicit exact-sum, sequential, pairwise, block-16, and bfloat16 reduction candidates; no candidate is promoted to deployed reduction semantics.",
+  "tensor_core_semantics_established": false,
+  "unique_reduction_profile_identified": false
+}

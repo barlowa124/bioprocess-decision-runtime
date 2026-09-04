@@ -340,6 +340,7 @@ def build_primitive_qualification_gate(
     program: dict[str, Any],
     certificate: dict[str, Any],
     bfloat16_certificate: dict[str, Any],
+    reduction_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -353,9 +354,21 @@ def build_primitive_qualification_gate(
     )
     if not bfloat16_qualification["valid"]:
         raise ValueError("Bfloat16 semantics certificate is invalid")
+    from .gemma_reduction_semantics import (
+        verify_reduction_characterization_certificate,
+    )
+
+    reduction_qualification = verify_reduction_characterization_certificate(
+        reduction_certificate
+    )
+    if not reduction_qualification["valid"]:
+        raise ValueError("Reduction characterization certificate is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
+    characterized_reductions = sorted(
+        set(reached) & {"LINEAR", "MATMUL_QK", "MATMUL_AV"}
+    )
     unresolved = sorted(set(reached) - EXACT_INDEX_OPCODES)
     body = {
         "schema_version": 1,
@@ -365,16 +378,25 @@ def build_primitive_qualification_gate(
         "bfloat16_semantics_certificate_sha256": bfloat16_certificate[
             "certificate_sha256"
         ],
+        "reduction_characterization_certificate_sha256": reduction_certificate[
+            "certificate_sha256"
+        ],
         "reached_opcodes": reached,
         "independently_tested_index_opcodes": independently_tested,
         "independently_specified_finite_bfloat16_opcodes": specified_bfloat16,
         "bounded_cpu_cuda_conformant_bfloat16_opcodes": specified_bfloat16,
+        "bounded_characterized_reduction_opcodes": characterized_reductions,
         "unrestricted_floating_point_opcodes": unresolved,
         "reached_opcode_count": len(reached),
         "independently_tested_opcode_count": len(independently_tested),
         "independently_specified_finite_bfloat16_opcode_count": len(
             specified_bfloat16
         ),
+        "bounded_characterized_reduction_opcode_count": len(
+            characterized_reductions
+        ),
+        "unique_reduction_profile_identified": False,
+        "reduction_order_semantics_established": False,
         "all_reached_primitive_semantics_qualified": False,
         "complete_bfloat16_binary_truth_tables_established": False,
         "bit_exact_numerical_execution_qualified": False,
@@ -387,11 +409,12 @@ def verify_primitive_qualification_gate(
     program: dict[str, Any],
     certificate: dict[str, Any],
     bfloat16_certificate: dict[str, Any],
+    reduction_certificate: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
         expected = build_primitive_qualification_gate(
-            program, certificate, bfloat16_certificate
+            program, certificate, bfloat16_certificate, reduction_certificate
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -414,6 +437,15 @@ def verify_primitive_qualification_gate(
         ],
         "independently_specified_finite_bfloat16_opcode_count": expected[
             "independently_specified_finite_bfloat16_opcode_count"
+        ],
+        "bounded_characterized_reduction_opcode_count": expected[
+            "bounded_characterized_reduction_opcode_count"
+        ],
+        "unique_reduction_profile_identified": expected[
+            "unique_reduction_profile_identified"
+        ],
+        "reduction_order_semantics_established": expected[
+            "reduction_order_semantics_established"
         ],
         "unrestricted_floating_point_opcode_count": len(
             expected["unrestricted_floating_point_opcodes"]

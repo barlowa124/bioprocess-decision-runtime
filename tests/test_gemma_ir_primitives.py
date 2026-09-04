@@ -28,10 +28,14 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
         from bioprocess_runtime.gemma_ir_primitives import (
             build_primitive_qualification_certificate,
         )
+        from bioprocess_runtime.gemma_reduction_semantics import (
+            build_reduction_characterization_certificate,
+        )
 
         cls.program = json.loads(PROGRAM.read_text(encoding="utf-8"))
         cls.certificate = build_primitive_qualification_certificate()
         cls.bfloat16_certificate = build_bfloat16_semantics_certificate()
+        cls.reduction_certificate = build_reduction_characterization_certificate()
 
     def test_independent_index_oracles_reexecute_exactly(self) -> None:
         from bioprocess_runtime.gemma_ir_primitives import (
@@ -94,10 +98,17 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
         )
 
         gate = build_primitive_qualification_gate(
-            self.program, self.certificate, self.bfloat16_certificate
+            self.program,
+            self.certificate,
+            self.bfloat16_certificate,
+            self.reduction_certificate,
         )
         verification = verify_primitive_qualification_gate(
-            self.program, self.certificate, self.bfloat16_certificate, gate
+            self.program,
+            self.certificate,
+            self.bfloat16_certificate,
+            self.reduction_certificate,
+            gate,
         )
         self.assertTrue(verification["valid"], verification)
         self.assertEqual(verification["independently_tested_opcode_count"], 8)
@@ -105,6 +116,9 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             verification["independently_specified_finite_bfloat16_opcode_count"],
             3,
         )
+        self.assertEqual(verification["bounded_characterized_reduction_opcode_count"], 3)
+        self.assertFalse(verification["unique_reduction_profile_identified"])
+        self.assertFalse(verification["reduction_order_semantics_established"])
         self.assertEqual(verification["unrestricted_floating_point_opcode_count"], 11)
         self.assertFalse(verification["all_reached_primitive_semantics_qualified"])
         self.assertFalse(verification["global_exactness_activation_allowed"])
@@ -118,7 +132,10 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
         )
 
         gate = build_primitive_qualification_gate(
-            self.program, self.certificate, self.bfloat16_certificate
+            self.program,
+            self.certificate,
+            self.bfloat16_certificate,
+            self.reduction_certificate,
         )
         damaged = copy.deepcopy(gate)
         damaged["global_exactness_activation_allowed"] = True
@@ -128,6 +145,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.program,
             self.certificate,
             self.bfloat16_certificate,
+            self.reduction_certificate,
             damaged,
         )
         self.assertFalse(verification["valid"])

@@ -2,13 +2,19 @@
   "all_reached_primitive_semantics_qualified": false,
   "bfloat16_semantics_certificate_sha256": "570b7bb7db4e6681f203fd52ef9737e1a6c9f48757a6594c77bd1c4466bfc630",
   "bit_exact_numerical_execution_qualified": false,
+  "bounded_characterized_reduction_opcode_count": 3,
+  "bounded_characterized_reduction_opcodes": [
+    "LINEAR",
+    "MATMUL_AV",
+    "MATMUL_QK"
+  ],
   "bounded_cpu_cuda_conformant_bfloat16_opcodes": [
     "ADD",
     "MUL",
     "SCALE"
   ],
   "complete_bfloat16_binary_truth_tables_established": false,
-  "gate_sha256": "548fa56e6295f9013bf2361706366abed0dbc837a3722a4352016849a1ba6fb7",
+  "gate_sha256": "c05396cdbc9f784c3bda599ce5d26ec627721ddf2c3dda50f5dee52a1ddbe79f",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -51,8 +57,11 @@
     "SOFTMAX",
     "TRANSPOSE_RESHAPE_HEADS"
   ],
+  "reduction_characterization_certificate_sha256": "640760f05eeb14fb056379edf39280839e5cbfc3f192c984d098bea6fed96e8a",
+  "reduction_order_semantics_established": false,
   "schema_version": 1,
   "scope": "Qualification gate for primitive opcodes reached by one canonical Gemma IR; independently tested indexing/data-movement primitives remain distinct from unresolved floating-point semantics.",
+  "unique_reduction_profile_identified": false,
   "unrestricted_floating_point_opcodes": [
     "ADD",
     "GELU_TANH",
