@@ -1,0 +1,108 @@
+{
+  "deployed_sdpa_correspondence_established": false,
+  "execution_profile": "huggingface_eager",
+  "execution_root_sha256": "a46ee97734d43c860b77384a2a1b71249ae2009e396027bfd2270d64f489521c",
+  "first_divergence": null,
+  "fixed_input_canonical_eager_prediction_established": true,
+  "full_execution_records_committed": false,
+  "hardware_instruction_semantics_established": false,
+  "input_ids": {
+    "device": "cuda:0",
+    "dtype": "torch.int64",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 30,
+    "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+    "shape": [
+      1,
+      30
+    ]
+  },
+  "input_token_ids": [
+    [
+      2,
+      105,
+      2364,
+      107,
+      818,
+      12123,
+      6013,
+      563,
+      236743,
+      236800,
+      236771,
+      3591,
+      532,
+      45261,
+      236761,
+      14300,
+      672,
+      1660,
+      3540,
+      236881,
+      25685,
+      8438,
+      653,
+      2301,
+      236761,
+      106,
+      107,
+      105,
+      4368,
+      107
+    ]
+  ],
+  "instruction_coverage_complete": true,
+  "instruction_coverage_count": 533,
+  "logits_bit_exact": true,
+  "model_state_sha256": "dc9cb520fe40ed2118776131aeef0d437bd7ba3576350da67255fdd8482e64ad",
+  "observed_logits": {
+    "device": "cuda:0",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 262144,
+    "sha256": "62bcef43c63c1381cbfdc1d752bd8ce71e68e96c96351a560a52b3d203f5c6d4",
+    "shape": [
+      1,
+      1,
+      262144
+    ]
+  },
+  "observed_token_ids": [
+    10784
+  ],
+  "predicted_logits": {
+    "device": "cuda:0",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 262144,
+    "sha256": "62bcef43c63c1381cbfdc1d752bd8ce71e68e96c96351a560a52b3d203f5c6d4",
+    "shape": [
+      1,
+      1,
+      262144
+    ]
+  },
+  "predicted_token_ids": [
+    10784
+  ],
+  "predicted_token_ids_descriptor": {
+    "device": "cuda:0",
+    "dtype": "torch.int64",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 1,
+    "sha256": "cfc52d236fe745b7dfe5a76c7c725c7def053d060d389b7e2306c1dfc919fd52",
+    "shape": [
+      1
+    ]
+  },
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "schema_version": 1,
+  "scope": "Compact fixed-input commitment to a bit-exact typed-IR prediction against pinned Hugging Face eager execution; full instruction records are omitted and no SDPA, fused-kernel, hardware-semantic, scientific, or regulatory equivalence is established.",
+  "selected_tokens_exact": true,
+  "source_certificate_sha256": "3cdff8b6578aa96fcbda3d5d8dadca1f5ab1b163ffac1262af1223f19c97faa7",
+  "summary_sha256": "67b737b4d932c9c89436e6285f72c415787999e0921f0875bec24cd12a514e17"
+}

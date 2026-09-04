@@ -383,6 +383,140 @@ def command_reference_summary(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_gemma_ir_compile(args: argparse.Namespace) -> int:
+    from .gemma_ir import compile_gemma_ir, verify_gemma_ir
+
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    program = compile_gemma_ir(manifest)
+    verification = verify_gemma_ir(program, manifest)
+    _write_json(args.output, program)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir import verify_gemma_ir
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    verification = verify_gemma_ir(program, manifest)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_rationale(args: argparse.Namespace) -> int:
+    from .gemma_ir import build_rationale_slice, verify_rationale_slice
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    rationale = build_rationale_slice(program, args.output_tensor)
+    verification = verify_rationale_slice(program, rationale)
+    _write_json(args.output, rationale)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_rationale_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir import verify_rationale_slice
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    rationale = json.loads(args.rationale.read_text(encoding="utf-8"))
+    verification = verify_rationale_slice(program, rationale)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_predict(args: argparse.Namespace) -> int:
+    import torch
+
+    from .gemma_ir_interpreter import (
+        bind_model_tensors,
+        build_ir_execution_certificate,
+        execute_gemma_ir,
+        verify_ir_execution_certificate,
+    )
+    from .interpretability import _model_device, _tokenize, load_local_gemma
+    from .reference_gemma import model_state_sha256
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else args.prompt
+    model, tokenizer = load_local_gemma(args.model_path)
+    input_ids = _tokenize(tokenizer, prompt, _model_device(model))["input_ids"]
+    parameters = bind_model_tensors(program, model)
+    original_attention = model.config._attn_implementation
+    model.config._attn_implementation = "eager"
+    try:
+        with torch.no_grad():
+            prediction = execute_gemma_ir(program, parameters, input_ids)
+            observed = model(
+                input_ids=input_ids,
+                attention_mask=torch.ones_like(input_ids),
+                use_cache=False,
+                logits_to_keep=1,
+            )
+    finally:
+        model.config._attn_implementation = original_attention
+    certificate = build_ir_execution_certificate(
+        program,
+        input_ids,
+        prediction,
+        observed.logits,
+        "huggingface_eager",
+        model_state_sha256(model),
+    )
+    verification = verify_ir_execution_certificate(program, certificate)
+    _write_json(args.output, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_execution_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir_interpreter import (
+        recompute_ir_execution_certificate,
+        verify_ir_execution_certificate,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    if args.model_path:
+        from .interpretability import load_local_gemma
+
+        model, _ = load_local_gemma(args.model_path)
+        verification = recompute_ir_execution_certificate(
+            program, certificate, model
+        )
+    else:
+        integrity = verify_ir_execution_certificate(program, certificate)
+        verification = {
+            "valid": integrity["valid"],
+            "mode": "integrity_only",
+            "reexecution_performed": False,
+            "integrity": integrity,
+            "reason": "Supply --model-path to re-execute the prediction",
+        }
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_ir_execution_summary(args: argparse.Namespace) -> int:
+    from .gemma_ir_interpreter import summarize_ir_execution
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    summary = summarize_ir_execution(program, certificate)
+    _write_json(args.output, summary)
+    return 0
+
+
+def command_gemma_ir_execution_summary_verify(args: argparse.Namespace) -> int:
+    from .gemma_ir_interpreter import verify_ir_execution_summary
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    verification = verify_ir_execution_summary(program, summary)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def _float_axis(value: str) -> tuple[float, ...]:
     return tuple(float(item.strip()) for item in value.split(",") if item.strip())
 
@@ -1190,6 +1324,53 @@ def build_parser() -> argparse.ArgumentParser:
     reference_summary_parser.add_argument("--coordinates", type=Path, required=True)
     reference_summary_parser.add_argument("--output", type=Path, required=True)
     reference_summary_parser.set_defaults(handler=command_reference_summary)
+
+    gemma_ir_parser = subparsers.add_parser("gemma-ir-compile", help="Compile a frozen Gemma architecture manifest into a typed structural execution program")
+    gemma_ir_parser.add_argument("--manifest", type=Path, required=True)
+    gemma_ir_parser.add_argument("--output", type=Path, required=True)
+    gemma_ir_parser.set_defaults(handler=command_gemma_ir_compile)
+
+    gemma_ir_verify_parser = subparsers.add_parser("gemma-ir-verify", help="Verify Gemma IR integrity, dependencies, primitive coverage, and manifest binding")
+    gemma_ir_verify_parser.add_argument("program", type=Path)
+    gemma_ir_verify_parser.add_argument("--manifest", type=Path, required=True)
+    gemma_ir_verify_parser.set_defaults(handler=command_gemma_ir_verify)
+
+    gemma_rationale_parser = subparsers.add_parser("gemma-ir-rationale", help="Derive a complete structural backward slice for one declared Gemma IR output")
+    gemma_rationale_parser.add_argument("program", type=Path)
+    gemma_rationale_parser.add_argument("--output-tensor", default="selected_token_id")
+    gemma_rationale_parser.add_argument("--output", type=Path, required=True)
+    gemma_rationale_parser.set_defaults(handler=command_gemma_ir_rationale)
+
+    gemma_rationale_verify_parser = subparsers.add_parser("gemma-ir-rationale-verify", help="Recompute and verify a Gemma IR structural rationale slice")
+    gemma_rationale_verify_parser.add_argument("program", type=Path)
+    gemma_rationale_verify_parser.add_argument("rationale", type=Path)
+    gemma_rationale_verify_parser.set_defaults(handler=command_gemma_ir_rationale_verify)
+
+    gemma_ir_predict_parser = subparsers.add_parser("gemma-ir-predict", help="Predict a prompt with the typed IR before comparing it bit-for-bit with pinned Hugging Face eager execution")
+    gemma_ir_predict_parser.add_argument("program", type=Path)
+    gemma_ir_predict_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+    gemma_ir_prompt = gemma_ir_predict_parser.add_mutually_exclusive_group(required=True)
+    gemma_ir_prompt.add_argument("--prompt")
+    gemma_ir_prompt.add_argument("--prompt-file", type=Path)
+    gemma_ir_predict_parser.add_argument("--output", type=Path, required=True)
+    gemma_ir_predict_parser.set_defaults(handler=command_gemma_ir_predict)
+
+    gemma_ir_execution_verify_parser = subparsers.add_parser("gemma-ir-execution-verify", help="Verify a fixed-input typed-IR prediction certificate and its complete instruction witness")
+    gemma_ir_execution_verify_parser.add_argument("program", type=Path)
+    gemma_ir_execution_verify_parser.add_argument("certificate", type=Path)
+    gemma_ir_execution_verify_parser.add_argument("--model-path", type=Path)
+    gemma_ir_execution_verify_parser.set_defaults(handler=command_gemma_ir_execution_verify)
+
+    gemma_ir_summary_parser = subparsers.add_parser("gemma-ir-execution-summary", help="Build a compact result from a verified full typed-IR prediction certificate")
+    gemma_ir_summary_parser.add_argument("program", type=Path)
+    gemma_ir_summary_parser.add_argument("certificate", type=Path)
+    gemma_ir_summary_parser.add_argument("--output", type=Path, required=True)
+    gemma_ir_summary_parser.set_defaults(handler=command_gemma_ir_execution_summary)
+
+    gemma_ir_summary_verify_parser = subparsers.add_parser("gemma-ir-execution-summary-verify", help="Verify a compact typed-IR prediction result")
+    gemma_ir_summary_verify_parser.add_argument("program", type=Path)
+    gemma_ir_summary_verify_parser.add_argument("summary", type=Path)
+    gemma_ir_summary_verify_parser.set_defaults(handler=command_gemma_ir_execution_summary_verify)
 
     domain_parser = subparsers.add_parser("gemma-bounded-domain", help="Exhaustively verify a declared canonical oxygen-state grid")
     domain_parser.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))

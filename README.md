@@ -339,6 +339,30 @@ This establishes exact fixed-input equivalence between two orchestration paths t
 
 The coordinate registry assigns exact architecture-defined meanings to axes such as token ID, position, query head, key/value head, MLP neuron, and vocabulary logit. Learned hidden coordinates remain numerically identifiable but do not receive unsupported biological labels.
 
+### Typed Gemma execution program and predictive interpreter
+
+The architecture manifest now compiles into a canonical typed IR with no opaque model-level attention, decoder, or MLP operation. For Gemma 3 270M, the checked program contains 533 ordered primitive instructions, 554 named tensors, and 240 frozen parameter or buffer commitments across all 18 layers. Every instruction binds a declared equation, inputs, outputs, parameter references, layer, attributes, and instruction hash. The verifier rejects missing producers, duplicate tensors, unknown primitives, incomplete layer coverage, altered instruction hashes, and manifest-binding changes.
+
+```powershell
+python -m bioprocess_runtime gemma-ir-compile --manifest artifacts/gemma270m_architecture_manifest.json --output results/gemma3_270m_execution_ir.json
+python -m bioprocess_runtime gemma-ir-verify results/gemma3_270m_execution_ir.json --manifest artifacts/gemma270m_architecture_manifest.json
+python -m bioprocess_runtime gemma-ir-rationale results/gemma3_270m_execution_ir.json --output results/gemma3_270m_selected_token_rationale.json
+python -m bioprocess_runtime gemma-ir-rationale-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_selected_token_rationale.json
+```
+
+The structural rationale is a complete backward dependency slice from `selected_token_id` through all 533 instructions to `input_ids` and the frozen tensor commitments. It is not yet a numerical causal-sufficiency claim.
+
+The independent dispatcher interprets the IR without calling Gemma `forward()`, predicts the last-token logits, and only then invokes pinned Hugging Face eager execution for comparison:
+
+```powershell
+python -m bioprocess_runtime gemma-ir-predict results/gemma3_270m_execution_ir.json --model-path .models/gemma-3-270m-it --prompt "The oxygen reading is 30 percent and declining. Does this require review? Answer Yes or No." --output artifacts/gemma3_270m_ir_execution_certificate.json
+python -m bioprocess_runtime gemma-ir-execution-verify results/gemma3_270m_execution_ir.json artifacts/gemma3_270m_ir_execution_certificate.json --model-path .models/gemma-3-270m-it
+python -m bioprocess_runtime gemma-ir-execution-summary results/gemma3_270m_execution_ir.json artifacts/gemma3_270m_ir_execution_certificate.json --output results/gemma3_270m_ir_execution_summary.json
+python -m bioprocess_runtime gemma-ir-execution-summary-verify results/gemma3_270m_execution_ir.json results/gemma3_270m_ir_execution_summary.json
+```
+
+For the checked 30-token prompt, the IR interpreter covered all 533 instructions and predicted Hugging Face eager logits bit-for-bit, including the selected token. The full local certificate binds the model-state hash, literal input token IDs, final logits and selected-token descriptors to a hash-chained descriptor for every IR instruction output. A fresh model load reproduced the complete certificate exactly; verification without `--model-path` performs integrity checks only. The checked compact result omits full execution records. This establishes one fixed-input canonical-eager prediction, not SDPA or fused-kernel correspondence. The IR still marks bit-level primitive qualification false because its numerical dispatcher currently shares PyTorch primitive implementations with the comparator.
+
 ### Expandable bounded-domain verification
 
 The bounded-domain command exhaustively verifies every state in caller-supplied axes under one canonical prompt template:
