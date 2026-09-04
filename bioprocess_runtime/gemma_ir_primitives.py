@@ -341,6 +341,8 @@ def build_primitive_qualification_gate(
     certificate: dict[str, Any],
     bfloat16_certificate: dict[str, Any],
     reduction_certificate: dict[str, Any],
+    reduction_backend_binding: dict[str, Any],
+    nsight_suite: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -363,6 +365,16 @@ def build_primitive_qualification_gate(
     )
     if not reduction_qualification["valid"]:
         raise ValueError("Reduction characterization certificate is invalid")
+    from .gemma_reduction_backend import verify_gemma_reduction_backend_binding
+
+    backend_verification = verify_gemma_reduction_backend_binding(
+        program,
+        reduction_certificate,
+        nsight_suite,
+        reduction_backend_binding,
+    )
+    if not backend_verification["valid"]:
+        raise ValueError("Reduction backend binding is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
@@ -381,6 +393,10 @@ def build_primitive_qualification_gate(
         "reduction_characterization_certificate_sha256": reduction_certificate[
             "certificate_sha256"
         ],
+        "reduction_backend_binding_sha256": reduction_backend_binding[
+            "binding_sha256"
+        ],
+        "nsight_suite_sha256": nsight_suite["suite_sha256"],
         "reached_opcodes": reached,
         "independently_tested_index_opcodes": independently_tested,
         "independently_specified_finite_bfloat16_opcodes": specified_bfloat16,
@@ -395,6 +411,14 @@ def build_primitive_qualification_gate(
         "bounded_characterized_reduction_opcode_count": len(
             characterized_reductions
         ),
+        "controlled_linear_roles_have_attested_kernel_identity": backend_verification[
+            "all_linear_roles_have_attested_symbol_overlap"
+        ],
+        "canonical_eager_attention_kernel_attestation_complete": backend_verification[
+            "canonical_eager_attention_symbols_attested_in_deployed_suite"
+        ],
+        "controlled_values_equal_recorded_model_tensors": False,
+        "per_invocation_argument_binding_established": False,
         "unique_reduction_profile_identified": False,
         "reduction_order_semantics_established": False,
         "all_reached_primitive_semantics_qualified": False,
@@ -410,11 +434,18 @@ def verify_primitive_qualification_gate(
     certificate: dict[str, Any],
     bfloat16_certificate: dict[str, Any],
     reduction_certificate: dict[str, Any],
+    reduction_backend_binding: dict[str, Any],
+    nsight_suite: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
         expected = build_primitive_qualification_gate(
-            program, certificate, bfloat16_certificate, reduction_certificate
+            program,
+            certificate,
+            bfloat16_certificate,
+            reduction_certificate,
+            reduction_backend_binding,
+            nsight_suite,
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -440,6 +471,12 @@ def verify_primitive_qualification_gate(
         ],
         "bounded_characterized_reduction_opcode_count": expected[
             "bounded_characterized_reduction_opcode_count"
+        ],
+        "controlled_linear_roles_have_attested_kernel_identity": expected[
+            "controlled_linear_roles_have_attested_kernel_identity"
+        ],
+        "canonical_eager_attention_kernel_attestation_complete": expected[
+            "canonical_eager_attention_kernel_attestation_complete"
         ],
         "unique_reduction_profile_identified": expected[
             "unique_reduction_profile_identified"

@@ -586,6 +586,44 @@ def command_gemma_reduction_characterization_verify(args: argparse.Namespace) ->
     return 0 if verification["valid"] else 1
 
 
+def command_gemma_reduction_backend(args: argparse.Namespace) -> int:
+    from .gemma_reduction_backend import (
+        build_gemma_reduction_backend_binding,
+        verify_gemma_reduction_backend_binding,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    binding = build_gemma_reduction_backend_binding(
+        program,
+        reduction,
+        suite,
+        args.sequence_length,
+        args.max_tensor_elements,
+    )
+    verification = verify_gemma_reduction_backend_binding(
+        program, reduction, suite, binding
+    )
+    _write_json(args.output, binding)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
+def command_gemma_reduction_backend_verify(args: argparse.Namespace) -> int:
+    from .gemma_reduction_backend import verify_gemma_reduction_backend_binding
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    binding = json.loads(args.binding.read_text(encoding="utf-8"))
+    verification = verify_gemma_reduction_backend_binding(
+        program, reduction, suite, binding
+    )
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     from .gemma_ir_primitives import (
         build_primitive_qualification_gate,
@@ -600,14 +638,25 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     reduction_certificate = json.loads(
         args.reduction_certificate.read_text(encoding="utf-8")
     )
+    reduction_backend = json.loads(
+        args.reduction_backend.read_text(encoding="utf-8")
+    )
+    nsight_suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
     gate = build_primitive_qualification_gate(
-        program, certificate, bfloat16_certificate, reduction_certificate
+        program,
+        certificate,
+        bfloat16_certificate,
+        reduction_certificate,
+        reduction_backend,
+        nsight_suite,
     )
     verification = verify_primitive_qualification_gate(
         program,
         certificate,
         bfloat16_certificate,
         reduction_certificate,
+        reduction_backend,
+        nsight_suite,
         gate,
     )
     _write_json(args.output, gate)
@@ -626,12 +675,18 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
     reduction_certificate = json.loads(
         args.reduction_certificate.read_text(encoding="utf-8")
     )
+    reduction_backend = json.loads(
+        args.reduction_backend.read_text(encoding="utf-8")
+    )
+    nsight_suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
     gate = json.loads(args.gate.read_text(encoding="utf-8"))
     verification = verify_primitive_qualification_gate(
         program,
         certificate,
         bfloat16_certificate,
         reduction_certificate,
+        reduction_backend,
+        nsight_suite,
         gate,
     )
     print(json.dumps(verification, indent=2, sort_keys=True))
@@ -1518,11 +1573,29 @@ def build_parser() -> argparse.ArgumentParser:
     reduction_characterization_verify_parser.add_argument("certificate", type=Path)
     reduction_characterization_verify_parser.set_defaults(handler=command_gemma_reduction_characterization_verify)
 
+    reduction_backend_parser = subparsers.add_parser("gemma-reduction-backend", help="Profile controlled Gemma-shape reductions and bind exact CUDA symbols to the Nsight suite")
+    reduction_backend_parser.add_argument("--program", type=Path, required=True)
+    reduction_backend_parser.add_argument("--reduction", type=Path, required=True)
+    reduction_backend_parser.add_argument("--nsight-suite", type=Path, required=True)
+    reduction_backend_parser.add_argument("--sequence-length", type=int, default=30)
+    reduction_backend_parser.add_argument("--max-tensor-elements", type=int, default=200000000)
+    reduction_backend_parser.add_argument("--output", type=Path, required=True)
+    reduction_backend_parser.set_defaults(handler=command_gemma_reduction_backend)
+
+    reduction_backend_verify_parser = subparsers.add_parser("gemma-reduction-backend-verify", help="Verify controlled Gemma-shape CUDA symbol and reduction-candidate bindings")
+    reduction_backend_verify_parser.add_argument("--program", type=Path, required=True)
+    reduction_backend_verify_parser.add_argument("--reduction", type=Path, required=True)
+    reduction_backend_verify_parser.add_argument("--nsight-suite", type=Path, required=True)
+    reduction_backend_verify_parser.add_argument("binding", type=Path)
+    reduction_backend_verify_parser.set_defaults(handler=command_gemma_reduction_backend_verify)
+
     primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
     primitive_gate_parser.add_argument("program", type=Path)
     primitive_gate_parser.add_argument("certificate", type=Path)
     primitive_gate_parser.add_argument("bfloat16_certificate", type=Path)
     primitive_gate_parser.add_argument("reduction_certificate", type=Path)
+    primitive_gate_parser.add_argument("reduction_backend", type=Path)
+    primitive_gate_parser.add_argument("nsight_suite", type=Path)
     primitive_gate_parser.add_argument("--output", type=Path, required=True)
     primitive_gate_parser.set_defaults(handler=command_gemma_ir_primitive_gate)
 
@@ -1531,6 +1604,8 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_gate_verify_parser.add_argument("certificate", type=Path)
     primitive_gate_verify_parser.add_argument("bfloat16_certificate", type=Path)
     primitive_gate_verify_parser.add_argument("reduction_certificate", type=Path)
+    primitive_gate_verify_parser.add_argument("reduction_backend", type=Path)
+    primitive_gate_verify_parser.add_argument("nsight_suite", type=Path)
     primitive_gate_verify_parser.add_argument("gate", type=Path)
     primitive_gate_verify_parser.set_defaults(handler=command_gemma_ir_primitive_gate_verify)
 

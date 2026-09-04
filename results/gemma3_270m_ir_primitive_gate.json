@@ -13,8 +13,11 @@
     "MUL",
     "SCALE"
   ],
+  "canonical_eager_attention_kernel_attestation_complete": false,
   "complete_bfloat16_binary_truth_tables_established": false,
-  "gate_sha256": "c05396cdbc9f784c3bda599ce5d26ec627721ddf2c3dda50f5dee52a1ddbe79f",
+  "controlled_linear_roles_have_attested_kernel_identity": true,
+  "controlled_values_equal_recorded_model_tensors": false,
+  "gate_sha256": "1764e8a20ee7b04ce9c890263dcb6a72b99cc97c0d938177cc4509d5c800145d",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -33,6 +36,8 @@
     "TRANSPOSE_RESHAPE_HEADS"
   ],
   "independently_tested_opcode_count": 8,
+  "nsight_suite_sha256": "265f9acf483b354a66142d6c79a63f0f1c60ad386d46031b2f77d14f031556ea",
+  "per_invocation_argument_binding_established": false,
   "primitive_certificate_sha256": "34e125adde376c0e5925a67e31767a0d43aff34b89f9a31ed97b6514388c54fa",
   "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
   "reached_opcode_count": 19,
@@ -57,6 +62,7 @@
     "SOFTMAX",
     "TRANSPOSE_RESHAPE_HEADS"
   ],
+  "reduction_backend_binding_sha256": "08a1ce1e4e9faa088aaf5d4fe15fc7100c0d4ffd79b9c7350bb8c76a04e77f85",
   "reduction_characterization_certificate_sha256": "640760f05eeb14fb056379edf39280839e5cbfc3f192c984d098bea6fed96e8a",
   "reduction_order_semantics_established": false,
   "schema_version": 1,
