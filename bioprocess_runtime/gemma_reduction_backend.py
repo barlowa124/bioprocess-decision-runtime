@@ -45,17 +45,35 @@ def _result_bits(value: Any) -> str:
     return f"0x{int(value.detach().cpu().reshape(1).view(torch.uint16).item()):04x}"
 
 
-def _sensitive_bits(length: int) -> tuple[list[int], list[int]]:
+VECTOR_CLASSES = ("cancellation", "grouped", "pseudo")
+
+
+def _vector_bits(length: int, vector_class: str) -> list[int]:
     repetitions = (length + 3) // 4
-    left = ([0x4E80, 0x3F80, 0xCE80, 0x3F80] * repetitions)[:length]
-    return left, [0x3F80] * length
+    if vector_class == "cancellation":
+        return ([0x4E80, 0x3F80, 0xCE80, 0x3F80] * repetitions)[:length]
+    if vector_class == "grouped":
+        return ([0x4E80, 0xCE80, 0x3F80, 0x3F80] * repetitions)[:length]
+    if vector_class != "pseudo":
+        raise ValueError("Unknown reduction vector class")
+    state = 0x2468ACE1 ^ length
+    values = []
+    for _ in range(length):
+        state = (1664525 * state + 1013904223) & 0xFFFFFFFF
+        sign = 0x8000 if state & 1 else 0
+        exponent = 120 + ((state >> 8) % 15)
+        fraction = (state >> 16) & 0x7F
+        values.append(sign | (exponent << 7) | fraction)
+    return values
 
 
-def _operand_bits(primitive: str, length: int) -> tuple[list[int], list[int]]:
-    sensitive, ones = _sensitive_bits(length)
+def _operand_bits(
+    primitive: str, length: int, vector_class: str
+) -> tuple[list[int], list[int]]:
+    vector = _vector_bits(length, vector_class)
     if primitive == "MATMUL_AV":
-        return [0x3D00] * length, sensitive
-    return sensitive, ones
+        return [0x3D00] * length, vector
+    return vector, [0x3F80] * length
 
 
 def _profile_call(call: Callable[[], Any]) -> tuple[Any, list[str]]:
@@ -79,9 +97,10 @@ def _linear_record(
     rows: int,
     outputs: int,
     inner: int,
+    vector_class: str,
     suite_names: set[str],
 ) -> dict[str, Any]:
-    left_bits, right_bits = _operand_bits("LINEAR", inner)
+    left_bits, right_bits = _operand_bits("LINEAR", inner, vector_class)
     left_vector = _bfloat16_vector(left_bits)
     right_vector = _bfloat16_vector(right_bits)
     input_tensor = left_vector.reshape(1, inner).expand(rows, inner).contiguous()
@@ -91,6 +110,7 @@ def _linear_record(
     actual = _result_bits(result[0, 0])
     body = {
         "role": role,
+        "vector_class": vector_class,
         "equivalent_roles": roles,
         "primitive": "LINEAR",
         "input_shape": [rows, inner],
@@ -115,10 +135,11 @@ def _attention_record(
     heads: int,
     sequence: int,
     dimension: int,
+    vector_class: str,
     suite_names: set[str],
 ) -> dict[str, Any]:
     inner = dimension if primitive == "MATMUL_QK" else sequence
-    left_bits, right_bits = _operand_bits(primitive, inner)
+    left_bits, right_bits = _operand_bits(primitive, inner, vector_class)
     left_vector = _bfloat16_vector(left_bits)
     right_vector = _bfloat16_vector(right_bits)
     if primitive == "MATMUL_QK":
@@ -149,12 +170,17 @@ def _attention_record(
     actual = _result_bits(result[0, 0, 0, 0])
     body = {
         "role": "explicit_eager_attention_scores" if primitive == "MATMUL_QK" else "explicit_eager_attention_values",
+        "vector_class": vector_class,
         "equivalent_roles": [],
         "primitive": primitive,
         "left_operand_constraint": (
-            "nonnegative bfloat16 values summing to 0.9375 per row"
+            {
+                "kind": "uniform nonnegative bfloat16",
+                "value_bits": "0x3d00",
+                "exact_row_sum": {"numerator": sequence, "denominator": 32},
+            }
             if primitive == "MATMUL_AV"
-            else "finite cancellation-sensitive bfloat16 values"
+            else {"kind": "finite cancellation-sensitive bfloat16"}
         ),
         "input_shapes": input_shapes,
         "output_shape": output_shape,
@@ -215,27 +241,52 @@ def build_gemma_reduction_backend_binding(
         max(rows * inner, outputs * inner, rows * outputs)
         for _, _, rows, outputs, inner in profiles
     )
-    if largest_linear_tensor > max_tensor_elements:
+    largest_attention_tensor = max(
+        heads * sequence_length * dimension,
+        heads * sequence_length * sequence_length,
+    )
+    largest_profiled_tensor = max(
+        largest_linear_tensor, largest_attention_tensor
+    )
+    if largest_profiled_tensor > max_tensor_elements:
         raise ValueError(
             "Controlled reduction profile exceeds the configured tensor-element limit"
         )
     records = [
-        _linear_record(role, roles, rows, outputs, inner, suite_names)
+        _linear_record(
+            role,
+            roles,
+            rows,
+            outputs,
+            inner,
+            vector_class,
+            suite_names,
+        )
         for role, roles, rows, outputs, inner in profiles
+        for vector_class in VECTOR_CLASSES
     ]
     records.extend(
-        (
-            _attention_record(
-                "MATMUL_QK", heads, sequence_length, dimension, suite_names
-            ),
-            _attention_record(
-                "MATMUL_AV", heads, sequence_length, dimension, suite_names
-            ),
+        _attention_record(
+            primitive,
+            heads,
+            sequence_length,
+            dimension,
+            vector_class,
+            suite_names,
         )
+        for primitive in ("MATMUL_QK", "MATMUL_AV")
+        for vector_class in VECTOR_CLASSES
     )
     exact_overlap_records = sum(
         bool(record["exact_nsight_suite_symbol_matches"]) for record in records
     )
+    role_candidate_intersections = {}
+    for role in sorted({record["role"] for record in records}):
+        role_records = [record for record in records if record["role"] == role]
+        common = set(role_records[0]["matching_candidates"])
+        for record in role_records[1:]:
+            common &= set(record["matching_candidates"])
+        role_candidate_intersections[role] = sorted(common)
     body = {
         "schema_version": 1,
         "scope": "Controlled Gemma-shape CUDA reduction-kernel identities and candidate outputs bound to one typed IR and Nsight suite; controlled values are not the recorded model tensors and symbol overlap is not reduction-semantic proof.",
@@ -246,12 +297,19 @@ def build_gemma_reduction_backend_binding(
         "nsight_suite_sha256": nsight_suite["suite_sha256"],
         "batch_size": 1,
         "sequence_length": sequence_length,
+        "vector_classes": list(VECTOR_CLASSES),
         "max_tensor_elements": max_tensor_elements,
-        "largest_profiled_tensor_elements": largest_linear_tensor,
-        "largest_profiled_tensor_bytes_bfloat16": largest_linear_tensor * 2,
+        "largest_profiled_tensor_elements": largest_profiled_tensor,
+        "largest_profiled_tensor_bytes_bfloat16": largest_profiled_tensor * 2,
         "records": records,
         "record_count": len(records),
         "exact_nsight_symbol_overlap_record_count": exact_overlap_records,
+        "role_candidate_intersections": role_candidate_intersections,
+        "roles_with_unique_stable_candidate": sorted(
+            role
+            for role, candidates in role_candidate_intersections.items()
+            if len(candidates) == 1
+        ),
         "all_linear_roles_have_attested_symbol_overlap": all(
             record["exact_nsight_suite_symbol_matches"]
             for record in records
@@ -290,7 +348,9 @@ def verify_gemma_reduction_backend_binding(
         for entry in nsight_suite.get("entries", [])
         if isinstance(entry, dict)
     }
-    expected_records: dict[str, dict[str, Any]] = {}
+    expected_records: dict[tuple[str, str], dict[str, Any]] = {}
+    heads = 0
+    dimension = 0
     sequence_length = binding.get("sequence_length")
     configuration = program.get("configuration")
     if (
@@ -316,7 +376,9 @@ def verify_gemma_reduction_backend_binding(
                 ("vocabulary_projection", ["vocabulary_projection"], 1, vocabulary, hidden),
             )
             expected_records = {
-                role: {
+                (role, vector_class): {
+                    "role": role,
+                    "vector_class": vector_class,
                     "equivalent_roles": roles,
                     "primitive": "LINEAR",
                     "inner_dimension": inner,
@@ -325,31 +387,50 @@ def verify_gemma_reduction_backend_binding(
                     "output_shape": [rows, outputs],
                 }
                 for role, roles, rows, outputs, inner in linear_profiles
+                for vector_class in VECTOR_CLASSES
+            }
+            attention_profiles = {
+                "explicit_eager_attention_scores": {
+                    "equivalent_roles": [],
+                    "primitive": "MATMUL_QK",
+                    "left_operand_constraint": {
+                        "kind": "finite cancellation-sensitive bfloat16"
+                    },
+                    "inner_dimension": dimension,
+                    "input_shapes": [
+                        [1, heads, sequence_length, dimension],
+                        [1, heads, sequence_length, dimension],
+                    ],
+                    "output_shape": [1, heads, sequence_length, sequence_length],
+                },
+                "explicit_eager_attention_values": {
+                    "equivalent_roles": [],
+                    "primitive": "MATMUL_AV",
+                    "left_operand_constraint": {
+                        "kind": "uniform nonnegative bfloat16",
+                        "value_bits": "0x3d00",
+                        "exact_row_sum": {
+                            "numerator": sequence_length,
+                            "denominator": 32,
+                        },
+                    },
+                    "inner_dimension": sequence_length,
+                    "input_shapes": [
+                        [1, heads, sequence_length, sequence_length],
+                        [1, heads, sequence_length, dimension],
+                    ],
+                    "output_shape": [1, heads, sequence_length, dimension],
+                },
             }
             expected_records.update(
                 {
-                    "explicit_eager_attention_scores": {
-                        "equivalent_roles": [],
-                        "primitive": "MATMUL_QK",
-                        "left_operand_constraint": "finite cancellation-sensitive bfloat16 values",
-                        "inner_dimension": dimension,
-                        "input_shapes": [
-                            [1, heads, sequence_length, dimension],
-                            [1, heads, sequence_length, dimension],
-                        ],
-                        "output_shape": [1, heads, sequence_length, sequence_length],
-                    },
-                    "explicit_eager_attention_values": {
-                        "equivalent_roles": [],
-                        "primitive": "MATMUL_AV",
-                        "left_operand_constraint": "nonnegative bfloat16 values summing to 0.9375 per row",
-                        "inner_dimension": sequence_length,
-                        "input_shapes": [
-                            [1, heads, sequence_length, sequence_length],
-                            [1, heads, sequence_length, dimension],
-                        ],
-                        "output_shape": [1, heads, sequence_length, dimension],
-                    },
+                    (role, vector_class): {
+                        "role": role,
+                        "vector_class": vector_class,
+                        **declaration,
+                    }
+                    for role, declaration in attention_profiles.items()
+                    for vector_class in VECTOR_CLASSES
                 }
             )
 
@@ -363,7 +444,9 @@ def verify_gemma_reduction_backend_binding(
             kernels = record.get("cuda_kernel_names")
             candidates = record.get("candidate_results")
             inner = record.get("inner_dimension")
-            expected = expected_records.get(record.get("role"))
+            expected = expected_records.get(
+                (record.get("role"), record.get("vector_class"))
+            )
             if (
                 not isinstance(inner, int)
                 or isinstance(inner, bool)
@@ -371,7 +454,9 @@ def verify_gemma_reduction_backend_binding(
                 or expected is None
             ):
                 return False
-            left_bits, right_bits = _operand_bits(record.get("primitive"), inner)
+            left_bits, right_bits = _operand_bits(
+                record.get("primitive"), inner, record.get("vector_class")
+            )
             expected_candidates = _candidate_results(left_bits, right_bits)
             expected_fields_match = all(
                 record.get(key) == value for key, value in expected.items()
@@ -401,9 +486,13 @@ def verify_gemma_reduction_backend_binding(
 
     records_valid = bool(
         isinstance(records, list)
-        and len(records) == len(expected_records) == 8
+        and len(records) == len(expected_records) == 24
         and all(isinstance(record, dict) for record in records)
-        and {record.get("role") for record in records} == set(expected_records)
+        and {
+            (record.get("role"), record.get("vector_class"))
+            for record in records
+        }
+        == set(expected_records)
         and all(record_valid(record) for record in records)
     )
     overlap_count = (
@@ -428,6 +517,19 @@ def verify_gemma_reduction_backend_binding(
             and record.get("primitive") in {"MATMUL_QK", "MATMUL_AV"}
         )
     )
+    calculated_role_intersections = {}
+    if isinstance(records, list) and all(isinstance(record, dict) for record in records):
+        for role in sorted({record.get("role") for record in records}):
+            role_records = [record for record in records if record.get("role") == role]
+            common = set(role_records[0].get("matching_candidates", []))
+            for record in role_records[1:]:
+                common &= set(record.get("matching_candidates", []))
+            calculated_role_intersections[role] = sorted(common)
+    calculated_unique_roles = sorted(
+        role
+        for role, candidates in calculated_role_intersections.items()
+        if len(candidates) == 1
+    )
     largest_expected_tensor = (
         max(
             max(
@@ -444,6 +546,12 @@ def verify_gemma_reduction_backend_binding(
         if expected_records
         else -1
     )
+    if largest_expected_tensor > 0:
+        largest_expected_tensor = max(
+            largest_expected_tensor,
+            heads * sequence_length * dimension,
+            heads * sequence_length * sequence_length,
+        )
     source_bindings_valid = bool(
         verify_gemma_ir(program)["valid"]
         and verify_reduction_characterization_certificate(
@@ -461,6 +569,11 @@ def verify_gemma_reduction_backend_binding(
         and isinstance(sequence_length, int)
         and not isinstance(sequence_length, bool)
         and sequence_length > 0
+        and binding.get("vector_classes") == list(VECTOR_CLASSES)
+        and binding.get("role_candidate_intersections")
+        == calculated_role_intersections
+        and binding.get("roles_with_unique_stable_candidate")
+        == calculated_unique_roles
         and isinstance(binding.get("max_tensor_elements"), int)
         and not isinstance(binding.get("max_tensor_elements"), bool)
         and binding.get("max_tensor_elements") >= largest_expected_tensor > 0

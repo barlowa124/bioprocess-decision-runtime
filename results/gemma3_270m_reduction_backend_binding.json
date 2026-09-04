@@ -1,10 +1,10 @@
 {
   "all_linear_roles_have_attested_symbol_overlap": true,
   "batch_size": 1,
-  "binding_sha256": "08a1ce1e4e9faa088aaf5d4fe15fc7100c0d4ffd79b9c7350bb8c76a04e77f85",
+  "binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
   "canonical_eager_attention_symbols_attested_in_deployed_suite": false,
   "controlled_values_equal_recorded_model_tensors": false,
-  "exact_nsight_symbol_overlap_record_count": 6,
+  "exact_nsight_symbol_overlap_record_count": 18,
   "hardware_instruction_semantics_established": false,
   "largest_profiled_tensor_bytes_bfloat16": 335544320,
   "largest_profiled_tensor_elements": 167772160,
@@ -12,7 +12,7 @@
   "nsight_suite_sha256": "265f9acf483b354a66142d6c79a63f0f1c60ad386d46031b2f77d14f031556ea",
   "per_invocation_argument_binding_established": false,
   "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
-  "record_count": 8,
+  "record_count": 24,
   "records": [
     {
       "actual_result_bits": "0x0000",
@@ -46,9 +46,93 @@
         1024
       ],
       "primitive": "LINEAR",
-      "record_sha256": "be9e2f819fa1d61452c3ca28c4a88f737b9b26615b7fc3454137ef7a23057dfa",
+      "record_sha256": "528b64bfbb6b00af908c02a80e5deda0252c41bd5d4ab97f27419e3e4dc08d2a",
       "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
       "role": "query_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        1024,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [
+        "query_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        1024
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "9b0484e68dd6e6c66aaf53efa2bdcbf932e1257ce381e7344ebf8e8e153d1cdb",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "query_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        1024,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x4484",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4484",
+        "exact_sum_then_bfloat16": "0x4484",
+        "pairwise_float32_then_bfloat16": "0x4484",
+        "sequential_bfloat16": "0x4481",
+        "sequential_float32_then_bfloat16": "0x4484"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [
+        "query_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "767597ede798bfd174a85e243471b8877a2af6cbe64562751da1e56044e1e277",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        30,
+        1024
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "6b8ab3457ec6a9739d45c4d5f7822e672da3a8fe89c282e1196b7a76a4068df1",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "query_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         1024,
         640
@@ -89,9 +173,99 @@
         256
       ],
       "primitive": "LINEAR",
-      "record_sha256": "85d8cea9b311efc6e166a64114b3b9d7892abd19310cf19f716f0775e5f9fce5",
+      "record_sha256": "b7609937721c8d402d5a6b611a2d3f539e04c3b3109a5d6f30eba2981e57fcba",
       "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
       "role": "key_value_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        256,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "key_projection",
+        "value_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        256
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "2c879d129faade5b239b1095b711ca0f3416333fe3863bd0ab37105bb2ed06b1",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "key_value_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        256,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x4484",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4484",
+        "exact_sum_then_bfloat16": "0x4484",
+        "pairwise_float32_then_bfloat16": "0x4484",
+        "sequential_bfloat16": "0x4481",
+        "sequential_float32_then_bfloat16": "0x4484"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "key_projection",
+        "value_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "767597ede798bfd174a85e243471b8877a2af6cbe64562751da1e56044e1e277",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        30,
+        256
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "bb63400889303e2e54dd7ac016ef09532e60c4f18d5d4c871c9e2eea8f9f88a2",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "key_value_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         256,
         640
@@ -131,9 +305,92 @@
         640
       ],
       "primitive": "LINEAR",
-      "record_sha256": "236bd18d84723e26cf301cb1aa35dd49cc637a14f9544d937652c9bc8e1c1c8b",
+      "record_sha256": "b05a89974508c2b1917ff8310c9773fe847492a498642b3bf20c97a50de3a563",
       "right_vector_sha256": "58e00702d238444815a6aa4066866399feeac3f583ee4ac939c36f7c88065570",
       "role": "attention_output_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        640,
+        1024
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4300",
+        "exact_sum_then_bfloat16": "0x4400",
+        "pairwise_float32_then_bfloat16": "0x4400",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "attention_output_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "inner_dimension": 1024,
+      "input_shape": [
+        30,
+        1024
+      ],
+      "left_vector_sha256": "de7332bbdaed73a4a2cb43e19974938db8b80c0985a17947a0ab50e8a2b35ccb",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        640
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "30bf33055dc7b017f42806cc59d6b08a1f12da31177728a9861e370d7f7ad814",
+      "right_vector_sha256": "58e00702d238444815a6aa4066866399feeac3f583ee4ac939c36f7c88065570",
+      "role": "attention_output_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        640,
+        1024
+      ]
+    },
+    {
+      "actual_result_bits": "0x441d",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x441e",
+        "exact_sum_then_bfloat16": "0x441e",
+        "pairwise_float32_then_bfloat16": "0x441e",
+        "sequential_bfloat16": "0x4424",
+        "sequential_float32_then_bfloat16": "0x441e"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "attention_output_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "inner_dimension": 1024,
+      "input_shape": [
+        30,
+        1024
+      ],
+      "left_vector_sha256": "33963bccf55127350ce0c777030042f6d65293d840b22ca1bddebadcbb83db49",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        640
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "656088ef25981b04dc9a6229af2b037be90ecaa2687e2b45084c2e0830411c2f",
+      "right_vector_sha256": "58e00702d238444815a6aa4066866399feeac3f583ee4ac939c36f7c88065570",
+      "role": "attention_output_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         640,
         1024
@@ -172,9 +429,95 @@
         2048
       ],
       "primitive": "LINEAR",
-      "record_sha256": "37f6039a2e8e6d0dbbb7251d99a96a78f45c9fb05f7628e521f7d8d56a576ee2",
+      "record_sha256": "68e219d53729fd29f55ad9abc49bb5c62a1d53a5ac6dff02b82bcb1cbf3231c6",
       "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
       "role": "mlp_gate_up_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        2048,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [
+        "mlp_gate_projection",
+        "mlp_up_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        2048
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "b323365157a034ac8bd486c5c2a94b5b90cc085498a8d096a6e57a3a00f3cd21",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "mlp_gate_up_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        2048,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x4484",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4484",
+        "exact_sum_then_bfloat16": "0x4484",
+        "pairwise_float32_then_bfloat16": "0x4484",
+        "sequential_bfloat16": "0x4481",
+        "sequential_float32_then_bfloat16": "0x4484"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [
+        "mlp_gate_projection",
+        "mlp_up_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        30,
+        640
+      ],
+      "left_vector_sha256": "767597ede798bfd174a85e243471b8877a2af6cbe64562751da1e56044e1e277",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        30,
+        2048
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "3b3ad028dd8747ccf736b8d01dadcc5600632e9be5ab9148956a34b5c2bcfb5c",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "mlp_gate_up_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         2048,
         640
@@ -214,9 +557,92 @@
         640
       ],
       "primitive": "LINEAR",
-      "record_sha256": "d2aa56f883dcb8abcad5f3b9f49cb54de5987dfc76c2f709fcc0b4895661cfba",
+      "record_sha256": "406f3ef7fcf177340690935e5e6407f408a0040ce88ffd749a7a7b55422da4fb",
       "right_vector_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0",
       "role": "mlp_down_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        640,
+        2048
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4380",
+        "exact_sum_then_bfloat16": "0x4480",
+        "pairwise_float32_then_bfloat16": "0x4480",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "mlp_down_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+        "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+      ],
+      "inner_dimension": 2048,
+      "input_shape": [
+        30,
+        2048
+      ],
+      "left_vector_sha256": "7723a934161e4063652a23297219a17b37b05f7c6b4425c0707f3dc0e8034dd0",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        640
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "95290d18a214d5df0a711d95a6cd052b9883f5394b955bc8b82edabfe5669299",
+      "right_vector_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0",
+      "role": "mlp_down_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        640,
+        2048
+      ]
+    },
+    {
+      "actual_result_bits": "0x4442",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4441",
+        "exact_sum_then_bfloat16": "0x4441",
+        "pairwise_float32_then_bfloat16": "0x4441",
+        "sequential_bfloat16": "0x441f",
+        "sequential_float32_then_bfloat16": "0x4441"
+      },
+      "cuda_kernel_names": [
+        "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "equivalent_roles": [
+        "mlp_down_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+        "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+      ],
+      "inner_dimension": 2048,
+      "input_shape": [
+        30,
+        2048
+      ],
+      "left_vector_sha256": "0f48be93bcd9b6e1b9de1b2377e794a91a19cbd0c2436681e539f3f8addfa6c8",
+      "matching_candidates": [],
+      "output_shape": [
+        30,
+        640
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "6baaf12797b0bd3c6f1a7c78388cb1042b6229d5085eadda5783335900a4918d",
+      "right_vector_sha256": "3316da15e1d6e19d7510e504125db0b6434b22eb73493a5e3d1812169c7d5ae0",
+      "role": "mlp_down_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         640,
         2048
@@ -254,9 +680,93 @@
         262144
       ],
       "primitive": "LINEAR",
-      "record_sha256": "fff5d7f7b7715896aecd1ef95fdba335c48fcc6dbefa14f7424320cbde5a4560",
+      "record_sha256": "ee581e71b93f0faf0ede61d6e18ddfaab33ab05fd40b4fbbb58c3214ac43342d",
       "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
       "role": "vocabulary_projection",
+      "vector_class": "cancellation",
+      "weight_shape": [
+        262144,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x42a0",
+        "exact_sum_then_bfloat16": "0x43a0",
+        "pairwise_float32_then_bfloat16": "0x43a0",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN8internal5gemvx6kernelIii13__nv_bfloat16S2_S2_fLb0ELb1ELb1ELb0ELi6ELb0E18cublasGemvParamsExIi30cublasGemvTensorStridedBatchedIKS2_ES6_S4_IS2_EfEEENSt9enable_ifIXntT5_EvE4typeET11_"
+      ],
+      "equivalent_roles": [
+        "vocabulary_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN8internal5gemvx6kernelIii13__nv_bfloat16S2_S2_fLb0ELb1ELb1ELb0ELi6ELb0E18cublasGemvParamsExIi30cublasGemvTensorStridedBatchedIKS2_ES6_S4_IS2_EfEEENSt9enable_ifIXntT5_EvE4typeET11_"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        1,
+        640
+      ],
+      "left_vector_sha256": "9b2da920a24927cb004f24a0cdc980bd4629ec59de4c085b49a986fa65bab189",
+      "matching_candidates": [],
+      "output_shape": [
+        1,
+        262144
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "6ebc6be2b928114e07e70f6b13974940aa4b70dfc7b937675282d04817dbfdab",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "vocabulary_projection",
+      "vector_class": "grouped",
+      "weight_shape": [
+        262144,
+        640
+      ]
+    },
+    {
+      "actual_result_bits": "0x4484",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4484",
+        "exact_sum_then_bfloat16": "0x4484",
+        "pairwise_float32_then_bfloat16": "0x4484",
+        "sequential_bfloat16": "0x4481",
+        "sequential_float32_then_bfloat16": "0x4484"
+      },
+      "cuda_kernel_names": [
+        "_ZN8internal5gemvx6kernelIii13__nv_bfloat16S2_S2_fLb0ELb1ELb1ELb0ELi6ELb0E18cublasGemvParamsExIi30cublasGemvTensorStridedBatchedIKS2_ES6_S4_IS2_EfEEENSt9enable_ifIXntT5_EvE4typeET11_"
+      ],
+      "equivalent_roles": [
+        "vocabulary_projection"
+      ],
+      "exact_nsight_suite_symbol_matches": [
+        "_ZN8internal5gemvx6kernelIii13__nv_bfloat16S2_S2_fLb0ELb1ELb1ELb0ELi6ELb0E18cublasGemvParamsExIi30cublasGemvTensorStridedBatchedIKS2_ES6_S4_IS2_EfEEENSt9enable_ifIXntT5_EvE4typeET11_"
+      ],
+      "inner_dimension": 640,
+      "input_shape": [
+        1,
+        640
+      ],
+      "left_vector_sha256": "767597ede798bfd174a85e243471b8877a2af6cbe64562751da1e56044e1e277",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        1,
+        262144
+      ],
+      "primitive": "LINEAR",
+      "record_sha256": "bcd349dded4d3d73aedace1caa4be38d9bf2154bd9ed6056a932d9bbf9a22e69",
+      "right_vector_sha256": "5c85eed5d8508d952a0463cea3d1ab33b9a92c4681368665bdd2204ee7d10d68",
+      "role": "vocabulary_projection",
+      "vector_class": "pseudo",
       "weight_shape": [
         262144,
         640
@@ -291,7 +801,9 @@
           256
         ]
       ],
-      "left_operand_constraint": "finite cancellation-sensitive bfloat16 values",
+      "left_operand_constraint": {
+        "kind": "finite cancellation-sensitive bfloat16"
+      },
       "left_vector_sha256": "ded0826d540a069e5e4ea978abb36c0c6c39b8faba80d7273447846f58d4965d",
       "matching_candidates": [
         "pairwise_float32_then_bfloat16"
@@ -303,9 +815,108 @@
         30
       ],
       "primitive": "MATMUL_QK",
-      "record_sha256": "ec0cb33718f19e1ff60f603d0b4c60c4b1e64bdbb7b6f8a6dd451d98f14d0dbc",
+      "record_sha256": "f1be18c9f55e866e31eb7418b19abeaab77a8607713b04e54a2fdca8d344392a",
       "right_vector_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca",
-      "role": "explicit_eager_attention_scores"
+      "role": "explicit_eager_attention_scores",
+      "vector_class": "cancellation"
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x4200",
+        "exact_sum_then_bfloat16": "0x4300",
+        "pairwise_float32_then_bfloat16": "0x4300",
+        "sequential_bfloat16": "0x4000",
+        "sequential_float32_then_bfloat16": "0x4000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_tn_align2EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [],
+      "exact_nsight_suite_symbol_matches": [],
+      "inner_dimension": 256,
+      "input_shapes": [
+        [
+          1,
+          4,
+          30,
+          256
+        ],
+        [
+          1,
+          4,
+          30,
+          256
+        ]
+      ],
+      "left_operand_constraint": {
+        "kind": "finite cancellation-sensitive bfloat16"
+      },
+      "left_vector_sha256": "4aa361f4e6d6e3f452f1d8d10149192b060517dff347e8ffe12a471cc62fd3d4",
+      "matching_candidates": [],
+      "output_shape": [
+        1,
+        4,
+        30,
+        30
+      ],
+      "primitive": "MATMUL_QK",
+      "record_sha256": "87d83e927465cd007cbff56f25827904f22eb17388566b6e4537b247668976f3",
+      "right_vector_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca",
+      "role": "explicit_eager_attention_scores",
+      "vector_class": "grouped"
+    },
+    {
+      "actual_result_bits": "0x44f3",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x44f3",
+        "exact_sum_then_bfloat16": "0x44f3",
+        "pairwise_float32_then_bfloat16": "0x44f3",
+        "sequential_bfloat16": "0x44f3",
+        "sequential_float32_then_bfloat16": "0x44f3"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_tn_align2EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [],
+      "exact_nsight_suite_symbol_matches": [],
+      "inner_dimension": 256,
+      "input_shapes": [
+        [
+          1,
+          4,
+          30,
+          256
+        ],
+        [
+          1,
+          4,
+          30,
+          256
+        ]
+      ],
+      "left_operand_constraint": {
+        "kind": "finite cancellation-sensitive bfloat16"
+      },
+      "left_vector_sha256": "9f3b9dd38bff442526b41f1d22eb00a8ccfefbcd9b2d9e0cbbf5b4d03b97cdfc",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        1,
+        4,
+        30,
+        30
+      ],
+      "primitive": "MATMUL_QK",
+      "record_sha256": "e4e19f9bff4e137cd22dfa111bc21b8154d076a54f75c2fdae38076322caec24",
+      "right_vector_sha256": "ea08c1b1ff7487c4bb65d333d1a7b56c6947f6bea7c54767a74dc1ae0b3e9fca",
+      "role": "explicit_eager_attention_scores",
+      "vector_class": "pseudo"
     },
     {
       "actual_result_bits": "0x4c00",
@@ -336,7 +947,14 @@
           256
         ]
       ],
-      "left_operand_constraint": "nonnegative bfloat16 values summing to 0.9375 per row",
+      "left_operand_constraint": {
+        "exact_row_sum": {
+          "denominator": 32,
+          "numerator": 30
+        },
+        "kind": "uniform nonnegative bfloat16",
+        "value_bits": "0x3d00"
+      },
       "left_vector_sha256": "30a5c6e17ca368d554c6085b880eb881550f7f802f3b7a9df1f4de91499f5d7b",
       "matching_candidates": [
         "block16_float32_then_bfloat16",
@@ -352,15 +970,146 @@
         256
       ],
       "primitive": "MATMUL_AV",
-      "record_sha256": "403b61459b14ae88fbe58b65589255b6f8385a36c7db5623112cf7007280d115",
+      "record_sha256": "d80dee132e1c152e968e0148f6e9c9d2006bf23d1f1c2b5b9ae90cd3c4e33915",
       "right_vector_sha256": "498eb055d8e649b27a1339a8044657d5e3aa6dbc7952bf0a1446223f10f5cff6",
-      "role": "explicit_eager_attention_values"
+      "role": "explicit_eager_attention_values",
+      "vector_class": "cancellation"
+    },
+    {
+      "actual_result_bits": "0x0000",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0x3d80",
+        "exact_sum_then_bfloat16": "0x3ee0",
+        "pairwise_float32_then_bfloat16": "0x3ee0",
+        "sequential_bfloat16": "0x0000",
+        "sequential_float32_then_bfloat16": "0x0000"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_nn_align2EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [],
+      "exact_nsight_suite_symbol_matches": [],
+      "inner_dimension": 30,
+      "input_shapes": [
+        [
+          1,
+          4,
+          30,
+          30
+        ],
+        [
+          1,
+          4,
+          30,
+          256
+        ]
+      ],
+      "left_operand_constraint": {
+        "exact_row_sum": {
+          "denominator": 32,
+          "numerator": 30
+        },
+        "kind": "uniform nonnegative bfloat16",
+        "value_bits": "0x3d00"
+      },
+      "left_vector_sha256": "30a5c6e17ca368d554c6085b880eb881550f7f802f3b7a9df1f4de91499f5d7b",
+      "matching_candidates": [
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "primitive": "MATMUL_AV",
+      "record_sha256": "0680bf4b09e7fd92e6da632887b91eb612bff976b13a148054f4c72c557e43a8",
+      "right_vector_sha256": "887e253ec5a496c131125eeff99568c73e466c17511dbdf40005a3d91ca9af3f",
+      "role": "explicit_eager_attention_values",
+      "vector_class": "grouped"
+    },
+    {
+      "actual_result_bits": "0xc0a4",
+      "candidate_results": {
+        "block16_float32_then_bfloat16": "0xc0a4",
+        "exact_sum_then_bfloat16": "0xc0a4",
+        "pairwise_float32_then_bfloat16": "0xc0a4",
+        "sequential_bfloat16": "0xc0a4",
+        "sequential_float32_then_bfloat16": "0xc0a4"
+      },
+      "cuda_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_nn_align2EEvNT_6ParamsE"
+      ],
+      "equivalent_roles": [],
+      "exact_nsight_suite_symbol_matches": [],
+      "inner_dimension": 30,
+      "input_shapes": [
+        [
+          1,
+          4,
+          30,
+          30
+        ],
+        [
+          1,
+          4,
+          30,
+          256
+        ]
+      ],
+      "left_operand_constraint": {
+        "exact_row_sum": {
+          "denominator": 32,
+          "numerator": 30
+        },
+        "kind": "uniform nonnegative bfloat16",
+        "value_bits": "0x3d00"
+      },
+      "left_vector_sha256": "30a5c6e17ca368d554c6085b880eb881550f7f802f3b7a9df1f4de91499f5d7b",
+      "matching_candidates": [
+        "block16_float32_then_bfloat16",
+        "exact_sum_then_bfloat16",
+        "pairwise_float32_then_bfloat16",
+        "sequential_bfloat16",
+        "sequential_float32_then_bfloat16"
+      ],
+      "output_shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "primitive": "MATMUL_AV",
+      "record_sha256": "1414e9b6997d3885bfbf51a89e9e39b851ed70e6bf9c61c1678422f319973340",
+      "right_vector_sha256": "c7b19d3661a9f147510eda2461af5489c8335150fc1203e72ff68f3c1ea79587",
+      "role": "explicit_eager_attention_values",
+      "vector_class": "pseudo"
     }
   ],
   "reduction_characterization_certificate_sha256": "640760f05eeb14fb056379edf39280839e5cbfc3f192c984d098bea6fed96e8a",
   "reduction_order_semantics_established": false,
+  "role_candidate_intersections": {
+    "attention_output_projection": [],
+    "explicit_eager_attention_scores": [],
+    "explicit_eager_attention_values": [
+      "sequential_bfloat16",
+      "sequential_float32_then_bfloat16"
+    ],
+    "key_value_projection": [],
+    "mlp_down_projection": [],
+    "mlp_gate_up_projection": [],
+    "query_projection": [],
+    "vocabulary_projection": []
+  },
+  "roles_with_unique_stable_candidate": [],
   "schema_version": 1,
   "scope": "Controlled Gemma-shape CUDA reduction-kernel identities and candidate outputs bound to one typed IR and Nsight suite; controlled values are not the recorded model tensors and symbol overlap is not reduction-semantic proof.",
   "sequence_length": 30,
-  "tensor_core_accumulator_semantics_established": false
+  "tensor_core_accumulator_semantics_established": false,
+  "vector_classes": [
+    "cancellation",
+    "grouped",
+    "pseudo"
+  ]
 }

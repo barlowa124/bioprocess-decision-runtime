@@ -17,7 +17,7 @@
   "complete_bfloat16_binary_truth_tables_established": false,
   "controlled_linear_roles_have_attested_kernel_identity": true,
   "controlled_values_equal_recorded_model_tensors": false,
-  "gate_sha256": "1764e8a20ee7b04ce9c890263dcb6a72b99cc97c0d938177cc4509d5c800145d",
+  "gate_sha256": "92f1e04b494a46ca4a20aaa26aa139b9d3b6fcffe946c1aeb34770ff885e0e0b",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -62,7 +62,7 @@
     "SOFTMAX",
     "TRANSPOSE_RESHAPE_HEADS"
   ],
-  "reduction_backend_binding_sha256": "08a1ce1e4e9faa088aaf5d4fe15fc7100c0d4ffd79b9c7350bb8c76a04e77f85",
+  "reduction_backend_binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
   "reduction_characterization_certificate_sha256": "640760f05eeb14fb056379edf39280839e5cbfc3f192c984d098bea6fed96e8a",
   "reduction_order_semantics_established": false,
   "schema_version": 1,

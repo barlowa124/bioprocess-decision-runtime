@@ -37,13 +37,17 @@ class GemmaReductionBackendTests(unittest.TestCase):
             self.program, self.reduction, self.suite, self.binding
         )
         self.assertTrue(verification["valid"], verification)
-        self.assertEqual(verification["record_count"], 8)
-        self.assertEqual(verification["exact_nsight_symbol_overlap_record_count"], 6)
+        self.assertEqual(verification["record_count"], 24)
+        self.assertEqual(verification["exact_nsight_symbol_overlap_record_count"], 18)
         self.assertTrue(verification["all_linear_roles_have_attested_symbol_overlap"])
         self.assertFalse(
             verification["canonical_eager_attention_symbols_attested_in_deployed_suite"]
         )
         self.assertFalse(verification["reduction_order_semantics_established"])
+        self.assertEqual(
+            set(self.binding["vector_classes"]),
+            {"cancellation", "grouped", "pseudo"},
+        )
 
     def test_binding_preserves_controlled_value_and_semantic_boundaries(self) -> None:
         self.assertFalse(self.binding["controlled_values_equal_recorded_model_tensors"])
@@ -54,7 +58,7 @@ class GemmaReductionBackendTests(unittest.TestCase):
         linear_records = [
             record for record in self.binding["records"] if record["primitive"] == "LINEAR"
         ]
-        self.assertEqual(len(linear_records), 6)
+        self.assertEqual(len(linear_records), 18)
         self.assertTrue(
             all(record["exact_nsight_suite_symbol_matches"] for record in linear_records)
         )
