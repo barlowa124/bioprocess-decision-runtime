@@ -668,6 +668,52 @@ def command_gemma_wmma_probe_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_gemma_wmma_accumulator_probe(args: argparse.Namespace) -> int:
+    from .gemma_wmma_accumulator_probe import (
+        build_wmma_accumulator_probe_certificate,
+        verify_wmma_accumulator_probe_certificate,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    backend = json.loads(args.backend.read_text(encoding="utf-8"))
+    certificate = build_wmma_accumulator_probe_certificate(
+        program, reduction, suite, backend
+    )
+    verification = verify_wmma_accumulator_probe_certificate(
+        program, reduction, suite, backend, certificate
+    )
+    if not verification["valid"]:
+        print(json.dumps(verification, indent=2, sort_keys=True))
+        return 1
+    _write_json(args.output, certificate)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0
+
+
+def command_gemma_wmma_accumulator_probe_verify(args: argparse.Namespace) -> int:
+    from .gemma_wmma_accumulator_probe import (
+        verify_wmma_accumulator_probe_certificate,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    backend = json.loads(args.backend.read_text(encoding="utf-8"))
+    certificate = json.loads(args.certificate.read_text(encoding="utf-8"))
+    verification = verify_wmma_accumulator_probe_certificate(
+        program,
+        reduction,
+        suite,
+        backend,
+        certificate,
+        reexecute=args.reexecute,
+    )
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     from .gemma_ir_primitives import (
         build_primitive_qualification_gate,
@@ -687,6 +733,9 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     )
     nsight_suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
     wmma_probe = json.loads(args.wmma_probe.read_text(encoding="utf-8"))
+    wmma_accumulator_probe = json.loads(
+        args.wmma_accumulator_probe.read_text(encoding="utf-8")
+    )
     gate = build_primitive_qualification_gate(
         program,
         certificate,
@@ -695,6 +744,7 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
         reduction_backend,
         nsight_suite,
         wmma_probe,
+        wmma_accumulator_probe,
     )
     verification = verify_primitive_qualification_gate(
         program,
@@ -704,6 +754,7 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
         reduction_backend,
         nsight_suite,
         wmma_probe,
+        wmma_accumulator_probe,
         gate,
     )
     _write_json(args.output, gate)
@@ -727,6 +778,9 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
     )
     nsight_suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
     wmma_probe = json.loads(args.wmma_probe.read_text(encoding="utf-8"))
+    wmma_accumulator_probe = json.loads(
+        args.wmma_accumulator_probe.read_text(encoding="utf-8")
+    )
     gate = json.loads(args.gate.read_text(encoding="utf-8"))
     verification = verify_primitive_qualification_gate(
         program,
@@ -736,6 +790,7 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
         reduction_backend,
         nsight_suite,
         wmma_probe,
+        wmma_accumulator_probe,
         gate,
     )
     print(json.dumps(verification, indent=2, sort_keys=True))
@@ -1655,6 +1710,23 @@ def build_parser() -> argparse.ArgumentParser:
     wmma_probe_verify_parser.add_argument("--reexecute", action="store_true")
     wmma_probe_verify_parser.set_defaults(handler=command_gemma_wmma_probe_verify)
 
+    wmma_accumulator_parser = subparsers.add_parser("gemma-wmma-accumulator-probe", help="Map single-small-addend retention across WMMA K16 lane triplets")
+    wmma_accumulator_parser.add_argument("--program", type=Path, required=True)
+    wmma_accumulator_parser.add_argument("--reduction", type=Path, required=True)
+    wmma_accumulator_parser.add_argument("--nsight-suite", type=Path, required=True)
+    wmma_accumulator_parser.add_argument("--backend", type=Path, required=True)
+    wmma_accumulator_parser.add_argument("--output", type=Path, required=True)
+    wmma_accumulator_parser.set_defaults(handler=command_gemma_wmma_accumulator_probe)
+
+    wmma_accumulator_verify_parser = subparsers.add_parser("gemma-wmma-accumulator-probe-verify", help="Verify WMMA single-addend retention records and optional CUDA replay")
+    wmma_accumulator_verify_parser.add_argument("--program", type=Path, required=True)
+    wmma_accumulator_verify_parser.add_argument("--reduction", type=Path, required=True)
+    wmma_accumulator_verify_parser.add_argument("--nsight-suite", type=Path, required=True)
+    wmma_accumulator_verify_parser.add_argument("--backend", type=Path, required=True)
+    wmma_accumulator_verify_parser.add_argument("certificate", type=Path)
+    wmma_accumulator_verify_parser.add_argument("--reexecute", action="store_true")
+    wmma_accumulator_verify_parser.set_defaults(handler=command_gemma_wmma_accumulator_probe_verify)
+
     primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
     primitive_gate_parser.add_argument("program", type=Path)
     primitive_gate_parser.add_argument("certificate", type=Path)
@@ -1663,6 +1735,7 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_gate_parser.add_argument("reduction_backend", type=Path)
     primitive_gate_parser.add_argument("nsight_suite", type=Path)
     primitive_gate_parser.add_argument("wmma_probe", type=Path)
+    primitive_gate_parser.add_argument("wmma_accumulator_probe", type=Path)
     primitive_gate_parser.add_argument("--output", type=Path, required=True)
     primitive_gate_parser.set_defaults(handler=command_gemma_ir_primitive_gate)
 
@@ -1674,6 +1747,7 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_gate_verify_parser.add_argument("reduction_backend", type=Path)
     primitive_gate_verify_parser.add_argument("nsight_suite", type=Path)
     primitive_gate_verify_parser.add_argument("wmma_probe", type=Path)
+    primitive_gate_verify_parser.add_argument("wmma_accumulator_probe", type=Path)
     primitive_gate_verify_parser.add_argument("gate", type=Path)
     primitive_gate_verify_parser.set_defaults(handler=command_gemma_ir_primitive_gate_verify)
 

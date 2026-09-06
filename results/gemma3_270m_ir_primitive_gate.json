@@ -17,7 +17,7 @@
   "complete_bfloat16_binary_truth_tables_established": false,
   "controlled_linear_roles_have_attested_kernel_identity": true,
   "controlled_values_equal_recorded_model_tensors": false,
-  "gate_sha256": "cb7bacf0c02f40e46ccc3382bd3b68ca245c12588e44dd6ad7f6617006fc37da",
+  "gate_sha256": "2f967d4d9513139f59d6a2b6ea827a854d82b9f21603c4f7633b57e1e551f0da",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -82,6 +82,10 @@
     "SOFTMAX"
   ],
   "wmma_accumulator_mapping_identified": false,
+  "wmma_accumulator_probe_certificate_sha256": "45165127e22891167952a8124128cb3b11d948ad595fe591ffba192e9ec87a43",
+  "wmma_accumulator_triplet_probe_count": 3360,
+  "wmma_candidate_half_order_full_numeric_semantics_established": false,
+  "wmma_candidate_half_order_rule_matches_triplet_domain": true,
   "wmma_operand_position_invariance_established": false,
   "wmma_probe_certificate_sha256": "b17f3057552fce2010a2728aeebaf32df7eaa84824f69e40855b1b071687d8de",
   "wmma_probe_count": 1024,

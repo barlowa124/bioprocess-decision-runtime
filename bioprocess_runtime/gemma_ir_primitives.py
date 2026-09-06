@@ -344,6 +344,7 @@ def build_primitive_qualification_gate(
     reduction_backend_binding: dict[str, Any],
     nsight_suite: dict[str, Any],
     wmma_probe_certificate: dict[str, Any],
+    wmma_accumulator_probe_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -387,6 +388,19 @@ def build_primitive_qualification_gate(
     )
     if not wmma_verification["valid"]:
         raise ValueError("WMMA probe certificate is invalid")
+    from .gemma_wmma_accumulator_probe import (
+        verify_wmma_accumulator_probe_certificate,
+    )
+
+    accumulator_verification = verify_wmma_accumulator_probe_certificate(
+        program,
+        reduction_certificate,
+        nsight_suite,
+        reduction_backend_binding,
+        wmma_accumulator_probe_certificate,
+    )
+    if not accumulator_verification["valid"]:
+        raise ValueError("WMMA accumulator probe certificate is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
@@ -410,6 +424,9 @@ def build_primitive_qualification_gate(
         ],
         "nsight_suite_sha256": nsight_suite["suite_sha256"],
         "wmma_probe_certificate_sha256": wmma_probe_certificate[
+            "certificate_sha256"
+        ],
+        "wmma_accumulator_probe_certificate_sha256": wmma_accumulator_probe_certificate[
             "certificate_sha256"
         ],
         "reached_opcodes": reached,
@@ -445,6 +462,15 @@ def build_primitive_qualification_gate(
         "wmma_accumulator_mapping_identified": wmma_verification[
             "wmma_accumulator_mapping_identified"
         ],
+        "wmma_accumulator_triplet_probe_count": accumulator_verification[
+            "probe_count"
+        ],
+        "wmma_candidate_half_order_rule_matches_triplet_domain": accumulator_verification[
+            "candidate_retention_rule_matches_exhaustive_triplet_domain"
+        ],
+        "wmma_candidate_half_order_full_numeric_semantics_established": accumulator_verification[
+            "candidate_k16_half_order_full_numeric_semantics_established"
+        ],
         "controlled_values_equal_recorded_model_tensors": False,
         "per_invocation_argument_binding_established": False,
         "unique_reduction_profile_identified": False,
@@ -465,6 +491,7 @@ def verify_primitive_qualification_gate(
     reduction_backend_binding: dict[str, Any],
     nsight_suite: dict[str, Any],
     wmma_probe_certificate: dict[str, Any],
+    wmma_accumulator_probe_certificate: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
@@ -476,6 +503,7 @@ def verify_primitive_qualification_gate(
             reduction_backend_binding,
             nsight_suite,
             wmma_probe_certificate,
+            wmma_accumulator_probe_certificate,
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -520,6 +548,15 @@ def verify_primitive_qualification_gate(
         ],
         "wmma_accumulator_mapping_identified": expected[
             "wmma_accumulator_mapping_identified"
+        ],
+        "wmma_accumulator_triplet_probe_count": expected[
+            "wmma_accumulator_triplet_probe_count"
+        ],
+        "wmma_candidate_half_order_rule_matches_triplet_domain": expected[
+            "wmma_candidate_half_order_rule_matches_triplet_domain"
+        ],
+        "wmma_candidate_half_order_full_numeric_semantics_established": expected[
+            "wmma_candidate_half_order_full_numeric_semantics_established"
         ],
         "unique_reduction_profile_identified": expected[
             "unique_reduction_profile_identified"

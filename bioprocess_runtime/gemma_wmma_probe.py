@@ -320,7 +320,7 @@ def verify_wmma_probe_certificate(
         and certificate.get("reduction_order_semantics_established") is False
         and certificate.get("hardware_instruction_semantics_established") is False
     ) if records_valid else False
-    reexecution_exact = True
+    reexecution_exact = None
     if reexecute:
         try:
             recomputed = build_wmma_probe_certificate(
@@ -336,7 +336,7 @@ def verify_wmma_probe_certificate(
             records_valid,
             claims_consistent,
             certificate.get("kernel_identity_matches_backend_binding") is True,
-            reexecution_exact,
+            not reexecute or reexecution_exact is True,
         )
     )
     return {
