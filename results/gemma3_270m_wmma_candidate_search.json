@@ -1,0 +1,910 @@
+{
+  "accumulator_probe_sha256": "45165127e22891167952a8124128cb3b11d948ad595fe591ffba192e9ec87a43",
+  "best_profiles": [
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1024,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": true,
+      "precision_bits": 25,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5384,
+      "total_records": 5384
+    }
+  ],
+  "best_total_matches": 5384,
+  "complete_matching_profiles": [
+    {
+      "half_order": "lower_then_upper",
+      "precision_bits": 25,
+      "rounding_mode": "toward_zero"
+    }
+  ],
+  "complete_numeric_transition_established": false,
+  "dataset_record_counts": {
+    "four_term_within_fragment": 1000,
+    "signed_magnitude": 1024,
+    "three_term_exhaustive": 3360
+  },
+  "hardware_instruction_semantics_established": false,
+  "magnitude_probe_sha256": "7356e3fa1cf80dd30f42a7a0d2b3645f327fbb7dfeed54bd89bbe444cb694117",
+  "mismatch_frontier": [],
+  "mismatch_frontier_count": 0,
+  "mismatch_reference_profile": {
+    "half_order": "lower_then_upper",
+    "precision_bits": 25,
+    "rounding_mode": "toward_zero"
+  },
+  "position_probe_sha256": "b17f3057552fce2010a2728aeebaf32df7eaa84824f69e40855b1b071687d8de",
+  "profile_count": 64,
+  "profiles": [
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1024,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": true,
+      "precision_bits": 25,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5384,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1012,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 25,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5372,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1012,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 26,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5372,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1000,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 24,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5360,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1000,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 24,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5360,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1000,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 26,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5360,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 1000,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 27,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5360,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 988,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 27,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5348,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 988,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 28,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5348,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 988,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 28,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5348,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 988,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 29,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5348,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 21,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 21,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 22,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 22,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 23,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 23,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 29,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 30,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 30,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5336,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 964,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 19,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5324,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 964,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 19,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5324,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 964,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 20,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5324,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 964,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 20,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5324,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 16,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 16,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 17,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 17,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 18,
+      "rounding_mode": "nearest_even",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 1000,
+        "signed_magnitude": 952,
+        "three_term_exhaustive": 3360
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 18,
+      "rounding_mode": "toward_zero",
+      "total_matches": 5312,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 576,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 25,
+      "rounding_mode": "toward_zero",
+      "total_matches": 4000,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 568,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 25,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3992,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 568,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 26,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3992,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 560,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 24,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3984,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 560,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 24,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3984,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 560,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 26,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3984,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 560,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 27,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3984,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 556,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 29,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3980,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 552,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 27,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3976,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 552,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 28,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3976,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 552,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 28,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3976,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 548,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 29,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3972,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 548,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 30,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3972,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 548,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 30,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3972,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 21,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 21,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 22,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 22,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 23,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 536,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 23,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3960,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 524,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 19,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3948,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 524,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 19,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3948,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 524,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 20,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3948,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 524,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 20,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3948,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 16,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 16,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 17,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 17,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 18,
+      "rounding_mode": "nearest_even",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 960,
+        "signed_magnitude": 512,
+        "three_term_exhaustive": 2464
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 18,
+      "rounding_mode": "toward_zero",
+      "total_matches": 3936,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 0,
+        "signed_magnitude": 976,
+        "three_term_exhaustive": 448
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 31,
+      "rounding_mode": "toward_zero",
+      "total_matches": 1424,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 0,
+        "signed_magnitude": 964,
+        "three_term_exhaustive": 448
+      },
+      "half_order": "lower_then_upper",
+      "matches_all": false,
+      "precision_bits": 31,
+      "rounding_mode": "nearest_even",
+      "total_matches": 1412,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 0,
+        "signed_magnitude": 552,
+        "three_term_exhaustive": 448
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 31,
+      "rounding_mode": "toward_zero",
+      "total_matches": 1000,
+      "total_records": 5384
+    },
+    {
+      "dataset_matches": {
+        "four_term_within_fragment": 0,
+        "signed_magnitude": 544,
+        "three_term_exhaustive": 448
+      },
+      "half_order": "upper_then_lower",
+      "matches_all": false,
+      "precision_bits": 31,
+      "rounding_mode": "nearest_even",
+      "total_matches": 992,
+      "total_records": 5384
+    }
+  ],
+  "reduction_backend_binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
+  "reduction_order_semantics_established": false,
+  "schema_version": 1,
+  "scope": "Search of shared-exponent K8 half-transition candidates against three controlled WMMA probe datasets; candidate fit does not establish CUTLASS, WMMA, tensor-core, or hardware semantics.",
+  "search_sha256": "5264c0730fd23c98be83fb03063ab9a8f351261ec001d18bef833671739842ad",
+  "searched_half_orders": [
+    "lower_then_upper",
+    "upper_then_lower"
+  ],
+  "searched_precision_bits": [
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "searched_rounding_modes": [
+    "toward_zero",
+    "nearest_even"
+  ],
+  "unique_all_matching_candidate_in_search_space": true,
+  "wmma_accumulator_mapping_identified": false
+}

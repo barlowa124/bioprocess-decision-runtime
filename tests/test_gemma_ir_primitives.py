@@ -63,6 +63,11 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
                 encoding="utf-8"
             )
         )
+        cls.wmma_candidate_search = json.loads(
+            (ROOT / "results" / "gemma3_270m_wmma_candidate_search.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
     def test_independent_index_oracles_reexecute_exactly(self) -> None:
         from bioprocess_runtime.gemma_ir_primitives import (
@@ -134,6 +139,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.wmma_probe,
             self.wmma_accumulator_probe,
             self.wmma_magnitude_probe,
+            self.wmma_candidate_search,
         )
         verification = verify_primitive_qualification_gate(
             self.program,
@@ -145,6 +151,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.wmma_probe,
             self.wmma_accumulator_probe,
             self.wmma_magnitude_probe,
+            self.wmma_candidate_search,
             gate,
         )
         self.assertTrue(verification["valid"], verification)
@@ -181,6 +188,14 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
         self.assertEqual(verification["wmma_magnitude_distinct_result_count"], 133)
         self.assertFalse(verification["wmma_sign_symmetry_established"])
         self.assertFalse(verification["wmma_magnitude_generalization_established"])
+        self.assertEqual(verification["wmma_candidate_search_profile_count"], 64)
+        self.assertEqual(verification["wmma_candidate_search_total_records"], 5384)
+        self.assertTrue(
+            verification["wmma_unique_all_matching_candidate_in_search_space"]
+        )
+        self.assertFalse(
+            verification["wmma_candidate_complete_numeric_transition_established"]
+        )
         self.assertEqual(verification["unrestricted_floating_point_opcode_count"], 11)
         self.assertFalse(verification["all_reached_primitive_semantics_qualified"])
         self.assertFalse(verification["global_exactness_activation_allowed"])
@@ -203,6 +218,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.wmma_probe,
             self.wmma_accumulator_probe,
             self.wmma_magnitude_probe,
+            self.wmma_candidate_search,
         )
         damaged = copy.deepcopy(gate)
         damaged["global_exactness_activation_allowed"] = True
@@ -218,6 +234,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.wmma_probe,
             self.wmma_accumulator_probe,
             self.wmma_magnitude_probe,
+            self.wmma_candidate_search,
             damaged,
         )
         self.assertFalse(verification["valid"])

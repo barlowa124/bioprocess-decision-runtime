@@ -758,6 +758,71 @@ def command_gemma_wmma_magnitude_probe_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_gemma_wmma_candidate_search(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import (
+        build_wmma_candidate_search,
+        verify_wmma_candidate_search,
+    )
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    backend = json.loads(args.backend.read_text(encoding="utf-8"))
+    position = json.loads(args.position_probe.read_text(encoding="utf-8"))
+    accumulator = json.loads(args.accumulator_probe.read_text(encoding="utf-8"))
+    magnitude = json.loads(args.magnitude_probe.read_text(encoding="utf-8"))
+    search = build_wmma_candidate_search(
+        program,
+        reduction,
+        suite,
+        backend,
+        position,
+        accumulator,
+        magnitude,
+    )
+    verification = verify_wmma_candidate_search(
+        program,
+        reduction,
+        suite,
+        backend,
+        position,
+        accumulator,
+        magnitude,
+        search,
+    )
+    if not verification["valid"]:
+        print(json.dumps(verification, indent=2, sort_keys=True))
+        return 1
+    _write_json(args.output, search)
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0
+
+
+def command_gemma_wmma_candidate_search_verify(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import verify_wmma_candidate_search
+
+    program = json.loads(args.program.read_text(encoding="utf-8"))
+    reduction = json.loads(args.reduction.read_text(encoding="utf-8"))
+    suite = json.loads(args.nsight_suite.read_text(encoding="utf-8"))
+    backend = json.loads(args.backend.read_text(encoding="utf-8"))
+    position = json.loads(args.position_probe.read_text(encoding="utf-8"))
+    accumulator = json.loads(args.accumulator_probe.read_text(encoding="utf-8"))
+    magnitude = json.loads(args.magnitude_probe.read_text(encoding="utf-8"))
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    verification = verify_wmma_candidate_search(
+        program,
+        reduction,
+        suite,
+        backend,
+        position,
+        accumulator,
+        magnitude,
+        search,
+    )
+    print(json.dumps(verification, indent=2, sort_keys=True))
+    return 0 if verification["valid"] else 1
+
+
 def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     from .gemma_ir_primitives import (
         build_primitive_qualification_gate,
@@ -783,6 +848,9 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
     wmma_magnitude_probe = json.loads(
         args.wmma_magnitude_probe.read_text(encoding="utf-8")
     )
+    wmma_candidate_search = json.loads(
+        args.wmma_candidate_search.read_text(encoding="utf-8")
+    )
     gate = build_primitive_qualification_gate(
         program,
         certificate,
@@ -793,6 +861,7 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
         wmma_probe,
         wmma_accumulator_probe,
         wmma_magnitude_probe,
+        wmma_candidate_search,
     )
     verification = verify_primitive_qualification_gate(
         program,
@@ -804,6 +873,7 @@ def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
         wmma_probe,
         wmma_accumulator_probe,
         wmma_magnitude_probe,
+        wmma_candidate_search,
         gate,
     )
     _write_json(args.output, gate)
@@ -833,6 +903,9 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
     wmma_magnitude_probe = json.loads(
         args.wmma_magnitude_probe.read_text(encoding="utf-8")
     )
+    wmma_candidate_search = json.loads(
+        args.wmma_candidate_search.read_text(encoding="utf-8")
+    )
     gate = json.loads(args.gate.read_text(encoding="utf-8"))
     verification = verify_primitive_qualification_gate(
         program,
@@ -844,6 +917,7 @@ def command_gemma_ir_primitive_gate_verify(args: argparse.Namespace) -> int:
         wmma_probe,
         wmma_accumulator_probe,
         wmma_magnitude_probe,
+        wmma_candidate_search,
         gate,
     )
     print(json.dumps(verification, indent=2, sort_keys=True))
@@ -1797,6 +1871,28 @@ def build_parser() -> argparse.ArgumentParser:
     wmma_magnitude_verify_parser.add_argument("--reexecute", action="store_true")
     wmma_magnitude_verify_parser.set_defaults(handler=command_gemma_wmma_magnitude_probe_verify)
 
+    wmma_candidate_parser = subparsers.add_parser("gemma-wmma-candidate-search", help="Search shared-exponent K8 half-transition candidates against all WMMA probes")
+    wmma_candidate_parser.add_argument("--program", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--reduction", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--nsight-suite", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--backend", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--position-probe", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--accumulator-probe", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--magnitude-probe", type=Path, required=True)
+    wmma_candidate_parser.add_argument("--output", type=Path, required=True)
+    wmma_candidate_parser.set_defaults(handler=command_gemma_wmma_candidate_search)
+
+    wmma_candidate_verify_parser = subparsers.add_parser("gemma-wmma-candidate-search-verify", help="Recompute and verify the WMMA numeric candidate search")
+    wmma_candidate_verify_parser.add_argument("--program", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--reduction", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--nsight-suite", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--backend", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--position-probe", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--accumulator-probe", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("--magnitude-probe", type=Path, required=True)
+    wmma_candidate_verify_parser.add_argument("search", type=Path)
+    wmma_candidate_verify_parser.set_defaults(handler=command_gemma_wmma_candidate_search_verify)
+
     primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
     primitive_gate_parser.add_argument("program", type=Path)
     primitive_gate_parser.add_argument("certificate", type=Path)
@@ -1807,6 +1903,7 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_gate_parser.add_argument("wmma_probe", type=Path)
     primitive_gate_parser.add_argument("wmma_accumulator_probe", type=Path)
     primitive_gate_parser.add_argument("wmma_magnitude_probe", type=Path)
+    primitive_gate_parser.add_argument("wmma_candidate_search", type=Path)
     primitive_gate_parser.add_argument("--output", type=Path, required=True)
     primitive_gate_parser.set_defaults(handler=command_gemma_ir_primitive_gate)
 
@@ -1820,6 +1917,7 @@ def build_parser() -> argparse.ArgumentParser:
     primitive_gate_verify_parser.add_argument("wmma_probe", type=Path)
     primitive_gate_verify_parser.add_argument("wmma_accumulator_probe", type=Path)
     primitive_gate_verify_parser.add_argument("wmma_magnitude_probe", type=Path)
+    primitive_gate_verify_parser.add_argument("wmma_candidate_search", type=Path)
     primitive_gate_verify_parser.add_argument("gate", type=Path)
     primitive_gate_verify_parser.set_defaults(handler=command_gemma_ir_primitive_gate_verify)
 

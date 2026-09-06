@@ -346,6 +346,7 @@ def build_primitive_qualification_gate(
     wmma_probe_certificate: dict[str, Any],
     wmma_accumulator_probe_certificate: dict[str, Any],
     wmma_magnitude_probe_certificate: dict[str, Any],
+    wmma_candidate_search: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -413,6 +414,20 @@ def build_primitive_qualification_gate(
     )
     if not magnitude_verification["valid"]:
         raise ValueError("WMMA magnitude probe certificate is invalid")
+    from .gemma_wmma_candidate import verify_wmma_candidate_search
+
+    candidate_verification = verify_wmma_candidate_search(
+        program,
+        reduction_certificate,
+        nsight_suite,
+        reduction_backend_binding,
+        wmma_probe_certificate,
+        wmma_accumulator_probe_certificate,
+        wmma_magnitude_probe_certificate,
+        wmma_candidate_search,
+    )
+    if not candidate_verification["valid"]:
+        raise ValueError("WMMA candidate search is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
@@ -444,6 +459,7 @@ def build_primitive_qualification_gate(
         "wmma_magnitude_probe_certificate_sha256": wmma_magnitude_probe_certificate[
             "certificate_sha256"
         ],
+        "wmma_candidate_search_sha256": wmma_candidate_search["search_sha256"],
         "reached_opcodes": reached,
         "independently_tested_index_opcodes": independently_tested,
         "independently_specified_finite_bfloat16_opcodes": specified_bfloat16,
@@ -498,6 +514,18 @@ def build_primitive_qualification_gate(
         ],
         "wmma_magnitude_reduction_order_established": False,
         "wmma_magnitude_hardware_semantics_established": False,
+        "wmma_candidate_search_profile_count": candidate_verification[
+            "profile_count"
+        ],
+        "wmma_candidate_search_total_records": candidate_verification[
+            "total_records"
+        ],
+        "wmma_unique_all_matching_candidate_in_search_space": candidate_verification[
+            "unique_all_matching_candidate_in_search_space"
+        ],
+        "wmma_candidate_complete_numeric_transition_established": candidate_verification[
+            "complete_numeric_transition_established"
+        ],
         "controlled_values_equal_recorded_model_tensors": False,
         "per_invocation_argument_binding_established": False,
         "unique_reduction_profile_identified": False,
@@ -520,6 +548,7 @@ def verify_primitive_qualification_gate(
     wmma_probe_certificate: dict[str, Any],
     wmma_accumulator_probe_certificate: dict[str, Any],
     wmma_magnitude_probe_certificate: dict[str, Any],
+    wmma_candidate_search: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
@@ -533,6 +562,7 @@ def verify_primitive_qualification_gate(
             wmma_probe_certificate,
             wmma_accumulator_probe_certificate,
             wmma_magnitude_probe_certificate,
+            wmma_candidate_search,
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -602,6 +632,18 @@ def verify_primitive_qualification_gate(
         ],
         "wmma_magnitude_hardware_semantics_established": expected[
             "wmma_magnitude_hardware_semantics_established"
+        ],
+        "wmma_candidate_search_profile_count": expected[
+            "wmma_candidate_search_profile_count"
+        ],
+        "wmma_candidate_search_total_records": expected[
+            "wmma_candidate_search_total_records"
+        ],
+        "wmma_unique_all_matching_candidate_in_search_space": expected[
+            "wmma_unique_all_matching_candidate_in_search_space"
+        ],
+        "wmma_candidate_complete_numeric_transition_established": expected[
+            "wmma_candidate_complete_numeric_transition_established"
         ],
         "unique_reduction_profile_identified": expected[
             "unique_reduction_profile_identified"

@@ -17,7 +17,7 @@
   "complete_bfloat16_binary_truth_tables_established": false,
   "controlled_linear_roles_have_attested_kernel_identity": true,
   "controlled_values_equal_recorded_model_tensors": false,
-  "gate_sha256": "1ac52a7cb7245a74c397eb72c5cd89dbf061929b0cff0e054fcb7f6e581ba74f",
+  "gate_sha256": "cc25390a4a0f55f0f9652aa7b303fe8f1a1c6d79c331a02fc08456f39bd4fabe",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -84,8 +84,12 @@
   "wmma_accumulator_mapping_identified": false,
   "wmma_accumulator_probe_certificate_sha256": "45165127e22891167952a8124128cb3b11d948ad595fe591ffba192e9ec87a43",
   "wmma_accumulator_triplet_probe_count": 3360,
+  "wmma_candidate_complete_numeric_transition_established": false,
   "wmma_candidate_half_order_full_numeric_semantics_established": false,
   "wmma_candidate_half_order_rule_matches_triplet_domain": true,
+  "wmma_candidate_search_profile_count": 64,
+  "wmma_candidate_search_sha256": "5264c0730fd23c98be83fb03063ab9a8f351261ec001d18bef833671739842ad",
+  "wmma_candidate_search_total_records": 5384,
   "wmma_magnitude_distinct_result_count": 133,
   "wmma_magnitude_generalization_established": false,
   "wmma_magnitude_hardware_semantics_established": false,
@@ -97,5 +101,6 @@
   "wmma_probe_count": 1024,
   "wmma_probe_distinct_result_count": 2,
   "wmma_probe_reexecuted_for_gate": false,
-  "wmma_sign_symmetry_established": false
+  "wmma_sign_symmetry_established": false,
+  "wmma_unique_all_matching_candidate_in_search_space": true
 }
