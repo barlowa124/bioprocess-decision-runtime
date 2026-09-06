@@ -345,6 +345,7 @@ def build_primitive_qualification_gate(
     nsight_suite: dict[str, Any],
     wmma_probe_certificate: dict[str, Any],
     wmma_accumulator_probe_certificate: dict[str, Any],
+    wmma_magnitude_probe_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -401,6 +402,17 @@ def build_primitive_qualification_gate(
     )
     if not accumulator_verification["valid"]:
         raise ValueError("WMMA accumulator probe certificate is invalid")
+    from .gemma_wmma_magnitude_probe import verify_wmma_magnitude_probe_certificate
+
+    magnitude_verification = verify_wmma_magnitude_probe_certificate(
+        program,
+        reduction_certificate,
+        nsight_suite,
+        reduction_backend_binding,
+        wmma_magnitude_probe_certificate,
+    )
+    if not magnitude_verification["valid"]:
+        raise ValueError("WMMA magnitude probe certificate is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
@@ -427,6 +439,9 @@ def build_primitive_qualification_gate(
             "certificate_sha256"
         ],
         "wmma_accumulator_probe_certificate_sha256": wmma_accumulator_probe_certificate[
+            "certificate_sha256"
+        ],
+        "wmma_magnitude_probe_certificate_sha256": wmma_magnitude_probe_certificate[
             "certificate_sha256"
         ],
         "reached_opcodes": reached,
@@ -471,6 +486,18 @@ def build_primitive_qualification_gate(
         "wmma_candidate_half_order_full_numeric_semantics_established": accumulator_verification[
             "candidate_k16_half_order_full_numeric_semantics_established"
         ],
+        "wmma_magnitude_probe_count": magnitude_verification["probe_count"],
+        "wmma_magnitude_distinct_result_count": magnitude_verification[
+            "distinct_result_count"
+        ],
+        "wmma_sign_symmetry_established": magnitude_verification[
+            "sign_symmetry_established_for_all_pairs"
+        ],
+        "wmma_magnitude_generalization_established": magnitude_verification[
+            "magnitude_generalization_established"
+        ],
+        "wmma_magnitude_reduction_order_established": False,
+        "wmma_magnitude_hardware_semantics_established": False,
         "controlled_values_equal_recorded_model_tensors": False,
         "per_invocation_argument_binding_established": False,
         "unique_reduction_profile_identified": False,
@@ -492,6 +519,7 @@ def verify_primitive_qualification_gate(
     nsight_suite: dict[str, Any],
     wmma_probe_certificate: dict[str, Any],
     wmma_accumulator_probe_certificate: dict[str, Any],
+    wmma_magnitude_probe_certificate: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
@@ -504,6 +532,7 @@ def verify_primitive_qualification_gate(
             nsight_suite,
             wmma_probe_certificate,
             wmma_accumulator_probe_certificate,
+            wmma_magnitude_probe_certificate,
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -557,6 +586,22 @@ def verify_primitive_qualification_gate(
         ],
         "wmma_candidate_half_order_full_numeric_semantics_established": expected[
             "wmma_candidate_half_order_full_numeric_semantics_established"
+        ],
+        "wmma_magnitude_probe_count": expected["wmma_magnitude_probe_count"],
+        "wmma_magnitude_distinct_result_count": expected[
+            "wmma_magnitude_distinct_result_count"
+        ],
+        "wmma_sign_symmetry_established": expected[
+            "wmma_sign_symmetry_established"
+        ],
+        "wmma_magnitude_generalization_established": expected[
+            "wmma_magnitude_generalization_established"
+        ],
+        "wmma_magnitude_reduction_order_established": expected[
+            "wmma_magnitude_reduction_order_established"
+        ],
+        "wmma_magnitude_hardware_semantics_established": expected[
+            "wmma_magnitude_hardware_semantics_established"
         ],
         "unique_reduction_profile_identified": expected[
             "unique_reduction_profile_identified"

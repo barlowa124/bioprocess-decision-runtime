@@ -17,7 +17,7 @@
   "complete_bfloat16_binary_truth_tables_established": false,
   "controlled_linear_roles_have_attested_kernel_identity": true,
   "controlled_values_equal_recorded_model_tensors": false,
-  "gate_sha256": "2f967d4d9513139f59d6a2b6ea827a854d82b9f21603c4f7633b57e1e551f0da",
+  "gate_sha256": "1ac52a7cb7245a74c397eb72c5cd89dbf061929b0cff0e054fcb7f6e581ba74f",
   "global_exactness_activation_allowed": false,
   "independently_specified_finite_bfloat16_opcode_count": 3,
   "independently_specified_finite_bfloat16_opcodes": [
@@ -86,9 +86,16 @@
   "wmma_accumulator_triplet_probe_count": 3360,
   "wmma_candidate_half_order_full_numeric_semantics_established": false,
   "wmma_candidate_half_order_rule_matches_triplet_domain": true,
+  "wmma_magnitude_distinct_result_count": 133,
+  "wmma_magnitude_generalization_established": false,
+  "wmma_magnitude_hardware_semantics_established": false,
+  "wmma_magnitude_probe_certificate_sha256": "7356e3fa1cf80dd30f42a7a0d2b3645f327fbb7dfeed54bd89bbe444cb694117",
+  "wmma_magnitude_probe_count": 1024,
+  "wmma_magnitude_reduction_order_established": false,
   "wmma_operand_position_invariance_established": false,
   "wmma_probe_certificate_sha256": "b17f3057552fce2010a2728aeebaf32df7eaa84824f69e40855b1b071687d8de",
   "wmma_probe_count": 1024,
   "wmma_probe_distinct_result_count": 2,
-  "wmma_probe_reexecuted_for_gate": false
+  "wmma_probe_reexecuted_for_gate": false,
+  "wmma_sign_symmetry_established": false
 }

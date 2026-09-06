@@ -58,6 +58,11 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
                 / "gemma3_270m_wmma_accumulator_probe.json"
             ).read_text(encoding="utf-8")
         )
+        cls.wmma_magnitude_probe = json.loads(
+            (ROOT / "results" / "gemma3_270m_wmma_magnitude_probe.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
     def test_independent_index_oracles_reexecute_exactly(self) -> None:
         from bioprocess_runtime.gemma_ir_primitives import (
@@ -128,6 +133,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.nsight_suite,
             self.wmma_probe,
             self.wmma_accumulator_probe,
+            self.wmma_magnitude_probe,
         )
         verification = verify_primitive_qualification_gate(
             self.program,
@@ -138,6 +144,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.nsight_suite,
             self.wmma_probe,
             self.wmma_accumulator_probe,
+            self.wmma_magnitude_probe,
             gate,
         )
         self.assertTrue(verification["valid"], verification)
@@ -170,6 +177,10 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
                 "wmma_candidate_half_order_full_numeric_semantics_established"
             ]
         )
+        self.assertEqual(verification["wmma_magnitude_probe_count"], 1024)
+        self.assertEqual(verification["wmma_magnitude_distinct_result_count"], 133)
+        self.assertFalse(verification["wmma_sign_symmetry_established"])
+        self.assertFalse(verification["wmma_magnitude_generalization_established"])
         self.assertEqual(verification["unrestricted_floating_point_opcode_count"], 11)
         self.assertFalse(verification["all_reached_primitive_semantics_qualified"])
         self.assertFalse(verification["global_exactness_activation_allowed"])
@@ -191,6 +202,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.nsight_suite,
             self.wmma_probe,
             self.wmma_accumulator_probe,
+            self.wmma_magnitude_probe,
         )
         damaged = copy.deepcopy(gate)
         damaged["global_exactness_activation_allowed"] = True
@@ -205,6 +217,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             self.nsight_suite,
             self.wmma_probe,
             self.wmma_accumulator_probe,
+            self.wmma_magnitude_probe,
             damaged,
         )
         self.assertFalse(verification["valid"])
