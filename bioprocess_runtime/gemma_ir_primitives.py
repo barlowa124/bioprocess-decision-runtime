@@ -343,6 +343,7 @@ def build_primitive_qualification_gate(
     reduction_certificate: dict[str, Any],
     reduction_backend_binding: dict[str, Any],
     nsight_suite: dict[str, Any],
+    wmma_probe_certificate: dict[str, Any],
 ) -> dict[str, Any]:
     if not verify_gemma_ir(program)["valid"]:
         raise ValueError("Cannot qualify primitives for an invalid Gemma IR")
@@ -375,6 +376,17 @@ def build_primitive_qualification_gate(
     )
     if not backend_verification["valid"]:
         raise ValueError("Reduction backend binding is invalid")
+    from .gemma_wmma_probe import verify_wmma_probe_certificate
+
+    wmma_verification = verify_wmma_probe_certificate(
+        program,
+        reduction_certificate,
+        nsight_suite,
+        reduction_backend_binding,
+        wmma_probe_certificate,
+    )
+    if not wmma_verification["valid"]:
+        raise ValueError("WMMA probe certificate is invalid")
     reached = sorted({instruction["opcode"] for instruction in program["instructions"]})
     independently_tested = sorted(set(reached) & EXACT_INDEX_OPCODES)
     specified_bfloat16 = sorted(set(reached) & {"ADD", "MUL", "SCALE"})
@@ -397,6 +409,9 @@ def build_primitive_qualification_gate(
             "binding_sha256"
         ],
         "nsight_suite_sha256": nsight_suite["suite_sha256"],
+        "wmma_probe_certificate_sha256": wmma_probe_certificate[
+            "certificate_sha256"
+        ],
         "reached_opcodes": reached,
         "independently_tested_index_opcodes": independently_tested,
         "independently_specified_finite_bfloat16_opcodes": specified_bfloat16,
@@ -417,6 +432,19 @@ def build_primitive_qualification_gate(
         "canonical_eager_attention_kernel_attestation_complete": backend_verification[
             "canonical_eager_attention_symbols_attested_in_deployed_suite"
         ],
+        "wmma_probe_count": wmma_verification["probe_count"],
+        "wmma_probe_reexecuted_for_gate": wmma_verification[
+            "reexecution_performed"
+        ],
+        "wmma_probe_distinct_result_count": wmma_verification[
+            "distinct_result_count"
+        ],
+        "wmma_operand_position_invariance_established": wmma_verification[
+            "operand_position_invariance_established"
+        ],
+        "wmma_accumulator_mapping_identified": wmma_verification[
+            "wmma_accumulator_mapping_identified"
+        ],
         "controlled_values_equal_recorded_model_tensors": False,
         "per_invocation_argument_binding_established": False,
         "unique_reduction_profile_identified": False,
@@ -436,6 +464,7 @@ def verify_primitive_qualification_gate(
     reduction_certificate: dict[str, Any],
     reduction_backend_binding: dict[str, Any],
     nsight_suite: dict[str, Any],
+    wmma_probe_certificate: dict[str, Any],
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     try:
@@ -446,6 +475,7 @@ def verify_primitive_qualification_gate(
             reduction_certificate,
             reduction_backend_binding,
             nsight_suite,
+            wmma_probe_certificate,
         )
     except (TypeError, ValueError, RuntimeError, AttributeError):
         return {"valid": False}
@@ -477,6 +507,19 @@ def verify_primitive_qualification_gate(
         ],
         "canonical_eager_attention_kernel_attestation_complete": expected[
             "canonical_eager_attention_kernel_attestation_complete"
+        ],
+        "wmma_probe_count": expected["wmma_probe_count"],
+        "wmma_probe_reexecuted_for_gate": expected[
+            "wmma_probe_reexecuted_for_gate"
+        ],
+        "wmma_probe_distinct_result_count": expected[
+            "wmma_probe_distinct_result_count"
+        ],
+        "wmma_operand_position_invariance_established": expected[
+            "wmma_operand_position_invariance_established"
+        ],
+        "wmma_accumulator_mapping_identified": expected[
+            "wmma_accumulator_mapping_identified"
         ],
         "unique_reduction_profile_identified": expected[
             "unique_reduction_profile_identified"
