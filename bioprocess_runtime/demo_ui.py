@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import re
+import webbrowser
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -292,12 +293,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Local-only evidence viewer and synthetic advisory demonstration; no model inference or equipment actuation.")
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--open-browser", action="store_true")
     args = parser.parse_args()
     if not 0 <= args.port <= 65535:
         parser.error("Port must be between 0 and 65535")
     with DemoServer(args.root, args.port) as server:
         print(f"Demonstration UI: http://127.0.0.1:{server.server_port}", flush=True)
         print(NOTICE, flush=True)
+        if args.open_browser:
+            try:
+                webbrowser.open(f"http://127.0.0.1:{server.server_port}")
+            except webbrowser.Error:
+                print("Open the local address above in your browser.", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

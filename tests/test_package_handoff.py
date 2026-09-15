@@ -4,6 +4,8 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -54,6 +56,42 @@ class HandoffTests(unittest.TestCase):
             self.assertNotIn('gemma_independent', launcher)
             self.assertNotIn('pip install', launcher)
         self.assertEqual(len(package.verify_archive(output)['files']), 2)
+
+    def test_mac_demo_bundle_is_small_stdlib_only_and_executable(self):
+        root = Path(__file__).resolve().parents[1]
+        log = self.root / 'synthetic-regression.log'
+        log.write_text('Ran 625 tests in 1.0s\nOK\nNo broken requirements found.\nVERIFICATION_EXIT_CODE=0\n')
+        original_safe_file = package.safe_file
+        lookup = patch.object(package, 'safe_file', side_effect=lambda base, name: log if name == 'gemma_independent_holdout_verification_v3.log' else original_safe_file(base, name))
+        lookup.start()
+        self.addCleanup(lookup.stop)
+        with patch.object(package, 'runtime_paths', side_effect=AssertionError('no runtime assets')):
+            records = package.inventory(root, False, demo_only=True)
+        names = {row['path'] for row in records}
+        self.assertIn('gemma_independent_holdout_verification_v3.log', names)
+        self.assertNotIn('bioprocess_runtime/gemma_independent_run.py', names)
+        self.assertFalse(any(name.startswith(('.models/', 'artifacts/')) for name in names))
+        output = self.root / 'mac-demo.zip'
+        with self.assertRaises(ValueError):
+            package.build_archive(root, self.root / 'incomplete.zip', records[:-1], False, demo_only=True)
+        with patch.object(package, 'environment_manifest', side_effect=AssertionError('no Windows dependency pins')):
+            result = package.build_archive(root, output, records, False, demo_only=True)
+        manifest = package.verify_archive(output)
+        self.assertEqual(manifest['kind'], 'mac_demo_handoff')
+        self.assertEqual(manifest['environment']['dependencies'], 'Python standard library only')
+        self.assertLess(result['bytes'], 32 * 1024 * 1024)
+        with zipfile.ZipFile(output) as archive:
+            launcher = archive.read('Launch Demo.command')
+            self.assertNotIn(b'\r', launcher)
+            self.assertIn(b'--open-browser', launcher)
+            self.assertIn(b'3, 11', launcher)
+            self.assertNotIn('handoff-requirements.txt', archive.namelist())
+            self.assertEqual(archive.getinfo('Launch Demo.command').external_attr >> 16 & 0o777, 0o755)
+            extracted = self.root / 'extracted demo'
+            archive.extractall(extracted)
+        script = "import sys; from pathlib import Path; root=Path(sys.argv[1]); sys.path.insert(0,str(root)); from bioprocess_runtime import demo_ui as ui; assert Path(ui.__file__).is_relative_to(root); data=ui.catalog(root); assert data['full_target_replay_recorded']; assert data['verification']['tests']==625 and data['verification']['complete']; assert ui.run_scenario(root,'low_oxygen')['matches_expected']; assert not any(name in sys.modules for name in ('torch','numpy','sklearn')); print('EXTRACTED_DEMO_STDLIB_ONLY=True')"
+        completed = subprocess.run([sys.executable, '-I', '-c', script, str(extracted)], cwd=extracted, check=True, capture_output=True, text=True, timeout=30)
+        self.assertIn('EXTRACTED_DEMO_STDLIB_ONLY=True', completed.stdout)
 
     def test_existing_archive_is_never_overwritten(self):
         output = self.root / 'old.zip'

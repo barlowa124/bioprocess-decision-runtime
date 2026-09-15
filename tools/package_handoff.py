@@ -91,8 +91,25 @@ def runtime_paths(root):
     return names
 
 
-def inventory(root, include_runtime):
-    names = source_paths(root)
+def demo_paths(root):
+    sys.path.insert(0, str(root))
+    from bioprocess_runtime import demo_ui
+    modules = ('__init__', 'demo_ui', 'demo_assets', 'domain', 'policy', 'runtime', 'serialization', 'simulator')
+    names = {f'bioprocess_runtime/{name}.py' for name in modules}
+    names.update(('README.md', 'LICENSE', 'policies/oxygen_advisory.bpr', 'gemma_independent_holdout_verification_v3.log',
+                  'results/gemma3_270m_execution_ir.json', 'results/gemma3_270m_independent_baseline_v2_diagnosis.json',
+                  'results/gemma_vocab_validation_summary_v1.json'))
+    names.update(f'results/gemma3_270m_{spec.stem}_{kind}.json' for spec in demo_ui.EVIDENCE for kind in ('plan', 'summary'))
+    for name in names:
+        if safe_file(root, name).stat().st_size > demo_ui.MAX_FILE_BYTES:
+            raise ValueError('Demo-only asset exceeds the UI size limit: ' + name)
+    return names
+
+
+def inventory(root, include_runtime, *, demo_only=False):
+    if include_runtime and demo_only:
+        raise ValueError('Demo-only packaging cannot include the numerical runtime')
+    names = demo_paths(root) if demo_only else source_paths(root)
     if include_runtime:
         names.update(runtime_paths(root))
     records = []
@@ -143,7 +160,30 @@ def verify_archive(path):
     return manifest
 
 
-def build_archive(root, output, records, include_runtime):
+def mac_launcher():
+    return '''#!/bin/sh
+cd "$(dirname "$0")" || exit 1
+printf '%s\\n' 'Starting the saved-evidence demo. No model inference will run.'
+for candidate in /opt/homebrew/bin/python3 /usr/local/bin/python3 python3.14 python3.13 python3.12 python3.11 python3; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' >/dev/null 2>&1; then
+        exec "$candidate" -m bioprocess_runtime.demo_ui --port 0 --open-browser
+    fi
+done
+printf '%s\\n' 'Python 3.11 or newer is required. Install Python, then open this launcher again.'
+printf '%s\\n' 'No packages, model files, or GPU are required for this demo.'
+printf '%s' 'Press Return to close. '
+read -r answer
+exit 1
+'''
+
+
+def build_archive(root, output, records, include_runtime, *, demo_only=False):
+    if include_runtime and demo_only:
+        raise ValueError('Demo-only packaging cannot include the numerical runtime')
+    if demo_only:
+        allowed = demo_paths(root)
+        if len(records) != len(allowed) or {row['path'] for row in records} != allowed:
+            raise ValueError('Demo-only archive requires exactly the allowlisted assets')
     if output.exists() or output.suffix.lower() != '.zip':
         raise ValueError('Use a new .zip output file')
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -151,10 +191,15 @@ def build_archive(root, output, records, include_runtime):
     if shutil.disk_usage(output.parent).free < total + max(1024**3, total // 10):
         raise ValueError('Insufficient free disk space for an uncompressed safe handoff')
     temporary = output.with_name(output.name + '.' + uuid.uuid4().hex + '.partial')
-    manifest = {'schema_version': 1, 'kind': 'local_runtime_handoff' if include_runtime else 'source_demo_handoff',
+    manifest = {'schema_version': 1, 'kind': 'mac_demo_handoff' if demo_only else 'local_runtime_handoff' if include_runtime else 'source_demo_handoff',
                 'git_head': git(root, 'rev-parse', 'HEAD').decode().strip(), 'working_tree_clean': not bool(git(root, 'status', '--porcelain')),
-                'files': [], 'environment': environment_manifest(), 'compression': 'stored',
+                'files': [], 'environment': {'python_requirement': '>=3.11', 'dependencies': 'Python standard library only', 'model_execution_supported': False, 'tested_on_macos': False} if demo_only else environment_manifest(), 'compression': 'stored',
                 'limitations': ['No virtual environment or system CUDA driver is bundled.', 'Fresh numerical execution requires the declared matching runtime; saved UI does not run a model.', 'Completed proof checkpoints are included where required; the full interrupted checkpoint history is not bundled.', 'No upload or numerical re-execution was performed by packaging.']}
+    if demo_only:
+        manifest['limitations'] = ['Saved numerical evidence and live synthetic policy only; no model inference assets.',
+                                   'Python 3.11 or newer must already be installed; no dependency installation is performed.',
+                                   'The regression log records the original workstation run, not a fresh Mac test.',
+                                   'The launcher is prepared for macOS; actual Mac launch and visual review require user confirmation.']
     try:
         with zipfile.ZipFile(temporary, 'x', compression=zipfile.ZIP_STORED, allowZip64=True) as archive:
             for record in records:
@@ -171,11 +216,14 @@ def build_archive(root, output, records, include_runtime):
                 if before.st_size != written or (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
                     raise ValueError('Source changed while packaging: ' + record['path'])
                 manifest['files'].append({'path': record['path'], 'bytes': written, 'sha256': digest.hexdigest()})
-            requirements = ''.join(name + '==' + version + '\n' for name, version in manifest['environment']['packages'].items() if name.lower().replace('_', '-') not in ('bioprocess-decision-runtime', 'pip', 'setuptools', 'wheel'))
+            requirements = ''.join(name + '==' + version + '\n' for name, version in manifest['environment'].get('packages', {}).items() if name.lower().replace('_', '-') not in ('bioprocess-decision-runtime', 'pip', 'setuptools', 'wheel'))
             launcher = '@echo off\r\ncd /d "%~dp0"\r\nif exist ".venv\\Scripts\\python.exe" (\r\n  ".venv\\Scripts\\python.exe" -m bioprocess_runtime.demo_ui --port 0\r\n) else (\r\n  py -3.11 -m bioprocess_runtime.demo_ui --port 0\r\n)\r\npause\r\n'
-            generated = {'handoff-requirements.txt': requirements.encode('utf-8'), 'launch-demo.cmd': launcher.encode('utf-8')}
+            generated = {'Launch Demo.command': mac_launcher().encode('utf-8')} if demo_only else {'handoff-requirements.txt': requirements.encode('utf-8'), 'launch-demo.cmd': launcher.encode('utf-8')}
             for name, data in generated.items():
-                archive.writestr(name, data)
+                member = zipfile.ZipInfo(name)
+                member.create_system = 3
+                member.external_attr = (0o100755 if name.endswith('.command') else 0o100644) << 16
+                archive.writestr(member, data)
                 manifest['files'].append({'path': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
             archive.writestr('handoff-manifest.json', json.dumps(manifest, indent=2, sort_keys=True) + '\n')
         with temporary.open('r+b') as stream:
@@ -201,7 +249,9 @@ def main():
     parser = argparse.ArgumentParser(description='Low-CPU local handoff builder; no inference or downloads')
     parser.add_argument('operation', choices=('inventory', 'build', 'verify', 'check-index'))
     parser.add_argument('--root', type=Path, default=ROOT)
-    parser.add_argument('--runtime', action='store_true')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--runtime', action='store_true')
+    modes.add_argument('--demo-only', action='store_true')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     root = args.root.resolve()
@@ -211,7 +261,7 @@ def main():
         manifest = verify_archive(args.output)
         print(json.dumps({'verified': True, 'files': len(manifest['files']), 'git_head': manifest['git_head']}))
         return
-    records = inventory(root, args.runtime)
+    records = inventory(root, args.runtime, demo_only=args.demo_only)
     if args.operation == 'inventory':
         print(json.dumps({'files': len(records), 'total_bytes': sum(record['bytes'] for record in records),
                           'crlf_source_files': [record['path'] for record in records if record.get('crlf_count')],
@@ -230,7 +280,7 @@ def main():
     else:
         if args.output is None:
             parser.error('--output is required')
-        print(json.dumps(build_archive(root, args.output.resolve(), records, args.runtime), indent=2))
+        print(json.dumps(build_archive(root, args.output.resolve(), records, args.runtime, demo_only=args.demo_only), indent=2))
 
 
 if __name__ == '__main__':

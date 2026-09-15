@@ -70,6 +70,26 @@ class DemoDataTests(unittest.TestCase):
         self.assertEqual([layer["index"] for layer in value["layers"] if layer["coverage"] == "connected_recorded"], [0, 1])
         self.assertEqual(value["layers"][2]["coverage"], "partial_recorded")
 
+    def test_browser_open_is_opt_in_and_uses_bound_loopback_port(self):
+        for enabled in (False, True):
+            with patch.object(ui, 'DemoServer') as server_type, patch.object(ui.webbrowser, 'open') as open_browser, patch('sys.argv', ['demo', '--port', '0'] + (['--open-browser'] if enabled else [])):
+                server = server_type.return_value.__enter__.return_value
+                server.server_port = 12345
+                server.serve_forever.side_effect = KeyboardInterrupt
+                ui.main()
+                if enabled:
+                    open_browser.assert_called_once_with('http://127.0.0.1:12345')
+                else:
+                    open_browser.assert_not_called()
+
+    def test_browser_failure_still_serves_the_demo(self):
+        with patch.object(ui, 'DemoServer') as server_type, patch.object(ui.webbrowser, 'open', side_effect=ui.webbrowser.Error('no browser')), patch('sys.argv', ['demo', '--open-browser']):
+            server = server_type.return_value.__enter__.return_value
+            server.server_port = 12345
+            server.serve_forever.side_effect = KeyboardInterrupt
+            ui.main()
+            server.serve_forever.assert_called_once()
+
     def test_missing_evidence_never_invents_coverage(self):
         with tempfile.TemporaryDirectory() as directory:
             result = ui.catalog(Path(directory))

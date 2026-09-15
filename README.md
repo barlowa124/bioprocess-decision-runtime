@@ -72,6 +72,33 @@ Open the local address printed by the command. Port `0` selects an available por
 
 The server intentionally exposes no generic file browsing, arbitrary command execution, policy editing, or model-inference endpoint. It binds only to `127.0.0.1`, rejects unexpected Host/Origin headers, and serves only allowlisted data. It is a local research-demo server, not an authenticated production deployment. Run UI tests with `python -m unittest discover -s tests -p test_demo_ui.py -v`. The last complete numerical repository run passed **625 tests**, all six scenarios, compilation and dependency checks. After this saved-evidence UI update, **16 UI/HTTP tests**, JavaScript syntax, six scenarios, compilation and dependency checks passed (`demo_full_target_lightweight_verification.log`, `LIGHTWEIGHT_VERIFICATION_EXIT_CODE=0`); the UI test process explicitly confirmed that PyTorch was not imported. The hardware-intensive full suite was not repeated because the machine has been suffering unexplained shutdowns. Browser visual review remains separate.
 
+### MacBook presentation bundle
+
+Use the small **Mac demo ZIP**, not the 4.6 GB numerical-runtime archive, for a meeting. It contains only the standard-library UI, five pinned evidence packages, the instruction program, synthetic policy, failure example, and the historical 625-test log. No model, lookup tables, PyTorch, Windows virtual environment, or package installation is needed. Python **3.11 or newer** must already be installed on the Mac.
+
+1. Download the Mac demo ZIP from this private repository's releases while signed in, then extract it completely.
+2. Double-click **`Launch Demo.command`**. It selects an installed compatible Python, starts a loopback-only server on an available port, and opens your browser.
+3. If Finder will not launch the command file, open Terminal in the extracted folder and run:
+
+   ```sh
+   sh "Launch Demo.command"
+   ```
+
+   Or run `python3 -m bioprocess_runtime.demo_ui --port 0 --open-browser` with a compatible Python. If no compatible interpreter is found, install Python 3.11 or newer and try again; the launcher does not install anything or change system security settings.
+4. Keep Terminal open during the presentation. Press **Control+C** there when finished. Rehearse on the actual Mac before the meeting; the portable bundle is tested by extraction, but macOS launch/visual sign-off is not performed on the Windows build machine.
+
+Suggested walkthrough: select **Full-stack held-outs and replay**, show the 18-layer/533-instruction coverage, the two token results and continuation disclosures, then inspect an instruction's declared inputs and outputs. These are saved numerical results, not live Gemma inference. Next show the preserved v2 failure (`results/gemma3_270m_independent_baseline_v2_diagnosis.json`): token agreement was insufficient when 49 logits differed. Finally switch to **Synthetic advisory** and evaluate a scenario; this runs the illustrative policy engine live, not a model or equipment controller. The regression panel reports the original workstation's historical run, not tests performed on the Mac. Screenshots or a short recording from the Mac can serve as a meeting backup.
+
+To build the small bundle on the evidence workstation:
+
+```powershell
+.\.venv\Scripts\python tools/package_handoff.py inventory --demo-only
+.\.venv\Scripts\python tools/package_handoff.py build --demo-only --output dist/bioprocess-mac-demo-v1.zip
+.\.venv\Scripts\python tools/package_handoff.py verify --output dist/bioprocess-mac-demo-v1.zip
+```
+
+The UI does not reproduce the validated Windows/NVIDIA numerical runtime on macOS. The demonstration supports a bounded engineering claim about inspectable execution, checks and replay—not universal explainability, scientific correctness, or GMP compliance.
+
 ## Local runtime handoff package
 
 The source/runtime ZIP is the handoff format for this MVP. A Python wheel alone does not include the repository-level saved evidence and policy assets. The full local bundle adds the fixed Gemma checkpoint, lookup tables, prerequisite evidence, completed holdout reports and required proof checkpoints; it does not copy `.venv`, unrelated caches, or the entire interrupted-checkpoint history. Model assets remain subject to their own license terms. Building the bundle does not upload anything or run a model.
