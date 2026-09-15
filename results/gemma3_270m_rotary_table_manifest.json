@@ -1,0 +1,96 @@
+{
+  "bundle_sha256": "7d96918ca34666782e71e0775b358540c7375780069c991270b60053bd9a46f7",
+  "global_exactness_activation_allowed": false,
+  "independent_angles_match": true,
+  "independent_bfloat16_casts_match": true,
+  "manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666",
+  "native_trigonometric_arithmetic_reconstructed": false,
+  "plan_sha256": "9b4afe3ec7aeb7954873d05810457a20530cf27ac4a201b46f7125f02b86e269",
+  "profiled_cuda_event_names": [
+    [
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_Z13gemmk1_kernelIifLi256ELi5ELb0ELb0ELb0ELb0E30cublasGemvTensorStridedBatchedIKfES2_S0_IfEfLi0EEv18cublasGemmk1ParamsIT0_T7_T8_T9_T10_N8biasTypeINS8_10value_typeES9_E4typeEE",
+      "_ZN2at6native40_GLOBAL__N__0b46c3ea_8_Shape_cu_85d9f36c19CatArrayBatchedCopyINS1_10OpaqueTypeILj4EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ],
+    [
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_Z13gemmk1_kernelIifLi256ELi5ELb0ELb0ELb0ELb0E30cublasGemvTensorStridedBatchedIKfES2_S0_IfEfLi0EEv18cublasGemmk1ParamsIT0_T7_T8_T9_T10_N8biasTypeINS8_10value_typeES9_E4typeEE",
+      "_ZN2at6native40_GLOBAL__N__0b46c3ea_8_Shape_cu_85d9f36c19CatArrayBatchedCopyINS1_10OpaqueTypeILj4EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ],
+    [
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_Z13gemmk1_kernelIifLi256ELi5ELb0ELb0ELb0ELb0E30cublasGemvTensorStridedBatchedIKfES2_S0_IfEfLi0EEv18cublasGemmk1ParamsIT0_T7_T8_T9_T10_N8biasTypeINS8_10value_typeES9_E4typeEE",
+      "_ZN2at6native40_GLOBAL__N__0b46c3ea_8_Shape_cu_85d9f36c19CatArrayBatchedCopyINS1_10OpaqueTypeILj4EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ]
+  ],
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Empirical fixed-position local RoPE table for one bound checkpoint, positions 0..29 and BF16 output; independently checked FP32 angles and casts, not reconstructed native trigonometric arithmetic.",
+  "table_descriptors": {
+    "cosine": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 7680,
+      "sha256": "b556b8704691e856ecec74e467a0515a8a6bf1c2f5f81d80d3a133be06b9ad6d",
+      "shape": [
+        1,
+        30,
+        256
+      ]
+    },
+    "sine": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 7680,
+      "sha256": "17631e6269940b24b8120e7d6755ca69a59ebcaae2abd2f5129fd576ec169764",
+      "shape": [
+        1,
+        30,
+        256
+      ]
+    }
+  },
+  "table_repetitions_identical": true,
+  "table_usable": true,
+  "unseen_positions_allowed": false,
+  "untraced_output_controls_match": true
+}

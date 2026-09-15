@@ -1,0 +1,144 @@
+{
+  "activation_value_count": 61440,
+  "bundle_sha256": "c51f26f7250e6091610f51e7c92b2d55e570a02f3c262886218c010048cac7cc",
+  "code_sha256": "a6679a3650eaee36b7a428c49b423499dba6974fdf046efd517e9a910f344613",
+  "down_projection_executed": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "inputs": {
+    "gate": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "d7271523f445c1a1a56994ea91dd2afccfd6c067c1b4ad5960d3eac6e2fba592",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    },
+    "up": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "1613f0a0f19ee3c10b004c379eaef66784aef45e79571ed5c1355dece10cb040",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    }
+  },
+  "instructions": [
+    {
+      "attributes": {},
+      "id": "i0031",
+      "inputs": [
+        "layer.0.mlp.gate"
+      ],
+      "instruction_sha256": "70347acfc80eecf8267bb9d038802a3b842e0f5fb225d0d280b9efd68eecb884",
+      "layer": 0,
+      "opcode": "GELU_TANH",
+      "outputs": [
+        "layer.0.mlp.activated_gate"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:GELU_TANH"
+    },
+    {
+      "attributes": {
+        "output_dtype": "torch.bfloat16"
+      },
+      "id": "i0032",
+      "inputs": [
+        "layer.0.mlp.activated_gate",
+        "layer.0.mlp.up"
+      ],
+      "instruction_sha256": "c3a4f33028bfb1b4e2424b656f5e0b6e23347606544501f3c2b27382d3d27d00",
+      "layer": 0,
+      "opcode": "MUL",
+      "outputs": [
+        "layer.0.mlp.product"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:MUL"
+    }
+  ],
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "native_activation_arithmetic_reconstructed": false,
+  "plan_sha256": "fe8209847e914d7e67858a9bba0d5bbe7e9639a185521fc332847eb954c6c542",
+  "predictions": {
+    "activation": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "f86f8b19c3cfca5af5fd1b2546bcaa7a2e2af5d3df5ae9b837a9dc849ab2ddac",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    },
+    "product": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "71a0e1f733feb26632e193bb42490c4cb027666b337428f1d042235f742bf062",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    }
+  },
+  "prefix_boundary_reused": true,
+  "product_value_count": 61440,
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Fixed-case empirical GELU-tanh lookup and independent finite-BF16 activation/up multiplication from verified gate/up boundaries; original forward stopped before down projection, not native activation arithmetic or full-layer qualification.",
+  "sources": {
+    "entry_bundle_sha256": "abc9fcbf7ad180d65cd39f6fe4d7366741a96bf8e50a7846d380294a3c33b506",
+    "entry_plan_sha256": "50a87661357f0cf7734000fb810ab9b36c339e9b2e8516a096eedf5939c3d9b3",
+    "entry_report_sha256": "4885b19ced0103828ff78318f74a9506ea4aedc83b0d1a57f76df16f8cc34fca",
+    "gelu_evidence": {
+      "layout_report_sha256": "10dd475e3c32b2291d2a9376d4ae13c3e4b7f7ddb8636d6e73f65ab058b1926a",
+      "table_manifest_sha256": "42d4b550ed39314969da7483f9aa6f8a6abc98ee088d8e4573bf10a781d7863b",
+      "table_plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+      "table_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf"
+    },
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+  },
+  "uses_empirical_gelu_specification": true
+}

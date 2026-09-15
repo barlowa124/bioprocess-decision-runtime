@@ -1,0 +1,506 @@
+{
+  "attention_arithmetic_compared": false,
+  "bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+  "derivation_order": "positions, pre-RoPE slice, compiled table, rotation; dependency-consistent witness, not a native instruction timeline",
+  "entry_plan_sha256": "170d68c4958a2fd83921c6aade250c4861da9e20f6ebf900f3d570f613adcf91",
+  "execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "instruction_count": 14,
+  "native_trigonometric_arithmetic_reconstructed": false,
+  "plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "records": [
+    {
+      "index": 0,
+      "payload": {
+        "instruction_id": "i0000",
+        "instruction_sha256": "f4968d297cabf8b994401ae3c876ff0830a5e8af3fa90d92c322c83ebc2c70ae",
+        "outputs": {
+          "position_ids": {
+            "device": "cpu",
+            "dtype": "torch.int64",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30,
+            "sha256": "1ec1f4f70eeb6064cc9663539804b0b179a3686b2db4f1aa73d8aa7bc2ccfa73",
+            "shape": [
+              1,
+              30
+            ]
+          }
+        },
+        "provider": "independent_position_indices_v1"
+      },
+      "previous_hash": "GENESIS",
+      "record_hash": "e6a586ae769f6e4b9a0a1211c2a9f9917ea9e822ab598bb3374d7d6ff560dc60"
+    },
+    {
+      "index": 1,
+      "payload": {
+        "inputs": [
+          "input_ids"
+        ],
+        "instruction_id": "i0001",
+        "instruction_sha256": "5729319f6fdec98570193ab3d9f7287b5f2e51576d0f91210ed8f8505001a9ea",
+        "opcode": "EMBEDDING",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "c23c3a50249f4d469c491e137da46cd3cb2e9163c05532c9ae833a53971b2b18",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "embedding_unscaled",
+        "parameter_refs": [
+          "model.embed_tokens.weight"
+        ],
+        "provider": "independent_coordinate_load_v1"
+      },
+      "previous_hash": "e6a586ae769f6e4b9a0a1211c2a9f9917ea9e822ab598bb3374d7d6ff560dc60",
+      "record_hash": "ada05dbed3b75b0a66eab05b1ac0d19a1de40cace3b132adeb65ed6dfac2a334"
+    },
+    {
+      "index": 2,
+      "payload": {
+        "inputs": [
+          "embedding_unscaled"
+        ],
+        "instruction_id": "i0002",
+        "instruction_sha256": "78dd8789421de852939d8e29af053fbc98f63cc26bfc972df7db70be321e8780",
+        "opcode": "SCALE",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "hidden.0",
+        "parameter_refs": [
+          "model.embed_tokens.embed_scale"
+        ],
+        "provider": "finite_bfloat16_multiply_rne_v1"
+      },
+      "previous_hash": "ada05dbed3b75b0a66eab05b1ac0d19a1de40cace3b132adeb65ed6dfac2a334",
+      "record_hash": "203373d2763aaa651d7e04dbe462a0ebf7fe99f06b885311df909471c3ab7c9c"
+    },
+    {
+      "index": 3,
+      "payload": {
+        "inputs": [
+          "hidden.0"
+        ],
+        "instruction_id": "i0007",
+        "instruction_sha256": "bde106d560444a7af1f7622bd51c84095f4f8980bd6f8014ec6dbb3bae0fd209",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "layer.0.attention.normalized",
+        "parameter_refs": [
+          "model.layers.0.input_layernorm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "d2f363a1514da8a286823e14d794b3150ebbf3260a0aab6ab583d3e494b4c2f3"
+      },
+      "previous_hash": "203373d2763aaa651d7e04dbe462a0ebf7fe99f06b885311df909471c3ab7c9c",
+      "record_hash": "cd80f19abd1b2119f643342193ff0cab5c8ede4289956720b205ba6cf13adc0b"
+    },
+    {
+      "index": 4,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0008",
+        "instruction_sha256": "9939f7e124fb775450dc955f75f0c914d3909ec216cdc92100a191dabbf59a9f",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+          "shape": [
+            1,
+            30,
+            1024
+          ]
+        },
+        "output_name": "layer.0.query.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.q_proj.weight"
+        ],
+        "provider": "operand_alignment_v1"
+      },
+      "previous_hash": "cd80f19abd1b2119f643342193ff0cab5c8ede4289956720b205ba6cf13adc0b",
+      "record_hash": "2ef7e5c9c6842943467cf09404aa1b9737c8c16d5cf2a62b14b56569bb2a811d"
+    },
+    {
+      "index": 5,
+      "payload": {
+        "inputs": [
+          "layer.0.query.flat"
+        ],
+        "instruction_id": "i0009",
+        "instruction_sha256": "99cfdb41a53eed8fdb280c74a55b827081ccaf77de16d3012d3b36dad448a4e4",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "8fe963c89c792755bd2ff9bb032eab4c43c7d9fc71f0659a27499007c16acef0",
+          "shape": [
+            1,
+            4,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.query.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "2ef7e5c9c6842943467cf09404aa1b9737c8c16d5cf2a62b14b56569bb2a811d",
+      "record_hash": "9c40c47f054b4c82e9a32b8000c0fbd89ebe4c7af1008434483386355a437634"
+    },
+    {
+      "index": 6,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0010",
+        "instruction_sha256": "895ea47b8d749aa1e239d6eac7c9e249b8576cf8660fe484cfe58812a7ebb03e",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+          "shape": [
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.k_proj.weight"
+        ],
+        "provider": "split_k64_bf16_serial_fp32_v1"
+      },
+      "previous_hash": "9c40c47f054b4c82e9a32b8000c0fbd89ebe4c7af1008434483386355a437634",
+      "record_hash": "153d24e06b0c8b1486b4fa6e7d429cb9dcdc5eb7d2db8a824f8a9705c3808b1c"
+    },
+    {
+      "index": 7,
+      "payload": {
+        "inputs": [
+          "layer.0.key.flat"
+        ],
+        "instruction_id": "i0011",
+        "instruction_sha256": "ea03c777c37e086eae439de233b7c1b033e9219c12678147a429b24d758b51a2",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "243e66b0a1163a0ce5591eb82702abf49e5b8e4148f5e0355a98fcdb86a25cdd",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "153d24e06b0c8b1486b4fa6e7d429cb9dcdc5eb7d2db8a824f8a9705c3808b1c",
+      "record_hash": "e30943ace0b4ba08a74f2e44017f5cdb36f8543a1282a650cd40d4fc1e891552"
+    },
+    {
+      "index": 8,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0012",
+        "instruction_sha256": "aac8872bf2de0d63ff6d1a13fffb0eb3b7bd4960e388b1511d9a66054f9529b9",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+          "shape": [
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.value.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.v_proj.weight"
+        ],
+        "provider": "split_k64_bf16_serial_fp32_v1"
+      },
+      "previous_hash": "e30943ace0b4ba08a74f2e44017f5cdb36f8543a1282a650cd40d4fc1e891552",
+      "record_hash": "b836c713c371821859a203284126549a86aa2fc1bae7cb3ce32299d2438be59b"
+    },
+    {
+      "index": 9,
+      "payload": {
+        "inputs": [
+          "layer.0.value.flat"
+        ],
+        "instruction_id": "i0013",
+        "instruction_sha256": "7aca9a78f22fdf0c14c64c53bd885c27512a8dc749e82d67ab31ab91de203f9b",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.value.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "b836c713c371821859a203284126549a86aa2fc1bae7cb3ce32299d2438be59b",
+      "record_hash": "3671ef3bea7b6c9b5de89a442e07234f7206d2ea283d0dcf2b0c3eacae755305"
+    },
+    {
+      "index": 10,
+      "payload": {
+        "inputs": [
+          "layer.0.query.heads"
+        ],
+        "instruction_id": "i0014",
+        "instruction_sha256": "3e84f435d1739324b5cb6296f836c403fce58569636ec4b4e97751eb31d6c473",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+          "shape": [
+            1,
+            4,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.query.normalized",
+        "parameter_refs": [
+          "model.layers.0.self_attn.q_norm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "d9a373581d15dc7eedc42c3e10cc965465c3292e832fd60dcc6c995bcb722861"
+      },
+      "previous_hash": "3671ef3bea7b6c9b5de89a442e07234f7206d2ea283d0dcf2b0c3eacae755305",
+      "record_hash": "f97fecd72fed62095808e8082cb80d785624aedd0564649b8c01f7f421805a9e"
+    },
+    {
+      "index": 11,
+      "payload": {
+        "inputs": [
+          "layer.0.key.heads"
+        ],
+        "instruction_id": "i0015",
+        "instruction_sha256": "81d945457fa483fcbd88fbe044a39ff44d3046f71cdd6a78064997136c77afa5",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.normalized",
+        "parameter_refs": [
+          "model.layers.0.self_attn.k_norm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "e3879875c24e804066531809d862400089a9cf03f1b4697b7b498dcd6d5ecf83"
+      },
+      "previous_hash": "f97fecd72fed62095808e8082cb80d785624aedd0564649b8c01f7f421805a9e",
+      "record_hash": "3b9f67d55c75f108c16ed811650f233852e07415e6b5ef535348bfd760b47935"
+    },
+    {
+      "index": 12,
+      "payload": {
+        "inputs": [
+          "hidden.0",
+          "position_ids"
+        ],
+        "instruction_id": "i0004",
+        "instruction_sha256": "19de8a70f5718813afedec3c637c57441ec5ee1dae56d7e80cc8d44e2c3faac3",
+        "outputs": {
+          "rotary.local.cosine": {
+            "device": "cpu",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "b556b8704691e856ecec74e467a0515a8a6bf1c2f5f81d80d3a133be06b9ad6d",
+            "shape": [
+              1,
+              30,
+              256
+            ]
+          },
+          "rotary.local.sine": {
+            "device": "cpu",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "17631e6269940b24b8120e7d6755ca69a59ebcaae2abd2f5129fd576ec169764",
+            "shape": [
+              1,
+              30,
+              256
+            ]
+          }
+        },
+        "parameter_refs": [
+          "model.rotary_emb_local.inv_freq"
+        ],
+        "provider": "compiled_fixed_position_rotary_table_v1",
+        "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+      },
+      "previous_hash": "3b9f67d55c75f108c16ed811650f233852e07415e6b5ef535348bfd760b47935",
+      "record_hash": "0639e6722ac5f36170efa91b5d79709ed2bec46779d1ac1e74aacc8ce0d734d6"
+    },
+    {
+      "index": 13,
+      "payload": {
+        "inputs": [
+          "layer.0.query.normalized",
+          "layer.0.key.normalized",
+          "rotary.local.cosine",
+          "rotary.local.sine"
+        ],
+        "instruction_id": "i0016",
+        "instruction_sha256": "2c73949ed837f46439d20d9ed685bd96618b13cfe935958533ca4cd33f935e88",
+        "outputs": {
+          "layer.0.key.rotary": {
+            "device": "cpu",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "35ad7edffeaa0e620088f0dd1b09e1a23e58e29b9de09c2f5817d12a8bb08948",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "layer.0.query.rotary": {
+            "device": "cpu",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          }
+        },
+        "provider": "bfloat16_mul_mul_add_rne_rotary_v1"
+      },
+      "previous_hash": "0639e6722ac5f36170efa91b5d79709ed2bec46779d1ac1e74aacc8ce0d734d6",
+      "record_hash": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6"
+    }
+  ],
+  "rotation_code_sha256": "2adaf299dbdeeb335a2f90046374142d4c0496d3614b20c90f480705a77790ff",
+  "rotation_value_count": 38400,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Connected fixed-input first-layer execution through RoPE using explicit compiled rotary tables and independent BF16 multiply/multiply/add; original eager-attention inputs compared before attention arithmetic; not full-layer/model qualification.",
+  "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666",
+  "table_plan_sha256": "9b4afe3ec7aeb7954873d05810457a20530cf27ac4a201b46f7125f02b86e269",
+  "target_names": [
+    "layer.0.query.rotary",
+    "layer.0.key.rotary",
+    "layer.0.value.heads"
+  ],
+  "target_value_count": 46080
+}

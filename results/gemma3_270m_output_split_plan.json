@@ -1,0 +1,109 @@
+{
+  "base_bundle_sha256": "1b225a41de8a62cb6054b199143adad78f60f555a88734054e407f6e995538d0",
+  "base_plan_sha256": "8ed91b0c4e66c455491794038673cea72c2138a252e7da0f817e7cac02899ab1",
+  "base_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "bundle_sha256": "456fd51193c2e5a7d2bdd111d62eaf6edd76fbedf77b2e65515cefc6ca91019c",
+  "code_sha256": "318cd439f7e698ee080bdcde89f70e7723de1c5a2cfcd67b7776c275f44ec92b",
+  "fresh_holdout_validation": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "input": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 30720,
+    "sha256": "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+    "shape": [
+      1,
+      30,
+      1024
+    ]
+  },
+  "numerical_parameters_refitted": false,
+  "partial_count": 16,
+  "plan_sha256": "98a7fb9bd7e398701da44b0754e4f2084e51627aed747b2d1a32fdb2087d1f21",
+  "prediction": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 19200,
+    "sha256": "331f19aab9dd8d0ec8dc741966c2f4ba962e75ce3902a77f752cdaf4c26fa286",
+    "shape": [
+      1,
+      30,
+      640
+    ]
+  },
+  "profile": [
+    64,
+    "bfloat16_rne",
+    "sequential_float32_rne"
+  ],
+  "reduction_length": 1024,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "same_case_observations_already_available": true,
+  "schema_version": 1,
+  "scope": "Development-only K1024 output-projection transfer of the prior K64/BF16-partial/sequential-FP32 merge rule, selected after split-K kernel observation on the same fixed model case; not a fresh holdout or hardware partition proof.",
+  "selected_after_kernel_observation": true,
+  "sources": {
+    "lookup_softmax_bundle_sha256": "66940b3aadedb7aaeab93e8de6cdd720c340f1914129e686ec2a1d0657d6b96a",
+    "lookup_softmax_plan_sha256": "09eaa33d508242ac20c4617dcf65ddc20e4167ad20c127c830d92cbb295f58c6",
+    "lookup_softmax_report_sha256": "917e7dfe52d2939b1cae1a77606e4cb5c64a2a0c30bb93760e1cb6c1c0bd0e57",
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "upstream": {
+      "score_bundle_sha256": "a0a11f15368c040dfe4c7271bec6d96a599ac542ed38021a854ab8a3c3b7760d",
+      "score_plan_sha256": "e2667ec3d29e3ae19cc143f24c6860c607bbef0b36873e23c161b523331d00bc",
+      "score_report_sha256": "3b8d45606ddbac8d78452c009eeb1f02f963fcb9ede523a632976326442269fc",
+      "upstream": {
+        "lookup_evidence": {
+          "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+          "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+          "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+          "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+          "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+        },
+        "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+        "rotary_bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+        "rotary_execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+        "rotary_plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+        "rotary_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+        "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+      }
+    }
+  },
+  "value_count": 19200,
+  "weight": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 655360,
+    "sha256": "010e224276b7d183e7c2bc1599cbbb4300585432a1a19aabaf695fdf9970dc91",
+    "shape": [
+      640,
+      1024
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "acquisition_schedule": "one warm-up and one profiled call per stored observation; first table observation defines table entries",
+  "chunk_count": 2040,
+  "chunk_size": 1048576,
+  "code_sha256": "ee601b84ec9b4a664be047b9a9cdcffafb52680480399cdcacbb6b1854df4aee",
+  "constant_chunk_hashes": {
+    "one": "e678838a4ec435fcfc028f3b3de044af1e44847e3b5d6e73ea19e21788531e2d",
+    "zero": "bb9f8df61474d25e71fa00722318cd387396ca1736605e1248821cc0de3d3af8"
+  },
+  "constant_regions_are_hypotheses_until_exhaustive_validation": true,
+  "finite_magnitude_stop_exclusive": 2139095040,
+  "format": "little-endian uint32 output encodings, ascending negative-input magnitude",
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "kernel_policy": "exp_kernel_cuda; identical kernel-name lists across full-sized chunks",
+  "native_arithmetic_reconstructed": false,
+  "negative_finite_encoding_count": 2139095040,
+  "plan_sha256": "0a0380e65ebea678f0c8342b92b5e7fb9d587a7ff212a2f45a506f6809ac8fe6",
+  "region_chunk_counts": {
+    "one": 776,
+    "table": 296,
+    "zero": 968
+  },
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit empirical CUDA exponential mapping for all negative finite float32 encodings, positive zero and negative infinity; fixed runtime and aligned contiguous launch schedule; not reconstructed native exponential arithmetic.",
+  "source_softmax_report_sha256": "5b9864c859174725489b619ba6f777fa69c0cfed0e9c016b74152ba18b8bfce3",
+  "source_softmax_summary_sha256": "cb139fd9b1b02483878474f5fadb622f47a58ad25dcb2a34e6acef51e5928c2c",
+  "special_input_bits": [
+    0,
+    4286578688
+  ],
+  "special_output_bits": [
+    1065353216,
+    0
+  ],
+  "table_bytes": 1241513984,
+  "table_magnitude_start": 813694976,
+  "table_magnitude_stop_exclusive": 1124073472,
+  "unrestricted_layouts_qualified": false
+}

@@ -1,0 +1,1700 @@
+{
+  "all_matching_development_profiles": [
+    {
+      "interval": 8,
+      "mode": "toward_zero"
+    }
+  ],
+  "baseline_mismatch_count": 177,
+  "diagnosis_sha256": "ce80943d1748a863498bb7b916bbd92c944e3cd5b5ef8ef975db133862c3fcd0",
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "held_out_validation_established": false,
+  "profiles": [
+    {
+      "interval": 8,
+      "matches_all_development_records": false,
+      "matching_cases_by_family": {
+        "adjacent_carry": [
+          256,
+          256,
+          256
+        ],
+        "dense_k640": [
+          256,
+          256,
+          256
+        ],
+        "distant_cancellation": [
+          235,
+          235,
+          235
+        ],
+        "k128_boundary": [
+          245,
+          245,
+          245
+        ]
+      },
+      "mismatch_count": 96,
+      "mismatches": [
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 311,
+          "observed_bits": 50424,
+          "predicted_bits": 50416,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17344,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17760,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 408,
+          "observed_bits": 50288,
+          "predicted_bits": 50272,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17664,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17880,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 474,
+          "observed_bits": 49984,
+          "predicted_bits": 49920,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 503,
+          "observed_bits": 50578,
+          "predicted_bits": 50576,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 311,
+          "observed_bits": 50424,
+          "predicted_bits": 50416,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17344,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17760,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 408,
+          "observed_bits": 50288,
+          "predicted_bits": 50272,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17664,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17880,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 474,
+          "observed_bits": 49984,
+          "predicted_bits": 49920,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 503,
+          "observed_bits": 50578,
+          "predicted_bits": 50576,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 311,
+          "observed_bits": 50424,
+          "predicted_bits": 50416,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17344,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17760,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 408,
+          "observed_bits": 50288,
+          "predicted_bits": 50272,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17664,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17472,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17880,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 474,
+          "observed_bits": 49984,
+          "predicted_bits": 49920,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 503,
+          "observed_bits": 50578,
+          "predicted_bits": 50576,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 2
+        }
+      ],
+      "mode": "nearest_even",
+      "predictions_sha256": "928b65bf6295518cbbddbfa9d21359e8f38a2c5ccdf92e3f3be5f5f80d2a8573"
+    },
+    {
+      "interval": 16,
+      "matches_all_development_records": false,
+      "matching_cases_by_family": {
+        "adjacent_carry": [
+          256,
+          256,
+          256
+        ],
+        "dense_k640": [
+          256,
+          256,
+          256
+        ],
+        "distant_cancellation": [
+          235,
+          235,
+          235
+        ],
+        "k128_boundary": [
+          245,
+          245,
+          245
+        ]
+      },
+      "mismatch_count": 96,
+      "mismatches": [
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 0
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 1
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 291,
+          "observed_bits": 50586,
+          "predicted_bits": 50582,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 321,
+          "observed_bits": 17349,
+          "predicted_bits": 17411,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 338,
+          "observed_bits": 17508,
+          "predicted_bits": 17538,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 340,
+          "observed_bits": 17152,
+          "predicted_bits": 17280,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 341,
+          "observed_bits": 17780,
+          "predicted_bits": 17788,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 348,
+          "observed_bits": 17632,
+          "predicted_bits": 17648,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 379,
+          "observed_bits": 17344,
+          "predicted_bits": 17408,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 454,
+          "observed_bits": 50504,
+          "predicted_bits": 50496,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 466,
+          "observed_bits": 17425,
+          "predicted_bits": 17457,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 478,
+          "observed_bits": 17916,
+          "predicted_bits": 17920,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 510,
+          "observed_bits": 17504,
+          "predicted_bits": 17536,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 513,
+          "observed_bits": 17573,
+          "predicted_bits": 17589,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 517,
+          "observed_bits": 18285,
+          "predicted_bits": 18286,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 518,
+          "observed_bits": 18502,
+          "predicted_bits": 18503,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 527,
+          "observed_bits": 51092,
+          "predicted_bits": 51091,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 544,
+          "observed_bits": 18228,
+          "predicted_bits": 18229,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 548,
+          "observed_bits": 17935,
+          "predicted_bits": 17937,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 597,
+          "observed_bits": 18452,
+          "predicted_bits": 18453,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 608,
+          "observed_bits": 51011,
+          "predicted_bits": 51010,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 684,
+          "observed_bits": 18246,
+          "predicted_bits": 18247,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 693,
+          "observed_bits": 50975,
+          "predicted_bits": 50974,
+          "repetition": 2
+        },
+        {
+          "family": "k128_boundary",
+          "index": 739,
+          "observed_bits": 18592,
+          "predicted_bits": 18593,
+          "repetition": 2
+        }
+      ],
+      "mode": "nearest_even",
+      "predictions_sha256": "35afb23dd0705cda9670a4f82b7d5b980d7d3f889fe6d75d4fca3752c5e908a5"
+    },
+    {
+      "interval": 8,
+      "matches_all_development_records": true,
+      "matching_cases_by_family": {
+        "adjacent_carry": [
+          256,
+          256,
+          256
+        ],
+        "dense_k640": [
+          256,
+          256,
+          256
+        ],
+        "distant_cancellation": [
+          256,
+          256,
+          256
+        ],
+        "k128_boundary": [
+          256,
+          256,
+          256
+        ]
+      },
+      "mismatch_count": 0,
+      "mismatches": [],
+      "mode": "toward_zero",
+      "predictions_sha256": "349d0051a2f396c77d64c03dd2955459d1b5a2c262c97dc35dd7b789cdd5e62e"
+    },
+    {
+      "interval": 16,
+      "matches_all_development_records": false,
+      "matching_cases_by_family": {
+        "adjacent_carry": [
+          256,
+          256,
+          256
+        ],
+        "dense_k640": [
+          256,
+          256,
+          256
+        ],
+        "distant_cancellation": [
+          246,
+          246,
+          246
+        ],
+        "k128_boundary": [
+          256,
+          256,
+          256
+        ]
+      },
+      "mismatch_count": 30,
+      "mismatches": [
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 0
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 1
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 296,
+          "observed_bits": 17760,
+          "predicted_bits": 17764,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 314,
+          "observed_bits": 17280,
+          "predicted_bits": 17312,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 330,
+          "observed_bits": 17832,
+          "predicted_bits": 17834,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 343,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 361,
+          "observed_bits": 17752,
+          "predicted_bits": 17756,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 410,
+          "observed_bits": 17712,
+          "predicted_bits": 17716,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 423,
+          "observed_bits": 17648,
+          "predicted_bits": 17656,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 439,
+          "observed_bits": 17440,
+          "predicted_bits": 17456,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 442,
+          "observed_bits": 17876,
+          "predicted_bits": 17878,
+          "repetition": 2
+        },
+        {
+          "family": "distant_cancellation",
+          "index": 473,
+          "observed_bits": 0,
+          "predicted_bits": 17024,
+          "repetition": 2
+        }
+      ],
+      "mode": "toward_zero",
+      "predictions_sha256": "6eece22e83d5070c35619f3d24673444b5e7a729e60590e3baa8352d4931b69f"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Post-failure development comparison of four float32 carry-rounding variants; fitting these observed outputs is not held-out validation.",
+  "search_sha256": "5264c0730fd23c98be83fb03063ab9a8f351261ec001d18bef833671739842ad",
+  "source_case_count": 1024,
+  "source_evidence_mode": "integrity_only",
+  "source_plan_sha256": "bc1b3355462242c9664f0f010bc6c9da2a04534699442ccb54321af3be103d35",
+  "source_repetitions": 3,
+  "source_report_sha256": "d55f93453a238a582ce29b5c4e915b791e8a0363156f6ef6c11f63f84abf37b3"
+}

@@ -1,0 +1,145 @@
+{
+  "code_sha256": "c2d6f012ae3b19172a3e2fa7a249064dd06ef42292631a42bde4ebb1485920b7",
+  "comparison": {
+    "candidate_passes": true,
+    "conditions": [
+      {
+        "input_matches": true,
+        "native_bfloat16_cast_matches": true,
+        "persistent_kernel_profile_matches": true,
+        "untraced_bf16_matches": true,
+        "untraced_fp32_matches": true
+      },
+      {
+        "input_matches": true,
+        "native_bfloat16_cast_matches": true,
+        "persistent_kernel_profile_matches": true,
+        "untraced_bf16_matches": true,
+        "untraced_fp32_matches": true
+      },
+      {
+        "input_matches": true,
+        "native_bfloat16_cast_matches": true,
+        "persistent_kernel_profile_matches": true,
+        "untraced_bf16_matches": true,
+        "untraced_fp32_matches": true
+      }
+    ],
+    "cuda_events": [
+      [
+        "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+      ],
+      [
+        "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+      ],
+      [
+        "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+      ]
+    ],
+    "diagnostics": [
+      {
+        "candidate_vs_staged_aten": {
+          "denominator_bits": 0,
+          "exponential_bits": 0,
+          "maximum_bits": 0,
+          "output_bf16_bits": 0,
+          "output_f32_bits": 0,
+          "shifted_bits": 0
+        },
+        "staged_vs_fused_bf16": 0,
+        "staged_vs_fused_fp32": 0
+      },
+      {
+        "candidate_vs_staged_aten": {
+          "denominator_bits": 0,
+          "exponential_bits": 0,
+          "maximum_bits": 0,
+          "output_bf16_bits": 0,
+          "output_f32_bits": 0,
+          "shifted_bits": 0
+        },
+        "staged_vs_fused_bf16": 0,
+        "staged_vs_fused_fp32": 0
+      },
+      {
+        "candidate_vs_staged_aten": {
+          "denominator_bits": 0,
+          "exponential_bits": 0,
+          "maximum_bits": 0,
+          "output_bf16_bits": 0,
+          "output_f32_bits": 0,
+          "shifted_bits": 0
+        },
+        "staged_vs_fused_bf16": 0,
+        "staged_vs_fused_fp32": 0
+      }
+    ],
+    "full_first_layer_qualified": false,
+    "fused_internal_stages_observed": false,
+    "global_exactness_activation_allowed": false,
+    "hardware_semantics_established": false,
+    "mismatch_count": 0,
+    "mismatch_counts": {
+      "output_bf16_bits": [
+        0,
+        0,
+        0
+      ],
+      "output_f32_bits": [
+        0,
+        0,
+        0
+      ]
+    },
+    "native_exponential_reconstructed": false,
+    "plan_sha256": "09eaa33d508242ac20c4617dcf65ddc20e4167ad20c127c830d92cbb295f58c6",
+    "prefix_independently_recomputed": false,
+    "runtime": {
+      "allow_tf32": false,
+      "bf16_reduced_precision_reduction": true,
+      "capability": [
+        8,
+        9
+      ],
+      "cublas_workspace_config": null,
+      "cuda": "12.8",
+      "cuda_autocast_enabled": false,
+      "deterministic_algorithms": false,
+      "device": "NVIDIA GeForce RTX 4090",
+      "driver_version": "616.56",
+      "float32_matmul_precision": "highest",
+      "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+      "python": "3.11.9",
+      "torch": "2.7.1+cu128",
+      "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+      "transformers": "4.53.3"
+    },
+    "runtime_matches_plan": true,
+    "schema_version": 1,
+    "staged_aten_is_diagnostic": true,
+    "value_aggregation_executed": false
+  },
+  "full_first_layer_qualified": false,
+  "fused_internal_stages_observed": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "lookup_evidence": {
+    "manifest_sha256": "54c478e957b73b22a5fa53bd7e8a272b4b2db2ac583d10ab2780e620cf5c6cc4",
+    "plan_sha256": "0a0380e65ebea678f0c8342b92b5e7fb9d587a7ff212a2f45a506f6809ac8fe6",
+    "table_sha256": "c67aaf7530ecbe1351cae7847aa59c2aa1a627fef3e700b91bd9e291b0d121b4"
+  },
+  "lookup_softmax_passes": true,
+  "native_exponential_reconstructed": false,
+  "native_report_sha256": "5b9864c859174725489b619ba6f777fa69c0cfed0e9c016b74152ba18b8bfce3",
+  "original_plan_sha256": "e20b473995d94cbea64db6d04c8b980ba78b2fb41c056932e208000390dfdd53",
+  "original_report_sha256": "5b9864c859174725489b619ba6f777fa69c0cfed0e9c016b74152ba18b8bfce3",
+  "plan_sha256": "09eaa33d508242ac20c4617dcf65ddc20e4167ad20c127c830d92cbb295f58c6",
+  "prefix_independently_recomputed": false,
+  "row_count": 120,
+  "schema_version": 1,
+  "scope": "Explicit-exponential-lookup softmax on verified serialized score inputs; independent FP32 max/subtract/XOR sum/division with runtime-bound empirical exp; not native exponential reconstruction or full-layer qualification.",
+  "source_report_sha256": "917e7dfe52d2939b1cae1a77606e4cb5c64a2a0c30bb93760e1cb6c1c0bd0e57",
+  "summary_sha256": "4a7eb2efbcbb4f334e4201b8c7db94accd71b23fc69e2814cefe6f40b40c8c95",
+  "value_aggregation_executed": false,
+  "value_count": 3600
+}

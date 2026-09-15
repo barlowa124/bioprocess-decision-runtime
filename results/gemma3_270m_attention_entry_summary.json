@@ -1,0 +1,185 @@
+{
+  "connected_slice_bit_exact": true,
+  "derived_value_head_hashes": [
+    "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+    "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+    "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a"
+  ],
+  "execution_code_sha256": "3bf3117f1a454dcbeb1df3b95bc67b11eaebea3f5849ceba73a4d133c00eafe1",
+  "execution_root": "69ef77347ffba91a33c3ee4a5c574ed031f9981957a5a2e99363c79199f954d6",
+  "first_divergence": null,
+  "full_first_layer_qualified": false,
+  "full_model_independently_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "independent_instruction_count": 11,
+  "lookup_evidence": {
+    "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+    "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+    "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+    "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+    "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+  },
+  "mismatch_count": 0,
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "native_arithmetic_reconstructed": false,
+  "original_boundary_hashes": {
+    "hidden.0": [
+      "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+      "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+      "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26"
+    ],
+    "layer.0.attention.normalized": [
+      "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+      "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+      "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7"
+    ],
+    "layer.0.key.flat": [
+      "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+      "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+      "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017"
+    ],
+    "layer.0.key.normalized": [
+      "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+      "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+      "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed"
+    ],
+    "layer.0.query.flat": [
+      "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+      "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+      "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c"
+    ],
+    "layer.0.query.normalized": [
+      "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+      "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+      "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443"
+    ],
+    "layer.0.value.flat": [
+      "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+      "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+      "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5"
+    ]
+  },
+  "original_forward_stopped_before_rope_rotation": true,
+  "plan_sha256": "170d68c4958a2fd83921c6aade250c4861da9e20f6ebf900f3d570f613adcf91",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "repeated_outputs_identical": true,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Connected fixed-input first-layer dependency slice through pre-RoPE normalized Q/K and V heads; independent numerical execution with an explicit empirical rsqrt lookup; not complete attention/layer/model or native-arithmetic qualification.",
+  "source_report_sha256": "1766bbe2e39872f5d92c20eb03e01092860a95e48d3e68876110cdd73d5c03ef",
+  "summary_sha256": "649fb13a9ae9ca79a88b8ff23846a8ae0ef700370ffa54c0d4acd933964716d7",
+  "target_value_count": 46080,
+  "tensor_summaries": {
+    "hidden.0": {
+      "mismatch_count": 0,
+      "prediction_sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+      "shape": [
+        1,
+        30,
+        640
+      ],
+      "value_count": 19200
+    },
+    "layer.0.attention.normalized": {
+      "mismatch_count": 0,
+      "prediction_sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+      "shape": [
+        1,
+        30,
+        640
+      ],
+      "value_count": 19200
+    },
+    "layer.0.key.flat": {
+      "mismatch_count": 0,
+      "prediction_sha256": "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+      "shape": [
+        1,
+        30,
+        256
+      ],
+      "value_count": 7680
+    },
+    "layer.0.key.normalized": {
+      "mismatch_count": 0,
+      "prediction_sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+      "shape": [
+        1,
+        1,
+        30,
+        256
+      ],
+      "value_count": 7680
+    },
+    "layer.0.query.flat": {
+      "mismatch_count": 0,
+      "prediction_sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+      "shape": [
+        1,
+        30,
+        1024
+      ],
+      "value_count": 30720
+    },
+    "layer.0.query.normalized": {
+      "mismatch_count": 0,
+      "prediction_sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "value_count": 30720
+    },
+    "layer.0.value.flat": {
+      "mismatch_count": 0,
+      "prediction_sha256": "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+      "shape": [
+        1,
+        30,
+        256
+      ],
+      "value_count": 7680
+    },
+    "layer.0.value.heads": {
+      "mismatch_count": 0,
+      "prediction_sha256": "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+      "shape": [
+        1,
+        1,
+        30,
+        256
+      ],
+      "value_count": 7680
+    }
+  },
+  "uses_empirical_rsqrt_specification": true,
+  "uses_framework_floating_arithmetic_in_slice": false,
+  "value_heads_comparison": "coordinate reinterpretation of captured original v_proj output; no floating arithmetic"
+}

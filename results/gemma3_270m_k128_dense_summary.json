@@ -1,0 +1,125 @@
+{
+  "candidate": {
+    "chunk_size": 128,
+    "id": "k128:bfloat16_rne:sequential_float32_rne",
+    "merge": "sequential_float32_rne",
+    "partial_format": "bfloat16_rne",
+    "partitions": [
+      [
+        0,
+        128
+      ],
+      [
+        128,
+        256
+      ],
+      [
+        256,
+        384
+      ],
+      [
+        384,
+        512
+      ],
+      [
+        512,
+        640
+      ],
+      [
+        640,
+        768
+      ],
+      [
+        768,
+        896
+      ],
+      [
+        896,
+        1024
+      ]
+    ]
+  },
+  "candidate_passes_dense_holdout": true,
+  "complete_matrix_compared": true,
+  "family_mismatch_counts": {
+    "dense": [
+      0,
+      0,
+      0
+    ],
+    "row_anchored_cancellation": [
+      0,
+      0,
+      0
+    ]
+  },
+  "first_divergence": null,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "input_row_count": 30,
+  "kernel_names": [
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ]
+  ],
+  "kernel_names_match": true,
+  "mismatch_counts": [
+    0,
+    0,
+    0
+  ],
+  "observed_output_hashes": [
+    "35ffb8325f2959afeae094603ff30f8bd919bfdf25defc80d83a3e1cde3ba818",
+    "35ffb8325f2959afeae094603ff30f8bd919bfdf25defc80d83a3e1cde3ba818",
+    "35ffb8325f2959afeae094603ff30f8bd919bfdf25defc80d83a3e1cde3ba818"
+  ],
+  "original_model_revalidated": false,
+  "plan_sha256": "f67582df976f1c871877aec48b6bcd7716da809b043ffa57b582eb25d8403a23",
+  "repeated_outputs_identical": true,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Prospective dense non-repeated K1024 holdout of the frozen K128/BF16-partial/sequential-FP32 survivor; complete 30x640 matrix compared, not unrestricted inputs, original-model holdout, or hardware partition proof.",
+  "seed": 3832633901,
+  "source_report_sha256": "c08cde73067c84b531929faae6368db857171fe8f773aa7f46f5a5779556d2e2",
+  "sources": {
+    "model_bundle_sha256": "1b225a41de8a62cb6054b199143adad78f60f555a88734054e407f6e995538d0",
+    "model_plan_sha256": "8ed91b0c4e66c455491794038673cea72c2138a252e7da0f817e7cac02899ab1",
+    "probe_plan_sha256": "afda69c6a474a9dca706cad282d74dc88d93891ca9b1c7d045dd2ded1e73f7c4",
+    "probe_report_sha256": "4088df7530e1275c254ecb28bfc93db7fd866f0f954d14bda89e397be8649870",
+    "source_summary_sha256": "59cd71288a496029228f1acc0030c533e79111e9cefd63e4a805a57c77469101"
+  },
+  "summary_sha256": "31cf1d0a3622454343e8beb75e9b29ec93deeca12fbcc2614235f49b6af0128f",
+  "value_count": 19200,
+  "vectors_disjoint_from_declared_sources": true,
+  "weight_vector_count": 640
+}

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Any
 
 from .interpretability import _model_device, _tokenize
@@ -52,6 +53,422 @@ def model_state_sha256(model: Any) -> str:
 def reference_rms_norm(value: Any, weight: Any, epsilon: float) -> Any:
     normalized = value.float() * torch.rsqrt(value.float().pow(2).mean(-1, keepdim=True) + epsilon)
     return (normalized * (1.0 + weight.float())).type_as(value)
+
+
+RMS_REDUCTIONS = ("source_vec4_warp32", "sequential_float32", "exact_sum_float32")
+RMS_ROOTS = ("rsqrt_rne", "sqrt_rne_then_reciprocal_rne")
+
+
+def _rms_sha(value: Any) -> str:
+    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
+def _rms_f32_value(bits: int) -> Fraction:
+    from .gemma_reduction_semantics import decode_finite_float32
+    return decode_finite_float32(bits)[0]
+
+
+def _rms_f32_round(value: Fraction, negative_zero: bool = False) -> int:
+    from .gemma_reduction_semantics import encode_float32_rne, decode_finite_float32
+    bits = encode_float32_rne(value, negative_zero)
+    decode_finite_float32(bits)
+    return bits
+
+
+def _rms_f32_add(left: int, right: int) -> int:
+    return _rms_f32_round(_rms_f32_value(left) + _rms_f32_value(right), left == right == 0x80000000)
+
+
+def _rms_f32_mul(left: int, right: int) -> int:
+    value = _rms_f32_value(left) * _rms_f32_value(right)
+    return _rms_f32_round(value, value == 0 and bool((left ^ right) & 0x80000000))
+
+
+def _rms_bfloat_to_float(bits: int) -> int:
+    from .gemma_float_semantics import decode_finite_bfloat16
+    value, negative_zero = decode_finite_bfloat16(bits)
+    return _rms_f32_round(value, negative_zero)
+
+
+def rms_root_bits(bits: int, mode: str) -> int:
+    value = _rms_f32_value(bits)
+    if value <= 0 or mode not in RMS_ROOTS:
+        raise ValueError("RMS root requires a positive finite input and a declared profile")
+    target = 1 / value if mode == "rsqrt_rne" else value
+    low, high = 0, 0x7F7FFFFF
+    while low < high:
+        middle = (low + high + 1) // 2
+        if _rms_f32_value(middle) ** 2 <= target:
+            low = middle
+        else:
+            high = middle - 1
+    if low == 0x7F7FFFFF:
+        raise ValueError("RMS root is outside the supported finite result domain")
+    midpoint = (_rms_f32_value(low) + _rms_f32_value(low + 1)) / 2
+    squared = midpoint ** 2
+    result = low + int(target > squared or (target == squared and low & 1))
+    return result if mode == "rsqrt_rne" else _rms_f32_round(1 / _rms_f32_value(result))
+
+
+def rms_sum_bits(values: list[int], mode: str) -> int:
+    if not values or mode not in RMS_REDUCTIONS:
+        raise ValueError("RMS sum requires inputs and a declared profile")
+    if mode == "exact_sum_float32":
+        return _rms_f32_round(sum((_rms_f32_value(bits) for bits in values), Fraction(0)))
+    if mode == "sequential_float32":
+        result = 0
+        for bits in values:
+            result = _rms_f32_add(result, bits)
+        return result
+    if len(values) not in (256, 640):
+        raise ValueError("Source-derived RMS reduction is restricted to aligned K256/K640 rows")
+    lanes = []
+    for lane in range(32):
+        accumulators = [0] * 4
+        for start in range(lane * 4, len(values), 128):
+            for offset in range(4):
+                accumulators[offset] = _rms_f32_add(accumulators[offset], values[start + offset])
+        result = accumulators[0]
+        for partial in accumulators[1:]:
+            result = _rms_f32_add(result, partial)
+        lanes.append(result)
+    while len(lanes) > 1:
+        lanes = [_rms_f32_add(lanes[k], lanes[k + 1]) for k in range(0, len(lanes), 2)]
+    return lanes[0]
+
+
+def rms_row_candidate(input_bits: list[int], weight_bits: list[int], epsilon: float, reduction: str, root: str) -> dict[str, Any]:
+    from .gemma_float_semantics import encode_bfloat16_rne
+    from .gemma_reduction_semantics import decode_finite_float32
+
+    if len(input_bits) != len(weight_bits) or len(input_bits) not in (256, 640) or not math.isfinite(epsilon) or epsilon <= 0:
+        raise ValueError("Unsupported RMS row or epsilon")
+    values = [_rms_bfloat_to_float(bits) for bits in input_bits]
+    squared = [_rms_f32_mul(bits, bits) for bits in values]
+    mean = _rms_f32_mul(rms_sum_bits(squared, reduction), _rms_f32_round(Fraction(1, len(values))))
+    denominator = _rms_f32_add(mean, _rms_f32_round(Fraction.from_float(float(epsilon))))
+    inverse = rms_root_bits(denominator, root)
+    outputs = []
+    for value, weight in zip(values, weight_bits):
+        scaled = _rms_f32_mul(_rms_f32_mul(value, inverse), _rms_f32_add(0x3F800000, _rms_bfloat_to_float(weight)))
+        result, negative_zero = decode_finite_float32(scaled)
+        outputs.append(encode_bfloat16_rne(result, negative_zero))
+    return {"mean_bits": mean, "denominator_bits": denominator, "rsqrt_bits": inverse, "output_bits": outputs}
+
+
+RMS_SLICE_SCOPE = "Fixed-input actual layer-0 input/Q/K RMS characterization with independently specified finite arithmetic candidates and observed ATen stages; not fresh-prompt validation, linked-binary proof, or first-layer qualification."
+RMS_SLICE_ROLES = (("input_norm", "model.layers.0.input_layernorm.weight", "layer.0.attention.normalized"),
+                   ("query_norm", "model.layers.0.self_attn.q_norm.weight", "layer.0.query.normalized"),
+                   ("key_norm", "model.layers.0.self_attn.k_norm.weight", "layer.0.key.normalized"))
+
+
+def _rms_code_commitment() -> str:
+    import inspect
+    from . import gemma_float_semantics, gemma_reduction_semantics
+
+    functions = (_rms_f32_value, _rms_f32_round, _rms_f32_add, _rms_f32_mul, _rms_bfloat_to_float, rms_root_bits, rms_sum_bits, rms_row_candidate)
+    return _rms_sha({"functions": {fn.__name__: inspect.getsource(fn) for fn in functions},
+                     "bfloat16": inspect.getsource(gemma_float_semantics), "float32": inspect.getsource(gemma_reduction_semantics)})
+
+
+def _rms_rows_tensor(rows: Any, shape: list[int], device: Any) -> Any:
+    if not isinstance(rows, list) or len(rows) != math.prod(shape[:-1]) or any(not isinstance(row, list) or len(row) != shape[-1] or any(type(bits) is not int or not 0 <= bits <= 65535 for bits in row) for row in rows):
+        raise ValueError("Malformed RMS bit matrix")
+    return torch.tensor(rows, dtype=torch.uint16).view(torch.bfloat16).reshape(shape).to(device)
+
+
+def check_rms_projection_source(program: dict[str, Any], projection_plan: dict[str, Any], projection_bundle: dict[str, Any], summary: dict[str, Any], plan: dict[str, Any] | None = None) -> None:
+    from .gemma_ir_interpreter import _check_projection_plan, _projection_bits_tensor
+
+    _check_projection_plan(program, projection_plan, projection_bundle)
+    if _rms_sha({k: v for k, v in summary.items() if k != "summary_sha256"}) != summary.get("summary_sha256") or summary.get("plan_sha256") != projection_plan["plan_sha256"] or summary.get("slice_passes_declared_comparison") is not True:
+        raise ValueError("RMS slice requires intact passing projection evidence")
+    for role in ("query", "key", "value"):
+        if summary["observed_output_hashes"][role] != [projection_plan["projection_records"][role]["prediction"]["sha256"]] * 3:
+            raise ValueError("RMS source projection output binding mismatch")
+    if plan is not None:
+        if plan["source_projection_plan_sha256"] != projection_plan["plan_sha256"] or plan["source_projection_summary_sha256"] != summary["summary_sha256"]:
+            raise ValueError("RMS projection source reference mismatch")
+        hidden = next(record["payload"]["outputs"]["hidden.0"] for record in projection_plan["shared_prefix_records"] if "hidden.0" in record["payload"]["outputs"])
+        if canonical_json(hidden) != canonical_json(plan["roles"]["input_norm"]["input"]):
+            raise ValueError("RMS embedding/scale input differs from its projection source")
+        for role, heads in (("query", 4), ("key", 1)):
+            flat = _projection_bits_tensor(projection_bundle["prediction_bits"][role], [1, 30, heads * 256], "cpu")
+            descriptor = tensor_descriptor(flat.view(1, 30, heads, 256).transpose(1, 2))
+            descriptor["device"] = projection_plan["projection_records"][role]["prediction"]["device"]
+            if canonical_json(descriptor) != canonical_json(plan["roles"][role + "_norm"]["input"]):
+                raise ValueError("RMS head input differs from its bound projection output")
+
+
+def _rms_slice_inputs(program: dict[str, Any], model: Any, projection_plan: dict[str, Any], projection_bundle: dict[str, Any], summary: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    from .gemma_ir_interpreter import bind_model_tensors, _projection_bits_tensor
+    from .gemma_float_semantics import bfloat16_multiply_bits
+
+    check_rms_projection_source(program, projection_plan, projection_bundle, summary)
+    parameters = bind_model_tensors(program, model, verify_hashes=True)
+    if model.training or model.config._attn_implementation != "eager" or type(model).__module__ + "." + type(model).__name__ != projection_plan["model_binding"]["class"] or _rms_sha(model.config.to_dict()) != projection_plan["model_binding"]["config_sha256"]:
+        raise ValueError("RMS model configuration differs from the projection source")
+    device = parameters["model.embed_tokens.weight"].device
+    if device.type != "cuda" or device.index != torch.cuda.current_device():
+        raise ValueError("RMS slice requires the current CUDA device")
+    scale = parameters["model.embed_tokens.embed_scale"]
+    if scale.dtype != torch.bfloat16 or scale.numel() != 1:
+        raise ValueError("Independent embedding scale is restricted to the bound bfloat16 scalar")
+    scale_bits = int(scale.detach().cpu().view(torch.uint16).item())
+    embeddings = [parameters["model.embed_tokens.weight"][token].detach().cpu().view(torch.uint16).tolist() for token in projection_plan["input_token_ids"][0]]
+    scaled = [[bfloat16_multiply_bits(bits, scale_bits) for bits in row] for row in embeddings]
+    values = {"input_norm": _rms_rows_tensor(scaled, [1, 30, 640], device)}
+    expected_hidden = next(record["payload"]["outputs"]["hidden.0"] for record in projection_plan["shared_prefix_records"] if "hidden.0" in record["payload"]["outputs"])
+    if tensor_descriptor(values["input_norm"])["sha256"] != expected_hidden["sha256"]:
+        raise ValueError("Independent embedding/scale differs from the source IR prefix")
+    for role, heads in (("query", 4), ("key", 1)):
+        flat = _projection_bits_tensor(projection_bundle["prediction_bits"][role], [1, 30, heads * 256], device)
+        values[role + "_norm"] = flat.view(1, 30, heads, 256).transpose(1, 2)
+    modules = {"input_norm": model.model.layers[0].input_layernorm, "query_norm": model.model.layers[0].self_attn.q_norm, "key_norm": model.model.layers[0].self_attn.k_norm}
+    instructions = {}
+    for role, weight_name, output in RMS_SLICE_ROLES:
+        module = modules[role]
+        instruction = next(item for item in program["instructions"] if item["outputs"] == [output])
+        if instruction["opcode"] != "RMS_NORM" or instruction["parameter_refs"] != [weight_name] or module.eps != instruction["attributes"]["epsilon"] or module.weight is not parameters[weight_name] or module.weight.dtype != torch.bfloat16 or module.weight.device != device:
+            raise ValueError("Original RMS module differs from its IR binding")
+        instructions[role] = instruction
+    return values, modules, instructions
+
+
+def build_rms_slice(program: dict[str, Any], model: Any, projection_plan: dict[str, Any], projection_bundle: dict[str, Any], summary: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    from pathlib import Path
+    from .gemma_ir_interpreter import _projection_environment
+
+    values, modules, instructions = _rms_slice_inputs(program, model, projection_plan, projection_bundle, summary)
+    profiles = [{"id": reduction + ":" + root, "reduction": reduction, "root": root} for reduction in RMS_REDUCTIONS for root in RMS_ROOTS]
+    records, bundles = {}, {}
+    for role, weight_name, output_name in RMS_SLICE_ROLES:
+        value = values[role]
+        width = value.shape[-1]
+        rows = value.detach().cpu().reshape(-1, width).view(torch.uint16).tolist()
+        weights = modules[role].weight.detach().cpu().view(torch.uint16).tolist()
+        predicted, commitments = {}, {}
+        for profile in profiles:
+            calculations = [rms_row_candidate(row, weights, modules[role].eps, profile["reduction"], profile["root"]) for row in rows]
+            result = {key: [item[key] for item in calculations] for key in ("mean_bits", "denominator_bits", "rsqrt_bits", "output_bits")}
+            predicted[profile["id"]] = result
+            output = _rms_rows_tensor(result["output_bits"], list(value.shape), value.device)
+            commitments[profile["id"]] = {"prediction_sha256": _rms_sha(result), "output": tensor_descriptor(output)}
+        bundles[role] = {"input_bits": rows, "weight_bits": weights, "predictions": predicted}
+        records[role] = {"input": tensor_descriptor(value), "input_strides": list(value.stride()), "weight_name": weight_name,
+                         "weight": tensor_descriptor(modules[role].weight), "epsilon": modules[role].eps,
+                         "instruction_id": instructions[role]["id"], "instruction_sha256": instructions[role]["instruction_sha256"],
+                         "output_tensor": output_name, "profiles": commitments}
+    include = Path(torch.__file__).resolve().parent / "include/ATen/native"
+    headers = {name: hashlib.sha256((include / name).read_bytes()).hexdigest() for name in ("cuda/Reduce.cuh", "SharedReduceOps.h")}
+    bundle = {"program_sha256": program["program_sha256"], "roles": bundles}
+    body = {"schema_version": 1, "scope": RMS_SLICE_SCOPE, "program_sha256": program["program_sha256"],
+            "source_projection_plan_sha256": projection_plan["plan_sha256"], "source_projection_summary_sha256": summary["summary_sha256"],
+            "source_validation": "projection bundle and summary integrity; use projection-slice-verify --reexecute for full source replay",
+            "independent_embedding_scale_matches_source": True, "roles": records, "profiles": profiles,
+            "arithmetic_implementation_sha256": _rms_code_commitment(), "installed_header_sha256": headers,
+            "source_reference": "PyTorch v2.7.1 ReduceMomentKernel.cu mean factor is float32(num_outputs)/numel",
+            "template_assumptions": {"input_vector_size": 4, "block_width": 32, "block_height": 16, "shuffle_offsets": [1, 2, 4, 8, 16], "cross_warp_or_global_reduction": False},
+            "runtime": _projection_environment(), "bundle_sha256": _rms_sha(bundle), "compared_values_per_profile": 57600,
+            "candidate_refitting_allowed": False, "linked_binary_correspondence_established": False,
+            "full_first_layer_qualified": False, "global_exactness_activation_allowed": False}
+    return {**body, "plan_sha256": _rms_sha(body)}, bundle
+
+
+def _rms_tensor_f32_bits(value: Any) -> list[int]:
+    if not isinstance(value, torch.Tensor) or value.dtype != torch.float32:
+        raise ValueError("Observed RMS stage must be float32")
+    with torch._C._DisableTorchDispatch():
+        return [int(bits) & 0xFFFFFFFF for bits in value.detach().contiguous().view(torch.int32).cpu().reshape(-1).tolist()]
+
+
+def _observe_rms_module(module: Any, value: Any) -> tuple[Any, dict[str, Any]]:
+    from torch.utils._python_dispatch import TorchDispatchMode
+
+    records = {"mean": [], "rsqrt": []}
+
+    class Capture(TorchDispatchMode):
+        def __torch_dispatch__(self, func: Any, types: Any, args: Any = (), kwargs: Any = None) -> Any:
+            output = func(*args, **(kwargs or {}))
+            if str(func) == "aten.mean.dim":
+                records["mean"].append({"bits": _rms_tensor_f32_bits(output), "input_shape": list(args[0].shape),
+                                         "input_strides": list(args[0].stride()), "alignment_mod16": args[0].data_ptr() % 16,
+                                         "input_dtype": str(args[0].dtype), "axes": list(args[1]), "keepdim": args[2]})
+            elif str(func) == "aten.rsqrt.default":
+                records["rsqrt"].append({"input_bits": _rms_tensor_f32_bits(args[0]), "output_bits": _rms_tensor_f32_bits(output)})
+            return output
+
+    with Capture():
+        output = module(value)
+    if len(records["mean"]) != 1 or len(records["rsqrt"]) != 1:
+        raise ValueError("Original RMS module did not expose one mean and one rsqrt operation")
+    mean, root = records["mean"][0], records["rsqrt"][0]
+    return output, {"mean_bits": mean.pop("bits"), "denominator_bits": root["input_bits"], "rsqrt_bits": root["output_bits"], "mean_input_metadata": mean}
+
+
+def _check_rms_plan(program: dict[str, Any], plan: dict[str, Any], bundle: dict[str, Any]) -> None:
+    from .gemma_ir import verify_gemma_ir
+
+    if not verify_gemma_ir(program)["valid"] or plan["program_sha256"] != program["program_sha256"] or bundle["program_sha256"] != program["program_sha256"]:
+        raise ValueError("RMS program identity mismatch")
+    if _rms_sha({k: v for k, v in plan.items() if k != "plan_sha256"}) != plan["plan_sha256"] or _rms_sha(bundle) != plan["bundle_sha256"] or plan["arithmetic_implementation_sha256"] != _rms_code_commitment():
+        raise ValueError("RMS plan, bundle, or arithmetic commitment mismatch")
+    profiles = [{"id": reduction + ":" + root, "reduction": reduction, "root": root} for reduction in RMS_REDUCTIONS for root in RMS_ROOTS]
+    if canonical_json(plan["profiles"]) != canonical_json(profiles) or set(plan["roles"]) != {role for role, _, _ in RMS_SLICE_ROLES} or set(bundle["roles"]) != set(plan["roles"]):
+        raise ValueError("RMS profile or role coverage mismatch")
+    assumptions = {"input_vector_size": 4, "block_width": 32, "block_height": 16, "shuffle_offsets": [1, 2, 4, 8, 16], "cross_warp_or_global_reduction": False}
+    if plan["scope"] != RMS_SLICE_SCOPE or plan["compared_values_per_profile"] != 57600 or canonical_json(plan["template_assumptions"]) != canonical_json(assumptions) or any(plan.get(key) is not False for key in ("candidate_refitting_allowed", "linked_binary_correspondence_established", "full_first_layer_qualified", "global_exactness_activation_allowed")):
+        raise ValueError("RMS scope overclaim")
+    for role, weight_name, output in RMS_SLICE_ROLES:
+        record, data = plan["roles"][role], bundle["roles"][role]
+        instruction = next(item for item in program["instructions"] if item["outputs"] == [output])
+        if record["instruction_sha256"] != instruction["instruction_sha256"] or record["weight_name"] != weight_name or record["weight"]["sha256"] != program["parameter_commitments"][weight_name]["sha256"]:
+            raise ValueError("RMS instruction or weight binding mismatch")
+        shape = record["input"]["shape"]
+        expected_shape = {"input_norm": [1, 30, 640], "query_norm": [1, 4, 30, 256], "key_norm": [1, 1, 30, 256]}[role]
+        if canonical_json(shape) != canonical_json(expected_shape) or record["input"]["dtype"] != "torch.bfloat16" or record["epsilon"] != instruction["attributes"]["epsilon"] or record["instruction_id"] != instruction["id"]:
+            raise ValueError("RMS shape, dtype, epsilon, or instruction identity mismatch")
+        input_descriptor = tensor_descriptor(_rms_rows_tensor(data["input_bits"], shape, "cpu"))
+        if any(record["input"].get(key) != value for key, value in input_descriptor.items() if key != "device"):
+            raise ValueError("RMS input tensor or metadata mismatch")
+        if not isinstance(data["weight_bits"], list) or len(data["weight_bits"]) != shape[-1] or any(type(bits) is not int or not 0 <= bits <= 65535 for bits in data["weight_bits"]):
+            raise ValueError("Malformed RMS weight bits")
+        weight_descriptor = tensor_descriptor(torch.tensor(data["weight_bits"], dtype=torch.uint16).view(torch.bfloat16))
+        if any(record["weight"].get(key) != value for key, value in weight_descriptor.items() if key != "device"):
+            raise ValueError("RMS weight bits or metadata mismatch")
+        if set(data["predictions"]) != {profile["id"] for profile in profiles}:
+            raise ValueError("Missing RMS candidate predictions")
+        for profile in profiles:
+            predicted = data["predictions"][profile["id"]]
+            if any(not isinstance(predicted.get(key), list) or len(predicted[key]) != math.prod(shape[:-1]) or any(type(bits) is not int or not 0 <= bits <= 0xFFFFFFFF for bits in predicted[key]) for key in ("mean_bits", "denominator_bits", "rsqrt_bits")):
+                raise ValueError("Malformed RMS predicted float32 stages")
+            descriptor = tensor_descriptor(_rms_rows_tensor(predicted["output_bits"], shape, "cpu"))
+            if _rms_sha(predicted) != record["profiles"][profile["id"]]["prediction_sha256"] or any(record["profiles"][profile["id"]]["output"].get(key) != value for key, value in descriptor.items() if key != "device"):
+                raise ValueError("RMS prediction commitment or metadata mismatch")
+
+
+def _rms_slice_report(plan: dict[str, Any], bundle: dict[str, Any], observations: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    if set(observations) != set(plan["roles"]):
+        raise ValueError("Missing RMS observations")
+    comparisons = {}
+    inputs_match, geometry_match = True, True
+    for role, _, _ in RMS_SLICE_ROLES:
+        record, actual = plan["roles"][role], observations[role]
+        inputs_match = inputs_match and canonical_json(record["input"]) == canonical_json(actual["input"])
+        if not isinstance(actual["repetitions"], list) or len(actual["repetitions"]) != 3:
+            raise ValueError("Expected three original RMS module repetitions")
+        rows, width = math.prod(record["input"]["shape"][:-1]), record["input"]["shape"][-1]
+        for observed in actual["repetitions"]:
+            metadata = observed["mean_input_metadata"]
+            geometry_match = geometry_match and metadata["input_shape"] == record["input"]["shape"] and metadata["input_dtype"] == "torch.float32" and metadata["alignment_mod16"] == 0 and metadata["input_strides"][-1] == 1 and all(stride % 4 == 0 for stride in metadata["input_strides"][:-1]) and metadata["axes"] in ([-1], [len(record["input"]["shape"]) - 1]) and metadata["keepdim"] is True
+            if not isinstance(observed.get("profiled_cuda_event_names"), list) or not observed["profiled_cuda_event_names"] or any(not isinstance(name, str) or not name for name in observed["profiled_cuda_event_names"]):
+                raise ValueError("Missing RMS CUDA activity provenance")
+        result = {}
+        for profile in plan["profiles"]:
+            prediction = bundle["roles"][role]["predictions"][profile["id"]]
+            failures, stage_counts = [], {key: [] for key in ("mean_bits", "denominator_bits", "rsqrt_bits")}
+            for repetition, observed in enumerate(actual["repetitions"]):
+                _rms_rows_tensor(observed["output_bits"], record["input"]["shape"], "cpu")
+                for key in stage_counts:
+                    bits = observed[key]
+                    if not isinstance(bits, list) or len(bits) != rows or any(type(value) is not int or not 0 <= value <= 0xFFFFFFFF for value in bits):
+                        raise ValueError("Malformed observed RMS float32 stage")
+                    stage_counts[key].append(sum(a != b for a, b in zip(bits, prediction[key])))
+                failures.extend({"repetition": repetition, "flat_row": row, "column": column, "predicted_bits": predicted, "observed_bits": observed["output_bits"][row][column]}
+                                for row, values in enumerate(prediction["output_bits"]) for column, predicted in enumerate(values) if predicted != observed["output_bits"][row][column])
+            result[profile["id"]] = {"output_mismatch_count": len(failures), "output_mismatches": failures, "stage_mismatch_counts": stage_counts,
+                                      "first_differing_observed_stage": next((key for key in stage_counts if any(stage_counts[key])), "output_bits" if failures else None)}
+        comparisons[role] = result
+    output_matching = [profile["id"] for profile in plan["profiles"] if all(comparisons[role][profile["id"]]["output_mismatch_count"] == 0 for role in comparisons)]
+    fully_matching = [name for name in output_matching if all(not any(counts) for role in comparisons for counts in comparisons[role][name]["stage_mismatch_counts"].values())]
+    body = {"schema_version": 1, "scope": RMS_SLICE_SCOPE, "plan_sha256": plan["plan_sha256"], "bundle_sha256": plan["bundle_sha256"],
+            "observations": observations, "runtime": runtime, "actual_inputs_match_plan": inputs_match,
+            "runtime_matches_plan": canonical_json(runtime) == canonical_json(plan["runtime"]), "comparisons": comparisons,
+            "output_matching_profiles": output_matching, "fully_matching_profiles": fully_matching,
+            "source_template_geometry_matches": geometry_match,
+            "all_stages_candidate_passes": bool(fully_matching) and inputs_match and geometry_match and canonical_json(runtime) == canonical_json(plan["runtime"]),
+            "observed_stage_boundary": "actual module ATen mean output and rsqrt input/output, not instrumented hardware registers",
+            "fresh_holdout_validation_established": False, "full_first_layer_qualified": False,
+            "hardware_semantics_established": False, "global_exactness_activation_allowed": False}
+    return {**body, "report_sha256": _rms_sha(body)}
+
+
+def acquire_rms_slice(program: dict[str, Any], model: Any, projection_plan: dict[str, Any], projection_bundle: dict[str, Any], summary: dict[str, Any], plan: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+    from .gemma_ir_interpreter import _projection_environment, bind_model_tensors
+    from .gemma_reduction_backend import _profile_call
+
+    _check_rms_plan(program, plan, bundle)
+    values, modules, _ = _rms_slice_inputs(program, model, projection_plan, projection_bundle, summary)
+    if plan["source_projection_plan_sha256"] != projection_plan["plan_sha256"] or plan["source_projection_summary_sha256"] != summary["summary_sha256"]:
+        raise ValueError("RMS projection source mismatch")
+    for role in values:
+        if tensor_descriptor(values[role]) != plan["roles"][role]["input"]:
+            raise ValueError("RMS regenerated input differs from the prediction plan")
+    observations, normalized = {}, None
+    with torch.no_grad():
+        ids = torch.tensor(projection_plan["input_token_ids"], dtype=torch.int64, device=values["input_norm"].device)
+        actual_inputs = {"input_norm": model.model.embed_tokens(ids)}
+        for role, _, _ in RMS_SLICE_ROLES:
+            if role != "input_norm":
+                short, heads = ("q", 4) if role == "query_norm" else ("k", 1)
+                flat = getattr(model.model.layers[0].self_attn, short + "_proj")(normalized)
+                actual_inputs[role] = flat.view(1, 30, heads, 256).transpose(1, 2)
+            value, module = actual_inputs[role], modules[role]
+            captured, repetitions = [], []
+
+            def invoke() -> Any:
+                output, stages = _observe_rms_module(module, value)
+                captured[:] = [stages]
+                return output
+
+            for _ in range(3):
+                output, events = _profile_call(invoke)
+                if output.dtype != torch.bfloat16 or output.shape != value.shape:
+                    raise ValueError("Original RMS output type mismatch")
+                rows = output.detach().cpu().reshape(-1, output.shape[-1]).view(torch.uint16).tolist()
+                repetitions.append({**captured[0], "output_bits": rows, "profiled_cuda_event_names": events})
+                if role == "input_norm" and normalized is None:
+                    normalized = output.detach()
+            observations[role] = {"input": tensor_descriptor(value), "repetitions": repetitions}
+    bind_model_tensors(program, model, verify_hashes=True)
+    return _rms_slice_report(plan, bundle, observations, _projection_environment())
+
+
+def rms_observer_controls(program: dict[str, Any], model: Any, projection_plan: dict[str, Any], projection_bundle: dict[str, Any], summary: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
+    values, modules, _ = _rms_slice_inputs(program, model, projection_plan, projection_bundle, summary)
+    checks = {}
+    with torch.no_grad():
+        for role, value in values.items():
+            output = modules[role](value)
+            rows = output.detach().cpu().reshape(-1, output.shape[-1]).view(torch.uint16).tolist()
+            mean = value.float().pow(2).mean(-1, keepdim=True)
+            denominator = mean + modules[role].eps
+            inverse = denominator.rsqrt()
+            stages = {"mean_bits": _rms_tensor_f32_bits(mean), "denominator_bits": _rms_tensor_f32_bits(denominator), "rsqrt_bits": _rms_tensor_f32_bits(inverse)}
+            checks[role] = {"untraced_module_outputs_match": all(rows == item["output_bits"] for item in report["observations"][role]["repetitions"]),
+                            "untraced_aten_stage_reproduction_matches": all(stages[key] == item[key] for item in report["observations"][role]["repetitions"] for key in stages)}
+    return checks
+
+
+def verify_rms_slice(program: dict[str, Any], plan: dict[str, Any], bundle: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
+    try:
+        _check_rms_plan(program, plan, bundle)
+        expected = _rms_slice_report(plan, bundle, report["observations"], report["runtime"])
+        return {"valid": canonical_json(expected) == canonical_json(report), "mode": "integrity_only",
+                "output_matching_profiles": expected["output_matching_profiles"], "fully_matching_profiles": expected["fully_matching_profiles"],
+                "all_stages_candidate_passes": expected["all_stages_candidate_passes"], "actual_inputs_match_plan": expected["actual_inputs_match_plan"],
+                "global_exactness_activation_allowed": False}
+    except (KeyError, IndexError, TypeError, ValueError, RuntimeError, AttributeError, StopIteration) as error:
+        return {"valid": False, "reason": str(error)}
+
+
+def rms_slice_summary(plan: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
+    body = {key: value for key, value in report.items() if key not in ("observations", "report_sha256", "comparisons")}
+    body.update({"source_report_sha256": report["report_sha256"], "program_sha256": plan["program_sha256"],
+                 "profiles": plan["profiles"], "roles": plan["roles"], "installed_header_sha256": plan["installed_header_sha256"],
+                 "comparisons": {role: {name: {key: value for key, value in result.items() if key != "output_mismatches"} for name, result in candidates.items()} for role, candidates in report["comparisons"].items()},
+                 "profiled_cuda_event_names": {role: [item["profiled_cuda_event_names"] for item in actual["repetitions"]] for role, actual in report["observations"].items()}})
+    return {**body, "summary_sha256": _rms_sha(body)}
 
 
 def reference_rotate_half(value: Any) -> Any:

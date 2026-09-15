@@ -1,0 +1,359 @@
+{
+  "arithmetic_implementation_sha256": "b2a6f80b76804fee37d4dc4cc513ff8ad8ea9712a3830801018e1f4bfa031f29",
+  "bundle_sha256": "f92584052e25ce3a4e7b602d0fa7d17cf1335709df6aded7674ec1e34ea5e418",
+  "candidate_refitting_allowed": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "input_fixture_sha256": "34b9fa9f2560e9fa69c3e99d422c8a0f8498d05f23941a297e77973f3ac7f8cd",
+  "input_ids": {
+    "device": "cuda:0",
+    "dtype": "torch.int64",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 30,
+    "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+    "shape": [
+      1,
+      30
+    ]
+  },
+  "input_token_ids": [
+    [
+      2,
+      105,
+      2364,
+      107,
+      818,
+      12123,
+      6013,
+      563,
+      236743,
+      236800,
+      236771,
+      3591,
+      532,
+      45261,
+      236761,
+      14300,
+      672,
+      1660,
+      3540,
+      236881,
+      25685,
+      8438,
+      653,
+      2301,
+      236761,
+      106,
+      107,
+      105,
+      4368,
+      107
+    ]
+  ],
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "normalized_input": {
+    "device": "cuda:0",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 19200,
+    "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+    "shape": [
+      1,
+      30,
+      640
+    ]
+  },
+  "numeric_profile": {
+    "partial": {
+      "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+      "carry_conversion": "float32 toward zero after every K8",
+      "final_conversion": "bfloat16 RNE",
+      "half_order": "lower_then_upper",
+      "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+      "precision_bits": 25,
+      "quantization": "toward_zero"
+    },
+    "split": [
+      64,
+      "bfloat16_rne",
+      "sequential_float32_rne"
+    ]
+  },
+  "plan_sha256": "850f26d97f1f1dcd99ed72cfdaa8d6945016afd847cd618ff753c677bcf14e8e",
+  "predicted_value_count": 46080,
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "projection_records": {
+    "key": {
+      "expected_environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "expected_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "input_tensor": "layer.0.attention.normalized",
+      "instruction_id": "i0010",
+      "instruction_sha256": "895ea47b8d749aa1e239d6eac7c9e249b8576cf8660fe484cfe58812a7ebb03e",
+      "numerical_provider": "split_k64_bf16_serial_fp32_v1",
+      "output_tensor": "layer.0.key.flat",
+      "prediction": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 7680,
+        "sha256": "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+        "shape": [
+          1,
+          30,
+          256
+        ]
+      },
+      "source_evidence_sha256": "284fe1367bf1557d79497da571c077a822639a317018ef61489507f9a94aeb7d",
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 163840,
+        "sha256": "714a2dd8722d7e61bb26a85114ba31c25fbfe0ccb403c48baa19edac8066d194",
+        "shape": [
+          256,
+          640
+        ]
+      },
+      "weight_name": "model.layers.0.self_attn.k_proj.weight"
+    },
+    "query": {
+      "expected_environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "expected_kernel_names": [
+        "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+      ],
+      "input_tensor": "layer.0.attention.normalized",
+      "instruction_id": "i0008",
+      "instruction_sha256": "9939f7e124fb775450dc955f75f0c914d3909ec216cdc92100a191dabbf59a9f",
+      "numerical_provider": "operand_alignment_v1",
+      "output_tensor": "layer.0.query.flat",
+      "prediction": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 30720,
+        "sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+        "shape": [
+          1,
+          30,
+          1024
+        ]
+      },
+      "source_evidence_sha256": "307427294be203774f8da52580353567a3354f7a71002910ffad3be85f4079f9",
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 655360,
+        "sha256": "302f4385a18dbb22515c0e99b651c61458738e742df05a71df59a4bf9aeb7c74",
+        "shape": [
+          1024,
+          640
+        ]
+      },
+      "weight_name": "model.layers.0.self_attn.q_proj.weight"
+    },
+    "value": {
+      "expected_environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "expected_kernel_names": [
+        "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+        "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+      ],
+      "input_tensor": "layer.0.attention.normalized",
+      "instruction_id": "i0012",
+      "instruction_sha256": "aac8872bf2de0d63ff6d1a13fffb0eb3b7bd4960e388b1511d9a66054f9529b9",
+      "numerical_provider": "split_k64_bf16_serial_fp32_v1",
+      "output_tensor": "layer.0.value.flat",
+      "prediction": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 7680,
+        "sha256": "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+        "shape": [
+          1,
+          30,
+          256
+        ]
+      },
+      "source_evidence_sha256": "284fe1367bf1557d79497da571c077a822639a317018ef61489507f9a94aeb7d",
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 163840,
+        "sha256": "6fd2423e5ba8d03c7c511c970024ad7840ccd73aca965428a467d83fdd96945b",
+        "shape": [
+          256,
+          640
+        ]
+      },
+      "weight_name": "model.layers.0.self_attn.v_proj.weight"
+    }
+  },
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "float32_matmul_precision": "highest",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Fixed-input actual Gemma layer-0 Q/K/V projection comparison; shared PyTorch embedding/scale/input-RMS prefix, independent experimental projection arithmetic, original modules compared only after predictions are saved; not full-layer/model or hardware qualification.",
+  "shared_prefix_independently_qualified": false,
+  "shared_prefix_records": [
+    {
+      "index": 0,
+      "payload": {
+        "inputs": [
+          "input_ids"
+        ],
+        "instruction_id": "i0001",
+        "instruction_sha256": "5729319f6fdec98570193ab3d9f7287b5f2e51576d0f91210ed8f8505001a9ea",
+        "opcode": "EMBEDDING",
+        "outputs": {
+          "embedding_unscaled": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "c23c3a50249f4d469c491e137da46cd3cb2e9163c05532c9ae833a53971b2b18",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          }
+        },
+        "parameter_refs": [
+          "model.embed_tokens.weight"
+        ],
+        "provider": "shared_pytorch_ir_prefix"
+      },
+      "previous_hash": "GENESIS",
+      "record_hash": "6be9b46a6aa6e300ce69ce50db157d62af95da93378b8d84c52dccc3fd61ed51"
+    },
+    {
+      "index": 1,
+      "payload": {
+        "inputs": [
+          "embedding_unscaled"
+        ],
+        "instruction_id": "i0002",
+        "instruction_sha256": "78dd8789421de852939d8e29af053fbc98f63cc26bfc972df7db70be321e8780",
+        "opcode": "SCALE",
+        "outputs": {
+          "hidden.0": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          }
+        },
+        "parameter_refs": [
+          "model.embed_tokens.embed_scale"
+        ],
+        "provider": "shared_pytorch_ir_prefix"
+      },
+      "previous_hash": "6be9b46a6aa6e300ce69ce50db157d62af95da93378b8d84c52dccc3fd61ed51",
+      "record_hash": "d0448044720d5aa3d01f3d4ae971cafac2e9cb8a5f6fcff1a6fbed88113a870b"
+    },
+    {
+      "index": 2,
+      "payload": {
+        "inputs": [
+          "hidden.0"
+        ],
+        "instruction_id": "i0007",
+        "instruction_sha256": "bde106d560444a7af1f7622bd51c84095f4f8980bd6f8014ec6dbb3bae0fd209",
+        "opcode": "RMS_NORM",
+        "outputs": {
+          "layer.0.attention.normalized": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          }
+        },
+        "parameter_refs": [
+          "model.layers.0.input_layernorm.weight"
+        ],
+        "provider": "shared_pytorch_ir_prefix"
+      },
+      "previous_hash": "d0448044720d5aa3d01f3d4ae971cafac2e9cb8a5f6fcff1a6fbed88113a870b",
+      "record_hash": "61e13e40a7705579350aa166ae0b93d89e01a398159dbc1c3ad6e42d34e848a2"
+    }
+  ],
+  "shared_prefix_root": "61e13e40a7705579350aa166ae0b93d89e01a398159dbc1c3ad6e42d34e848a2",
+  "source_evidence_verification": "commitments_only; use the source experiment verifiers for source replay"
+}

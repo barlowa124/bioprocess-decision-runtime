@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "independent_end_to_end_holdout_binding_revision",
+  "revision": 2,
+  "parent_declaration": "results/gemma3_270m_independent_holdout_declaration.json",
+  "parent_declaration_file_sha256": "08b19852ce09df3009666cc4671f66127e8e4d4b216d2b4930685e5604242ee1",
+  "reason": "The v1 baseline process was interrupted without resumable state. User approved source-bound checkpointing before restart. Original declarations and source versions are preserved.",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "superseded_bindings": {
+    "runner_code_sha256": "51cabcf8e613cb68cdf09621d1696ae2abbff549e148f8d4bd8d19dfed9e7bc8",
+    "global_provider_sha256": "48572a7a30c5856fc1bd06a3b0a20f0b9887b3872df128edc96f12352b410f1a"
+  },
+  "bindings": {
+    "runner_code_sha256": "42f7b0bb6b071a378143df318dd0cc4d6dca592828fcff1bcfa59c15365b6a3f",
+    "global_provider_sha256": "fa1fd89364e3ac76ceefc66a4a624ebbc8578ca6998331be3cb4263f642f5867"
+  },
+  "inheritance_rule": "Load and hash-check the immutable parent declaration. Preserve every case, input ID, tokenizer asset, exclusion, pool, seed, generator, target and comparison requirement. Replace only the runner/provider identities and the operational replay rule explicitly listed here. No other override is permitted. This revision is data, not executable configuration.",
+  "required_case_ids": ["distinct_tokens", "repeated_motif"],
+  "case_sha256": {
+    "distinct_tokens": "effb436b05e7b4f47a5deb9cec2b62ee6cb614052259a1ed1b18c4447905028d",
+    "repeated_motif": "6f16d7798a930e6e41a6a0af98abc2aab73309d672531e00abb950060c48c8a0"
+  },
+  "input_selection_changed": false,
+  "arithmetic_profiles_changed": false,
+  "global_rotary_bits_frequency_positions_runtime_changed": false,
+  "baseline_gate": "Require a passing full533-node baseline prediction and three-forward native boundary/logit/token comparison under these v2 bindings. No partial or failed baseline opens the gate. Bind the actual passing baseline prediction/report hashes before held-out execution.",
+  "prediction_rule": "Regenerate the inherited input declaration before use. Freeze BOTH complete source-bound full-target predictions before ANY held-out native acquisition. Checkpoint continuation is allowed only after complete source/runtime/input/parameter/provider/live-state validation, with checkpoint identity and restored-prefix count explicitly disclosed. No output-driven refitting, resampling or case replacement.",
+  "replay_rule": "Recompute all numerical operations from tokens for an uninterrupted fresh replay, or explicitly disclose validated checkpoint continuation if that replay itself is interrupted. Require equality of every predicted value, descriptor, auxiliary stage and trace record plus native observations. Exclude only operational checkpoint_resume and stored_boundary_predictions_used metadata and their enclosing prediction hash from numerical equality. Preserve the original prediction provenance and its report binding; do not claim byte-identical resumed versus uninterrupted prediction artifacts.",
+  "checkpoint_limitations": "Data-only, source-bound integrity and same-run continuation, not external authenticity, fresh recomputation of a restored prefix, or hardware proof. In-flight instructions can be recomputed after interruption.",
+  "holdout_predictions_executed": false,
+  "holdout_native_observations_acquired": false,
+  "holdout_validation_implemented": false,
+  "qualification_promotion_allowed": false,
+  "hardware_semantics_established": false,
+  "full_model_qualified": false,
+  "artifact_integrity_rule": "Whole-file SHA256 recorded separately in persistent state; this binding revision is not a passing experiment report."
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "prospective_gemv_primitive_validation",
+  "profile": "gemv_k640_stride8_fp32_rne_halves_bf16_v1",
+  "case_names": ["dense_narrow", "dense_wide", "cancellation", "rounding_boundary"],
+  "seed": 1511506921,
+  "generator": "NumPy Generator with explicit PCG64 and this fixed seed; recipe and complete source-file hash bound by the prediction plan. No resampling or replacement after observations.",
+  "shape": {"input": [1,1,640], "weights": [262144,640]},
+  "unique_weight_rows_per_case": 512,
+  "weight_row_mapping": "Full-shape row j uses frozen generated bank row j modulo512; input occupies the last row of a contiguous BF16 [1,30,640] carrier.",
+  "case_recipes": {
+    "dense_narrow": "Random signs/mantissas and unbiased encoded exponent integers116 through133 for input and weights.",
+    "dense_wide": "Random signs/mantissas and encoded exponent integers80 through169 for input and weights.",
+    "cancellation": "Unit input; each32-position group contains8 large terms (encoded exponents150..160),8 small terms(115..125),negated large terms,the same small terms.",
+    "rounding_boundary": "Unit input; three nonzero or signed-zero terms at row-index-derived positions separated by8, probing BF16 half-way rounding and signed epsilon. Other weights zero."
+  },
+  "prediction_gate": "Freeze all four integer-only synthetic predictions and the recalculated baseline vocabulary prediction before any synthetic native projection. Existing baseline native outputs are already observed characterization data, not holdout evidence.",
+  "native_protocol": "For each baseline/synthetic case perform three unprofiled,three warmup,three profiled projections; require full output equality, profiled/plain equality and the same observed gemvx kernel symbol. Fresh model weight/source/runtime checks for baseline. Synthetic weights are declared controlled matrices, not model parameters.",
+  "failure_rule": "Retain failures; no arithmetic refit or input changes within this protocol. A matching kernel name is provenance, not a hardware reduction proof.",
+  "end_to_end_raw_token_holdouts_used": false,
+  "full_model_qualification_allowed": false,
+  "hardware_semantics_established": false
+}

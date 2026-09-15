@@ -1,0 +1,579 @@
+{
+  "base_domain_stable": true,
+  "base_domain_usable": true,
+  "global_exactness_activation_allowed": false,
+  "manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+  "native_arithmetic_reconstructed": false,
+  "plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+  "records": [
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "4b667b6c078b5a4643404f7a3ec70e41e9ab44ef32fd0b94d69c224a375730be",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "4b667b6c078b5a4643404f7a3ec70e41e9ab44ef32fd0b94d69c224a375730be",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "4b667b6c078b5a4643404f7a3ec70e41e9ab44ef32fd0b94d69c224a375730be",
+          "repetition": 2
+        }
+      ],
+      "offset": 0,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "16db41f6e15a2a8f1f804e65b38dc48f7a7d7fea05550e224e4ab9a0bcd9068b",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "16db41f6e15a2a8f1f804e65b38dc48f7a7d7fea05550e224e4ab9a0bcd9068b",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "16db41f6e15a2a8f1f804e65b38dc48f7a7d7fea05550e224e4ab9a0bcd9068b",
+          "repetition": 2
+        }
+      ],
+      "offset": 1048576,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "d49915e382089a05c15ef53f4752c52406c60d2c7c71dbeb2ceb6054dc281b17",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "d49915e382089a05c15ef53f4752c52406c60d2c7c71dbeb2ceb6054dc281b17",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "d49915e382089a05c15ef53f4752c52406c60d2c7c71dbeb2ceb6054dc281b17",
+          "repetition": 2
+        }
+      ],
+      "offset": 2097152,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "a3630d9383b0855e0a7e78dffc0fc0a7cc0c0ae945760ca2d3c5a399ee06a35e",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "a3630d9383b0855e0a7e78dffc0fc0a7cc0c0ae945760ca2d3c5a399ee06a35e",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "a3630d9383b0855e0a7e78dffc0fc0a7cc0c0ae945760ca2d3c5a399ee06a35e",
+          "repetition": 2
+        }
+      ],
+      "offset": 3145728,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "841abd3f9d7805a73fffaa44307f5af34219a44e66cac735045934b0a5b64cac",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "841abd3f9d7805a73fffaa44307f5af34219a44e66cac735045934b0a5b64cac",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "841abd3f9d7805a73fffaa44307f5af34219a44e66cac735045934b0a5b64cac",
+          "repetition": 2
+        }
+      ],
+      "offset": 4194304,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "53e99b60292431e3775d77104611c13dac8eaadd89f506691035ad8331fca246",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "53e99b60292431e3775d77104611c13dac8eaadd89f506691035ad8331fca246",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "53e99b60292431e3775d77104611c13dac8eaadd89f506691035ad8331fca246",
+          "repetition": 2
+        }
+      ],
+      "offset": 5242880,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "ab98ebadc21309681aa8dc638264b795400d7052e8a84876b6496e1931837263",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "ab98ebadc21309681aa8dc638264b795400d7052e8a84876b6496e1931837263",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "ab98ebadc21309681aa8dc638264b795400d7052e8a84876b6496e1931837263",
+          "repetition": 2
+        }
+      ],
+      "offset": 6291456,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "5d98268edd6f8f412493c1bf2638c0e692a7bd4e023d4e2b0e29ea1e63bceeb6",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "5d98268edd6f8f412493c1bf2638c0e692a7bd4e023d4e2b0e29ea1e63bceeb6",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "5d98268edd6f8f412493c1bf2638c0e692a7bd4e023d4e2b0e29ea1e63bceeb6",
+          "repetition": 2
+        }
+      ],
+      "offset": 7340032,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "45f44142b772370aa0e4f856da5014d31db301585cb57567bd53b23c74b91b49",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "45f44142b772370aa0e4f856da5014d31db301585cb57567bd53b23c74b91b49",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "45f44142b772370aa0e4f856da5014d31db301585cb57567bd53b23c74b91b49",
+          "repetition": 2
+        }
+      ],
+      "offset": 8388608,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "89d7c94eb07532239207f9cb5f70c570909fe02dc4118eadb857df7fd10aabba",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "89d7c94eb07532239207f9cb5f70c570909fe02dc4118eadb857df7fd10aabba",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "89d7c94eb07532239207f9cb5f70c570909fe02dc4118eadb857df7fd10aabba",
+          "repetition": 2
+        }
+      ],
+      "offset": 9437184,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1267958aef44198df1ff1bb219d530003d60dfb893d222208165d4a864e19c32",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1267958aef44198df1ff1bb219d530003d60dfb893d222208165d4a864e19c32",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1267958aef44198df1ff1bb219d530003d60dfb893d222208165d4a864e19c32",
+          "repetition": 2
+        }
+      ],
+      "offset": 10485760,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "05fc3ef8a583324fe42aa4badbdda126d60fe8b99905a8e225e60714e8d34016",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "05fc3ef8a583324fe42aa4badbdda126d60fe8b99905a8e225e60714e8d34016",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "05fc3ef8a583324fe42aa4badbdda126d60fe8b99905a8e225e60714e8d34016",
+          "repetition": 2
+        }
+      ],
+      "offset": 11534336,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "911317baccbc745c5f3d5d2fe3317302c448f82af0909082ace4fe2d574f2e38",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "911317baccbc745c5f3d5d2fe3317302c448f82af0909082ace4fe2d574f2e38",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "911317baccbc745c5f3d5d2fe3317302c448f82af0909082ace4fe2d574f2e38",
+          "repetition": 2
+        }
+      ],
+      "offset": 12582912,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1c7176dadf4ea0e47cdf0555e177ad0d071aa109992fa2e16abbf3f180d15bf5",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1c7176dadf4ea0e47cdf0555e177ad0d071aa109992fa2e16abbf3f180d15bf5",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "1c7176dadf4ea0e47cdf0555e177ad0d071aa109992fa2e16abbf3f180d15bf5",
+          "repetition": 2
+        }
+      ],
+      "offset": 13631488,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "34a9e84f50e7b73bc6c9d5f0b673430d7a580bfad9bedeec6cdbbe8f961e1e36",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "34a9e84f50e7b73bc6c9d5f0b673430d7a580bfad9bedeec6cdbbe8f961e1e36",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "34a9e84f50e7b73bc6c9d5f0b673430d7a580bfad9bedeec6cdbbe8f961e1e36",
+          "repetition": 2
+        }
+      ],
+      "offset": 14680064,
+      "output_range_valid": true
+    },
+    {
+      "count": 1048576,
+      "observations": [
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "73eae824151eb47d0402a27a963f22f4bcb734a4524775ef2b190731fa7a288c",
+          "repetition": 0
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "73eae824151eb47d0402a27a963f22f4bcb734a4524775ef2b190731fa7a288c",
+          "repetition": 1
+        },
+        {
+          "kernel_names": [
+            "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+          ],
+          "mismatch_count_against_first": 0,
+          "mismatch_payload_sha256": null,
+          "output_sha256": "73eae824151eb47d0402a27a963f22f4bcb734a4524775ef2b190731fa7a288c",
+          "repetition": 2
+        }
+      ],
+      "offset": 15728640,
+      "output_range_valid": true
+    }
+  ],
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit empirical float32 rsqrt lookup/scaling specification for a pinned runtime; normalized table data are observed, not a reconstruction of NVIDIA arithmetic.",
+  "source_kernel_names_match": true,
+  "table_bytes": 67108864,
+  "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+}

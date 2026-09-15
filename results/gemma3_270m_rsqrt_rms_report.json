@@ -1,0 +1,300 @@
+{
+  "all_native_root_layout_replays_match": true,
+  "all_stored_rms_values_and_stages_match": true,
+  "bundle_sha256": "ceb90bcea3561f671bcb4da570638df81ff0d7bfc2347080d0e36b11bcc72f4e",
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "lookup_evidence": {
+    "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+    "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+    "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+    "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+    "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+  },
+  "lookup_rms_check_passes": true,
+  "native_arithmetic_reconstructed": false,
+  "native_root_replays": {
+    "input_norm": [
+      {
+        "input_sha256": "94c636bd7c66f649e6944d1b573a5ce4edcd1411fc838e5b77edfa91f0d92a44",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "predicted_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "repetition": 0,
+        "shape": [
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      },
+      {
+        "input_sha256": "94c636bd7c66f649e6944d1b573a5ce4edcd1411fc838e5b77edfa91f0d92a44",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "predicted_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "repetition": 1,
+        "shape": [
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      },
+      {
+        "input_sha256": "94c636bd7c66f649e6944d1b573a5ce4edcd1411fc838e5b77edfa91f0d92a44",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "predicted_sha256": "df3a0556a20843c66bf03f9c18dddb884c080bac1a3adee286bd7924c8dc34f6",
+        "repetition": 2,
+        "shape": [
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      }
+    ],
+    "key_norm": [
+      {
+        "input_sha256": "405e02072fa741f1ef194d9b715f0717eee90938973e216cecf0256f9160b643",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "predicted_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "repetition": 0,
+        "shape": [
+          1,
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      },
+      {
+        "input_sha256": "405e02072fa741f1ef194d9b715f0717eee90938973e216cecf0256f9160b643",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "predicted_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "repetition": 1,
+        "shape": [
+          1,
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      },
+      {
+        "input_sha256": "405e02072fa741f1ef194d9b715f0717eee90938973e216cecf0256f9160b643",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "predicted_sha256": "c9b3a7be1a731565a082c7fed952eecc5d317f66223a9824e5cc78ef4fd2a96c",
+        "repetition": 2,
+        "shape": [
+          1,
+          1,
+          30,
+          1
+        ],
+        "value_count": 30
+      }
+    ],
+    "query_norm": [
+      {
+        "input_sha256": "8ca37b820c421b805706dfd992f075340c42fbdb6f936959d10808e4ed7799ab",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "predicted_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "repetition": 0,
+        "shape": [
+          1,
+          4,
+          30,
+          1
+        ],
+        "value_count": 120
+      },
+      {
+        "input_sha256": "8ca37b820c421b805706dfd992f075340c42fbdb6f936959d10808e4ed7799ab",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "predicted_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "repetition": 1,
+        "shape": [
+          1,
+          4,
+          30,
+          1
+        ],
+        "value_count": 120
+      },
+      {
+        "input_sha256": "8ca37b820c421b805706dfd992f075340c42fbdb6f936959d10808e4ed7799ab",
+        "kernel_names": [
+          "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+        ],
+        "mismatch_count": 0,
+        "mismatch_payload_sha256": null,
+        "observed_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "predicted_sha256": "f5af141daf17d0992bdd80ec84ec27a493e9d48d99a3a9d3c31d9d8e921ce04d",
+        "repetition": 2,
+        "shape": [
+          1,
+          4,
+          30,
+          1
+        ],
+        "value_count": 120
+      }
+    ]
+  },
+  "plan_sha256": "e9947832c91aafafafaef41e28bb3fe08211f95dcf4e06b230fce4c11ae8d138",
+  "report_sha256": "fedbd47bc62e716ea1cc45f5cd1ec583db8a6abbc045d66caf3f8bb725504a9b",
+  "role_summaries": {
+    "input_norm": {
+      "native_root_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_output_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_stage_mismatch_counts": {
+        "denominator_bits": [
+          0,
+          0,
+          0
+        ],
+        "mean_bits": [
+          0,
+          0,
+          0
+        ],
+        "rsqrt_bits": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "key_norm": {
+      "native_root_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_output_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_stage_mismatch_counts": {
+        "denominator_bits": [
+          0,
+          0,
+          0
+        ],
+        "mean_bits": [
+          0,
+          0,
+          0
+        ],
+        "rsqrt_bits": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "query_norm": {
+      "native_root_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_output_mismatch_counts": [
+        0,
+        0,
+        0
+      ],
+      "stored_stage_mismatch_counts": {
+        "denominator_bits": [
+          0,
+          0,
+          0
+        ],
+        "mean_bits": [
+          0,
+          0,
+          0
+        ],
+        "rsqrt_bits": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit-lookup RMS regression against preserved actual tensors, with prospective native rsqrt replay at the original small layouts; not native arithmetic reconstruction or full-layer qualification.",
+  "source_data_reused": true,
+  "source_kernel_environment_match": true,
+  "source_rms_report_sha256": "3468b2595dac4c0a3773c03f58a5d0a1fd623cf4e8a80f668dd25c5487147acd"
+}

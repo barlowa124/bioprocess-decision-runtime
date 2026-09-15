@@ -1,0 +1,281 @@
+{
+  "bmm_cuda_events": [
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_tn_align2EEvNT_6ParamsE"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_tn_align2EEvNT_6ParamsE"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_tn_align2EEvNT_6ParamsE"
+    ]
+  ],
+  "bmm_operand_geometry": [
+    [
+      {
+        "strides": [
+          256,
+          1024,
+          1
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "6e7b4989e42401f911aa3ad84b2aee2e7d5b6d4285b8b113ed13aa22d774b6af",
+          "shape": [
+            4,
+            30,
+            256
+          ]
+        }
+      },
+      {
+        "strides": [
+          0,
+          1,
+          256
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "2eefe058e1d43a1803bfac919d39696df5ecc517d883101be28c31af560c6a46",
+          "shape": [
+            4,
+            256,
+            30
+          ]
+        }
+      }
+    ],
+    [
+      {
+        "strides": [
+          256,
+          1024,
+          1
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "6e7b4989e42401f911aa3ad84b2aee2e7d5b6d4285b8b113ed13aa22d774b6af",
+          "shape": [
+            4,
+            30,
+            256
+          ]
+        }
+      },
+      {
+        "strides": [
+          0,
+          1,
+          256
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "2eefe058e1d43a1803bfac919d39696df5ecc517d883101be28c31af560c6a46",
+          "shape": [
+            4,
+            256,
+            30
+          ]
+        }
+      }
+    ],
+    [
+      {
+        "strides": [
+          256,
+          1024,
+          1
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "6e7b4989e42401f911aa3ad84b2aee2e7d5b6d4285b8b113ed13aa22d774b6af",
+          "shape": [
+            4,
+            30,
+            256
+          ]
+        }
+      },
+      {
+        "strides": [
+          0,
+          1,
+          256
+        ],
+        "tensor": {
+          "device": "cuda:0",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "2eefe058e1d43a1803bfac919d39696df5ecc517d883101be28c31af560c6a46",
+          "shape": [
+            4,
+            256,
+            30
+          ]
+        }
+      }
+    ]
+  ],
+  "candidate_passes": true,
+  "code_sha256": "5a505e193a42440cb166e4c5959655da4d7e8c413a18548479aadaf9bd2de2a1",
+  "conditions": [
+    {
+      "bmm_operands_match": true,
+      "mask_rule_on_observed_input_matches": true,
+      "scale_rule_on_observed_input_matches": true,
+      "softmax_input_cast_matches": true,
+      "source_inputs_match": true,
+      "untraced_mask_matches": true,
+      "untraced_masked_output_matches": true
+    },
+    {
+      "bmm_operands_match": true,
+      "mask_rule_on_observed_input_matches": true,
+      "scale_rule_on_observed_input_matches": true,
+      "softmax_input_cast_matches": true,
+      "source_inputs_match": true,
+      "untraced_mask_matches": true,
+      "untraced_masked_output_matches": true
+    },
+    {
+      "bmm_operands_match": true,
+      "mask_rule_on_observed_input_matches": true,
+      "scale_rule_on_observed_input_matches": true,
+      "softmax_input_cast_matches": true,
+      "source_inputs_match": true,
+      "untraced_mask_matches": true,
+      "untraced_masked_output_matches": true
+    }
+  ],
+  "diagnostics_conditioned_on_observed_inputs": true,
+  "first_divergence": null,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "mismatch_count": 0,
+  "observed_stage_hashes": {
+    "mask": [
+      "7b8c6819d4f6b2406541b05ad08ab24db71cc31d42728c6bac684f2d8ec40800",
+      "7b8c6819d4f6b2406541b05ad08ab24db71cc31d42728c6bac684f2d8ec40800",
+      "7b8c6819d4f6b2406541b05ad08ab24db71cc31d42728c6bac684f2d8ec40800"
+    ],
+    "masked": [
+      "dcfd0e8ec1a8525d323723b0a7a1a0d90dcadff0a8959d77ef3e7109b737c23d",
+      "dcfd0e8ec1a8525d323723b0a7a1a0d90dcadff0a8959d77ef3e7109b737c23d",
+      "dcfd0e8ec1a8525d323723b0a7a1a0d90dcadff0a8959d77ef3e7109b737c23d"
+    ],
+    "scaled": [
+      "9e796c1ac6b73c5e6f891e71d5cd0aac3c6ea1f88382152d9fe215287d2bdbb8",
+      "9e796c1ac6b73c5e6f891e71d5cd0aac3c6ea1f88382152d9fe215287d2bdbb8",
+      "9e796c1ac6b73c5e6f891e71d5cd0aac3c6ea1f88382152d9fe215287d2bdbb8"
+    ],
+    "unscaled": [
+      "bf601c41f52d755c1688d1a6388361dc2dc5bee7dbb91b585221ab18c58c4dee",
+      "bf601c41f52d755c1688d1a6388361dc2dc5bee7dbb91b585221ab18c58c4dee",
+      "bf601c41f52d755c1688d1a6388361dc2dc5bee7dbb91b585221ab18c58c4dee"
+    ]
+  },
+  "plan_sha256": "e2667ec3d29e3ae19cc143f24c6860c607bbef0b36873e23c161b523331d00bc",
+  "prefix_recomputed_in_this_experiment": false,
+  "profile": {
+    "dot": {
+      "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+      "carry_conversion": "float32 toward zero after every K8",
+      "final_conversion": "bfloat16 RNE",
+      "half_order": "lower_then_upper",
+      "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+      "precision_bits": 25,
+      "quantization": "toward_zero"
+    },
+    "mask_bits": 65407,
+    "reduction_length": 256,
+    "scale_bits": 15744
+  },
+  "repeated_traced_outputs_identical": true,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Frozen first-layer attention-score candidate on verified serialized RoPE boundaries; independent K256 dot, BF16 scale and causal-mask prediction; original forward stopped before softmax; not generic batched-GEMM or full-layer qualification.",
+  "score_count": 3600,
+  "softmax_executed": false,
+  "source_report_sha256": "3b8d45606ddbac8d78452c009eeb1f02f963fcb9ede523a632976326442269fc",
+  "sources": {
+    "lookup_evidence": {
+      "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+      "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+      "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+      "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+      "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+    },
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "rotary_bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+    "rotary_execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+    "rotary_plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+    "rotary_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+    "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+  },
+  "stage_mismatch_counts": {
+    "mask": [
+      0,
+      0,
+      0
+    ],
+    "masked": [
+      0,
+      0,
+      0
+    ],
+    "scaled": [
+      0,
+      0,
+      0
+    ],
+    "unscaled": [
+      0,
+      0,
+      0
+    ]
+  },
+  "summary_sha256": "eff237ceee36d5025402cc207e2d40a41c6ec6c1c8f16644753f8d7b90759b4d"
+}

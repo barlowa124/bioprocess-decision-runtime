@@ -1,0 +1,60 @@
+{
+  "attention_arithmetic_executed": false,
+  "entry_plan_sha256": "170d68c4958a2fd83921c6aade250c4861da9e20f6ebf900f3d570f613adcf91",
+  "execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+  "first_divergence": null,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "instruction_count": 14,
+  "mismatch_count": 0,
+  "native_trigonometric_arithmetic_reconstructed": false,
+  "observed_target_hashes": {
+    "layer.0.key.rotary": [
+      "35ad7edffeaa0e620088f0dd1b09e1a23e58e29b9de09c2f5817d12a8bb08948",
+      "35ad7edffeaa0e620088f0dd1b09e1a23e58e29b9de09c2f5817d12a8bb08948",
+      "35ad7edffeaa0e620088f0dd1b09e1a23e58e29b9de09c2f5817d12a8bb08948"
+    ],
+    "layer.0.query.rotary": [
+      "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+      "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+      "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac"
+    ],
+    "layer.0.value.heads": [
+      "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+      "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+      "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a"
+    ]
+  },
+  "original_tables_match_specification": true,
+  "plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "rotated_attention_inputs_bit_exact": true,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Connected fixed-input first-layer execution through RoPE using explicit compiled rotary tables and independent BF16 multiply/multiply/add; original eager-attention inputs compared before attention arithmetic; not full-layer/model qualification.",
+  "source_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+  "summary_sha256": "2de3f96461c529f80b9e3c8bae2205a932e14d785fbdbabdf5edc86dd5ae7679",
+  "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666",
+  "target_value_count": 46080
+}

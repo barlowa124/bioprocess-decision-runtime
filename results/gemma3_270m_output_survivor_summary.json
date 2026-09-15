@@ -1,0 +1,141 @@
+{
+  "base_plan_sha256": "8ed91b0c4e66c455491794038673cea72c2138a252e7da0f817e7cac02899ab1",
+  "base_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "candidate": {
+    "chunk_size": 128,
+    "id": "k128:bfloat16_rne:sequential_float32_rne",
+    "merge": "sequential_float32_rne",
+    "partial_format": "bfloat16_rne",
+    "partitions": [
+      [
+        0,
+        128
+      ],
+      [
+        128,
+        256
+      ],
+      [
+        256,
+        384
+      ],
+      [
+        384,
+        512
+      ],
+      [
+        512,
+        640
+      ],
+      [
+        640,
+        768
+      ],
+      [
+        768,
+        896
+      ],
+      [
+        896,
+        1024
+      ]
+    ]
+  },
+  "comparison": {
+    "aggregation_value_count": 30720,
+    "candidate_passes": true,
+    "checks": [
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      },
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      },
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      }
+    ],
+    "first_divergence": null,
+    "full_first_layer_qualified": false,
+    "global_exactness_activation_allowed": false,
+    "hardware_semantics_established": false,
+    "mismatch_count": 0,
+    "mismatch_counts": {
+      "concatenated": [
+        0,
+        0,
+        0
+      ],
+      "head_output": [
+        0,
+        0,
+        0
+      ],
+      "projected": [
+        0,
+        0,
+        0
+      ]
+    },
+    "plan_sha256": "42c35a08c60257e910ecafe7a4c3600f55e883365f76d23733ecf952da11b272",
+    "post_attention_norm_executed": false,
+    "prefix_independently_recomputed": false,
+    "projection_value_count": 19200,
+    "runtime": {
+      "allow_tf32": false,
+      "bf16_reduced_precision_reduction": true,
+      "capability": [
+        8,
+        9
+      ],
+      "cublas_workspace_config": null,
+      "cuda": "12.8",
+      "cuda_autocast_enabled": false,
+      "deterministic_algorithms": false,
+      "device": "NVIDIA GeForce RTX 4090",
+      "driver_version": "616.56",
+      "float32_matmul_precision": "highest",
+      "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+      "python": "3.11.9",
+      "torch": "2.7.1+cu128",
+      "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+      "transformers": "4.53.3"
+    },
+    "runtime_matches_plan": true,
+    "schema_version": 1
+  },
+  "fresh_model_holdout": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "native_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "plan_sha256": "42c35a08c60257e910ecafe7a4c3600f55e883365f76d23733ecf952da11b272",
+  "probe_plan_sha256": "afda69c6a474a9dca706cad282d74dc88d93891ca9b1c7d045dd2ded1e73f7c4",
+  "probe_report_sha256": "4088df7530e1275c254ecb28bfc93db7fd866f0f954d14bda89e397be8649870",
+  "schema_version": 1,
+  "scope": "Fixed-model regression of the unique controlled K1024 split/merge-grid survivor; original model outputs were already observed, so not a fresh model holdout or hardware partition proof.",
+  "source_report_sha256": "a3c3269534d2a2d0ef97ee8515d222d90c628b8f643cb23cc20c444511fdc15f",
+  "summary_sha256": "710f53deb9a5c7494db523d453cbce6fa4dce99aab5e011905671e08d7b07057",
+  "survivor_reproduces_model_case": true
+}

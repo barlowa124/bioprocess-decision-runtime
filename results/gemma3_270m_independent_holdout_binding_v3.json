@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "independent_end_to_end_holdout_binding_revision",
+  "revision": 3,
+  "parent_declaration": "results/gemma3_270m_independent_holdout_declaration.json",
+  "parent_declaration_file_sha256": "08b19852ce09df3009666cc4671f66127e8e4d4b216d2b4930685e5604242ee1",
+  "superseded_revision": "results/gemma3_270m_independent_holdout_binding_v2.json",
+  "superseded_revision_file_sha256": "0998f5f709f89b8fdf4df5659d072ba93fec5b165b7cbd821a748c0d4888c0fd",
+  "reason": "The v2 baseline completed but failed at49 vocabulary logits per native forward. An integer-only GEMV rule passed component comparison and fresh replay, including four predeclared synthetic primitive cases. V3 integrates that rule without changing the decoder arithmetic or held-out inputs.",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "superseded_bindings": {
+    "runner_code_sha256": "42f7b0bb6b071a378143df318dd0cc4d6dca592828fcff1bcfa59c15365b6a3f",
+    "global_provider_sha256": "fa1fd89364e3ac76ceefc66a4a624ebbc8578ca6998331be3cb4263f642f5867"
+  },
+  "bindings": {
+    "runner_code_sha256": "f47c391ca85ac8dca07c0b7feba054298bc351b7e47ebe946d34b3062931737a",
+    "global_provider_sha256": "362a7db4e818fdbff39c195062d936e73e75f08a2188206ab03cfbadbd28c292",
+    "gemv_arithmetic_code_sha256": "14e685f876bb544cc8fdc92d99fa18014b2fdb414cff5579448bb7b5068400b3",
+    "gemv_component_report_sha256": "8c093ca3179fe68889a00fe08dc0c454f8553034cccd446475498032e08a13cb",
+    "gemv_component_replay_sha256": "0d66c91284f26ae8d4c9ca51fda2c98755aa4c9dbb557e4fc96a369882f23970"
+  },
+  "inheritance_rule": "Validate both immutable predecessor files by whole-file hash. Preserve the original cases, IDs, tokenizer assets, exclusions, pool, seed, sampler, target and comparison requirements. Retain v2's explicit continuation/replay provenance rules. Replace only the source/provider bindings and the vocabulary arithmetic explicitly declared here. No other override is permitted.",
+  "required_case_ids": ["distinct_tokens", "repeated_motif"],
+  "case_sha256": {
+    "distinct_tokens": "effb436b05e7b4f47a5deb9cec2b62ee6cb614052259a1ed1b18c4447905028d",
+    "repeated_motif": "6f16d7798a930e6e41a6a0af98abc2aab73309d672531e00abb950060c48c8a0"
+  },
+  "input_selection_changed": false,
+  "legacy_decoder_projection_profiles_changed": false,
+  "vocabulary_arithmetic_changed": true,
+  "vocabulary_profile": "gemv_k640_stride8_fp32_rne_halves_bf16_v1",
+  "global_rotary_bits_frequency_positions_runtime_changed": false,
+  "execution_schema_version": 3,
+  "older_source_checkpoint_reuse_allowed": false,
+  "baseline_gate": "Require a passing complete533-node v3 prediction, three original full-target native comparisons and fresh replay under these bindings. Pin actual passing prediction/report hashes before held-out execution; failed or partial evidence cannot open this gate.",
+  "prediction_rule": "Regenerate the inherited input selection before use. Freeze BOTH complete source-bound full-target predictions before ANY held-out native acquisition. Validated same-v3 checkpoint continuation requires explicit restored-prefix provenance. No refit, resampling or case replacement based on outputs.",
+  "holdout_predictions_executed": false,
+  "holdout_native_observations_acquired": false,
+  "holdout_validation_implemented": false,
+  "qualification_promotion_allowed": false,
+  "hardware_semantics_established": false,
+  "full_model_qualified": false,
+  "artifact_integrity_rule": "Whole-file SHA256 recorded separately; this revision is a binding declaration, not a passing end-to-end experiment."
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "interrupted_without_completed_prediction",
+  "last_completed_instruction": "i0438",
+  "completed_instruction_count": 439,
+  "required_instruction_count": 533,
+  "last_completed_layer": 14,
+  "cause": "unknown",
+  "completed_prediction_saved": false,
+  "native_comparison_report_saved": false,
+  "resumable_checkpoint_saved": false,
+  "partial_log": "gemma_independent_baseline_run.log",
+  "partial_log_file_sha256": "1498f010cbc9af8d5c35a4fc3ff952c7815dbaf4da4ed9781c830674c2a5d496",
+  "source_pack": "artifacts/gemma_independent_v1_sources-d1cc121059467f4101ae656aaf373d1b59bb7c3a.pack",
+  "source_pack_verified": true,
+  "source_objects": {
+    "bioprocess_runtime/gemma_independent.py": {
+      "git_blob": "dd3ae04402ea369d112d775be750481e325ee5b2",
+      "file_sha256": "4d9a2d155dd09f01c9470f83f9c89abc7f3c6aba1e16831d2888a0ddeadda5d5"
+    },
+    "bioprocess_runtime/gemma_independent_run.py": {
+      "git_blob": "a22701d54b9c69dab7eb4781338c7a70a91fa8af",
+      "file_sha256": "0d3d073525530539c620a056cb30ba2d10daa8bca6ebb3d4a56cb4ed68e23c79"
+    }
+  },
+  "runner_code_sha256": "51cabcf8e613cb68cdf09621d1696ae2abbff549e148f8d4bd8d19dfed9e7bc8",
+  "global_provider_sha256": "48572a7a30c5856fc1bd06a3b0a20f0b9887b3872df128edc96f12352b410f1a",
+  "holdout_declaration_file_sha256": "08b19852ce09df3009666cc4671f66127e8e4d4b216d2b4930685e5604242ee1",
+  "recovery_choice": "user_selected_checkpointing_before_restart",
+  "arithmetic_refitting_allowed": false,
+  "full_model_conformance_established": false
+}

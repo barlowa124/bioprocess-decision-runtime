@@ -1,0 +1,3486 @@
+{
+  "acquisitions": [
+    {
+      "environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "kernel_names": [
+        [
+          "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+        ],
+        [
+          "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+        ],
+        [
+          "_ZN7cutlass7Kernel2I68cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8EEvNT_6ParamsE"
+        ]
+      ],
+      "observed_bits": [
+        [
+          18069,
+          50957,
+          18213,
+          49732,
+          18235,
+          50993,
+          18332,
+          17832,
+          50835,
+          50711,
+          18085,
+          18203,
+          50981,
+          18325,
+          18450,
+          17992,
+          17017,
+          17817,
+          18067,
+          50593,
+          50700,
+          18244,
+          51083,
+          18117,
+          51061,
+          50338,
+          17977,
+          50731,
+          50449,
+          17942,
+          51093,
+          50789,
+          53320,
+          20753,
+          21080,
+          21008,
+          53321,
+          53506,
+          53558,
+          53448,
+          20478,
+          53786,
+          20906,
+          53783,
+          53684,
+          53586,
+          20230,
+          20760,
+          53283,
+          53381,
+          53598,
+          53645,
+          20803,
+          53765,
+          19937,
+          20851,
+          20176,
+          53289,
+          53822,
+          53519,
+          53623,
+          53568,
+          20886,
+          53616,
+          18586,
+          17210,
+          51416,
+          49466,
+          51274,
+          49457,
+          49502,
+          50820,
+          50337,
+          18459,
+          17374,
+          48544,
+          50601,
+          50820,
+          50726,
+          18247,
+          17943,
+          51035,
+          16774,
+          17688,
+          18085,
+          51392,
+          17564,
+          17436,
+          49198,
+          16272,
+          17210,
+          17156,
+          51026,
+          18141,
+          49366,
+          17088,
+          18442,
+          18761,
+          18096,
+          51124,
+          51468,
+          51486,
+          50991,
+          50837,
+          18275,
+          18598,
+          51560,
+          51374,
+          51283,
+          18616,
+          51408,
+          18642,
+          18360,
+          18572,
+          18466,
+          18558,
+          17966,
+          18656,
+          18634,
+          18552,
+          51130,
+          51337,
+          18800,
+          51116,
+          51398,
+          18542,
+          51568,
+          51426
+        ],
+        [
+          18069,
+          50957,
+          18213,
+          49732,
+          18235,
+          50993,
+          18332,
+          17832,
+          50835,
+          50711,
+          18085,
+          18203,
+          50981,
+          18325,
+          18450,
+          17992,
+          17017,
+          17817,
+          18067,
+          50593,
+          50700,
+          18244,
+          51083,
+          18117,
+          51061,
+          50338,
+          17977,
+          50731,
+          50449,
+          17942,
+          51093,
+          50789,
+          53320,
+          20753,
+          21080,
+          21008,
+          53321,
+          53506,
+          53558,
+          53448,
+          20478,
+          53786,
+          20906,
+          53783,
+          53684,
+          53586,
+          20230,
+          20760,
+          53283,
+          53381,
+          53598,
+          53645,
+          20803,
+          53765,
+          19937,
+          20851,
+          20176,
+          53289,
+          53822,
+          53519,
+          53623,
+          53568,
+          20886,
+          53616,
+          18586,
+          17210,
+          51416,
+          49466,
+          51274,
+          49457,
+          49502,
+          50820,
+          50337,
+          18459,
+          17374,
+          48544,
+          50601,
+          50820,
+          50726,
+          18247,
+          17943,
+          51035,
+          16774,
+          17688,
+          18085,
+          51392,
+          17564,
+          17436,
+          49198,
+          16272,
+          17210,
+          17156,
+          51026,
+          18141,
+          49366,
+          17088,
+          18442,
+          18761,
+          18096,
+          51124,
+          51468,
+          51486,
+          50991,
+          50837,
+          18275,
+          18598,
+          51560,
+          51374,
+          51283,
+          18616,
+          51408,
+          18642,
+          18360,
+          18572,
+          18466,
+          18558,
+          17966,
+          18656,
+          18634,
+          18552,
+          51130,
+          51337,
+          18800,
+          51116,
+          51398,
+          18542,
+          51568,
+          51426
+        ],
+        [
+          18069,
+          50957,
+          18213,
+          49732,
+          18235,
+          50993,
+          18332,
+          17832,
+          50835,
+          50711,
+          18085,
+          18203,
+          50981,
+          18325,
+          18450,
+          17992,
+          17017,
+          17817,
+          18067,
+          50593,
+          50700,
+          18244,
+          51083,
+          18117,
+          51061,
+          50338,
+          17977,
+          50731,
+          50449,
+          17942,
+          51093,
+          50789,
+          53320,
+          20753,
+          21080,
+          21008,
+          53321,
+          53506,
+          53558,
+          53448,
+          20478,
+          53786,
+          20906,
+          53783,
+          53684,
+          53586,
+          20230,
+          20760,
+          53283,
+          53381,
+          53598,
+          53645,
+          20803,
+          53765,
+          19937,
+          20851,
+          20176,
+          53289,
+          53822,
+          53519,
+          53623,
+          53568,
+          20886,
+          53616,
+          18586,
+          17210,
+          51416,
+          49466,
+          51274,
+          49457,
+          49502,
+          50820,
+          50337,
+          18459,
+          17374,
+          48544,
+          50601,
+          50820,
+          50726,
+          18247,
+          17943,
+          51035,
+          16774,
+          17688,
+          18085,
+          51392,
+          17564,
+          17436,
+          49198,
+          16272,
+          17210,
+          17156,
+          51026,
+          18141,
+          49366,
+          17088,
+          18442,
+          18761,
+          18096,
+          51124,
+          51468,
+          51486,
+          50991,
+          50837,
+          18275,
+          18598,
+          51560,
+          51374,
+          51283,
+          18616,
+          51408,
+          18642,
+          18360,
+          18572,
+          18466,
+          18558,
+          17966,
+          18656,
+          18634,
+          18552,
+          51130,
+          51337,
+          18800,
+          51116,
+          51398,
+          18542,
+          51568,
+          51426
+        ]
+      ],
+      "role": "query"
+    },
+    {
+      "environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "kernel_names": [
+        [
+          "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ],
+        [
+          "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ],
+        [
+          "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ]
+      ],
+      "observed_bits": [
+        [
+          18325,
+          50659,
+          50816,
+          18339,
+          51004,
+          50900,
+          18262,
+          50973,
+          18067,
+          50868,
+          17982,
+          18123,
+          18137,
+          17943,
+          18206,
+          18024,
+          18187,
+          50495,
+          18060,
+          18231,
+          51006,
+          50944,
+          51009,
+          17893,
+          50734,
+          18141,
+          51027,
+          50831,
+          18101,
+          50895,
+          50885,
+          50853,
+          21064,
+          53568,
+          53638,
+          20867,
+          53558,
+          20886,
+          20988,
+          53633,
+          20872,
+          53676,
+          53597,
+          20970,
+          53647,
+          20705,
+          53576,
+          53171,
+          53486,
+          53877,
+          53713,
+          20846,
+          53515,
+          20883,
+          20852,
+          20870,
+          20896,
+          21028,
+          20867,
+          20775,
+          53784,
+          53259,
+          20790,
+          53685,
+          17231,
+          50197,
+          17900,
+          16914,
+          51115,
+          17966,
+          49275,
+          51167,
+          18270,
+          51234,
+          17249,
+          50824,
+          18337,
+          50255,
+          49809,
+          50717,
+          17384,
+          50384,
+          17387,
+          17600,
+          17691,
+          49425,
+          17064,
+          50019,
+          17052,
+          50791,
+          49934,
+          17149,
+          49316,
+          16417,
+          50945,
+          49955,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          18325,
+          50659,
+          50816,
+          18339,
+          51004,
+          50900,
+          18262,
+          50973,
+          18067,
+          50868,
+          17982,
+          18123,
+          18137,
+          17943,
+          18206,
+          18024,
+          18187,
+          50495,
+          18060,
+          18231,
+          51006,
+          50944,
+          51009,
+          17893,
+          50734,
+          18141,
+          51027,
+          50831,
+          18101,
+          50895,
+          50885,
+          50853,
+          21064,
+          53568,
+          53638,
+          20867,
+          53558,
+          20886,
+          20988,
+          53633,
+          20872,
+          53676,
+          53597,
+          20970,
+          53647,
+          20705,
+          53576,
+          53171,
+          53486,
+          53877,
+          53713,
+          20846,
+          53515,
+          20883,
+          20852,
+          20870,
+          20896,
+          21028,
+          20867,
+          20775,
+          53784,
+          53259,
+          20790,
+          53685,
+          17231,
+          50197,
+          17900,
+          16914,
+          51115,
+          17966,
+          49275,
+          51167,
+          18270,
+          51234,
+          17249,
+          50824,
+          18337,
+          50255,
+          49809,
+          50717,
+          17384,
+          50384,
+          17387,
+          17600,
+          17691,
+          49425,
+          17064,
+          50019,
+          17052,
+          50791,
+          49934,
+          17149,
+          49316,
+          16417,
+          50945,
+          49955,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          18325,
+          50659,
+          50816,
+          18339,
+          51004,
+          50900,
+          18262,
+          50973,
+          18067,
+          50868,
+          17982,
+          18123,
+          18137,
+          17943,
+          18206,
+          18024,
+          18187,
+          50495,
+          18060,
+          18231,
+          51006,
+          50944,
+          51009,
+          17893,
+          50734,
+          18141,
+          51027,
+          50831,
+          18101,
+          50895,
+          50885,
+          50853,
+          21064,
+          53568,
+          53638,
+          20867,
+          53558,
+          20886,
+          20988,
+          53633,
+          20872,
+          53676,
+          53597,
+          20970,
+          53647,
+          20705,
+          53576,
+          53171,
+          53486,
+          53877,
+          53713,
+          20846,
+          53515,
+          20883,
+          20852,
+          20870,
+          20896,
+          21028,
+          20867,
+          20775,
+          53784,
+          53259,
+          20790,
+          53685,
+          17231,
+          50197,
+          17900,
+          16914,
+          51115,
+          17966,
+          49275,
+          51167,
+          18270,
+          51234,
+          17249,
+          50824,
+          18337,
+          50255,
+          49809,
+          50717,
+          17384,
+          50384,
+          17387,
+          17600,
+          17691,
+          49425,
+          17064,
+          50019,
+          17052,
+          50791,
+          49934,
+          17149,
+          49316,
+          16417,
+          50945,
+          49955,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "role": "key_value"
+    },
+    {
+      "environment": {
+        "bf16_reduced_precision_reduction": true,
+        "capability": [
+          8,
+          9
+        ],
+        "cuda": "12.8",
+        "deterministic_algorithms": false,
+        "device": "NVIDIA GeForce RTX 4090",
+        "torch": "2.7.1+cu128"
+      },
+      "kernel_names": [
+        [
+          "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ],
+        [
+          "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ],
+        [
+          "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn",
+          "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+        ]
+      ],
+      "observed_bits": [
+        [
+          50835,
+          51205,
+          51030,
+          18116,
+          50858,
+          17990,
+          18322,
+          18054,
+          18205,
+          50845,
+          18391,
+          18306,
+          51082,
+          50905,
+          18022,
+          18367,
+          51093,
+          18310,
+          51018,
+          51074,
+          18289,
+          51074,
+          18157,
+          50948,
+          18218,
+          18089,
+          50984,
+          51204,
+          51040,
+          51143,
+          50867,
+          18311,
+          20765,
+          53717,
+          20949,
+          20910,
+          20874,
+          20979,
+          20875,
+          20977,
+          53922,
+          53798,
+          53763,
+          20912,
+          20946,
+          20850,
+          20854,
+          20887,
+          20998,
+          20898,
+          53772,
+          21179,
+          20873,
+          53522,
+          53721,
+          21147,
+          53893,
+          21071,
+          53465,
+          53357,
+          53271,
+          53325,
+          53480,
+          53710,
+          16236,
+          18350,
+          18499,
+          50340,
+          50447,
+          50431,
+          49926,
+          49677,
+          50955,
+          17925,
+          50138,
+          49113,
+          50493,
+          51295,
+          17164,
+          17760,
+          18075,
+          18676,
+          17766,
+          16770,
+          17200,
+          51184,
+          50636,
+          18661,
+          49762,
+          17496,
+          18509,
+          17211,
+          50723,
+          16939,
+          18254,
+          49915,
+          51515,
+          50860,
+          0,
+          18071,
+          50953,
+          0,
+          18126,
+          51510,
+          0,
+          50887,
+          51378,
+          0,
+          51290,
+          51303,
+          0,
+          18660,
+          51454,
+          0,
+          51246,
+          18599,
+          0,
+          18033,
+          51476,
+          0,
+          18400,
+          50448,
+          0,
+          51375,
+          18529,
+          0,
+          51281,
+          51440
+        ],
+        [
+          50835,
+          51205,
+          51030,
+          18116,
+          50858,
+          17990,
+          18322,
+          18054,
+          18205,
+          50845,
+          18391,
+          18306,
+          51082,
+          50905,
+          18022,
+          18367,
+          51093,
+          18310,
+          51018,
+          51074,
+          18289,
+          51074,
+          18157,
+          50948,
+          18218,
+          18089,
+          50984,
+          51204,
+          51040,
+          51143,
+          50867,
+          18311,
+          20765,
+          53717,
+          20949,
+          20910,
+          20874,
+          20979,
+          20875,
+          20977,
+          53922,
+          53798,
+          53763,
+          20912,
+          20946,
+          20850,
+          20854,
+          20887,
+          20998,
+          20898,
+          53772,
+          21179,
+          20873,
+          53522,
+          53721,
+          21147,
+          53893,
+          21071,
+          53465,
+          53357,
+          53271,
+          53325,
+          53480,
+          53710,
+          16236,
+          18350,
+          18499,
+          50340,
+          50447,
+          50431,
+          49926,
+          49677,
+          50955,
+          17925,
+          50138,
+          49113,
+          50493,
+          51295,
+          17164,
+          17760,
+          18075,
+          18676,
+          17766,
+          16770,
+          17200,
+          51184,
+          50636,
+          18661,
+          49762,
+          17496,
+          18509,
+          17211,
+          50723,
+          16939,
+          18254,
+          49915,
+          51515,
+          50860,
+          0,
+          18071,
+          50953,
+          0,
+          18126,
+          51510,
+          0,
+          50887,
+          51378,
+          0,
+          51290,
+          51303,
+          0,
+          18660,
+          51454,
+          0,
+          51246,
+          18599,
+          0,
+          18033,
+          51476,
+          0,
+          18400,
+          50448,
+          0,
+          51375,
+          18529,
+          0,
+          51281,
+          51440
+        ],
+        [
+          50835,
+          51205,
+          51030,
+          18116,
+          50858,
+          17990,
+          18322,
+          18054,
+          18205,
+          50845,
+          18391,
+          18306,
+          51082,
+          50905,
+          18022,
+          18367,
+          51093,
+          18310,
+          51018,
+          51074,
+          18289,
+          51074,
+          18157,
+          50948,
+          18218,
+          18089,
+          50984,
+          51204,
+          51040,
+          51143,
+          50867,
+          18311,
+          20765,
+          53717,
+          20949,
+          20910,
+          20874,
+          20979,
+          20875,
+          20977,
+          53922,
+          53798,
+          53763,
+          20912,
+          20946,
+          20850,
+          20854,
+          20887,
+          20998,
+          20898,
+          53772,
+          21179,
+          20873,
+          53522,
+          53721,
+          21147,
+          53893,
+          21071,
+          53465,
+          53357,
+          53271,
+          53325,
+          53480,
+          53710,
+          16236,
+          18350,
+          18499,
+          50340,
+          50447,
+          50431,
+          49926,
+          49677,
+          50955,
+          17925,
+          50138,
+          49113,
+          50493,
+          51295,
+          17164,
+          17760,
+          18075,
+          18676,
+          17766,
+          16770,
+          17200,
+          51184,
+          50636,
+          18661,
+          49762,
+          17496,
+          18509,
+          17211,
+          50723,
+          16939,
+          18254,
+          49915,
+          51515,
+          50860,
+          0,
+          18071,
+          50953,
+          0,
+          18126,
+          51510,
+          0,
+          50887,
+          51378,
+          0,
+          51290,
+          51303,
+          0,
+          18660,
+          51454,
+          0,
+          51246,
+          18599,
+          0,
+          18033,
+          51476,
+          0,
+          18400,
+          50448,
+          0,
+          51375,
+          18529,
+          0,
+          51281,
+          51440
+        ]
+      ],
+      "role": "mlp_down"
+    }
+  ],
+  "candidate_passes_holdout": false,
+  "candidate_refitted": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "mismatch_count": 303,
+  "plan_sha256": "60af957b789348b387d0bd5b205ab18597030a6ed5ccccbb5300fc71ecb70f01",
+  "predictions_sha256": "3ef87bf67edae4fe023d4c89b9f2701dbceb9df1de8ebe73cab75a104dc03241",
+  "repetitions": 3,
+  "report_sha256": "7fe0d9c8105e68477218562b2b9fb273792d3963845eafe213452b86296d8568",
+  "schema_version": 1,
+  "scope": "Prospective exact-product/per-K8 carry comparison on controlled projection shapes; only first 128 output columns tested, repeated input rows, zero-padded other weights; no gate or hardware qualification.",
+  "shape_results": [
+    {
+      "kernel_names_stable": true,
+      "matching_cases_by_family": {
+        "boundary_cancellation": [
+          29,
+          29,
+          29
+        ],
+        "dense_narrow": [
+          32,
+          32,
+          32
+        ],
+        "dense_wide": [
+          32,
+          32,
+          32
+        ],
+        "paired_cancellation": [
+          30,
+          30,
+          30
+        ]
+      },
+      "mismatch_count": 15,
+      "mismatches": [
+        {
+          "family": "paired_cancellation",
+          "index": 69,
+          "observed_bits": 49457,
+          "predicted_bits": 49456,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 48544,
+          "predicted_bits": 48512,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 18096,
+          "predicted_bits": 18095,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 50837,
+          "predicted_bits": 50845,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 18552,
+          "predicted_bits": 18551,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 69,
+          "observed_bits": 49457,
+          "predicted_bits": 49456,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 48544,
+          "predicted_bits": 48512,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 18096,
+          "predicted_bits": 18095,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 50837,
+          "predicted_bits": 50845,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 18552,
+          "predicted_bits": 18551,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 69,
+          "observed_bits": 49457,
+          "predicted_bits": 49456,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 48544,
+          "predicted_bits": 48512,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 18096,
+          "predicted_bits": 18095,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 50837,
+          "predicted_bits": 50845,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 18552,
+          "predicted_bits": 18551,
+          "repetition": 2
+        }
+      ],
+      "repeated_outputs_identical": true,
+      "role": "query"
+    },
+    {
+      "kernel_names_stable": true,
+      "matching_cases_by_family": {
+        "boundary_cancellation": [
+          0,
+          0,
+          0
+        ],
+        "dense_narrow": [
+          18,
+          18,
+          18
+        ],
+        "dense_wide": [
+          24,
+          24,
+          24
+        ],
+        "paired_cancellation": [
+          29,
+          29,
+          29
+        ]
+      },
+      "mismatch_count": 171,
+      "mismatches": [
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 50900,
+          "predicted_bits": 50901,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 10,
+          "observed_bits": 17982,
+          "predicted_bits": 17981,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 11,
+          "observed_bits": 18123,
+          "predicted_bits": 18124,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 12,
+          "observed_bits": 18137,
+          "predicted_bits": 18138,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 17943,
+          "predicted_bits": 17944,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18206,
+          "predicted_bits": 18205,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 17,
+          "observed_bits": 50495,
+          "predicted_bits": 50492,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 18,
+          "observed_bits": 18060,
+          "predicted_bits": 18059,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 51009,
+          "predicted_bits": 51010,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 17893,
+          "predicted_bits": 17887,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 50734,
+          "predicted_bits": 50735,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 25,
+          "observed_bits": 18141,
+          "predicted_bits": 18142,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 18101,
+          "predicted_bits": 18102,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 50853,
+          "predicted_bits": 50852,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 33,
+          "observed_bits": 53568,
+          "predicted_bits": 53569,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 42,
+          "observed_bits": 53597,
+          "predicted_bits": 53595,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 53171,
+          "predicted_bits": 53174,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 50,
+          "observed_bits": 53713,
+          "predicted_bits": 53714,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 51,
+          "observed_bits": 20846,
+          "predicted_bits": 20845,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 20883,
+          "predicted_bits": 20882,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 20775,
+          "predicted_bits": 20776,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53259,
+          "predicted_bits": 53260,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 70,
+          "observed_bits": 49275,
+          "predicted_bits": 49274,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 92,
+          "observed_bits": 49316,
+          "predicted_bits": 49315,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 93,
+          "observed_bits": 16417,
+          "predicted_bits": 16416,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 96,
+          "observed_bits": 0,
+          "predicted_bits": 50976,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 0,
+          "predicted_bits": 18563,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51209,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 99,
+          "observed_bits": 0,
+          "predicted_bits": 51507,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 100,
+          "observed_bits": 0,
+          "predicted_bits": 18505,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 18405,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 0,
+          "predicted_bits": 18374,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 0,
+          "predicted_bits": 51120,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51465,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 105,
+          "observed_bits": 0,
+          "predicted_bits": 51262,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 106,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 51555,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 0,
+          "predicted_bits": 51440,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 109,
+          "observed_bits": 0,
+          "predicted_bits": 18364,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 51253,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 111,
+          "observed_bits": 0,
+          "predicted_bits": 51110,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 112,
+          "observed_bits": 0,
+          "predicted_bits": 51473,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51236,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 114,
+          "observed_bits": 0,
+          "predicted_bits": 51457,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 115,
+          "observed_bits": 0,
+          "predicted_bits": 18820,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 18696,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 117,
+          "observed_bits": 0,
+          "predicted_bits": 18358,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 118,
+          "observed_bits": 0,
+          "predicted_bits": 51116,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18856,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 120,
+          "observed_bits": 0,
+          "predicted_bits": 51377,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 121,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18603,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 123,
+          "observed_bits": 0,
+          "predicted_bits": 51239,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 124,
+          "observed_bits": 0,
+          "predicted_bits": 51247,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51126,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 0,
+          "predicted_bits": 18767,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 127,
+          "observed_bits": 0,
+          "predicted_bits": 51418,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 50900,
+          "predicted_bits": 50901,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 10,
+          "observed_bits": 17982,
+          "predicted_bits": 17981,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 11,
+          "observed_bits": 18123,
+          "predicted_bits": 18124,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 12,
+          "observed_bits": 18137,
+          "predicted_bits": 18138,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 17943,
+          "predicted_bits": 17944,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18206,
+          "predicted_bits": 18205,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 17,
+          "observed_bits": 50495,
+          "predicted_bits": 50492,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 18,
+          "observed_bits": 18060,
+          "predicted_bits": 18059,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 51009,
+          "predicted_bits": 51010,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 17893,
+          "predicted_bits": 17887,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 50734,
+          "predicted_bits": 50735,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 25,
+          "observed_bits": 18141,
+          "predicted_bits": 18142,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 18101,
+          "predicted_bits": 18102,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 50853,
+          "predicted_bits": 50852,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 33,
+          "observed_bits": 53568,
+          "predicted_bits": 53569,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 42,
+          "observed_bits": 53597,
+          "predicted_bits": 53595,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 53171,
+          "predicted_bits": 53174,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 50,
+          "observed_bits": 53713,
+          "predicted_bits": 53714,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 51,
+          "observed_bits": 20846,
+          "predicted_bits": 20845,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 20883,
+          "predicted_bits": 20882,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 20775,
+          "predicted_bits": 20776,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53259,
+          "predicted_bits": 53260,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 70,
+          "observed_bits": 49275,
+          "predicted_bits": 49274,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 92,
+          "observed_bits": 49316,
+          "predicted_bits": 49315,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 93,
+          "observed_bits": 16417,
+          "predicted_bits": 16416,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 96,
+          "observed_bits": 0,
+          "predicted_bits": 50976,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 0,
+          "predicted_bits": 18563,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51209,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 99,
+          "observed_bits": 0,
+          "predicted_bits": 51507,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 100,
+          "observed_bits": 0,
+          "predicted_bits": 18505,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 18405,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 0,
+          "predicted_bits": 18374,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 0,
+          "predicted_bits": 51120,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51465,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 105,
+          "observed_bits": 0,
+          "predicted_bits": 51262,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 106,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 51555,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 0,
+          "predicted_bits": 51440,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 109,
+          "observed_bits": 0,
+          "predicted_bits": 18364,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 51253,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 111,
+          "observed_bits": 0,
+          "predicted_bits": 51110,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 112,
+          "observed_bits": 0,
+          "predicted_bits": 51473,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51236,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 114,
+          "observed_bits": 0,
+          "predicted_bits": 51457,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 115,
+          "observed_bits": 0,
+          "predicted_bits": 18820,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 18696,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 117,
+          "observed_bits": 0,
+          "predicted_bits": 18358,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 118,
+          "observed_bits": 0,
+          "predicted_bits": 51116,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18856,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 120,
+          "observed_bits": 0,
+          "predicted_bits": 51377,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 121,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18603,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 123,
+          "observed_bits": 0,
+          "predicted_bits": 51239,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 124,
+          "observed_bits": 0,
+          "predicted_bits": 51247,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51126,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 0,
+          "predicted_bits": 18767,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 127,
+          "observed_bits": 0,
+          "predicted_bits": 51418,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 50900,
+          "predicted_bits": 50901,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 10,
+          "observed_bits": 17982,
+          "predicted_bits": 17981,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 11,
+          "observed_bits": 18123,
+          "predicted_bits": 18124,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 12,
+          "observed_bits": 18137,
+          "predicted_bits": 18138,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 17943,
+          "predicted_bits": 17944,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18206,
+          "predicted_bits": 18205,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 17,
+          "observed_bits": 50495,
+          "predicted_bits": 50492,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 18,
+          "observed_bits": 18060,
+          "predicted_bits": 18059,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 51009,
+          "predicted_bits": 51010,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 17893,
+          "predicted_bits": 17887,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 50734,
+          "predicted_bits": 50735,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 25,
+          "observed_bits": 18141,
+          "predicted_bits": 18142,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 18101,
+          "predicted_bits": 18102,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 50853,
+          "predicted_bits": 50852,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 33,
+          "observed_bits": 53568,
+          "predicted_bits": 53569,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 42,
+          "observed_bits": 53597,
+          "predicted_bits": 53595,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 53171,
+          "predicted_bits": 53174,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 50,
+          "observed_bits": 53713,
+          "predicted_bits": 53714,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 51,
+          "observed_bits": 20846,
+          "predicted_bits": 20845,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 20883,
+          "predicted_bits": 20882,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 20775,
+          "predicted_bits": 20776,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53259,
+          "predicted_bits": 53260,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 70,
+          "observed_bits": 49275,
+          "predicted_bits": 49274,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 92,
+          "observed_bits": 49316,
+          "predicted_bits": 49315,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 93,
+          "observed_bits": 16417,
+          "predicted_bits": 16416,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 96,
+          "observed_bits": 0,
+          "predicted_bits": 50976,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 0,
+          "predicted_bits": 18563,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51209,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 99,
+          "observed_bits": 0,
+          "predicted_bits": 51507,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 100,
+          "observed_bits": 0,
+          "predicted_bits": 18505,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 18405,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 0,
+          "predicted_bits": 18374,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 103,
+          "observed_bits": 0,
+          "predicted_bits": 51120,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51465,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 105,
+          "observed_bits": 0,
+          "predicted_bits": 51262,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 106,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 51555,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 0,
+          "predicted_bits": 51440,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 109,
+          "observed_bits": 0,
+          "predicted_bits": 18364,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 51253,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 111,
+          "observed_bits": 0,
+          "predicted_bits": 51110,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 112,
+          "observed_bits": 0,
+          "predicted_bits": 51473,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51236,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 114,
+          "observed_bits": 0,
+          "predicted_bits": 51457,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 115,
+          "observed_bits": 0,
+          "predicted_bits": 18820,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 18696,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 117,
+          "observed_bits": 0,
+          "predicted_bits": 18358,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 118,
+          "observed_bits": 0,
+          "predicted_bits": 51116,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18856,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 120,
+          "observed_bits": 0,
+          "predicted_bits": 51377,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 121,
+          "observed_bits": 0,
+          "predicted_bits": 18591,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18603,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 123,
+          "observed_bits": 0,
+          "predicted_bits": 51239,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 124,
+          "observed_bits": 0,
+          "predicted_bits": 51247,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51126,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 0,
+          "predicted_bits": 18767,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 127,
+          "observed_bits": 0,
+          "predicted_bits": 51418,
+          "repetition": 2
+        }
+      ],
+      "repeated_outputs_identical": true,
+      "role": "key_value"
+    },
+    {
+      "kernel_names_stable": true,
+      "matching_cases_by_family": {
+        "boundary_cancellation": [
+          18,
+          18,
+          18
+        ],
+        "dense_narrow": [
+          21,
+          21,
+          21
+        ],
+        "dense_wide": [
+          20,
+          20,
+          20
+        ],
+        "paired_cancellation": [
+          30,
+          30,
+          30
+        ]
+      },
+      "mismatch_count": 117,
+      "mismatches": [
+        {
+          "family": "dense_narrow",
+          "index": 2,
+          "observed_bits": 51030,
+          "predicted_bits": 51029,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 4,
+          "observed_bits": 50858,
+          "predicted_bits": 50857,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 17990,
+          "predicted_bits": 17989,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 50905,
+          "predicted_bits": 50904,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18022,
+          "predicted_bits": 18023,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 18157,
+          "predicted_bits": 18156,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 50948,
+          "predicted_bits": 50947,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 18218,
+          "predicted_bits": 18217,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 51040,
+          "predicted_bits": 51039,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 29,
+          "observed_bits": 51143,
+          "predicted_bits": 51142,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 18311,
+          "predicted_bits": 18312,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 32,
+          "observed_bits": 20765,
+          "predicted_bits": 20764,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 43,
+          "observed_bits": 20912,
+          "predicted_bits": 20911,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 20887,
+          "predicted_bits": 20886,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 49,
+          "observed_bits": 20898,
+          "predicted_bits": 20897,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 53522,
+          "predicted_bits": 53521,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 54,
+          "observed_bits": 53721,
+          "predicted_bits": 53720,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 58,
+          "observed_bits": 53465,
+          "predicted_bits": 53462,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 53357,
+          "predicted_bits": 53359,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 60,
+          "observed_bits": 53271,
+          "predicted_bits": 53272,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53325,
+          "predicted_bits": 53331,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 62,
+          "observed_bits": 53480,
+          "predicted_bits": 53482,
+          "repetition": 0
+        },
+        {
+          "family": "dense_wide",
+          "index": 63,
+          "observed_bits": 53710,
+          "predicted_bits": 53711,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 64,
+          "observed_bits": 16236,
+          "predicted_bits": 16232,
+          "repetition": 0
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 49113,
+          "predicted_bits": 49112,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 50860,
+          "predicted_bits": 50856,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51395,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 51042,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 18126,
+          "predicted_bits": 18134,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51558,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 18847,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 51290,
+          "predicted_bits": 51291,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 18438,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51391,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 51488,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18705,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18557,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51308,
+          "repetition": 0
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 51281,
+          "predicted_bits": 51280,
+          "repetition": 0
+        },
+        {
+          "family": "dense_narrow",
+          "index": 2,
+          "observed_bits": 51030,
+          "predicted_bits": 51029,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 4,
+          "observed_bits": 50858,
+          "predicted_bits": 50857,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 17990,
+          "predicted_bits": 17989,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 50905,
+          "predicted_bits": 50904,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18022,
+          "predicted_bits": 18023,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 18157,
+          "predicted_bits": 18156,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 50948,
+          "predicted_bits": 50947,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 18218,
+          "predicted_bits": 18217,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 51040,
+          "predicted_bits": 51039,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 29,
+          "observed_bits": 51143,
+          "predicted_bits": 51142,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 18311,
+          "predicted_bits": 18312,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 32,
+          "observed_bits": 20765,
+          "predicted_bits": 20764,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 43,
+          "observed_bits": 20912,
+          "predicted_bits": 20911,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 20887,
+          "predicted_bits": 20886,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 49,
+          "observed_bits": 20898,
+          "predicted_bits": 20897,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 53522,
+          "predicted_bits": 53521,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 54,
+          "observed_bits": 53721,
+          "predicted_bits": 53720,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 58,
+          "observed_bits": 53465,
+          "predicted_bits": 53462,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 53357,
+          "predicted_bits": 53359,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 60,
+          "observed_bits": 53271,
+          "predicted_bits": 53272,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53325,
+          "predicted_bits": 53331,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 62,
+          "observed_bits": 53480,
+          "predicted_bits": 53482,
+          "repetition": 1
+        },
+        {
+          "family": "dense_wide",
+          "index": 63,
+          "observed_bits": 53710,
+          "predicted_bits": 53711,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 64,
+          "observed_bits": 16236,
+          "predicted_bits": 16232,
+          "repetition": 1
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 49113,
+          "predicted_bits": 49112,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 50860,
+          "predicted_bits": 50856,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51395,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 51042,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 18126,
+          "predicted_bits": 18134,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51558,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 18847,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 51290,
+          "predicted_bits": 51291,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 18438,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51391,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 51488,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18705,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18557,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51308,
+          "repetition": 1
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 51281,
+          "predicted_bits": 51280,
+          "repetition": 1
+        },
+        {
+          "family": "dense_narrow",
+          "index": 2,
+          "observed_bits": 51030,
+          "predicted_bits": 51029,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 4,
+          "observed_bits": 50858,
+          "predicted_bits": 50857,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 5,
+          "observed_bits": 17990,
+          "predicted_bits": 17989,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 13,
+          "observed_bits": 50905,
+          "predicted_bits": 50904,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 14,
+          "observed_bits": 18022,
+          "predicted_bits": 18023,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 22,
+          "observed_bits": 18157,
+          "predicted_bits": 18156,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 23,
+          "observed_bits": 50948,
+          "predicted_bits": 50947,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 24,
+          "observed_bits": 18218,
+          "predicted_bits": 18217,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 28,
+          "observed_bits": 51040,
+          "predicted_bits": 51039,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 29,
+          "observed_bits": 51143,
+          "predicted_bits": 51142,
+          "repetition": 2
+        },
+        {
+          "family": "dense_narrow",
+          "index": 31,
+          "observed_bits": 18311,
+          "predicted_bits": 18312,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 32,
+          "observed_bits": 20765,
+          "predicted_bits": 20764,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 43,
+          "observed_bits": 20912,
+          "predicted_bits": 20911,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 47,
+          "observed_bits": 20887,
+          "predicted_bits": 20886,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 49,
+          "observed_bits": 20898,
+          "predicted_bits": 20897,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 53,
+          "observed_bits": 53522,
+          "predicted_bits": 53521,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 54,
+          "observed_bits": 53721,
+          "predicted_bits": 53720,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 58,
+          "observed_bits": 53465,
+          "predicted_bits": 53462,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 59,
+          "observed_bits": 53357,
+          "predicted_bits": 53359,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 60,
+          "observed_bits": 53271,
+          "predicted_bits": 53272,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 61,
+          "observed_bits": 53325,
+          "predicted_bits": 53331,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 62,
+          "observed_bits": 53480,
+          "predicted_bits": 53482,
+          "repetition": 2
+        },
+        {
+          "family": "dense_wide",
+          "index": 63,
+          "observed_bits": 53710,
+          "predicted_bits": 53711,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 64,
+          "observed_bits": 16236,
+          "predicted_bits": 16232,
+          "repetition": 2
+        },
+        {
+          "family": "paired_cancellation",
+          "index": 75,
+          "observed_bits": 49113,
+          "predicted_bits": 49112,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 97,
+          "observed_bits": 50860,
+          "predicted_bits": 50856,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 98,
+          "observed_bits": 0,
+          "predicted_bits": 51395,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 101,
+          "observed_bits": 0,
+          "predicted_bits": 51042,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 102,
+          "observed_bits": 18126,
+          "predicted_bits": 18134,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 104,
+          "observed_bits": 0,
+          "predicted_bits": 51558,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 107,
+          "observed_bits": 0,
+          "predicted_bits": 18847,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 108,
+          "observed_bits": 51290,
+          "predicted_bits": 51291,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 110,
+          "observed_bits": 0,
+          "predicted_bits": 18438,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 113,
+          "observed_bits": 0,
+          "predicted_bits": 51391,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 116,
+          "observed_bits": 0,
+          "predicted_bits": 51488,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 119,
+          "observed_bits": 0,
+          "predicted_bits": 18705,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 122,
+          "observed_bits": 0,
+          "predicted_bits": 18557,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 125,
+          "observed_bits": 0,
+          "predicted_bits": 51308,
+          "repetition": 2
+        },
+        {
+          "family": "boundary_cancellation",
+          "index": 126,
+          "observed_bits": 51281,
+          "predicted_bits": 51280,
+          "repetition": 2
+        }
+      ],
+      "repeated_outputs_identical": true,
+      "role": "mlp_down"
+    }
+  ],
+  "tested_case_count": 384
+}

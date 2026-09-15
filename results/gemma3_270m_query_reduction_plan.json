@@ -1,0 +1,48 @@
+{
+  "acceptance": "three identical outputs differ from fixed prediction; original kernels, environment, and other 127 tested columns unchanged",
+  "background": "original first 128 weight rows, other weight rows zero; restore all source rows before each independent case",
+  "candidate_profile": {
+    "carry_conversion": "float32 toward zero after every K8, including zero-only groups",
+    "final_conversion": "bfloat16 RNE",
+    "initial_accumulator": "zero",
+    "product": "exact rational product of finite bfloat16 operands",
+    "quantization": "toward_zero",
+    "shared_exponent_bits": 25
+  },
+  "candidate_refitting_allowed": false,
+  "case_indices": [
+    69,
+    75,
+    98,
+    103,
+    119
+  ],
+  "chunk_sizes": [
+    320,
+    160,
+    80,
+    40,
+    20,
+    10,
+    5,
+    2,
+    1
+  ],
+  "deletion_protocol": "ascending contiguous chunks at each width; repeat singleton passes until no deletion accepted or budget reached",
+  "fresh_holdout_validation_established": false,
+  "global_exactness_activation_allowed": false,
+  "input_shape": [
+    30,
+    640
+  ],
+  "max_trials_per_case": 256,
+  "plan_sha256": "223e3dc93670a9ca9a53765b1b4e48f161450446c9ae61c82228a6b04bc5ea5e",
+  "schema_version": 1,
+  "scope": "Adaptive development-only deletion of query counterexample terms at original columns and fixed full shape; no candidate refit, fresh validation, or hardware qualification.",
+  "source_plan_sha256": "60af957b789348b387d0bd5b205ab18597030a6ed5ccccbb5300fc71ecb70f01",
+  "source_report_sha256": "7fe0d9c8105e68477218562b2b9fb273792d3963845eafe213452b86296d8568",
+  "weight_shape": [
+    1024,
+    640
+  ]
+}

@@ -425,6 +425,1759 @@ def command_gemma_ir_rationale_verify(args: argparse.Namespace) -> int:
     return 0 if verification["valid"] else 1
 
 
+def command_k2048_probes(args: argparse.Namespace) -> int:
+    from .gemma_k2048_probes import build_plan, acquire_probes, verify_probes, probe_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("K2048 probe output paths must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    binding, product = load(args.binding), load(args.product_summary)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan, bundle = build_plan(binding, product, args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "case_count": plan["case_count"], "candidate_count": plan["candidate_count"], "candidate_pairs_separated": plan["candidate_pairs_separated"], "equivalence_class_count": len(plan["prediction_equivalence_classes"])}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_probes(binding, product, plan, bundle)
+        write_new(args.output, report)
+        summary = probe_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["survivors_supported_in_declared_scope"] else 1
+    report = load(args.report)
+    result = verify_probes(binding, product, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(probe_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_plan(binding, product, args.workers)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_probes(binding, product, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "full_k2048_prediction_selection_and_cuda_replay", "predictions_recomputed_exact": same, "reexecution_exact": exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_gelu_table(args: argparse.Namespace) -> int:
+    from .gemma_gelu_lookup import build_gelu_plan, acquire_gelu_table, load_gelu_table, acquire_gelu_layouts, check_gelu_layouts
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.table] if args.operation == "run" else [args.output] if args.operation != "verify" else [args.replay_output] if args.reexecute else []
+    if any(path is None for path in outputs) or len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("GELU outputs must be new and distinct; replay requires --replay-output")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan = build_gelu_plan(load(args.source_summary))
+        write_new(args.output, plan)
+        print(json.dumps(plan, indent=2, sort_keys=True))
+        return 0
+    plan = load(args.plan)
+    if args.operation == "run":
+        args.table.parent.mkdir(parents=True, exist_ok=True)
+        manifest = acquire_gelu_table(plan, args.table, args.audit_dir)
+        write_new(args.output, manifest)
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return 0 if manifest["base_table_usable"] else 1
+    manifest = load(args.manifest)
+    if args.operation == "layouts":
+        report = acquire_gelu_layouts(plan, manifest, args.table, args.audit_dir)
+        write_new(args.output, report)
+        print(json.dumps({key: value for key, value in report.items() if key not in ("windows", "vector_replay")}, indent=2))
+        return 0 if report["declared_layouts_match"] else 1
+    report = load(args.layout_report)
+    table = load_gelu_table(plan, manifest, args.table, args.audit_dir)
+    check_gelu_layouts(plan, manifest, table, report, args.audit_dir)
+    result = {"valid": True, "mode": "integrity_only", "base_table_usable": manifest["base_table_usable"], "declared_layouts_match": report["declared_layouts_match"]}
+    if args.reexecute:
+        replay = acquire_gelu_layouts(plan, manifest, args.table, args.audit_dir)
+        write_new(args.replay_output, replay)
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": exact, "mode": "native_finite_domain_and_layout_replay", "reexecution_exact": exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def _load_dense_k128_sources(args: argparse.Namespace) -> Any:
+    from .gemma_k128_dense import DenseSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return DenseSources(load(args.source_summary), load(args.probe_plan), load(args.probe_bundle), load(args.probe_report), load(args.model_plan), load(args.model_bundle))
+
+
+def command_dense_k128(args: argparse.Namespace) -> int:
+    from .gemma_k128_dense import build_dense_plan, acquire_dense, verify_dense, dense_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Dense K128 output paths must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_dense_k128_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan, bundle = build_dense_plan(sources)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "complete_matrix_compared": True, "vectors_disjoint_from_declared_sources": True}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_dense(sources, plan, bundle)
+        write_new(args.output, report)
+        summary = dense_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["candidate_passes_dense_holdout"] else 1
+    report = load(args.report)
+    result = verify_dense(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(dense_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_dense_plan(sources)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_dense(sources, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "dense_prediction_regeneration_and_cuda_replay", "predictions_recomputed_exact": same, "reexecution_exact": exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_k1024_probes(args: argparse.Namespace) -> int:
+    from .gemma_k1024_probes import build_probe_plan, acquire_probes, verify_probes, probe_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Controlled K1024 output paths must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    source = load(args.source_summary)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan, bundle = build_probe_plan(source)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "case_count": plan["case_count"], "candidate_count": plan["candidate_count"], "candidate_pairs_separated": plan["candidate_pairs_separated"], "equivalence_class_count": len(plan["prediction_equivalence_classes"])}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_probes(source, plan, bundle)
+        write_new(args.output, report)
+        summary = probe_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["survivors_supported_in_declared_scope"] else 1
+    report = load(args.report)
+    result = verify_probes(source, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(probe_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_probe_plan(source)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_probes(source, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "full_candidate_selection_prediction_and_cuda_replay", "predictions_recomputed_exact": same, "reexecution_exact": exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_exp_lookup(args: argparse.Namespace) -> int:
+    from .gemma_exp_lookup import build_exp_plan, acquire_exp_table, load_exp_table, replay_exp_table
+    import os
+    import tempfile
+
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    outputs = [args.output] if args.operation == "plan" else [args.output, args.table, args.journal] if args.operation == "run" else [args.replay_output] if args.reexecute else []
+    if any(path is None for path in outputs) or len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Exponential outputs must be new and distinct; replay requires --replay-output")
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan = build_exp_plan(load(args.source_summary))
+        write_new(args.output, plan)
+        print(json.dumps(plan, indent=2, sort_keys=True))
+        return 0
+    plan = load(args.plan)
+    if args.operation == "run":
+        write_new(args.journal, {"plan_sha256": plan["plan_sha256"], "complete": False, "completed_chunks": 0})
+        args.table.parent.mkdir(parents=True, exist_ok=True)
+
+        def checkpoint(payload: dict[str, Any]) -> None:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=args.journal.parent, prefix=args.journal.name + ".", suffix=".tmp", delete=False) as stream:
+                json.dump(payload, stream, sort_keys=True)
+                stream.flush()
+                os.fsync(stream.fileno())
+                temporary = stream.name
+            os.replace(temporary, args.journal)
+
+        manifest = acquire_exp_table(plan, args.table, args.audit_dir, checkpoint)
+        write_new(args.output, manifest)
+        print(json.dumps({key: value for key, value in manifest.items() if key not in ("records", "special_observations")}, indent=2, sort_keys=True))
+        return 0 if manifest["table_usable"] else 1
+    manifest = load(args.manifest)
+    load_exp_table(plan, manifest, args.table, args.audit_dir)
+    result = {"valid": True, "mode": "integrity_only", "table_usable": manifest["table_usable"], "covered_input_encoding_count": manifest["covered_input_encoding_count"]}
+    if args.reexecute:
+        replay = replay_exp_table(plan, manifest, args.table, args.audit_dir)
+        write_new(args.replay_output, replay)
+        result.update({"valid": replay["reexecution_exact"], "mode": "exhaustive_native_exp_replay", "reexecution_exact": replay["reexecution_exact"], "replay_sha256": replay["replay_sha256"]})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def _load_softmax_sources(args: argparse.Namespace) -> Any:
+    from .gemma_attention_scores import ScoreSources
+    from .gemma_softmax_slice import SoftmaxSources
+    from .gemma_rsqrt_lookup import CheckedRsqrtLookup
+
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    lookup = CheckedRsqrtLookup(load(args.rsqrt_table_plan), load(args.rsqrt_table_manifest), args.rsqrt_table,
+                                load(args.rsqrt_domain_plan), load(args.rsqrt_domain_report), args.rsqrt_audit_dir)
+    scores = ScoreSources(load(args.program), load(args.rotary_plan), load(args.rotary_bundle), load(args.rotary_report), lookup,
+                          load(args.table_plan), load(args.table_manifest), load(args.table_bundle))
+    return SoftmaxSources(scores, load(args.score_plan), load(args.score_bundle), load(args.score_report))
+
+
+def _load_output_sources(args: argparse.Namespace) -> Any:
+    from .gemma_exp_lookup import CheckedExpLookup
+    from .gemma_attention_output import OutputSources
+
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    lookup = CheckedExpLookup(load(args.exp_plan), load(args.exp_manifest), args.exp_table, args.exp_audit_dir)
+    return OutputSources(_load_softmax_sources(args), load(args.original_plan), load(args.original_bundle), load(args.original_report), lookup,
+                         load(args.lookup_plan), load(args.lookup_bundle), load(args.lookup_report))
+
+
+def _load_survivor_context(args: argparse.Namespace) -> tuple[Any, ...]:
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return (_load_output_sources(args), load(args.base_plan), load(args.base_bundle), load(args.base_report),
+            load(args.probe_source), load(args.probe_plan), load(args.probe_bundle), load(args.probe_report))
+
+
+def _load_post_attention_sources(args: argparse.Namespace) -> Any:
+    from .gemma_post_attention import PostAttentionSources
+    from .gemma_k128_dense import DenseSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    context = _load_survivor_context(args)
+    dense = DenseSources(context[4], context[5], context[6], context[7], context[1], context[2])
+    return PostAttentionSources(context, load(args.survivor_plan), load(args.survivor_bundle), load(args.survivor_report), dense,
+                                load(args.dense_plan), load(args.dense_bundle), load(args.dense_report))
+
+
+def _load_mlp_entry_sources(args: argparse.Namespace) -> Any:
+    from .gemma_mlp_entry import MlpEntrySources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return MlpEntrySources(_load_post_attention_sources(args), load(args.post_plan), load(args.post_bundle), load(args.post_report))
+
+
+def _load_product_sources(args: argparse.Namespace) -> Any:
+    from .gemma_mlp_product import ProductSources
+    from .gemma_gelu_lookup import CheckedGeluLookup
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    gelu = CheckedGeluLookup(load(args.gelu_plan), load(args.gelu_manifest), args.gelu_table, load(args.gelu_layouts), args.gelu_audit_dir)
+    return ProductSources(_load_mlp_entry_sources(args), load(args.entry_plan), load(args.entry_bundle), load(args.entry_report), gelu)
+
+
+def _load_down_sources(args: argparse.Namespace) -> Any:
+    from .gemma_mlp_down import DownSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    prefix_args = argparse.Namespace(**vars(args))
+    for name in ("plan", "bundle", "report"):
+        setattr(prefix_args, "probe_" + name, getattr(args, "prefix_probe_" + name))
+    return DownSources(_load_product_sources(prefix_args), load(args.product_plan), load(args.product_bundle), load(args.product_report),
+                       load(args.probe_binding), load(args.probe_plan), load(args.probe_bundle), load(args.probe_report))
+
+
+def _load_dense_k2048_sources(args: argparse.Namespace) -> Any:
+    from .gemma_k2048_dense import DenseSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return DenseSources(_load_down_sources(args), load(args.model_down_plan), load(args.model_down_bundle), load(args.model_down_report))
+
+
+def _load_post_feedforward_sources(args: argparse.Namespace) -> Any:
+    from .gemma_post_feedforward import PostFeedforwardSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return PostFeedforwardSources(_load_dense_k2048_sources(args), load(args.k2048_dense_plan), load(args.k2048_dense_bundle), load(args.k2048_dense_report))
+
+
+def _load_holdout_baseline(args: argparse.Namespace) -> Any:
+    from .gemma_first_layer import FirstLayerSources
+    from .gemma_first_layer_holdout import BaselineSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    source = FirstLayerSources(_load_post_feedforward_sources(args), load(args.post_feedforward_plan), load(args.post_feedforward_bundle), load(args.post_feedforward_report))
+    return BaselineSources(source, load(args.baseline_plan), load(args.baseline_bundle), load(args.baseline_report))
+
+
+def _holdout_model(model_path: Path) -> Any:
+    import torch
+    from transformers import AutoModelForCausalLM
+    if not torch.cuda.is_available():
+        raise RuntimeError("Holdout checkpoint binding requires the declared CUDA runtime")
+    return AutoModelForCausalLM.from_pretrained(str(model_path), local_files_only=True, trust_remote_code=False,
+                                              torch_dtype=torch.bfloat16, attn_implementation="eager").to("cuda").eval()
+
+
+def command_first_layer_holdout(args: argparse.Namespace) -> int:
+    from . import gemma_first_layer_holdout as holdout
+    from .serialization import canonical_json
+    operation = args.operation
+    outputs = [args.output] if operation == "protocol" else [args.output, args.bundle] if operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if operation == "run" else []
+    excluded = {"output"}
+    if operation in ("protocol", "plan"):
+        excluded.update(("bundle", "plan", "summary"))
+    if operation == "protocol":
+        excluded.add("protocol")
+    if operation == "run":
+        excluded.add("summary")
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Holdout artifacts require new distinct paths outside all frozen inputs")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    baseline = _load_holdout_baseline(args)
+    if operation == "protocol":
+        protocol = holdout.build_holdout_protocol(baseline, args.model_path)
+        holdout.write_new(args.output, protocol)
+        print(json.dumps({"protocol_sha256": protocol["protocol_sha256"], "cases": protocol["cases"]}, indent=2))
+        return 0
+    protocol = load(args.protocol)
+    holdout.require_frozen(args.protocol, protocol)
+    if operation == "plan":
+        holdout._protocol_check(baseline, protocol, args.model_path)
+        plan, bundle = holdout.build_holdout_plan(baseline, _holdout_model(args.model_path), protocol, args.model_path, args.protocol, args.workers)
+        holdout.write_new(args.bundle, bundle)
+        holdout.write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "prediction_complete": plan["prediction_complete"],
+                          "case_failures": [case["prediction_failure"] for case in plan["cases"]]}, indent=2))
+        return 0 if plan["prediction_complete"] else 1
+    plan, bundle = load(args.plan), load(args.bundle)
+    if operation == "run":
+        holdout.check_holdout_plan(baseline, protocol, plan, bundle, args.model_path)
+        if not plan["prediction_complete"]:
+            report = holdout.holdout_report(protocol, plan, bundle, [])
+        else:
+            report = holdout.acquire_holdout(baseline, _holdout_model(args.model_path), protocol, plan, bundle, args.model_path, args.protocol, args.plan, args.bundle)
+        holdout.write_new(args.output, report)
+        summary = holdout.holdout_summary(plan, report)
+        if args.summary:
+            holdout.write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["holdout_matches"] else 1
+    report = load(args.report)
+    result = holdout.verify_holdout(baseline, protocol, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(holdout.holdout_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        result = holdout.reexecute_holdout(baseline, _holdout_model(args.model_path), protocol, plan, bundle, report, args.model_path, args.protocol, args.plan, args.bundle, args.workers)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("holdout_matches") else 1
+
+
+def _load_two_layers_sources(args: argparse.Namespace) -> Any:
+    from .gemma_second_layer import SecondLayerSources
+    from .gemma_two_layers import TwoLayerSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    second_sources = SecondLayerSources(_load_holdout_baseline(args), load(args.protocol), load(args.holdout_plan), load(args.holdout_bundle), load(args.holdout_report))
+    return TwoLayerSources(second_sources, load(args.second_layer_plan), load(args.second_layer_bundle), load(args.second_layer_report))
+
+
+def _load_third_entry_sources(args: argparse.Namespace) -> Any:
+    from . import gemma_third_layer_entry as entry
+    from .gemma_two_layers_holdout import BaselineSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    baseline = BaselineSources(_load_two_layers_sources(args), load(args.two_layer_baseline_plan), load(args.two_layer_baseline_bundle), load(args.two_layer_baseline_report))
+    return entry.EntrySources(baseline, load(args.holdout_protocol), load(args.two_holdout_plan), load(args.two_holdout_bundle), load(args.two_holdout_report))
+
+
+def _load_third_score_sources(args: argparse.Namespace) -> Any:
+    from .gemma_third_layer_scores import ScoreSources
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    return ScoreSources(_load_third_entry_sources(args), load(args.third_entry_plan), load(args.third_entry_bundle), load(args.third_entry_report))
+
+
+def command_third_layer_scores(args: argparse.Namespace) -> int:
+    from . import gemma_third_layer_scores as scores
+    from .gemma_first_layer_holdout import write_new
+    from .serialization import canonical_json
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output, args.summary] if args.operation == "run" else []
+    outputs = [path for path in outputs if path is not None]
+    excluded = {"output", "summary"} | ({"plan", "bundle"} if args.operation == "plan" else set())
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Layer-2 score outputs must be new and outside source evidence")
+    repository = Path(__file__).resolve().parents[1]
+    raw = [args.bundle] if args.operation == "plan" else [args.output] if args.operation == "run" else []
+    if any(repository in path.resolve().parents and repository / "artifacts" not in path.resolve().parents for path in raw):
+        raise ValueError("Tensor-rich score artifacts must remain under ignored artifacts/")
+    if args.operation == "verify" and args.summary is not None and not args.summary.is_file():
+        raise ValueError("Requested score summary is missing")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_third_score_sources(args)
+    if args.operation == "plan":
+        plan, bundle = scores.build_score_plan(sources, _holdout_model(args.model_path), args.model_path, args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "coverage": plan["coverage"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = scores.acquire_scores(sources, _holdout_model(args.model_path), plan, bundle, args.model_path, args.plan, args.bundle)
+        write_new(args.output, report)
+        if args.summary:
+            write_new(args.summary, scores.score_summary(plan, report))
+        print(json.dumps(scores.score_summary(plan, report), indent=2, sort_keys=True))
+        return 0 if report["rotary_scores_match"] else 1
+    report = load(args.report)
+    result = scores.verify_scores(sources, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["valid"] = canonical_json(load(args.summary)) == canonical_json(scores.score_summary(plan, report))
+    if args.reexecute and result["valid"]:
+        result = scores.replay_scores(sources, _holdout_model(args.model_path), plan, bundle, report, args.model_path, args.plan, args.bundle, args.workers)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("rotary_scores_match") else 1
+
+
+def command_third_layer_entry(args: argparse.Namespace) -> int:
+    from . import gemma_third_layer_entry as entry
+    from .gemma_first_layer_holdout import write_new
+    from .serialization import canonical_json
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output, args.summary] if args.operation == "run" else []
+    outputs = [path for path in outputs if path is not None]
+    excluded = {"output", "summary"} | ({"plan", "bundle"} if args.operation == "plan" else set())
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Layer-2 entry outputs must be new, distinct, and outside source evidence")
+    repository = Path(__file__).resolve().parents[1]
+    raw = [args.bundle] if args.operation == "plan" else [args.output] if args.operation == "run" else []
+    if any(repository in path.resolve().parents and repository / "artifacts" not in path.resolve().parents for path in raw):
+        raise ValueError("Tensor-rich entry artifacts must remain under ignored artifacts/")
+    if args.operation == "verify" and args.summary is not None and not args.summary.is_file():
+        raise ValueError("Requested entry summary is missing")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_third_entry_sources(args)
+    if args.operation == "plan":
+        plan, bundle = entry.build_entry_plan(sources, _holdout_model(args.model_path), args.model_path, args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "coverage": plan["coverage"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = entry.acquire_entry(sources, _holdout_model(args.model_path), plan, bundle, args.model_path, args.plan, args.bundle)
+        write_new(args.output, report)
+        if args.summary:
+            write_new(args.summary, entry.entry_summary(plan, report))
+        print(json.dumps(entry.entry_summary(plan, report), indent=2, sort_keys=True))
+        return 0 if report["entry_matches"] else 1
+    report = load(args.report)
+    result = entry.verify_entry(sources, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["valid"] = canonical_json(load(args.summary)) == canonical_json(entry.entry_summary(plan, report))
+    if args.reexecute and result["valid"]:
+        result = entry.replay_entry(sources, _holdout_model(args.model_path), plan, bundle, report, args.model_path, args.plan, args.bundle, args.workers)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("entry_matches") else 1
+
+
+def command_two_layers_holdout(args: argparse.Namespace) -> int:
+    from . import gemma_two_layers_holdout as holdout
+    from . import gemma_two_layers as two
+    from .serialization import canonical_json
+
+    operation = args.operation
+    if operation == "verify" and args.summary is not None and not args.summary.is_file():
+        raise ValueError("Requested two-layer holdout summary is missing")
+    outputs = [args.output] if operation == "protocol" else [args.output, args.bundle] if operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if operation == "run" else []
+    excluded = {"output"}
+    if operation == "protocol":
+        excluded.update(("holdout_protocol", "plan", "bundle", "summary"))
+    elif operation == "plan":
+        excluded.update(("plan", "bundle", "summary"))
+    elif operation == "run":
+        excluded.add("summary")
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or args.model_path.resolve() in path.resolve().parents or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Two-layer holdout artifacts require new distinct paths outside all inputs and model directory")
+    repository = Path(__file__).resolve().parents[1]
+    raw_outputs = [args.bundle] if operation == "plan" else [args.output] if operation == "run" else []
+    if any(repository in path.resolve().parents and repository / "artifacts" not in path.resolve().parents for path in raw_outputs):
+        raise ValueError("Tensor-rich holdout bundles/reports inside the repository must remain under Git-ignored artifacts/")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    frozen_inputs = tuple(path for path in inputs if path.is_file())
+    files = two._file_guard(frozen_inputs)
+
+    def load_model() -> Any:
+        if files != two._file_guard(frozen_inputs):
+            raise ValueError("Frozen inputs changed before model loading")
+        model = _holdout_model(args.model_path)
+        if files != two._file_guard(frozen_inputs):
+            raise ValueError("Frozen inputs changed during model loading; no prediction or native calls allowed")
+        return model
+
+    sources = holdout.BaselineSources(_load_two_layers_sources(args), load(args.two_layer_baseline_plan), load(args.two_layer_baseline_bundle), load(args.two_layer_baseline_report))
+    if operation == "protocol":
+        protocol = holdout.build_holdout_protocol(sources, args.model_path)
+        if files != two._file_guard(frozen_inputs):
+            raise ValueError("Frozen inputs changed during protocol declaration")
+        holdout.write_new(args.output, protocol)
+        print(json.dumps({"protocol_sha256": protocol["protocol_sha256"], "required_case_ids": protocol["required_case_ids"]}, indent=2))
+        return 0
+    protocol = load(args.holdout_protocol)
+    holdout.require_frozen(args.holdout_protocol, protocol)
+    if operation == "plan":
+        holdout._protocol_check(sources, protocol, args.model_path)
+        plan, bundle = holdout.build_holdout_plan(sources, load_model(), protocol, args.model_path, args.holdout_protocol, args.workers, frozen_inputs)
+        if files != two._file_guard(frozen_inputs):
+            raise ValueError("Frozen inputs changed during prediction")
+        holdout.write_new(args.bundle, bundle)
+        holdout.write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "prediction_complete": plan["prediction_complete"]}, indent=2))
+        return 0 if plan["prediction_complete"] else 1
+    plan, bundle = load(args.plan), load(args.bundle)
+    holdout._frozen(protocol, plan, bundle, args.holdout_protocol, args.plan, args.bundle)
+    if operation == "run":
+        holdout.check_holdout_plan(sources, protocol, plan, bundle, args.model_path)
+        if not plan["prediction_complete"]:
+            report = holdout.holdout_report(protocol, plan, bundle, [])
+        else:
+            report = holdout.acquire_holdout(sources, load_model(), protocol, plan, bundle, args.model_path, args.holdout_protocol, args.plan, args.bundle, frozen_inputs)
+        if files != two._file_guard(frozen_inputs):
+            report = holdout.holdout_report(protocol, plan, bundle, report["observations"], dict(report["acquisition_guards"], frozen_files_unchanged=False))
+        holdout.write_new(args.output, report)
+        summary = holdout.holdout_summary(plan, report)
+        if args.summary:
+            holdout.write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["two_layer_holdout_matches"] else 1
+    report = load(args.report)
+    result = holdout.verify_holdout(sources, protocol, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(holdout.holdout_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        result = holdout.reexecute_holdout(sources, _holdout_model(args.model_path), protocol, plan, bundle, report, args.model_path, args.holdout_protocol, args.plan, args.bundle, args.workers, frozen_inputs)
+    if files != two._file_guard(frozen_inputs):
+        result.update(valid=False, two_layer_holdout_matches=False, connected_two_layers_independently_recomputed=False, reason="Frozen input files changed")
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("two_layer_holdout_matches") else 1
+
+
+def command_two_layers(args: argparse.Namespace) -> int:
+    from . import gemma_two_layers as two
+    from . import gemma_first_layer_holdout as holdout
+    from .serialization import canonical_json
+
+    operation = args.operation
+    plan_output = args.output if operation == "plan" and args.output is not None else args.plan
+    outputs = [plan_output, args.bundle] if operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if operation == "run" else []
+    excluded = {"output"}
+    if operation == "plan":
+        excluded.update(("plan", "bundle", "summary"))
+    if operation == "run":
+        excluded.add("summary")
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Two-layer artifacts require new distinct paths outside all frozen inputs and model directory")
+    repository = Path(__file__).resolve().parents[1]
+    private_outputs = [args.bundle] if operation == "plan" else [args.output] if operation == "run" else []
+    if any(repository in path.resolve().parents and repository / "artifacts" not in path.resolve().parents for path in private_outputs):
+        raise ValueError("Tensor-rich two-layer bundles and native reports inside the repository must remain under Git-ignored artifacts/")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    frozen_inputs = tuple(path for path in inputs if path.is_file())
+    files = two._file_guard(frozen_inputs)
+    sources = _load_two_layers_sources(args)
+    if operation == "plan":
+        context = sources.validate(args.model_path)
+        plan, bundle = two._predict(sources, _holdout_model(args.model_path), context, args.workers)
+        if files != two._file_guard(frozen_inputs):
+            raise ValueError("Frozen input files changed during fresh two-layer prediction")
+        holdout.write_new(args.bundle, bundle)
+        holdout.write_new(plan_output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "coverage": plan["coverage"], "prefix_boundary_reused": False}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if operation == "run":
+        two.check_two_layers_plan(sources, plan, bundle, args.model_path)
+        report = two.acquire_two_layers(sources, _holdout_model(args.model_path), plan, bundle, args.model_path, args.plan, args.bundle, args.workers, frozen_inputs)
+        if files != two._file_guard(frozen_inputs):
+            guards = dict(report["acquisition_guards"], frozen_files_unchanged=False)
+            report = two.two_layers_report(plan, bundle, report["observations"], guards)
+        holdout.write_new(args.output, report)
+        summary = two.two_layers_summary(plan, report)
+        if args.summary:
+            holdout.write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["two_layers_match"] else 1
+    report = load(args.report)
+    result = two.verify_two_layers(sources, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(two.two_layers_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        result = two.reexecute_two_layers(sources, _holdout_model(args.model_path), plan, bundle, report, args.model_path, args.plan, args.bundle, args.workers, frozen_inputs)
+    if files != two._file_guard(frozen_inputs):
+        result.update(valid=False, two_layers_match=False, connected_two_layers_independently_recomputed=False, reason="Frozen input files changed")
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("two_layers_match") else 1
+
+
+def command_second_layer(args: argparse.Namespace) -> int:
+    from . import gemma_second_layer as second
+    from . import gemma_first_layer_holdout as holdout
+    from .serialization import canonical_json
+
+    operation = args.operation
+    outputs = [args.output, args.bundle] if operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if operation == "run" else []
+    excluded = {"output"}
+    if operation == "plan":
+        excluded.update(("plan", "bundle", "summary"))
+    if operation == "run":
+        excluded.add("summary")
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in excluded]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs or any(root.is_dir() and root in path.resolve().parents for root in inputs) for path in outputs):
+        raise ValueError("Second-layer artifacts require new distinct paths outside all frozen inputs and model directory")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = second.SecondLayerSources(_load_holdout_baseline(args), load(args.protocol), load(args.holdout_plan), load(args.holdout_bundle), load(args.holdout_report))
+    if operation == "plan":
+        context = sources.validate(args.model_path)
+        plan, bundle = second._predict(sources, _holdout_model(args.model_path), context, args.workers)
+        holdout.write_new(args.bundle, bundle)
+        holdout.write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "coverage": plan["coverage"], "profiles": plan["profiles"], "prefix_boundary_reused": True}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if operation == "run":
+        second.check_second_layer_plan(sources, plan, bundle, args.model_path)
+        report = second.acquire_second_layer(sources, _holdout_model(args.model_path), plan, bundle, args.model_path, args.plan, args.bundle)
+        holdout.write_new(args.output, report)
+        summary = second.second_layer_summary(plan, report)
+        if args.summary:
+            holdout.write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["second_layer_matches"] else 1
+    report = load(args.report)
+    result = second.verify_second_layer(sources, plan, bundle, report, args.model_path)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(second.second_layer_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        result = second.reexecute_second_layer(sources, _holdout_model(args.model_path), plan, bundle, report, args.model_path, args.plan, args.bundle, args.workers)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] and result.get("second_layer_matches") else 1
+
+
+def command_first_layer(args: argparse.Namespace) -> int:
+    from .gemma_first_layer import FirstLayerSources, build_first_layer_plan, acquire_first_layer, verify_first_layer, reexecute_first_layer, first_layer_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in ("output", "summary") and not (args.operation == "plan" and key in ("bundle", "plan"))]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs for path in outputs):
+        raise ValueError("First-layer artifacts must use new, distinct paths outside source evidence")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = FirstLayerSources(_load_post_feedforward_sources(args), load(args.post_feedforward_plan), load(args.post_feedforward_bundle), load(args.post_feedforward_report))
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("First-layer checkpoint binding requires the declared CUDA runtime")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_first_layer_plan(sources, model(), args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "coverage": plan["coverage"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_first_layer(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = first_layer_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["first_layer_matches"] else 1
+    report = load(args.report)
+    result = verify_first_layer(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(first_layer_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        result = reexecute_first_layer(sources, model(), plan, bundle, report, args.workers)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_post_feedforward(args: argparse.Namespace) -> int:
+    from .gemma_post_feedforward import build_post_plan, acquire_post, verify_post, post_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in ("output", "summary") and not (args.operation == "plan" and key in ("bundle", "plan"))]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs for path in outputs):
+        raise ValueError("Post-feedforward artifacts must use new, distinct paths outside source evidence")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_post_feedforward_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original post-feedforward comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_post_plan(sources, model())
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_post(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = post_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["post_feedforward_matches"] else 1
+    report = load(args.report)
+    result = verify_post(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(post_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_post_plan(sources, original)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_post(sources, original, replay_plan, replay_bundle) if same else None
+        exact = same and canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "post_feedforward_plan_bundle_regeneration_and_six_original_forward_replay",
+                       "predictions_recomputed_exact": same, "reexecution_exact": exact, "prefix_boundary_reused": True,
+                       "connected_first_layer_independently_recomputed": False, "completeFirstLayerQualified": False,
+                       "global_exactness_activation_allowed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_dense_k2048(args: argparse.Namespace) -> int:
+    from .gemma_k2048_dense import build_dense_plan, acquire_dense, verify_dense, dense_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    inputs = [value.resolve() for key, value in vars(args).items() if isinstance(value, Path) and key not in ("output", "summary") and not (args.operation == "plan" and key in ("bundle", "plan"))]
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() or path.resolve() in inputs for path in outputs):
+        raise ValueError("Dense K2048 artifacts must use new, distinct paths outside source evidence")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_dense_k2048_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan, bundle = build_dense_plan(sources, args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "candidate": plan["candidate"]["id"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_dense(sources, plan, bundle)
+        write_new(args.output, report)
+        summary = dense_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["candidate_passes_dense_holdout"] else 1
+    report = load(args.report)
+    result = verify_dense(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(dense_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_dense_plan(sources, args.workers)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_dense(sources, replay_plan, replay_bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "entire_dense_plan_bundle_regeneration_prediction_and_six_call_cuda_replay", "predictions_recomputed": True,
+                       "predictions_recomputed_exact": same, "reexecution_exact": exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_mlp_down(args: argparse.Namespace) -> int:
+    from .gemma_mlp_down import build_down_plan, acquire_down, verify_down, down_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("MLP-down artifacts must use new, distinct paths")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_down_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original MLP-down model binding requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_down_plan(sources, model(), args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "candidate": plan["candidate"]["id"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_down(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = down_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["down_matches"] else 1
+    report = load(args.report)
+    result = verify_down(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(down_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_down_plan(sources, original, args.workers)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_down(sources, original, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "down_dot_recomputation_and_original_forward_replay", "down_predictions_recomputed": True,
+                       "predictions_recomputed_exact": same, "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_mlp_product(args: argparse.Namespace) -> int:
+    from .gemma_mlp_product import build_product_plan, acquire_product, verify_product, product_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("MLP-product artifacts must use new, distinct paths")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_product_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original activation/product comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_product_plan(sources)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "activation_value_count": plan["activation_value_count"], "product_value_count": plan["product_value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_product(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = product_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["activation_and_product_match"] else 1
+    report = load(args.report)
+    result = verify_product(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(product_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_product_plan(sources)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_product(sources, model(), plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "activation_product_recomputation_and_original_forward_replay", "predictions_recomputed_exact": same,
+                       "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_mlp_entry(args: argparse.Namespace) -> int:
+    from .gemma_mlp_entry import build_mlp_plan, acquire_mlp, verify_mlp, mlp_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("MLP-entry evidence must use new, distinct paths")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_mlp_entry_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original MLP-entry comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_mlp_plan(sources, model(), args.workers)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "projection_value_count": plan["projection_value_count"], "normalization_value_count": plan["normalization_value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_mlp(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = mlp_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["mlp_entry_matches"] else 1
+    report = load(args.report)
+    result = verify_mlp(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(mlp_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_mlp_plan(sources, original, args.workers)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_mlp(sources, original, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "mlp_entry_recomputation_and_original_forward_replay", "predictions_recomputed_exact": same,
+                       "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_post_attention(args: argparse.Namespace) -> int:
+    from .gemma_post_attention import build_post_plan, acquire_post, verify_post, post_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Post-attention evidence must use new, distinct paths")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_post_attention_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original post-attention comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_post_plan(sources, model())
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "scalar_stage_positions": plan["scalar_stage_positions"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_post(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = post_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["post_attention_matches"] else 1
+    report = load(args.report)
+    result = verify_post(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(post_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_post_plan(sources, original)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_post(sources, original, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "post_attention_recomputation_and_original_forward_replay", "predictions_recomputed_exact": same,
+                       "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_output_survivor(args: argparse.Namespace) -> int:
+    from .gemma_output_survivor import build_survivor_plan, acquire_survivor, verify_survivor, survivor_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Output-survivor evidence must use new, distinct paths")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    context = _load_survivor_context(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Output-survivor comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_survivor_plan(*context)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "candidate": plan["candidate"], "fresh_model_holdout": False}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_survivor(context, plan, bundle, model())
+        write_new(args.output, report)
+        summary = survivor_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["survivor_reproduces_model_case"] else 1
+    report = load(args.report)
+    result = verify_survivor(context, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(survivor_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_survivor_plan(*context)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_survivor(context, plan, bundle, model()) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "survivor_projection_recomputation_and_model_case_replay", "predictions_recomputed_exact": same,
+                       "reexecution_exact": exact, "fresh_model_holdout": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_output_split(args: argparse.Namespace) -> int:
+    from .gemma_output_split import build_split_output_plan, acquire_split_output, verify_split_output, split_output_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Split-output artifacts must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_output_sources(args)
+    context = (sources, load(args.base_plan), load(args.base_bundle), load(args.base_report))
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Split output comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_split_output_plan(*context)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "fresh_holdout_validation": False}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_split_output(*context, plan, bundle, model())
+        write_new(args.output, report)
+        summary = split_output_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["split_projection_matches_case"] else 1
+    report = load(args.report)
+    result = verify_split_output(*context, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(split_output_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_split_output_plan(*context)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_split_output(*context, plan, bundle, model()) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "split_projection_recomputation_and_original_forward_replay",
+                       "predictions_recomputed_exact": same, "reexecution_exact": exact, "fresh_holdout_validation": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_attention_output(args: argparse.Namespace) -> int:
+    from .gemma_attention_output import build_output_plan, acquire_output, verify_output, output_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Attention-output artifacts must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_output_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original attention-output comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_output_plan(sources, model())
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "aggregation_value_count": plan["aggregation_value_count"], "projection_value_count": plan["projection_value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_output(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = output_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["candidate_passes"] else 1
+    report = load(args.report)
+    result = verify_output(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(output_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_output_plan(sources, original)
+        same = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_output(sources, original, plan, bundle) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "independent_attention_output_and_original_forward_replay",
+                       "predictions_recomputed_exact": same, "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_lookup_softmax(args: argparse.Namespace) -> int:
+    from .gemma_exp_lookup import CheckedExpLookup
+    from .gemma_softmax_lookup import build_lookup_softmax_plan, acquire_lookup_softmax, verify_lookup_softmax, lookup_softmax_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Lookup-softmax outputs must be new and distinct")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_softmax_sources(args)
+    lookup = CheckedExpLookup(load(args.exp_plan), load(args.exp_manifest), args.exp_table, args.exp_audit_dir)
+    context = (sources, load(args.original_plan), load(args.original_bundle), load(args.original_report), lookup)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+        if not torch.cuda.is_available():
+            raise RuntimeError("Lookup-softmax comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_lookup_softmax_plan(*context)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "value_count": plan["value_count"], "lookup_evidence": plan["lookup_evidence"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_lookup_softmax(*context, plan, bundle, model())
+        write_new(args.output, report)
+        summary = lookup_softmax_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["lookup_softmax_passes"] else 1
+    report = load(args.report)
+    result = verify_lookup_softmax(*context, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(lookup_softmax_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        regenerated_plan, regenerated_bundle = build_lookup_softmax_plan(*context)
+        same = canonical_json(regenerated_plan) == canonical_json(plan) and canonical_json(regenerated_bundle) == canonical_json(bundle)
+        replay = acquire_lookup_softmax(*context, plan, bundle, model()) if same else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": same and exact, "mode": "lookup_softmax_and_original_forward_replay", "predictions_recomputed_exact": same,
+                       "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_softmax_slice(args: argparse.Namespace) -> int:
+    from .gemma_softmax_slice import build_softmax_plan, acquire_softmax, verify_softmax, softmax_summary
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Softmax outputs must be new, distinct files")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    sources = _load_softmax_sources(args)
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("Native softmax acquisition requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_softmax_plan(sources)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "row_count": plan["row_count"], "value_count": plan["value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_softmax(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = softmax_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["candidate_passes"] else 1
+    report = load(args.report)
+    result = verify_softmax(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(softmax_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_softmax_plan(sources)
+        predictions_match = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_softmax(sources, model(), plan, bundle) if predictions_match else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": predictions_match and exact, "mode": "independent_softmax_and_original_forward_replay",
+                       "predictions_recomputed_exact": predictions_match, "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_attention_scores(args: argparse.Namespace) -> int:
+    from .gemma_attention_scores import ScoreSources, build_score_plan, acquire_scores, verify_scores, score_summary
+    from .gemma_rsqrt_lookup import CheckedRsqrtLookup
+    from .serialization import canonical_json
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Attention-score outputs must be new, distinct files")
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    lookup = CheckedRsqrtLookup(load(args.rsqrt_table_plan), load(args.rsqrt_table_manifest), args.rsqrt_table,
+                                load(args.rsqrt_domain_plan), load(args.rsqrt_domain_report), args.rsqrt_audit_dir)
+    sources = ScoreSources(load(args.program), load(args.rotary_plan), load(args.rotary_bundle), load(args.rotary_report), lookup,
+                           load(args.table_plan), load(args.table_manifest), load(args.table_bundle))
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("Attention-score acquisition requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_score_plan(sources)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "score_count": plan["score_count"], "prefix_boundary_reused": True}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if args.operation == "run":
+        report = acquire_scores(sources, model(), plan, bundle)
+        write_new(args.output, report)
+        summary = score_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["candidate_passes"] else 1
+    report = load(args.report)
+    result = verify_scores(sources, plan, bundle, report)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(score_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        replay_plan, replay_bundle = build_score_plan(sources)
+        predictions_match = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay = acquire_scores(sources, model(), plan, bundle) if predictions_match else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"valid": predictions_match and exact, "mode": "score_prediction_and_original_forward_replay",
+                       "predictions_recomputed_exact": predictions_match, "reexecution_exact": exact, "prefix_independently_recomputed": False})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_rotary_slice(args: argparse.Namespace) -> int:
+    from .gemma_rotary_slice import build_rotary_table_plan, acquire_rotary_table, check_rotary_table, build_rotary_slice, acquire_rotary_slice, verify_rotary_slice, rotary_slice_summary
+    from .gemma_rsqrt_lookup import CheckedRsqrtLookup
+    from .serialization import canonical_json
+
+    load = lambda path: json.loads(path.read_text(encoding="utf-8"))
+    outputs = [] if args.operation.endswith("verify") else [args.output]
+    if args.operation in ("table-run", "plan"):
+        outputs.append(args.bundle)
+    if args.operation == "run" and args.summary:
+        outputs.append(args.summary)
+    if any(path is None for path in outputs) or len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Rotary outputs must be new, distinct files; a bundle is required for table-run and plan")
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    def model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original rotary acquisition/replay requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    program = load(args.program)
+    if args.operation == "table-plan":
+        plan = build_rotary_table_plan(program, model())
+        write_new(args.output, plan)
+        print(json.dumps(plan, indent=2, sort_keys=True))
+        return 0
+    table_plan = load(args.table_plan)
+    if args.operation == "table-run":
+        manifest, bundle = acquire_rotary_table(program, model(), table_plan)
+        write_new(args.bundle, bundle)
+        write_new(args.output, manifest)
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return 0 if manifest["table_usable"] else 1
+    table_manifest, table_bundle = load(args.table_manifest), load(args.table_bundle)
+    check_rotary_table(program, table_plan, table_manifest, table_bundle)
+    if args.operation == "table-verify":
+        result = {"valid": True, "mode": "integrity_only", "table_usable": table_manifest["table_usable"]}
+        if args.reexecute:
+            replay_manifest, replay_bundle = acquire_rotary_table(program, model(), table_plan)
+            exact = canonical_json(replay_manifest) == canonical_json(table_manifest) and canonical_json(replay_bundle) == canonical_json(table_bundle)
+            result.update({"valid": exact, "mode": "native_rotary_table_replay", "reexecution_exact": exact})
+        print(json.dumps(result, indent=2))
+        return 0 if result["valid"] else 1
+    fixture = load(args.fixture)
+    lookup = CheckedRsqrtLookup(load(args.rsqrt_table_plan), load(args.rsqrt_table_manifest), args.rsqrt_table,
+                                load(args.rsqrt_domain_plan), load(args.rsqrt_domain_report), args.rsqrt_audit_dir)
+    evidence = (lookup, table_plan, table_manifest, table_bundle)
+    if args.operation == "plan":
+        plan, bundle = build_rotary_slice(program, model(), fixture, *evidence)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "instruction_count": plan["instruction_count"], "target_value_count": plan["target_value_count"]}, indent=2))
+        return 0
+    plan, bundle = load(args.plan), load(args.bundle)
+    if bundle["entry_plan"]["fixture_sha256"] != hashlib.sha256(canonical_json(fixture).encode("utf-8")).hexdigest():
+        raise ValueError("Rotary fixture differs from the frozen plan")
+    if args.operation == "run":
+        report = acquire_rotary_slice(program, model(), plan, bundle, *evidence)
+        write_new(args.output, report)
+        summary = rotary_slice_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["rotated_attention_inputs_bit_exact"] else 1
+    report = load(args.report)
+    result = verify_rotary_slice(program, plan, bundle, report, *evidence)
+    if args.summary and result["valid"]:
+        result["summary_matches_source"] = canonical_json(load(args.summary)) == canonical_json(rotary_slice_summary(plan, report))
+        result["valid"] = result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        original = model()
+        replay_plan, replay_bundle = build_rotary_slice(program, original, fixture, *evidence)
+        exact_prediction = canonical_json(replay_plan) == canonical_json(plan) and canonical_json(replay_bundle) == canonical_json(bundle)
+        replay_report = acquire_rotary_slice(program, original, plan, bundle, *evidence) if exact_prediction else None
+        exact = canonical_json(replay_report) == canonical_json(report)
+        result.update({"valid": exact_prediction and exact, "predictions_recomputed_exact": exact_prediction, "reexecution_exact": exact,
+                       "mode": "connected_independent_prediction_and_original_attention_input_replay"})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_attention_entry(args: argparse.Namespace) -> int:
+    from .gemma_attention_entry import build_attention_entry_plan, acquire_attention_entry, verify_attention_entry, attention_entry_summary
+    from .gemma_rsqrt_lookup import CheckedRsqrtLookup
+    from .serialization import canonical_json
+
+    def read_json(path: Path) -> dict[str, Any]:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or any(path.exists() for path in outputs):
+        raise ValueError("Entry outputs must be new, distinct files")
+    program, fixture = read_json(args.program), read_json(args.fixture)
+    lookup = CheckedRsqrtLookup(read_json(args.table_plan), read_json(args.table_manifest), args.table, read_json(args.domain_plan), read_json(args.domain_report), args.audit_dir)
+
+    def load_model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("Original attention entry comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+
+    if args.operation == "plan":
+        plan, bundle = build_attention_entry_plan(program, load_model(), fixture, lookup)
+        write_new(args.bundle, bundle)
+        write_new(args.output, plan)
+        print(json.dumps({"plan_sha256": plan["plan_sha256"], "independent_instruction_count": len(plan["records"]), "target_value_count": plan["target_value_count"]}, indent=2))
+        return 0
+    plan, bundle = read_json(args.plan), read_json(args.bundle)
+    if plan["fixture_sha256"] != hashlib.sha256(canonical_json(fixture).encode("utf-8")).hexdigest() or canonical_json(plan["input_token_ids"]) != canonical_json(fixture["input_token_ids"]):
+        raise ValueError("Entry input fixture differs from the prediction plan")
+    if args.operation == "run":
+        report = acquire_attention_entry(program, load_model(), plan, bundle, lookup)
+        write_new(args.output, report)
+        summary = attention_entry_summary(plan, report)
+        if args.summary:
+            write_new(args.summary, summary)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0 if report["connected_slice_bit_exact"] else 1
+    report = read_json(args.report)
+    result = verify_attention_entry(program, plan, bundle, report, lookup)
+    if args.summary:
+        result["summary_matches_source"] = canonical_json(read_json(args.summary)) == canonical_json(attention_entry_summary(plan, report))
+        result["valid"] = result["valid"] and result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        model = load_model()
+        recomputed_plan, recomputed_bundle = build_attention_entry_plan(program, model, fixture, lookup)
+        recomputed = canonical_json(recomputed_plan) == canonical_json(plan) and canonical_json(recomputed_bundle) == canonical_json(bundle)
+        replay = acquire_attention_entry(program, model, plan, bundle, lookup) if recomputed else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"mode": "independent_entry_and_original_forward_replay", "predictions_recomputed_exact": recomputed,
+                       "reexecution_exact": exact, "valid": recomputed and exact})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_rsqrt_lookup(args: argparse.Namespace) -> int:
+    from .gemma_rsqrt_lookup import build_table_plan, acquire_table, load_table, build_domain_plan, acquire_domain, verify_domain
+    from .gemma_rsqrt_lookup import CheckedRsqrtLookup, build_rms_lookup_plan, acquire_rms_lookup, verify_rms_lookup
+
+    def read_json(path: Path) -> dict[str, Any]:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_new(path: Path, payload: dict[str, Any]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        status = {key: payload[key] for key in ("plan_sha256", "manifest_sha256", "report_sha256", "table_sha256", "table_bytes", "base_domain_usable", "tested_value_count", "mismatch_count", "all_positive_normal_values_match", "lookup_rms_check_passes", "all_stored_rms_values_and_stages_match", "all_native_root_layout_replays_match") if key in payload}
+        print(json.dumps(status, indent=2, sort_keys=True))
+
+    if args.operation == "table-plan":
+        write_new(args.output, build_table_plan(read_json(args.rms_summary)))
+        return 0
+    table_plan = read_json(args.table_plan)
+    if args.operation == "table-build":
+        if args.output.exists() or args.table.exists() or args.output.resolve() == args.table.resolve():
+            raise ValueError("Lookup table and manifest outputs must be new, distinct files")
+        args.table.parent.mkdir(parents=True, exist_ok=True)
+        manifest = acquire_table(table_plan, args.table, args.audit_dir)
+        write_new(args.output, manifest)
+        return 0 if manifest["base_domain_usable"] else 1
+    manifest = read_json(args.manifest)
+    if args.operation.startswith("rms-"):
+        domain_plan, domain_report = read_json(args.domain_plan), read_json(args.domain_report)
+        lookup = CheckedRsqrtLookup(table_plan, manifest, args.table, domain_plan, domain_report, args.audit_dir)
+        sources = [read_json(path) for path in (args.program, args.rms_plan, args.rms_bundle, args.rms_report)]
+        if args.operation == "rms-plan":
+            if args.bundle.exists() or args.output.exists() or args.bundle.resolve() == args.output.resolve():
+                raise ValueError("Lookup RMS outputs must be new and distinct")
+            plan, bundle = build_rms_lookup_plan(*sources, lookup)
+            args.bundle.parent.mkdir(parents=True, exist_ok=True)
+            with args.bundle.open("x", encoding="utf-8") as stream:
+                json.dump(bundle, stream, sort_keys=True)
+            write_new(args.output, plan)
+            return 0
+        plan, bundle = read_json(args.plan), read_json(args.bundle)
+        if args.operation == "rms-run":
+            if args.output.exists():
+                raise ValueError("Lookup RMS output must be a new file")
+            report = acquire_rms_lookup(*sources, lookup, plan, bundle, args.audit_dir)
+            write_new(args.output, report)
+            return 0 if report["lookup_rms_check_passes"] else 1
+        result = verify_rms_lookup(*sources, lookup, plan, bundle, read_json(args.report), args.audit_dir, args.reexecute)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["valid"] else 1
+    if args.operation == "table-verify":
+        load_table(table_plan, manifest, args.table)
+        print(json.dumps({"valid": True, "mode": "artifact_integrity", "outside_base_domain_enabled": False}, indent=2))
+        return 0
+    if args.operation == "domain-plan":
+        write_new(args.output, build_domain_plan(table_plan, manifest, args.table))
+        return 0
+    plan = read_json(args.plan)
+    if args.operation == "domain-run":
+        temporary = args.journal.with_suffix(".tmp")
+        if any(path.exists() for path in (args.output, args.journal, temporary)) or len({path.resolve() for path in (args.output, args.journal, temporary)}) != 3:
+            raise ValueError("Domain report and journal paths must be new and distinct")
+        args.journal.parent.mkdir(parents=True, exist_ok=True)
+
+        def persist(payload: dict[str, Any]) -> None:
+            with temporary.open("x", encoding="utf-8") as stream:
+                json.dump(payload, stream, sort_keys=True)
+            temporary.replace(args.journal)
+
+        report = acquire_domain(table_plan, manifest, args.table, plan, args.audit_dir, persist)
+        write_new(args.output, report)
+        return 0 if report["all_positive_normal_values_match"] else 1
+    report = read_json(args.report)
+    result = verify_domain(table_plan, manifest, args.table, plan, report, args.audit_dir, args.reexecute)
+    result["covered_exponent_count"] = len(result.pop("covered_exponents", []))
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_rms_slice(args: argparse.Namespace) -> int:
+    from .reference_gemma import build_rms_slice, acquire_rms_slice, verify_rms_slice, rms_slice_summary, check_rms_projection_source, rms_observer_controls
+    from .serialization import canonical_json
+
+    sources = [args.program, args.projection_plan, args.projection_bundle, args.projection_summary]
+    inputs = sources + ([args.plan, args.bundle] if args.operation != "plan" else []) + ([args.report] if args.operation == "verify" else [])
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or {path.resolve() for path in outputs}.intersection(path.resolve() for path in inputs):
+        raise ValueError("RMS outputs must not overwrite source evidence or each other")
+    if args.operation == "verify" and args.summary and args.summary.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("RMS summary must be distinct from its sources")
+    program, projection_plan, projection_bundle, projection_summary = [json.loads(path.read_text(encoding="utf-8")) for path in sources]
+
+    def load_model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("RMS slice requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_rms_slice(program, load_model(), projection_plan, projection_bundle, projection_summary)
+        args.bundle.parent.mkdir(parents=True, exist_ok=True)
+        args.bundle.write_text(json.dumps(bundle, sort_keys=True) + "\n", encoding="utf-8")
+        _write_json(args.output, plan)
+        return 0
+    plan, bundle = [json.loads(path.read_text(encoding="utf-8")) for path in (args.plan, args.bundle)]
+    if plan["source_projection_plan_sha256"] != projection_plan["plan_sha256"] or plan["source_projection_summary_sha256"] != projection_summary["summary_sha256"]:
+        raise ValueError("RMS source references differ from the prediction plan")
+    if args.operation == "run":
+        report = acquire_rms_slice(program, load_model(), projection_plan, projection_bundle, projection_summary, plan, bundle)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        _write_json(args.summary, rms_slice_summary(plan, report))
+        return 0 if report["all_stages_candidate_passes"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_rms_slice(program, plan, bundle, report)
+    if result["valid"]:
+        try:
+            check_rms_projection_source(program, projection_plan, projection_bundle, projection_summary, plan)
+            result["source_tensor_links_valid"] = True
+        except (KeyError, TypeError, ValueError, RuntimeError, AttributeError, StopIteration) as error:
+            result.update({"valid": False, "source_tensor_links_valid": False, "reason": str(error)})
+    if args.summary:
+        result["summary_matches_source"] = canonical_json(json.loads(args.summary.read_text(encoding="utf-8"))) == canonical_json(rms_slice_summary(plan, report))
+        result["valid"] = result["valid"] and result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        model = load_model()
+        recomputed_plan, recomputed_bundle = build_rms_slice(program, model, projection_plan, projection_bundle, projection_summary)
+        recomputed = canonical_json(recomputed_plan) == canonical_json(plan) and canonical_json(recomputed_bundle) == canonical_json(bundle)
+        replay = acquire_rms_slice(program, model, projection_plan, projection_bundle, projection_summary, plan, bundle) if recomputed else None
+        exact = canonical_json(replay) == canonical_json(report)
+        result.update({"mode": "arithmetic_and_cuda_replay", "predictions_recomputed_exact": recomputed, "reexecution_exact": exact, "valid": recomputed and exact})
+        if result["valid"]:
+            controls = rms_observer_controls(program, model, projection_plan, projection_bundle, projection_summary, report)
+            result["observer_controls"] = controls
+            result["valid"] = all(all(check.values()) for check in controls.values())
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_projection_slice(args: argparse.Namespace) -> int:
+    from .gemma_ir_interpreter import build_projection_slice, acquire_projection_slice, verify_projection_slice, projection_slice_summary
+    from .serialization import canonical_json
+
+    sources = [args.program, args.fixture, args.query_evidence, args.split_evidence]
+    inputs = sources + ([args.plan, args.bundle] if args.operation != "plan" else []) + ([args.report] if args.operation == "verify" else [])
+    outputs = [args.output, args.bundle] if args.operation == "plan" else [args.output] + ([args.summary] if args.summary else []) if args.operation == "run" else []
+    if len({path.resolve() for path in outputs}) != len(outputs) or {path.resolve() for path in outputs}.intersection(path.resolve() for path in inputs):
+        raise ValueError("Projection outputs must be distinct from source evidence and each other")
+    if args.operation == "verify" and args.summary and args.summary.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Expected projection summary must be distinct from its source files")
+    program, fixture, query_evidence, split_evidence = [json.loads(path.read_text(encoding="utf-8")) for path in sources]
+
+    def load_model() -> Any:
+        import torch
+        from transformers import AutoModelForCausalLM
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("Actual projection comparison requires CUDA")
+        return AutoModelForCausalLM.from_pretrained(str(args.model_path), local_files_only=True, torch_dtype=torch.bfloat16,
+                                                  attn_implementation="eager").to("cuda").eval()
+
+    if args.operation == "plan":
+        plan, bundle = build_projection_slice(program, load_model(), fixture, query_evidence, split_evidence)
+        args.bundle.parent.mkdir(parents=True, exist_ok=True)
+        args.bundle.write_text(json.dumps(bundle, sort_keys=True) + "\n", encoding="utf-8")
+        _write_json(args.output, plan)
+        return 0
+    plan, bundle = [json.loads(path.read_text(encoding="utf-8")) for path in (args.plan, args.bundle)]
+    if canonical_json(plan["input_token_ids"]) != canonical_json(fixture["input_token_ids"]) or plan["input_fixture_sha256"] != hashlib.sha256(canonical_json(fixture).encode("utf-8")).hexdigest() or any(
+        plan["projection_records"][role]["source_evidence_sha256"] != evidence["report_sha256"] for role, evidence in (("query", query_evidence), ("key", split_evidence), ("value", split_evidence))
+    ):
+        raise ValueError("Projection source references differ from the prediction plan")
+    if args.operation == "run":
+        report = acquire_projection_slice(program, load_model(), plan, bundle)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        _write_json(args.summary, projection_slice_summary(plan, report))
+        return 0 if report["slice_passes_declared_comparison"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_projection_slice(program, plan, bundle, report)
+    if args.summary:
+        result["summary_matches_source"] = canonical_json(json.loads(args.summary.read_text(encoding="utf-8"))) == canonical_json(projection_slice_summary(plan, report))
+        result["valid"] = result["valid"] and result["summary_matches_source"]
+    if args.reexecute and result["valid"]:
+        model = load_model()
+        predicted_plan, predicted_bundle = build_projection_slice(program, model, fixture, query_evidence, split_evidence)
+        recomputed = canonical_json(predicted_plan) == canonical_json(plan) and canonical_json(predicted_bundle) == canonical_json(bundle)
+        replay = acquire_projection_slice(program, model, predicted_plan, predicted_bundle) if recomputed else None
+        result.update({"mode": "independent_arithmetic_and_cuda_replay", "predictions_recomputed_exact": recomputed,
+                       "reexecution_exact": canonical_json(replay) == canonical_json(report),
+                       "valid": recomputed and canonical_json(replay) == canonical_json(report)})
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
 def command_gemma_ir_predict(args: argparse.Namespace) -> int:
     import torch
 
@@ -821,6 +2574,238 @@ def command_gemma_wmma_candidate_search_verify(args: argparse.Namespace) -> int:
     )
     print(json.dumps(verification, indent=2, sort_keys=True))
     return 0 if verification["valid"] else 1
+
+
+def command_k16_holdout_plan(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_k16_holdout_plan, build_composition_holdout_plan
+
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    builder = build_composition_holdout_plan if getattr(args, "composition", False) else build_k16_holdout_plan
+    _write_json(args.output, builder(search))
+    return 0
+
+
+def command_k16_holdout_run(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import acquire_k16_holdout, acquire_composition_holdout
+
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    acquire = acquire_composition_holdout if getattr(args, "composition", False) else acquire_k16_holdout
+    report = acquire(plan, search)
+    _write_json(args.output, report)
+    return 0 if report["candidate_passes_holdout"] else 1
+
+
+def command_k16_holdout_verify(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import verify_k16_holdout, verify_composition_holdout
+
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    verify = verify_composition_holdout if getattr(args, "composition", False) else verify_k16_holdout
+    result = verify(plan, search, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_carry_revision(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_carry_revision_plan, acquire_carry_revision_holdout, verify_carry_revision_holdout
+    from .gemma_wmma_candidate import build_product_holdout_plan, acquire_product_holdout, verify_product_holdout
+
+    from .gemma_wmma_candidate import build_matched_product_plan, acquire_matched_products, verify_matched_products
+
+    product = getattr(args, "product", False)
+    matched = getattr(args, "matched", False)
+    builder = build_product_holdout_plan if product else build_carry_revision_plan
+    acquire = acquire_product_holdout if product else acquire_carry_revision_holdout
+    verify = verify_product_holdout if product else verify_carry_revision_holdout
+    if matched:
+        builder, acquire, verify = build_matched_product_plan, acquire_matched_products, verify_matched_products
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    diagnosis = json.loads(args.diagnosis.read_text(encoding="utf-8"))
+    if args.operation == "plan":
+        _write_json(args.output, builder(search, diagnosis))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        report = acquire(plan, search, diagnosis)
+        _write_json(args.output, report)
+        field = "candidate_passes_controlled_comparison" if matched else "candidate_passes_holdout"
+        return 0 if report[field] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify(plan, search, diagnosis, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_dense_split(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_dense_split_plan, acquire_dense_split_holdout, verify_dense_split_holdout
+
+    inputs = [args.diagnosis, args.merge_plan, args.merge_report] + ([args.plan] if args.operation != "plan" else [])
+    if args.operation != "verify" and args.output.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Dense split-K output must not overwrite source evidence")
+    sources = [json.loads(path.read_text(encoding="utf-8")) for path in inputs[:3]]
+    if args.operation == "plan":
+        _write_json(args.output, build_dense_split_plan(*sources))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        report = acquire_dense_split_holdout(plan, *sources)
+        _write_json(args.output, report)
+        return 0 if report["candidate_passes_within_declared_scope"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_dense_split_holdout(plan, *sources, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_split_merge(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_split_merge_plan, acquire_split_merge_holdout, verify_split_merge_holdout
+
+    inputs = [args.diagnosis] + ([args.plan] if args.operation != "plan" else [])
+    if args.operation != "verify" and args.output.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Split-K output must not overwrite source evidence")
+    diagnosis = json.loads(args.diagnosis.read_text(encoding="utf-8"))
+    if args.operation == "plan":
+        _write_json(args.output, build_split_merge_plan(diagnosis))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        report = acquire_split_merge_holdout(plan, diagnosis)
+        _write_json(args.output, report)
+        return 0 if report["any_candidate_passes_within_declared_scope"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_split_merge_holdout(plan, diagnosis, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_split_k_diagnosis(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import diagnose_split_k
+
+    paths = [args.search, args.carry_diagnosis, args.product_plan, args.product_report, args.matched_plan, args.matched_report]
+    if args.output and args.output.resolve() in {path.resolve() for path in paths}:
+        raise ValueError("Split-K diagnosis output must not overwrite source evidence")
+    expected = diagnose_split_k(*(json.loads(path.read_text(encoding="utf-8")) for path in paths))
+    if args.diagnosis:
+        actual = json.loads(args.diagnosis.read_text(encoding="utf-8"))
+        valid = json.dumps(actual, sort_keys=True) == json.dumps(expected, sort_keys=True)
+        print(json.dumps({"valid": valid, "mode": "software_recomputation", "candidate_count": expected["candidate_count"],
+                          "minimum_mismatch_count": expected["minimum_mismatch_count"], "best_candidates": expected["best_candidates"],
+                          "all_matching_candidates": expected["all_matching_candidates"], "fresh_holdout_validation_established": False}, indent=2))
+        return 0 if valid else 1
+    _write_json(args.output, expected)
+    return 0
+
+
+def command_wide_query(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_wide_query_plan, acquire_wide_query_holdout, verify_wide_query_holdout
+
+    inputs = [args.source_plan, args.source_report]
+    if args.operation != "plan":
+        inputs.append(args.plan)
+    if args.operation != "verify" and args.output.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Wide query output must not overwrite source evidence")
+    source_plan, source_report = [json.loads(path.read_text(encoding="utf-8")) for path in inputs[:2]]
+    if args.operation == "plan":
+        _write_json(args.output, build_wide_query_plan(source_plan, source_report))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        report = acquire_wide_query_holdout(plan, source_plan, source_report)
+        _write_json(args.output, report)
+        return 0 if report["candidate_passes_within_declared_scope"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_wide_query_holdout(plan, source_plan, source_report, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_operand_alignment_holdout(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_operand_alignment_holdout_plan, acquire_operand_alignment_holdout, verify_operand_alignment_holdout
+
+    inputs = [args.diagnosis, args.source_report]
+    if args.operation != "plan":
+        inputs.append(args.plan)
+    if args.operation != "verify" and args.output.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Alignment output must not overwrite source evidence")
+    diagnosis, source_report = [json.loads(path.read_text(encoding="utf-8")) for path in inputs[:2]]
+    if args.operation == "plan":
+        _write_json(args.output, build_operand_alignment_holdout_plan(diagnosis, source_report))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        report = acquire_operand_alignment_holdout(plan, diagnosis, source_report)
+        _write_json(args.output, report)
+        return 0 if report["candidate_passes_within_declared_scope"] else 1
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_operand_alignment_holdout(plan, diagnosis, source_report, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_operand_alignment_diagnosis(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import diagnose_operand_alignment
+
+    paths = [args.search, args.carry_diagnosis, args.source_plan, args.source_report, args.reduction_plan, args.reduction_report]
+    if args.output and args.output.resolve() in {path.resolve() for path in paths}:
+        raise ValueError("Diagnosis output must not overwrite source evidence")
+    expected = diagnose_operand_alignment(*(json.loads(path.read_text(encoding="utf-8")) for path in paths))
+    if args.diagnosis:
+        actual = json.loads(args.diagnosis.read_text(encoding="utf-8"))
+        valid = json.dumps(actual, sort_keys=True) == json.dumps(expected, sort_keys=True)
+        print(json.dumps({"valid": valid, "mode": "software_recomputation", "phase_summaries": expected["phase_summaries"], "fresh_holdout_validation_established": False}, indent=2))
+        return 0 if valid else 1
+    _write_json(args.output, expected)
+    return 0
+
+
+def command_query_reduction(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import build_query_reduction_plan, acquire_query_reduction, verify_query_reduction
+
+    inputs = [args.search, args.diagnosis, args.source_plan, args.source_report]
+    if args.operation != "plan":
+        inputs.append(args.plan)
+    if args.operation != "verify" and args.output.resolve() in {path.resolve() for path in inputs}:
+        raise ValueError("Reduction output must not overwrite its source evidence")
+    sources = [json.loads(path.read_text(encoding="utf-8")) for path in inputs[:4]]
+    if args.operation == "plan":
+        _write_json(args.output, build_query_reduction_plan(*sources))
+        return 0
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    if args.operation == "run":
+        protected = {path.resolve() for path in (args.search, args.diagnosis, args.source_plan, args.source_report, args.plan, args.output)}
+        temporary = args.journal.with_suffix(".tmp")
+        if args.journal.resolve() in protected or temporary.resolve() in protected or temporary == args.journal:
+            raise ValueError("Journal and temporary paths must be distinct from experiment inputs and output")
+        args.journal.parent.mkdir(parents=True, exist_ok=True)
+
+        def persist(pending: dict[str, Any]) -> None:
+            temporary.write_text(json.dumps(pending, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            temporary.replace(args.journal)
+
+        report = acquire_query_reduction(plan, *sources, persist)
+        _write_json(args.output, report)
+        return 0
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    result = verify_query_reduction(plan, *sources, report, args.reexecute)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["valid"] else 1
+
+
+def command_carry_diagnosis(args: argparse.Namespace) -> int:
+    from .gemma_wmma_candidate import diagnose_float32_carry, verify_carry_diagnosis
+
+    search = json.loads(args.search.read_text(encoding="utf-8"))
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    if args.diagnosis:
+        diagnosis = json.loads(args.diagnosis.read_text(encoding="utf-8"))
+        result = verify_carry_diagnosis(search, plan, report, diagnosis)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["valid"] else 1
+    _write_json(args.output, diagnose_float32_carry(search, plan, report))
+    return 0
 
 
 def command_gemma_ir_primitive_gate(args: argparse.Namespace) -> int:
@@ -1762,6 +3747,327 @@ def build_parser() -> argparse.ArgumentParser:
     gemma_ir_predict_parser.add_argument("--output", type=Path, required=True)
     gemma_ir_predict_parser.set_defaults(handler=command_gemma_ir_predict)
 
+    for operation in ("plan", "run", "verify"):
+        projection_slice = subparsers.add_parser(f"gemma-projection-slice-{operation}", help=f"{operation.title()} actual layer-0 Q/K/V arithmetic with an explicitly shared prefix")
+        for name in ("program", "fixture", "query_evidence", "split_evidence"):
+            projection_slice.add_argument(name, type=Path)
+        if operation != "plan":
+            projection_slice.add_argument("plan", type=Path)
+        projection_slice.add_argument("--bundle", type=Path, required=True, help="Tensor-rich prediction JSON; keep outside version control")
+        projection_slice.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        if operation == "verify":
+            projection_slice.add_argument("report", type=Path)
+            projection_slice.add_argument("--reexecute", action="store_true")
+        else:
+            projection_slice.add_argument("--output", type=Path, required=True, help="Tensor-rich observation report; keep outside version control" if operation == "run" else "Compact prediction plan")
+        projection_slice.add_argument("--summary", type=Path, help="Compact output for run; expected summary for verify")
+        projection_slice.set_defaults(handler=command_projection_slice, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        rms_slice = subparsers.add_parser(f"gemma-rms-slice-{operation}", help=f"{operation.title()} actual layer-0 RMS arithmetic candidates and observed ATen stages")
+        for name in ("program", "projection_plan", "projection_bundle", "projection_summary"):
+            rms_slice.add_argument(name, type=Path)
+        if operation != "plan":
+            rms_slice.add_argument("plan", type=Path)
+        rms_slice.add_argument("--bundle", type=Path, required=True, help="Tensor-rich RMS predictions; keep outside version control")
+        rms_slice.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        if operation == "verify":
+            rms_slice.add_argument("report", type=Path)
+            rms_slice.add_argument("--reexecute", action="store_true")
+        else:
+            rms_slice.add_argument("--output", type=Path, required=True, help="Tensor-rich report for run; compact plan for plan")
+        rms_slice.add_argument("--summary", type=Path)
+        rms_slice.set_defaults(handler=command_rms_slice, operation=operation)
+
+    for operation in ("table-plan", "table-build", "table-verify", "domain-plan", "domain-run", "domain-verify", "rms-plan", "rms-run", "rms-verify"):
+        rsqrt_lookup = subparsers.add_parser(f"gemma-rsqrt-{operation}", help="Build or verify an explicit runtime-bound rsqrt lookup specification")
+        if operation == "table-plan":
+            rsqrt_lookup.add_argument("rms_summary", type=Path)
+        else:
+            rsqrt_lookup.add_argument("table_plan", type=Path)
+            rsqrt_lookup.add_argument("--table", type=Path, required=True, help="64 MiB binary table; keep under ignored artifacts/")
+            if operation != "table-build":
+                rsqrt_lookup.add_argument("manifest", type=Path)
+            if operation.startswith("rms-"):
+                rsqrt_lookup.add_argument("domain_plan", type=Path)
+                rsqrt_lookup.add_argument("domain_report", type=Path)
+                rsqrt_lookup.add_argument("--program", type=Path, default=Path("results/gemma3_270m_execution_ir.json"))
+                rsqrt_lookup.add_argument("--rms-plan", type=Path, default=Path("results/gemma3_270m_rms_slice_plan.json"))
+                rsqrt_lookup.add_argument("--rms-bundle", type=Path, default=Path("artifacts/gemma3_270m_rms_slice_predictions.json"))
+                rsqrt_lookup.add_argument("--rms-report", type=Path, default=Path("artifacts/gemma3_270m_rms_slice_report.json"))
+                rsqrt_lookup.add_argument("--bundle", type=Path, required=True, help="Ignored tensor-rich lookup RMS prediction bundle")
+            if operation in ("domain-run", "domain-verify", "rms-run", "rms-verify"):
+                rsqrt_lookup.add_argument("plan", type=Path)
+            if operation in ("domain-verify", "rms-verify"):
+                rsqrt_lookup.add_argument("report", type=Path)
+                rsqrt_lookup.add_argument("--reexecute", action="store_true")
+            if operation in ("table-build", "domain-run", "domain-verify", "rms-plan", "rms-run", "rms-verify"):
+                rsqrt_lookup.add_argument("--audit-dir", type=Path, required=True, help="Ignored mismatch-payload directory; also needed when validating source domain evidence")
+            if operation == "domain-run":
+                rsqrt_lookup.add_argument("--journal", type=Path, required=True)
+        if operation not in ("table-verify", "domain-verify", "rms-verify"):
+            rsqrt_lookup.add_argument("--output", type=Path, required=True)
+        rsqrt_lookup.set_defaults(handler=command_rsqrt_lookup, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        attention_entry = subparsers.add_parser(f"gemma-attention-entry-{operation}", help=f"{operation.title()} connected independent layer-0 pre-RoPE execution")
+        attention_entry.add_argument("program", type=Path)
+        attention_entry.add_argument("fixture", type=Path)
+        if operation != "plan":
+            attention_entry.add_argument("plan", type=Path)
+        attention_entry.add_argument("--bundle", type=Path, required=True, help="Tensor-rich execution/prediction bundle; keep in Git-ignored artifacts/")
+        attention_entry.add_argument("--table-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_table_plan.json"))
+        attention_entry.add_argument("--table-manifest", type=Path, default=Path("results/gemma3_270m_rsqrt_table_manifest.json"))
+        attention_entry.add_argument("--domain-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_plan.json"))
+        attention_entry.add_argument("--domain-report", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_report.json"))
+        attention_entry.add_argument("--table", type=Path, default=Path("artifacts/gemma3_270m_rsqrt_table.bin"))
+        attention_entry.add_argument("--audit-dir", type=Path, default=Path("artifacts/rsqrt_mismatches"))
+        attention_entry.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        attention_entry.add_argument("--summary", type=Path)
+        if operation == "verify":
+            attention_entry.add_argument("report", type=Path)
+            attention_entry.add_argument("--reexecute", action="store_true")
+        else:
+            attention_entry.add_argument("--output", type=Path, required=True, help="Compact plan for plan; tensor-rich report for run (keep in Git-ignored artifacts/)")
+        attention_entry.set_defaults(handler=command_attention_entry, operation=operation)
+
+    for operation in ("table-plan", "table-run", "table-verify", "plan", "run", "verify"):
+        rotary = subparsers.add_parser(f"gemma-rotary-{operation}", help=f"{operation} fixed-position rotary specification or connected RoPE slice")
+        rotary.add_argument("program", type=Path)
+        rotary.add_argument("--fixture", type=Path, default=Path("results/gemma3_270m_ir_execution_summary.json"))
+        rotary.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        rotary.add_argument("--table-plan", type=Path, default=Path("results/gemma3_270m_rotary_table_plan.json"))
+        rotary.add_argument("--table-manifest", type=Path, default=Path("results/gemma3_270m_rotary_table_manifest.json"))
+        rotary.add_argument("--table-bundle", type=Path, default=Path("artifacts/gemma3_270m_rotary_table.json"))
+        rotary.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_rotary_slice_plan_v2.json"))
+        rotary.add_argument("--bundle", type=Path, required=operation in ("table-run", "plan", "run", "verify"), help="Tensor-rich bundle; keep under Git-ignored artifacts/")
+        rotary.add_argument("--report", type=Path, required=operation == "verify")
+        rotary.add_argument("--summary", type=Path)
+        rotary.add_argument("--rsqrt-table", type=Path, default=Path("artifacts/gemma3_270m_rsqrt_table.bin"))
+        rotary.add_argument("--rsqrt-table-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_table_plan.json"))
+        rotary.add_argument("--rsqrt-table-manifest", type=Path, default=Path("results/gemma3_270m_rsqrt_table_manifest.json"))
+        rotary.add_argument("--rsqrt-domain-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_plan.json"))
+        rotary.add_argument("--rsqrt-domain-report", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_report.json"))
+        rotary.add_argument("--rsqrt-audit-dir", type=Path, default=Path("artifacts/rsqrt_mismatches"))
+        if operation.endswith("verify"):
+            rotary.add_argument("--reexecute", action="store_true")
+        else:
+            rotary.add_argument("--output", type=Path, required=True, help="New compact plan/manifest or tensor-rich run report (under artifacts/)")
+        rotary.set_defaults(handler=command_rotary_slice, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        scores = subparsers.add_parser(f"gemma-attention-scores-{operation}", help=f"{operation.title()} frozen QK score/scaling/mask characterization before softmax")
+        scores.add_argument("program", type=Path)
+        scores.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        scores.add_argument("--rotary-plan", type=Path, default=Path("results/gemma3_270m_rotary_slice_plan_v2.json"))
+        scores.add_argument("--rotary-bundle", type=Path, default=Path("artifacts/gemma3_270m_rotary_slice_predictions_v2.json"))
+        scores.add_argument("--rotary-report", type=Path, default=Path("artifacts/gemma3_270m_rotary_slice_report.json"))
+        scores.add_argument("--table-plan", type=Path, default=Path("results/gemma3_270m_rotary_table_plan.json"))
+        scores.add_argument("--table-manifest", type=Path, default=Path("results/gemma3_270m_rotary_table_manifest.json"))
+        scores.add_argument("--table-bundle", type=Path, default=Path("artifacts/gemma3_270m_rotary_table.json"))
+        scores.add_argument("--rsqrt-table", type=Path, default=Path("artifacts/gemma3_270m_rsqrt_table.bin"))
+        scores.add_argument("--rsqrt-table-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_table_plan.json"))
+        scores.add_argument("--rsqrt-table-manifest", type=Path, default=Path("results/gemma3_270m_rsqrt_table_manifest.json"))
+        scores.add_argument("--rsqrt-domain-plan", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_plan.json"))
+        scores.add_argument("--rsqrt-domain-report", type=Path, default=Path("results/gemma3_270m_rsqrt_domain_report.json"))
+        scores.add_argument("--rsqrt-audit-dir", type=Path, default=Path("artifacts/rsqrt_mismatches"))
+        scores.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_attention_scores_plan.json"))
+        scores.add_argument("--bundle", type=Path, required=True, help="Private prediction bundle under Git-ignored artifacts/")
+        scores.add_argument("--summary", type=Path)
+        if operation == "verify":
+            scores.add_argument("--report", type=Path, required=True)
+            scores.add_argument("--reexecute", action="store_true")
+        else:
+            scores.add_argument("--output", type=Path, required=True, help="Compact plan or tensor-rich run report (keep reports under artifacts/)")
+        scores.set_defaults(handler=command_attention_scores, operation=operation)
+
+    for command in ("plan", "run", "verify", "lookup-plan", "lookup-run", "lookup-verify", "output-plan", "output-run", "output-verify", "output-split-plan", "output-split-run", "output-split-verify", "output-survivor-plan", "output-survivor-run", "output-survivor-verify", "post-plan", "post-run", "post-verify", "mlp-plan", "mlp-run", "mlp-verify", "product-plan", "product-run", "product-verify", "down-plan", "down-run", "down-verify", "k2048-dense-plan", "k2048-dense-run", "k2048-dense-verify", "post-ff-plan", "post-ff-run", "post-ff-verify", "first-layer-plan", "first-layer-run", "first-layer-verify", "first-layer-holdout-protocol", "first-layer-holdout-plan", "first-layer-holdout-run", "first-layer-holdout-verify", "second-layer-plan", "second-layer-run", "second-layer-verify", "two-layers-plan", "two-layers-run", "two-layers-verify", "two-layers-holdout-protocol", "two-layers-holdout-plan", "two-layers-holdout-run", "two-layers-holdout-verify", "third-entry-plan", "third-entry-run", "third-entry-verify", "third-scores-plan", "third-scores-run", "third-scores-verify"):
+        third_scores_mode = command.startswith("third-scores-")
+        third_entry_mode = command.startswith("third-entry-") or third_scores_mode
+        two_layers_holdout_mode = command.startswith("two-layers-holdout-") or third_entry_mode
+        two_layers_mode = command.startswith("two-layers-") or third_entry_mode
+        second_layer_mode = command.startswith("second-layer-") or two_layers_mode
+        holdout_mode = command.startswith("first-layer-holdout-")
+        first_layer_mode = command.startswith("first-layer-") or holdout_mode or second_layer_mode
+        post_ff_mode = command.startswith("post-ff-") or first_layer_mode
+        dense_k2048_mode = command.startswith("k2048-dense-") or post_ff_mode
+        down_mode = command.startswith("down-") or dense_k2048_mode
+        product_mode = command.startswith("product-") or down_mode
+        mlp_mode = command.startswith("mlp-") or product_mode
+        post_mode = command.startswith("post-") or mlp_mode
+        survivor_mode = command.startswith("output-survivor-") or post_mode
+        split_mode = command.startswith("output-split-")
+        output_mode = command.startswith("output-") or post_mode
+        lookup_mode = command.startswith("lookup-") or output_mode
+        operation = command.split("-")[-1]
+        command_name = f"gemma-third-layer-scores-{operation}" if third_scores_mode else f"gemma-third-layer-entry-{operation}" if third_entry_mode else f"gemma-two-layers-holdout-{operation}" if two_layers_holdout_mode else f"gemma-two-layers-{operation}" if two_layers_mode else f"gemma-second-layer-{operation}" if second_layer_mode else f"gemma-first-layer-holdout-{operation}" if holdout_mode else f"gemma-first-layer-{operation}" if first_layer_mode else f"gemma-post-feedforward-{operation}" if post_ff_mode else f"gemma-k2048-dense-{operation}" if dense_k2048_mode else f"gemma-mlp-down-{operation}" if down_mode else f"gemma-mlp-product-{operation}" if product_mode else f"gemma-mlp-entry-{operation}" if mlp_mode else f"gemma-post-attention-{operation}" if post_mode else f"gemma-attention-{command}" if output_mode else f"gemma-softmax-{command}"
+        softmax = subparsers.add_parser(command_name, help=f"{command.title()} frozen numerical specification and original-forward comparison")
+        softmax.add_argument("program", type=Path)
+        softmax.add_argument("--model-path", type=Path, default=Path(".models/gemma-3-270m-it"))
+        for flag, default in (
+            ("rotary-plan", "results/gemma3_270m_rotary_slice_plan_v2.json"),
+            ("rotary-bundle", "artifacts/gemma3_270m_rotary_slice_predictions_v2.json"),
+            ("rotary-report", "artifacts/gemma3_270m_rotary_slice_report.json"),
+            ("table-plan", "results/gemma3_270m_rotary_table_plan.json"),
+            ("table-manifest", "results/gemma3_270m_rotary_table_manifest.json"),
+            ("table-bundle", "artifacts/gemma3_270m_rotary_table.json"),
+            ("rsqrt-table", "artifacts/gemma3_270m_rsqrt_table.bin"),
+            ("rsqrt-table-plan", "results/gemma3_270m_rsqrt_table_plan.json"),
+            ("rsqrt-table-manifest", "results/gemma3_270m_rsqrt_table_manifest.json"),
+            ("rsqrt-domain-plan", "results/gemma3_270m_rsqrt_domain_plan.json"),
+            ("rsqrt-domain-report", "results/gemma3_270m_rsqrt_domain_report.json"),
+            ("rsqrt-audit-dir", "artifacts/rsqrt_mismatches"),
+            ("score-plan", "results/gemma3_270m_attention_scores_plan.json"),
+            ("score-bundle", "artifacts/gemma3_270m_attention_scores_predictions.json"),
+            ("score-report", "artifacts/gemma3_270m_attention_scores_report.json"),
+        ):
+            softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if lookup_mode:
+            for flag, default in (("exp-plan", "results/gemma3_270m_exp_plan.json"), ("exp-manifest", "results/gemma3_270m_exp_manifest.json"),
+                                  ("exp-table", "artifacts/gemma3_270m_exp_table.bin"), ("exp-audit-dir", "artifacts/exp_mismatches"),
+                                  ("original-plan", "results/gemma3_270m_softmax_plan.json"), ("original-bundle", "artifacts/gemma3_270m_softmax_predictions.json"),
+                                  ("original-report", "artifacts/gemma3_270m_softmax_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if output_mode:
+            for flag, default in (("lookup-plan", "results/gemma3_270m_softmax_lookup_plan.json"), ("lookup-bundle", "artifacts/gemma3_270m_softmax_lookup_predictions.json"), ("lookup-report", "artifacts/gemma3_270m_softmax_lookup_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if split_mode or survivor_mode:
+            for flag, default in (("base-plan", "results/gemma3_270m_attention_output_plan.json"), ("base-bundle", "artifacts/gemma3_270m_attention_output_predictions.json"), ("base-report", "artifacts/gemma3_270m_attention_output_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if survivor_mode:
+            for flag, default in (("probe-source", "results/gemma3_270m_attention_output_summary.json"), ("probe-plan", "results/gemma3_270m_k1024_probes_plan.json"), ("probe-bundle", "artifacts/gemma3_270m_k1024_probes_inputs.json"), ("probe-report", "artifacts/gemma3_270m_k1024_probes_report.json")):
+                inherited_flag = "prefix-" + flag if down_mode and flag != "probe-source" else flag
+                softmax.add_argument("--" + inherited_flag, type=Path, default=Path(default))
+        if post_mode:
+            for flag, default in (("survivor-plan", "results/gemma3_270m_output_survivor_plan.json"), ("survivor-bundle", "artifacts/gemma3_270m_output_survivor_predictions.json"), ("survivor-report", "artifacts/gemma3_270m_output_survivor_report.json"),
+                                  ("dense-plan", "results/gemma3_270m_k128_dense_plan.json"), ("dense-bundle", "artifacts/gemma3_270m_k128_dense_inputs.json"), ("dense-report", "artifacts/gemma3_270m_k128_dense_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if mlp_mode:
+            for flag, default in (("post-plan", "results/gemma3_270m_post_attention_plan.json"), ("post-bundle", "artifacts/gemma3_270m_post_attention_predictions.json"), ("post-report", "artifacts/gemma3_270m_post_attention_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+            softmax.add_argument("--workers", type=int, choices=(1, 2, 3, 4), default=4, help="Deterministic CPU projection workers")
+        if product_mode:
+            for flag, default in (("entry-plan", "results/gemma3_270m_mlp_entry_plan.json"), ("entry-bundle", "artifacts/gemma3_270m_mlp_entry_predictions.json"), ("entry-report", "artifacts/gemma3_270m_mlp_entry_report.json"),
+                                  ("gelu-plan", "results/gemma3_270m_gelu_table_plan.json"), ("gelu-manifest", "results/gemma3_270m_gelu_table_manifest.json"), ("gelu-table", "artifacts/gemma3_270m_gelu_table.bin"),
+                                  ("gelu-layouts", "results/gemma3_270m_gelu_layouts.json"), ("gelu-audit-dir", "artifacts/gelu_mismatches")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if down_mode:
+            for flag, default in (("product-plan", "results/gemma3_270m_mlp_product_plan.json"), ("product-bundle", "artifacts/gemma3_270m_mlp_product_predictions.json"), ("product-report", "artifacts/gemma3_270m_mlp_product_report.json"),
+                                  ("probe-binding", "results/gemma3_270m_reduction_backend_binding.json"), ("probe-plan", "results/gemma3_270m_k2048_probes_plan.json"),
+                                  ("probe-bundle", "artifacts/gemma3_270m_k2048_probes_inputs.json"), ("probe-report", "artifacts/gemma3_270m_k2048_probes_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if dense_k2048_mode:
+            for flag, default in (("model-down-plan", "results/gemma3_270m_mlp_down_plan_v2.json"), ("model-down-bundle", "artifacts/gemma3_270m_mlp_down_predictions_v2.json"), ("model-down-report", "artifacts/gemma3_270m_mlp_down_report_v2.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if post_ff_mode:
+            for flag, default in (("k2048-dense-plan", "results/gemma3_270m_k2048_dense_plan.json"), ("k2048-dense-bundle", "artifacts/gemma3_270m_k2048_dense_inputs.json"), ("k2048-dense-report", "artifacts/gemma3_270m_k2048_dense_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if first_layer_mode:
+            for flag, default in (("post-feedforward-plan", "results/gemma3_270m_post_feedforward_plan.json"), ("post-feedforward-bundle", "artifacts/gemma3_270m_post_feedforward_predictions.json"), ("post-feedforward-report", "artifacts/gemma3_270m_post_feedforward_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if holdout_mode or second_layer_mode:
+            for flag, default in (("baseline-plan", "results/gemma3_270m_first_layer_plan.json"), ("baseline-bundle", "artifacts/gemma3_270m_first_layer_predictions.json"), ("baseline-report", "artifacts/gemma3_270m_first_layer_report.json"), ("protocol", "results/gemma3_270m_first_layer_holdout_protocol.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if second_layer_mode:
+            for flag, default in (("holdout-plan", "results/gemma3_270m_first_layer_holdout_plan.json"), ("holdout-bundle", "artifacts/gemma3_270m_first_layer_holdout_predictions.json"), ("holdout-report", "artifacts/gemma3_270m_first_layer_holdout_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if two_layers_mode:
+            for flag, default in (("second-layer-plan", "results/gemma3_270m_second_layer_plan.json"), ("second-layer-bundle", "artifacts/gemma3_270m_second_layer_predictions.json"), ("second-layer-report", "artifacts/gemma3_270m_second_layer_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if two_layers_holdout_mode:
+            for flag, default in (("two-layer-baseline-plan", "results/gemma3_270m_two_layers_plan.json"), ("two-layer-baseline-bundle", "artifacts/gemma3_270m_two_layers_predictions.json"), ("two-layer-baseline-report", "artifacts/gemma3_270m_two_layers_report.json"), ("holdout-protocol", "results/gemma3_270m_two_layers_holdout_protocol.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if third_entry_mode:
+            for flag, default in (("two-holdout-plan", "results/gemma3_270m_two_layers_holdout_plan.json"), ("two-holdout-bundle", "artifacts/gemma3_270m_two_layers_holdout_predictions.json"), ("two-holdout-report", "artifacts/gemma3_270m_two_layers_holdout_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        if third_scores_mode:
+            for flag, default in (("third-entry-plan", "results/gemma3_270m_third_layer_entry_plan.json"), ("third-entry-bundle", "artifacts/gemma3_270m_third_layer_entry_predictions.json"), ("third-entry-report", "artifacts/gemma3_270m_third_layer_entry_report.json")):
+                softmax.add_argument("--" + flag, type=Path, default=Path(default))
+        default_plan = "results/gemma3_270m_third_layer_scores_plan.json" if third_scores_mode else "results/gemma3_270m_third_layer_entry_plan.json" if third_entry_mode else "results/gemma3_270m_two_layers_holdout_plan.json" if two_layers_holdout_mode else "results/gemma3_270m_two_layers_plan.json" if two_layers_mode else "results/gemma3_270m_second_layer_plan.json" if second_layer_mode else "results/gemma3_270m_first_layer_holdout_plan.json" if holdout_mode else "results/gemma3_270m_first_layer_plan.json" if first_layer_mode else "results/gemma3_270m_post_feedforward_plan.json" if post_ff_mode else "results/gemma3_270m_k2048_dense_plan.json" if dense_k2048_mode else "results/gemma3_270m_mlp_down_plan.json" if down_mode else "results/gemma3_270m_mlp_product_plan.json" if product_mode else "results/gemma3_270m_mlp_entry_plan.json" if mlp_mode else "results/gemma3_270m_post_attention_plan.json" if post_mode else "results/gemma3_270m_output_survivor_plan.json" if survivor_mode else "results/gemma3_270m_output_split_plan.json" if split_mode else "results/gemma3_270m_attention_output_plan.json" if output_mode else "results/gemma3_270m_softmax_lookup_plan.json" if lookup_mode else "results/gemma3_270m_softmax_plan.json"
+        softmax.add_argument("--plan", type=Path, default=Path(default_plan))
+        softmax.add_argument("--bundle", type=Path, required=not post_ff_mode, default=Path("artifacts/gemma3_270m_third_layer_scores_predictions.json") if third_scores_mode else Path("artifacts/gemma3_270m_third_layer_entry_predictions.json") if third_entry_mode else Path("artifacts/gemma3_270m_two_layers_holdout_predictions.json") if two_layers_holdout_mode else Path("artifacts/gemma3_270m_two_layers_predictions.json") if two_layers_mode else Path("artifacts/gemma3_270m_second_layer_predictions.json") if second_layer_mode else Path("artifacts/gemma3_270m_first_layer_holdout_predictions.json") if holdout_mode else Path("artifacts/gemma3_270m_first_layer_predictions.json") if first_layer_mode else Path("artifacts/gemma3_270m_post_feedforward_predictions.json") if post_ff_mode else None, help="Tensor-rich prediction bundle under Git-ignored artifacts/")
+        softmax.add_argument("--summary", type=Path, default=Path("results/gemma3_270m_third_layer_scores_summary.json") if third_scores_mode else Path("results/gemma3_270m_third_layer_entry_summary.json") if third_entry_mode else Path("results/gemma3_270m_two_layers_holdout_summary.json") if two_layers_holdout_mode else Path("results/gemma3_270m_two_layers_summary.json") if two_layers_mode else Path("results/gemma3_270m_second_layer_summary.json") if second_layer_mode else Path("results/gemma3_270m_first_layer_holdout_summary.json") if holdout_mode else None)
+        if operation == "verify":
+            softmax.add_argument("--report", type=Path, required=True)
+            softmax.add_argument("--reexecute", action="store_true")
+        else:
+            softmax.add_argument("--output", type=Path, required=two_layers_holdout_mode or not (two_layers_mode and operation == "plan"), help="Compact plan or tensor-rich run report (under artifacts/)")
+        handler = command_third_layer_scores if third_scores_mode else command_third_layer_entry if third_entry_mode else command_two_layers_holdout if two_layers_holdout_mode else command_two_layers if two_layers_mode else command_second_layer if second_layer_mode else command_first_layer_holdout if holdout_mode else command_first_layer if first_layer_mode else command_post_feedforward if post_ff_mode else command_dense_k2048 if dense_k2048_mode else command_mlp_down if down_mode else command_mlp_product if product_mode else command_mlp_entry if mlp_mode else command_post_attention if post_mode else command_output_survivor if survivor_mode else command_output_split if split_mode else command_attention_output if output_mode else command_lookup_softmax if lookup_mode else command_softmax_slice
+        softmax.set_defaults(handler=handler, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        exponential = subparsers.add_parser(f"gemma-exp-{operation}", help=f"{operation.title()} explicit exponential table and exhaustive nonpositive-domain evidence")
+        exponential.add_argument("--source-summary", type=Path, default=Path("results/gemma3_270m_softmax_summary.json"))
+        exponential.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_exp_plan.json"))
+        exponential.add_argument("--manifest", type=Path, default=Path("results/gemma3_270m_exp_manifest.json"))
+        exponential.add_argument("--table", type=Path, default=Path("artifacts/gemma3_270m_exp_table.bin"))
+        exponential.add_argument("--audit-dir", type=Path, default=Path("artifacts/exp_mismatches"))
+        exponential.add_argument("--journal", type=Path, default=Path("artifacts/gemma3_270m_exp_journal.json"))
+        if operation == "verify":
+            exponential.add_argument("--reexecute", action="store_true")
+            exponential.add_argument("--replay-output", type=Path)
+        else:
+            exponential.add_argument("--output", type=Path, required=True)
+        exponential.set_defaults(handler=command_exp_lookup, operation=operation)
+
+    for operation in ("plan", "run", "layouts", "verify"):
+        gelu = subparsers.add_parser(f"gemma-gelu-table-{operation}", help=f"{operation.title()} explicit finite-BF16 GELU-tanh specification")
+        for flag, default in (("source-summary", "results/gemma3_270m_mlp_entry_summary.json"), ("plan", "results/gemma3_270m_gelu_table_plan.json"),
+                              ("manifest", "results/gemma3_270m_gelu_table_manifest.json"), ("table", "artifacts/gemma3_270m_gelu_table.bin"),
+                              ("layout-report", "results/gemma3_270m_gelu_layouts.json"), ("audit-dir", "artifacts/gelu_mismatches")):
+            gelu.add_argument("--" + flag, type=Path, default=Path(default))
+        if operation == "verify":
+            gelu.add_argument("--reexecute", action="store_true")
+            gelu.add_argument("--replay-output", type=Path)
+        else:
+            gelu.add_argument("--output", type=Path, required=True)
+        gelu.set_defaults(handler=command_gelu_table, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        probes = subparsers.add_parser(f"gemma-k1024-probes-{operation}", help=f"{operation.title()} controlled K1024 split/merge discrimination")
+        probes.add_argument("--source-summary", type=Path, default=Path("results/gemma3_270m_attention_output_summary.json"))
+        probes.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_k1024_probes_plan.json"))
+        probes.add_argument("--bundle", type=Path, required=True, help="Controlled input vectors; keep under Git-ignored artifacts/")
+        probes.add_argument("--summary", type=Path)
+        if operation == "verify":
+            probes.add_argument("--report", type=Path, required=True)
+            probes.add_argument("--reexecute", action="store_true")
+        else:
+            probes.add_argument("--output", type=Path, required=True, help="Compact frozen plan or tensor-rich report (under artifacts/)")
+        probes.set_defaults(handler=command_k1024_probes, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        down = subparsers.add_parser(f"gemma-k2048-probes-{operation}", help=f"{operation.title()} controlled K2048 down-projection hypotheses")
+        down.add_argument("--binding", type=Path, default=Path("results/gemma3_270m_reduction_backend_binding.json"))
+        down.add_argument("--product-summary", type=Path, default=Path("results/gemma3_270m_mlp_product_summary.json"))
+        down.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_k2048_probes_plan.json"))
+        down.add_argument("--bundle", type=Path, required=True, help="Controlled input vectors under Git-ignored artifacts/")
+        down.add_argument("--summary", type=Path)
+        down.add_argument("--workers", type=int, choices=(1, 2, 3, 4), default=4)
+        if operation == "verify":
+            down.add_argument("--report", type=Path, required=True)
+            down.add_argument("--reexecute", action="store_true")
+        else:
+            down.add_argument("--output", type=Path, required=True)
+        down.set_defaults(handler=command_k2048_probes, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        dense = subparsers.add_parser(f"gemma-k128-dense-{operation}", help=f"{operation.title()} disjoint dense full-matrix K128 holdout")
+        for flag, default in (("source-summary", "results/gemma3_270m_attention_output_summary.json"),
+                              ("probe-plan", "results/gemma3_270m_k1024_probes_plan.json"), ("probe-bundle", "artifacts/gemma3_270m_k1024_probes_inputs.json"),
+                              ("probe-report", "artifacts/gemma3_270m_k1024_probes_report.json"), ("model-plan", "results/gemma3_270m_attention_output_plan.json"),
+                              ("model-bundle", "artifacts/gemma3_270m_attention_output_predictions.json")):
+            dense.add_argument("--" + flag, type=Path, default=Path(default))
+        dense.add_argument("--plan", type=Path, default=Path("results/gemma3_270m_k128_dense_plan.json"))
+        dense.add_argument("--bundle", type=Path, required=True, help="Dense tensor-rich input/weight/prediction bundle under artifacts/")
+        dense.add_argument("--summary", type=Path)
+        if operation == "verify":
+            dense.add_argument("--report", type=Path, required=True)
+            dense.add_argument("--reexecute", action="store_true")
+        else:
+            dense.add_argument("--output", type=Path, required=True)
+        dense.set_defaults(handler=command_dense_k128, operation=operation)
+
     gemma_ir_execution_verify_parser = subparsers.add_parser("gemma-ir-execution-verify", help="Verify a fixed-input typed-IR prediction certificate and its complete instruction witness")
     gemma_ir_execution_verify_parser.add_argument("program", type=Path)
     gemma_ir_execution_verify_parser.add_argument("certificate", type=Path)
@@ -1892,6 +4198,172 @@ def build_parser() -> argparse.ArgumentParser:
     wmma_candidate_verify_parser.add_argument("--magnitude-probe", type=Path, required=True)
     wmma_candidate_verify_parser.add_argument("search", type=Path)
     wmma_candidate_verify_parser.set_defaults(handler=command_gemma_wmma_candidate_search_verify)
+
+    holdout_plan = subparsers.add_parser("gemma-k16-holdout-plan", help="Freeze dense K16 inputs and predictions before CUDA acquisition")
+    holdout_plan.add_argument("search", type=Path)
+    holdout_plan.add_argument("--output", type=Path, required=True)
+    holdout_plan.set_defaults(handler=command_k16_holdout_plan)
+
+    holdout_run = subparsers.add_parser("gemma-k16-holdout-run", help="Acquire frozen holdout; preserve failures and return nonzero on any mismatch")
+    holdout_run.add_argument("search", type=Path)
+    holdout_run.add_argument("plan", type=Path)
+    holdout_run.add_argument("--output", type=Path, required=True)
+    holdout_run.set_defaults(handler=command_k16_holdout_run)
+
+    holdout_verify = subparsers.add_parser("gemma-k16-holdout-verify", help="Verify evidence integrity separately from candidate conformance")
+    holdout_verify.add_argument("search", type=Path)
+    holdout_verify.add_argument("plan", type=Path)
+    holdout_verify.add_argument("report", type=Path)
+    holdout_verify.add_argument("--reexecute", action="store_true")
+    holdout_verify.set_defaults(handler=command_k16_holdout_verify)
+
+    composition_plan = subparsers.add_parser("gemma-composition-holdout-plan", help="Freeze a serial K8 carry hypothesis before CUDA comparison")
+    composition_plan.add_argument("search", type=Path)
+    composition_plan.add_argument("--output", type=Path, required=True)
+    composition_plan.set_defaults(handler=command_k16_holdout_plan, composition=True)
+
+    composition_run = subparsers.add_parser("gemma-composition-holdout-run", help="Test cross-fragment predictions; retain failures and return nonzero on mismatch")
+    composition_run.add_argument("search", type=Path)
+    composition_run.add_argument("plan", type=Path)
+    composition_run.add_argument("--output", type=Path, required=True)
+    composition_run.set_defaults(handler=command_k16_holdout_run, composition=True)
+
+    composition_verify = subparsers.add_parser("gemma-composition-holdout-verify", help="Verify composition evidence, optionally replaying CUDA without refitting")
+    composition_verify.add_argument("search", type=Path)
+    composition_verify.add_argument("plan", type=Path)
+    composition_verify.add_argument("report", type=Path)
+    composition_verify.add_argument("--reexecute", action="store_true")
+    composition_verify.set_defaults(handler=command_k16_holdout_verify, composition=True)
+
+    carry_diagnosis = subparsers.add_parser("gemma-carry-diagnosis", help="Compare four carry-rounding variants on development counterexamples, not validation data")
+    carry_diagnosis.add_argument("search", type=Path)
+    carry_diagnosis.add_argument("plan", type=Path)
+    carry_diagnosis.add_argument("report", type=Path)
+    carry_action = carry_diagnosis.add_mutually_exclusive_group(required=True)
+    carry_action.add_argument("--output", type=Path)
+    carry_action.add_argument("--diagnosis", type=Path, help="Recompute and verify an existing diagnosis")
+    carry_diagnosis.set_defaults(handler=command_carry_diagnosis)
+
+    for operation in ("plan", "run", "verify"):
+        revision = subparsers.add_parser(f"gemma-carry-revision-{operation}", help=f"{operation.title()} the frozen float32 carry revision's fresh holdout")
+        revision.add_argument("search", type=Path)
+        revision.add_argument("diagnosis", type=Path)
+        if operation != "plan":
+            revision.add_argument("plan", type=Path)
+        if operation == "verify":
+            revision.add_argument("report", type=Path)
+            revision.add_argument("--reexecute", action="store_true")
+        else:
+            revision.add_argument("--output", type=Path, required=True)
+        revision.set_defaults(handler=command_carry_revision, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        product_holdout = subparsers.add_parser(f"gemma-product-holdout-{operation}", help=f"{operation.title()} frozen non-unit-product predictions at three projection shapes")
+        product_holdout.add_argument("search", type=Path)
+        product_holdout.add_argument("diagnosis", type=Path)
+        if operation != "plan":
+            product_holdout.add_argument("plan", type=Path)
+        if operation == "verify":
+            product_holdout.add_argument("report", type=Path)
+            product_holdout.add_argument("--reexecute", action="store_true")
+        else:
+            product_holdout.add_argument("--output", type=Path, required=True)
+        product_holdout.set_defaults(handler=command_carry_revision, operation=operation, product=True)
+
+    for operation in ("plan", "run", "verify"):
+        matched_products = subparsers.add_parser(f"gemma-matched-products-{operation}", help=f"{operation.title()} controlled identical-product comparisons across shapes and rescalings")
+        matched_products.add_argument("search", type=Path)
+        matched_products.add_argument("diagnosis", type=Path)
+        if operation != "plan":
+            matched_products.add_argument("plan", type=Path)
+        if operation == "verify":
+            matched_products.add_argument("report", type=Path)
+            matched_products.add_argument("--reexecute", action="store_true")
+        else:
+            matched_products.add_argument("--output", type=Path, required=True)
+        matched_products.set_defaults(handler=command_carry_revision, operation=operation, matched=True)
+
+    for operation in ("plan", "run", "verify"):
+        query_reduction = subparsers.add_parser(f"gemma-query-reduction-{operation}", help=f"{operation.title()} development-only query counterexample deletion")
+        for name in ("search", "diagnosis", "source_plan", "source_report"):
+            query_reduction.add_argument(name, type=Path)
+        if operation != "plan":
+            query_reduction.add_argument("plan", type=Path)
+        if operation == "verify":
+            query_reduction.add_argument("report", type=Path)
+            query_reduction.add_argument("--reexecute", action="store_true")
+        else:
+            query_reduction.add_argument("--output", type=Path, required=True)
+        if operation == "run":
+            query_reduction.add_argument("--journal", type=Path, required=True)
+        query_reduction.set_defaults(handler=command_query_reduction, operation=operation)
+
+    alignment_diagnosis = subparsers.add_parser("gemma-operand-alignment-diagnosis", help="Evaluate operand-exponent alignment on preserved development cases")
+    for name in ("search", "carry_diagnosis", "source_plan", "source_report", "reduction_plan", "reduction_report"):
+        alignment_diagnosis.add_argument(name, type=Path)
+    alignment_result = alignment_diagnosis.add_mutually_exclusive_group(required=True)
+    alignment_result.add_argument("--output", type=Path)
+    alignment_result.add_argument("--diagnosis", type=Path)
+    alignment_diagnosis.set_defaults(handler=command_operand_alignment_diagnosis)
+
+    for operation in ("plan", "run", "verify"):
+        alignment_holdout = subparsers.add_parser(f"gemma-operand-alignment-{operation}", help=f"{operation.title()} fresh frozen operand-alignment query holdout")
+        alignment_holdout.add_argument("diagnosis", type=Path)
+        alignment_holdout.add_argument("source_report", type=Path)
+        if operation != "plan":
+            alignment_holdout.add_argument("plan", type=Path)
+        if operation == "verify":
+            alignment_holdout.add_argument("report", type=Path)
+            alignment_holdout.add_argument("--reexecute", action="store_true")
+        else:
+            alignment_holdout.add_argument("--output", type=Path, required=True)
+        alignment_holdout.set_defaults(handler=command_operand_alignment_holdout, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        wide_query = subparsers.add_parser(f"gemma-wide-query-{operation}", help=f"{operation.title()} distinct-row full-width query holdout")
+        wide_query.add_argument("source_plan", type=Path)
+        wide_query.add_argument("source_report", type=Path)
+        if operation != "plan":
+            wide_query.add_argument("plan", type=Path)
+        if operation == "verify":
+            wide_query.add_argument("report", type=Path)
+            wide_query.add_argument("--reexecute", action="store_true")
+        else:
+            wide_query.add_argument("--output", type=Path, required=True)
+        wide_query.set_defaults(handler=command_wide_query, operation=operation)
+
+    split_k_diagnosis = subparsers.add_parser("gemma-split-k-diagnosis", help="Compare explicit split-K partition and intermediate-rounding hypotheses on development evidence")
+    for name in ("search", "carry_diagnosis", "product_plan", "product_report", "matched_plan", "matched_report"):
+        split_k_diagnosis.add_argument(name, type=Path)
+    split_k_result = split_k_diagnosis.add_mutually_exclusive_group(required=True)
+    split_k_result.add_argument("--output", type=Path)
+    split_k_result.add_argument("--diagnosis", type=Path)
+    split_k_diagnosis.set_defaults(handler=command_split_k_diagnosis)
+
+    for operation in ("plan", "run", "verify"):
+        split_merge = subparsers.add_parser(f"gemma-split-merge-{operation}", help=f"{operation.title()} prospective discrimination of frozen split-K merge candidates")
+        split_merge.add_argument("diagnosis", type=Path)
+        if operation != "plan":
+            split_merge.add_argument("plan", type=Path)
+        if operation == "verify":
+            split_merge.add_argument("report", type=Path)
+            split_merge.add_argument("--reexecute", action="store_true")
+        else:
+            split_merge.add_argument("--output", type=Path, required=True)
+        split_merge.set_defaults(handler=command_split_merge, operation=operation)
+
+    for operation in ("plan", "run", "verify"):
+        dense_split = subparsers.add_parser(f"gemma-dense-split-{operation}", help=f"{operation.title()} fresh dense composed split-K holdout")
+        for name in ("diagnosis", "merge_plan", "merge_report"):
+            dense_split.add_argument(name, type=Path)
+        if operation != "plan":
+            dense_split.add_argument("plan", type=Path)
+        if operation == "verify":
+            dense_split.add_argument("report", type=Path)
+            dense_split.add_argument("--reexecute", action="store_true")
+        else:
+            dense_split.add_argument("--output", type=Path, required=True)
+        dense_split.set_defaults(handler=command_dense_split, operation=operation)
 
     primitive_gate_parser = subparsers.add_parser("gemma-ir-primitive-gate", help="Build a gate separating independently tested indexing primitives from unresolved floating-point semantics")
     primitive_gate_parser.add_argument("program", type=Path)

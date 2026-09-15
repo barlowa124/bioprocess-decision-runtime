@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "kind": "pre_integration_source_archive",
+  "source_pack": "artifacts/gemma_independent_v2_and_gemv_v1_sources-1665d1dd16fcb2fb8184c01e2f9cd17c0b39f040.pack",
+  "source_pack_file_sha256": "e25c79699a6b6eaa3025cf46a1cffec377bc06bf5beb5d019b0034636f749d48",
+  "source_index_file_sha256": "2819c6f9bebaf533fd3f26747846187fa11ed9fa6b62165daba53a42bfb360a1",
+  "git_verify_pack_passed": true,
+  "archived_blob_bytes_match_working_files": true,
+  "git_clean_filters_applied": false,
+  "runner_code_sha256": "42f7b0bb6b071a378143df318dd0cc4d6dca592828fcff1bcfa59c15365b6a3f",
+  "failed_baseline_report_sha256": "3988b35121d29e8a63a69bbc80db65a2cd0065b1f41bef5caaf22094343bd438",
+  "passing_component_report_sha256": "8c093ca3179fe68889a00fe08dc0c454f8553034cccd446475498032e08a13cb",
+  "source_objects": {
+    "bioprocess_runtime/gemma_independent.py": {
+      "git_blob": "db2d8c0b1d229960aced21ae25f3460f9a2440f4",
+      "file_sha256": "5013f82d48a1381336fccffc8af45d54e83552c447ca9e1c287951d04d695bb3"
+    },
+    "bioprocess_runtime/gemma_independent_run.py": {
+      "git_blob": "a3036e3dc1948e8cf2630cd6b3bb722625491016",
+      "file_sha256": "a26cd0c12d5dbe3eb1873b3629dbb644c41d4b42c6d1e9544a13d0a020013649"
+    },
+    "bioprocess_runtime/gemma_checkpoint.py": {
+      "git_blob": "e00ac2c71bebd3f6b520c006e8cf49ea907158f7",
+      "file_sha256": "a186c4a7ff66ebf2f7394a7fc860e929a5649894311a0a02325c1b832e1c0014"
+    },
+    "bioprocess_runtime/gemma_gemv.py": {
+      "git_blob": "c4d9bacdf5da67cd2e0c0ea78b0f8270106b7c21",
+      "file_sha256": "2854e6b1a2ddf8b3f4f79cbc4d10d2a297163a4fcec1b5d6d5a5028214efaef7"
+    },
+    "artifacts/gemma_vocab_native_probe_v1.py": {
+      "git_blob": "0739176ae077f26d198c239016ed1562773e883d",
+      "file_sha256": "1c86a10e15ab6e977926a2f963329b2f8157ecea11c398ec1ecc9f257cd87e61"
+    },
+    "artifacts/gemma_vocab_reduction_grid_v1.py": {
+      "git_blob": "9b7df3a0c4d9525d18f045ed8b4673431dd3baa3",
+      "file_sha256": "43a83d8b94076e5d4afec64caf842bd1b22e5cbf92f66216ef21245fef39f17e"
+    },
+    "artifacts/gemma_vocab_full_grid_v1.py": {
+      "git_blob": "e46325cb52720fc803ee724f17ee70b64c252b58",
+      "file_sha256": "46c24a9380c75d5b1c5f8fb5a0b5b6f07b5624ac395d4ebc66b9bbb0e34bc9df"
+    },
+    "artifacts/gemma_vocab_validation_v1.py": {
+      "git_blob": "324a7001ba04c51e5006165e00d5ad8e36b0f8b5",
+      "file_sha256": "9ccfb3a182bbd98df0618ca1808310e94f20b177abb5271a320d906a36f6b20e"
+    },
+    "artifacts/gemma_vocab_replay_v1.py": {
+      "git_blob": "31c51d3d0c0883e815392f968dd8701ecfb487e7",
+      "file_sha256": "532f39d3e94b669b770a0713b8dd9ff59e6e58594ac1aca0af96b026854d0fda"
+    }
+  },
+  "scope": "Exact local source preservation before generic GEMV integration. No source-file edits, staging, commits, numerical reruns or qualification promotion are implied. Pack preserves entrypoint bytes; full replay also requires their existing frozen dependencies, model and evidence artifacts.",
+  "generic_gemv_integration_complete": false,
+  "full_model_qualified": false
+}

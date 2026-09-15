@@ -1,0 +1,457 @@
+{
+  "attention_compared": false,
+  "bundle_sha256": "1de5e2d1b8560a731846dc7a50fcba6d0fe4d8b6584cf03d3b3298ee9d6abad2",
+  "candidate_refitting_allowed": false,
+  "execution_code_sha256": "3bf3117f1a454dcbeb1df3b95bc67b11eaebea3f5849ceba73a4d133c00eafe1",
+  "execution_root": "69ef77347ffba91a33c3ee4a5c574ed031f9981957a5a2e99363c79199f954d6",
+  "fixture_sha256": "34b9fa9f2560e9fa69c3e99d422c8a0f8498d05f23941a297e77973f3ac7f8cd",
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "input_ids": {
+    "device": "cpu",
+    "dtype": "torch.int64",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 30,
+    "sha256": "4716163e6283839eb195d7fd13f7c673b2fffb04ba5909cafeb1dc3466190d5f",
+    "shape": [
+      1,
+      30
+    ]
+  },
+  "input_token_ids": [
+    [
+      2,
+      105,
+      2364,
+      107,
+      818,
+      12123,
+      6013,
+      563,
+      236743,
+      236800,
+      236771,
+      3591,
+      532,
+      45261,
+      236761,
+      14300,
+      672,
+      1660,
+      3540,
+      236881,
+      25685,
+      8438,
+      653,
+      2301,
+      236761,
+      106,
+      107,
+      105,
+      4368,
+      107
+    ]
+  ],
+  "lookup_evidence": {
+    "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+    "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+    "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+    "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+    "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+  },
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "observed_module_boundaries": [
+    "hidden.0",
+    "layer.0.attention.normalized",
+    "layer.0.query.flat",
+    "layer.0.key.flat",
+    "layer.0.value.flat",
+    "layer.0.query.normalized",
+    "layer.0.key.normalized"
+  ],
+  "plan_sha256": "170d68c4958a2fd83921c6aade250c4861da9e20f6ebf900f3d570f613adcf91",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "records": [
+    {
+      "index": 0,
+      "payload": {
+        "inputs": [
+          "input_ids"
+        ],
+        "instruction_id": "i0001",
+        "instruction_sha256": "5729319f6fdec98570193ab3d9f7287b5f2e51576d0f91210ed8f8505001a9ea",
+        "opcode": "EMBEDDING",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "c23c3a50249f4d469c491e137da46cd3cb2e9163c05532c9ae833a53971b2b18",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "embedding_unscaled",
+        "parameter_refs": [
+          "model.embed_tokens.weight"
+        ],
+        "provider": "independent_coordinate_load_v1"
+      },
+      "previous_hash": "GENESIS",
+      "record_hash": "6eedb9bd4eed0af8574be5474f483cec44cd5154101ce2309a9d1dea4a25ab3d"
+    },
+    {
+      "index": 1,
+      "payload": {
+        "inputs": [
+          "embedding_unscaled"
+        ],
+        "instruction_id": "i0002",
+        "instruction_sha256": "78dd8789421de852939d8e29af053fbc98f63cc26bfc972df7db70be321e8780",
+        "opcode": "SCALE",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "hidden.0",
+        "parameter_refs": [
+          "model.embed_tokens.embed_scale"
+        ],
+        "provider": "finite_bfloat16_multiply_rne_v1"
+      },
+      "previous_hash": "6eedb9bd4eed0af8574be5474f483cec44cd5154101ce2309a9d1dea4a25ab3d",
+      "record_hash": "49d7cb2e8ea06404aac891c9dd30663e1aee5f1b28ab37d4058c8793713de2c8"
+    },
+    {
+      "index": 2,
+      "payload": {
+        "inputs": [
+          "hidden.0"
+        ],
+        "instruction_id": "i0007",
+        "instruction_sha256": "bde106d560444a7af1f7622bd51c84095f4f8980bd6f8014ec6dbb3bae0fd209",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 19200,
+          "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+          "shape": [
+            1,
+            30,
+            640
+          ]
+        },
+        "output_name": "layer.0.attention.normalized",
+        "parameter_refs": [
+          "model.layers.0.input_layernorm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "d2f363a1514da8a286823e14d794b3150ebbf3260a0aab6ab583d3e494b4c2f3"
+      },
+      "previous_hash": "49d7cb2e8ea06404aac891c9dd30663e1aee5f1b28ab37d4058c8793713de2c8",
+      "record_hash": "042eea9e6c57d80fd5abdb55597a25640350ed6f24913f16d87ecf7e989aa1b9"
+    },
+    {
+      "index": 3,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0008",
+        "instruction_sha256": "9939f7e124fb775450dc955f75f0c914d3909ec216cdc92100a191dabbf59a9f",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "41463482613c101453bf7dd25ee55cf041564695656e543bd31c6b66b5ac7c7c",
+          "shape": [
+            1,
+            30,
+            1024
+          ]
+        },
+        "output_name": "layer.0.query.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.q_proj.weight"
+        ],
+        "provider": "operand_alignment_v1"
+      },
+      "previous_hash": "042eea9e6c57d80fd5abdb55597a25640350ed6f24913f16d87ecf7e989aa1b9",
+      "record_hash": "0c2ae661679ce8b86f846b23a6e233c81b4d451c8d0b3a529ec38d0fb34c9f9c"
+    },
+    {
+      "index": 4,
+      "payload": {
+        "inputs": [
+          "layer.0.query.flat"
+        ],
+        "instruction_id": "i0009",
+        "instruction_sha256": "99cfdb41a53eed8fdb280c74a55b827081ccaf77de16d3012d3b36dad448a4e4",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "8fe963c89c792755bd2ff9bb032eab4c43c7d9fc71f0659a27499007c16acef0",
+          "shape": [
+            1,
+            4,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.query.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "0c2ae661679ce8b86f846b23a6e233c81b4d451c8d0b3a529ec38d0fb34c9f9c",
+      "record_hash": "9480363a2bab9822b89177c1a0a602bcc81c34aea5e6affe43fcf226172fc802"
+    },
+    {
+      "index": 5,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0010",
+        "instruction_sha256": "895ea47b8d749aa1e239d6eac7c9e249b8576cf8660fe484cfe58812a7ebb03e",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "732a12967172fb385ac95a26303769301ce27ced7a47de7886fc3480f3cc1017",
+          "shape": [
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.k_proj.weight"
+        ],
+        "provider": "split_k64_bf16_serial_fp32_v1"
+      },
+      "previous_hash": "9480363a2bab9822b89177c1a0a602bcc81c34aea5e6affe43fcf226172fc802",
+      "record_hash": "3d327d797d3172146fb52f3bbccc2f07f535247b283a55b3edc0b441c8092522"
+    },
+    {
+      "index": 6,
+      "payload": {
+        "inputs": [
+          "layer.0.key.flat"
+        ],
+        "instruction_id": "i0011",
+        "instruction_sha256": "ea03c777c37e086eae439de233b7c1b033e9219c12678147a429b24d758b51a2",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "243e66b0a1163a0ce5591eb82702abf49e5b8e4148f5e0355a98fcdb86a25cdd",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "3d327d797d3172146fb52f3bbccc2f07f535247b283a55b3edc0b441c8092522",
+      "record_hash": "da26027dcf6824c7a6019218b3d2c8ae475822b9f39eed578e77c202b1844fe1"
+    },
+    {
+      "index": 7,
+      "payload": {
+        "inputs": [
+          "layer.0.attention.normalized"
+        ],
+        "instruction_id": "i0012",
+        "instruction_sha256": "aac8872bf2de0d63ff6d1a13fffb0eb3b7bd4960e388b1511d9a66054f9529b9",
+        "opcode": "LINEAR",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "e27aa2cddfd471daabda4817e3dda27fd1c443b6db74b797fd0992ff4b3042a5",
+          "shape": [
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.value.flat",
+        "parameter_refs": [
+          "model.layers.0.self_attn.v_proj.weight"
+        ],
+        "provider": "split_k64_bf16_serial_fp32_v1"
+      },
+      "previous_hash": "da26027dcf6824c7a6019218b3d2c8ae475822b9f39eed578e77c202b1844fe1",
+      "record_hash": "b0712c96cc07a3dbf6c0118f41cd2c419892444a9af9067790f96e82cc892335"
+    },
+    {
+      "index": 8,
+      "payload": {
+        "inputs": [
+          "layer.0.value.flat"
+        ],
+        "instruction_id": "i0013",
+        "instruction_sha256": "7aca9a78f22fdf0c14c64c53bd885c27512a8dc749e82d67ab31ab91de203f9b",
+        "opcode": "RESHAPE_TRANSPOSE_HEADS",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.value.heads",
+        "parameter_refs": [],
+        "provider": "independent_head_coordinate_map_v1"
+      },
+      "previous_hash": "b0712c96cc07a3dbf6c0118f41cd2c419892444a9af9067790f96e82cc892335",
+      "record_hash": "891f3958ba39c8860175f813fbcb6790810aa130af40403bb8b008f0ec0db35f"
+    },
+    {
+      "index": 9,
+      "payload": {
+        "inputs": [
+          "layer.0.query.heads"
+        ],
+        "instruction_id": "i0014",
+        "instruction_sha256": "3e84f435d1739324b5cb6296f836c403fce58569636ec4b4e97751eb31d6c473",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 30720,
+          "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+          "shape": [
+            1,
+            4,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.query.normalized",
+        "parameter_refs": [
+          "model.layers.0.self_attn.q_norm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "d9a373581d15dc7eedc42c3e10cc965465c3292e832fd60dcc6c995bcb722861"
+      },
+      "previous_hash": "891f3958ba39c8860175f813fbcb6790810aa130af40403bb8b008f0ec0db35f",
+      "record_hash": "58a1b558442583f188f8baaddc55ce0765ec881997d3c258c2fd8cb6505e7372"
+    },
+    {
+      "index": 10,
+      "payload": {
+        "inputs": [
+          "layer.0.key.heads"
+        ],
+        "instruction_id": "i0015",
+        "instruction_sha256": "81d945457fa483fcbd88fbe044a39ff44d3046f71cdd6a78064997136c77afa5",
+        "opcode": "RMS_NORM",
+        "output": {
+          "device": "cpu",
+          "dtype": "torch.bfloat16",
+          "kind": "tensor",
+          "layout": "torch.strided",
+          "numel": 7680,
+          "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+          "shape": [
+            1,
+            1,
+            30,
+            256
+          ]
+        },
+        "output_name": "layer.0.key.normalized",
+        "parameter_refs": [
+          "model.layers.0.self_attn.k_norm.weight"
+        ],
+        "provider": "source_vec4_warp32_and_explicit_rsqrt_lookup_v1",
+        "scalar_stages_sha256": "e3879875c24e804066531809d862400089a9cf03f1b4697b7b498dcd6d5ecf83"
+      },
+      "previous_hash": "58a1b558442583f188f8baaddc55ce0765ec881997d3c258c2fd8cb6505e7372",
+      "record_hash": "69ef77347ffba91a33c3ee4a5c574ed031f9981957a5a2e99363c79199f954d6"
+    }
+  ],
+  "rope_rotation_compared": false,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Connected fixed-input first-layer dependency slice through pre-RoPE normalized Q/K and V heads; independent numerical execution with an explicit empirical rsqrt lookup; not complete attention/layer/model or native-arithmetic qualification.",
+  "target_names": [
+    "layer.0.query.normalized",
+    "layer.0.key.normalized",
+    "layer.0.value.heads"
+  ],
+  "target_value_count": 46080,
+  "uses_empirical_rsqrt_specification": true,
+  "uses_framework_floating_arithmetic_in_slice": false,
+  "value_heads_comparison": "coordinate reinterpretation of captured original v_proj output; no floating arithmetic"
+}

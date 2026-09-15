@@ -1,0 +1,96 @@
+{
+  "acquisition_schedule": "one warm-up, one profiled/traced module call, and one untraced output control per repetition",
+  "angle_bits_sha256": "e035699abf76ecd6991376ba0ff55fa574def94ee3f387226707f987b3c675a1",
+  "angle_code_sha256": "921fa1a43b8c419bfd45a388bc767a4554fb71685d82c3d91a04f49d35e43945",
+  "attention_scaling": 1.0,
+  "finite_arithmetic_sha256": "66e58131242b25429b04a6aca95f110e6200ee7f1dcb3a8ff5b8552cfdf4ed2f",
+  "frequency": {
+    "device": "cuda:0",
+    "dtype": "torch.float32",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 128,
+    "sha256": "9d6a218d5b8c072c25488d8e17c5ec7c15004d207034006649a282ee038b6cf8",
+    "shape": [
+      128
+    ]
+  },
+  "global_exactness_activation_allowed": false,
+  "input_shape": [
+    1,
+    30,
+    640
+  ],
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "native_trigonometric_arithmetic_reconstructed": false,
+  "output_shape": [
+    1,
+    30,
+    256
+  ],
+  "plan_sha256": "9b4afe3ec7aeb7954873d05810457a20530cf27ac4a201b46f7125f02b86e269",
+  "position_instruction_sha256": "f4968d297cabf8b994401ae3c876ff0830a5e8af3fa90d92c322c83ebc2c70ae",
+  "positions": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29
+  ],
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "repetitions": 3,
+  "rotary_module_source_sha256": "f624a9f38bce5eb882ffc9fd1683268714a902ffa39a615de360fa589a7d6b26",
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Empirical fixed-position local RoPE table for one bound checkpoint, positions 0..29 and BF16 output; independently checked FP32 angles and casts, not reconstructed native trigonometric arithmetic.",
+  "table_instruction_sha256": "19de8a70f5718813afedec3c637c57441ec5ee1dae56d7e80cc8d44e2c3faac3",
+  "unseen_positions_allowed": false
+}

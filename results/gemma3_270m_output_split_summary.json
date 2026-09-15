@@ -1,0 +1,116 @@
+{
+  "base_plan_sha256": "8ed91b0c4e66c455491794038673cea72c2138a252e7da0f817e7cac02899ab1",
+  "base_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "code_sha256": "318cd439f7e698ee080bdcde89f70e7723de1c5a2cfcd67b7776c275f44ec92b",
+  "comparison": {
+    "aggregation_value_count": 30720,
+    "candidate_passes": false,
+    "checks": [
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      },
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      },
+      {
+        "original_concatenation_matches": true,
+        "projection_input_matches_prediction": true,
+        "pv_operands_match": true,
+        "returned_head_coordinates_match": true,
+        "source_inputs_match": true,
+        "untraced_concatenation_matches": true,
+        "untraced_head_coordinates_match": true,
+        "untraced_projection_matches": true
+      }
+    ],
+    "first_divergence": {
+      "coordinate": [
+        0,
+        0,
+        0
+      ],
+      "observed_bits": 49203,
+      "predicted_bits": 49202,
+      "repetition": 0,
+      "stage": "projected"
+    },
+    "full_first_layer_qualified": false,
+    "global_exactness_activation_allowed": false,
+    "hardware_semantics_established": false,
+    "mismatch_count": 22338,
+    "mismatch_counts": {
+      "concatenated": [
+        0,
+        0,
+        0
+      ],
+      "head_output": [
+        0,
+        0,
+        0
+      ],
+      "projected": [
+        7446,
+        7446,
+        7446
+      ]
+    },
+    "plan_sha256": "98a7fb9bd7e398701da44b0754e4f2084e51627aed747b2d1a32fdb2087d1f21",
+    "post_attention_norm_executed": false,
+    "prefix_independently_recomputed": false,
+    "projection_value_count": 19200,
+    "runtime": {
+      "allow_tf32": false,
+      "bf16_reduced_precision_reduction": true,
+      "capability": [
+        8,
+        9
+      ],
+      "cublas_workspace_config": null,
+      "cuda": "12.8",
+      "cuda_autocast_enabled": false,
+      "deterministic_algorithms": false,
+      "device": "NVIDIA GeForce RTX 4090",
+      "driver_version": "616.56",
+      "float32_matmul_precision": "highest",
+      "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+      "python": "3.11.9",
+      "torch": "2.7.1+cu128",
+      "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+      "transformers": "4.53.3"
+    },
+    "runtime_matches_plan": true,
+    "schema_version": 1
+  },
+  "fresh_holdout_validation": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "native_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "plan_sha256": "98a7fb9bd7e398701da44b0754e4f2084e51627aed747b2d1a32fdb2087d1f21",
+  "profile": [
+    64,
+    "bfloat16_rne",
+    "sequential_float32_rne"
+  ],
+  "schema_version": 1,
+  "scope": "Development-only K1024 output-projection transfer of the prior K64/BF16-partial/sequential-FP32 merge rule, selected after split-K kernel observation on the same fixed model case; not a fresh holdout or hardware partition proof.",
+  "selected_after_kernel_observation": true,
+  "source_report_sha256": "47f311a8b8027cbf9c2385e6417805991438319cc4ea114b0f9bf64a80da7f3d",
+  "split_projection_matches_case": false,
+  "summary_sha256": "59c80e4a42287452469f50c17c3482dd69f9018a0d6aca251a8cc29bcdc14cfa"
+}

@@ -1,0 +1,256 @@
+{
+  "bundle_sha256": "a0a11f15368c040dfe4c7271bec6d96a599ac542ed38021a854ab8a3c3b7760d",
+  "candidate_refitting_allowed": false,
+  "code_sha256": "5a505e193a42440cb166e4c5959655da4d7e8c413a18548479aadaf9bd2de2a1",
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "inputs": {
+    "layer.0.key.rotary": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 7680,
+      "sha256": "35ad7edffeaa0e620088f0dd1b09e1a23e58e29b9de09c2f5817d12a8bb08948",
+      "shape": [
+        1,
+        1,
+        30,
+        256
+      ]
+    },
+    "layer.0.query.rotary": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 30720,
+      "sha256": "d1f29cc87b2a2add7cdffcf5ef64c7e4e4d1770d96d2bd6ea60414a12d4cf5ac",
+      "shape": [
+        1,
+        4,
+        30,
+        256
+      ]
+    },
+    "layer.0.value.heads": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 7680,
+      "sha256": "1481f0811bc7e3bd4ed088ac92361142229db8ec79c9ec67ea310292bc176d4a",
+      "shape": [
+        1,
+        1,
+        30,
+        256
+      ]
+    }
+  },
+  "instructions": [
+    {
+      "attributes": {
+        "repetitions": 4
+      },
+      "id": "i0017",
+      "inputs": [
+        "layer.0.key.rotary"
+      ],
+      "instruction_sha256": "f4c09991b274c00417bc41acaa66c5f7f696108f1c526f63c90d3b0422ac47dd",
+      "layer": 0,
+      "opcode": "REPEAT_KV",
+      "outputs": [
+        "layer.0.key.repeated"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:REPEAT_KV"
+    },
+    {
+      "attributes": {},
+      "id": "i0019",
+      "inputs": [
+        "layer.0.query.rotary",
+        "layer.0.key.repeated"
+      ],
+      "instruction_sha256": "b828a89e6d45d132060ce69a66bc916ad8149e1085e7051847a28aede28c98b2",
+      "layer": 0,
+      "opcode": "MATMUL_QK",
+      "outputs": [
+        "layer.0.attention.unscaled_scores"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:MATMUL_QK"
+    },
+    {
+      "attributes": {
+        "scalar": 0.0625
+      },
+      "id": "i0020",
+      "inputs": [
+        "layer.0.attention.unscaled_scores"
+      ],
+      "instruction_sha256": "8c2b0f8296bc603027d4759df071171a39b668b3ecaba18afe81b00c67f50a8d",
+      "layer": 0,
+      "opcode": "SCALE",
+      "outputs": [
+        "layer.0.attention.scaled_scores"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:SCALE"
+    },
+    {
+      "attributes": {
+        "sequence_length": "S",
+        "sliding_window": 512
+      },
+      "id": "i0006",
+      "inputs": [
+        "input_ids",
+        "hidden.0"
+      ],
+      "instruction_sha256": "e2326281e14299ce058e4f73a80e99118d6d7dfb29cd89c90e8dbb864d074290",
+      "layer": null,
+      "opcode": "CAUSAL_MASK",
+      "outputs": [
+        "mask.sliding"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:CAUSAL_MASK"
+    },
+    {
+      "attributes": {
+        "output_dtype": "torch.bfloat16"
+      },
+      "id": "i0021",
+      "inputs": [
+        "layer.0.attention.scaled_scores",
+        "mask.sliding"
+      ],
+      "instruction_sha256": "e3f0f6c9c660cc4926e9bfc26c9e23f9c903d89681f7c67d67a3be1eebfcfb31",
+      "layer": 0,
+      "opcode": "ADD",
+      "outputs": [
+        "layer.0.attention.masked_scores"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:ADD"
+    }
+  ],
+  "plan_sha256": "e2667ec3d29e3ae19cc143f24c6860c607bbef0b36873e23c161b523331d00bc",
+  "predictions": {
+    "mask": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 900,
+      "sha256": "7b8c6819d4f6b2406541b05ad08ab24db71cc31d42728c6bac684f2d8ec40800",
+      "shape": [
+        1,
+        1,
+        30,
+        30
+      ]
+    },
+    "masked": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 3600,
+      "sha256": "dcfd0e8ec1a8525d323723b0a7a1a0d90dcadff0a8959d77ef3e7109b737c23d",
+      "shape": [
+        1,
+        4,
+        30,
+        30
+      ]
+    },
+    "scaled": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 3600,
+      "sha256": "9e796c1ac6b73c5e6f891e71d5cd0aac3c6ea1f88382152d9fe215287d2bdbb8",
+      "shape": [
+        1,
+        4,
+        30,
+        30
+      ]
+    },
+    "unscaled": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 3600,
+      "sha256": "bf601c41f52d755c1688d1a6388361dc2dc5bee7dbb91b585221ab18c58c4dee",
+      "shape": [
+        1,
+        4,
+        30,
+        30
+      ]
+    }
+  },
+  "prefix_boundary_reused": true,
+  "profile": {
+    "dot": {
+      "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+      "carry_conversion": "float32 toward zero after every K8",
+      "final_conversion": "bfloat16 RNE",
+      "half_order": "lower_then_upper",
+      "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+      "precision_bits": 25,
+      "quantization": "toward_zero"
+    },
+    "mask_bits": 65407,
+    "reduction_length": 256,
+    "scale_bits": 15744
+  },
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Frozen first-layer attention-score candidate on verified serialized RoPE boundaries; independent K256 dot, BF16 scale and causal-mask prediction; original forward stopped before softmax; not generic batched-GEMM or full-layer qualification.",
+  "scope_transfer_prequalified": false,
+  "score_count": 3600,
+  "softmax_executed": false,
+  "sources": {
+    "lookup_evidence": {
+      "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+      "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+      "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+      "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+      "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+    },
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "rotary_bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+    "rotary_execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+    "rotary_plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+    "rotary_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+    "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+  }
+}

@@ -37,6 +37,255 @@ class ReferenceGemmaTests(unittest.TestCase):
         self.model.config._attn_implementation = "eager"
         self.input_ids = torch.tensor([[2, 4, 5, 6]], dtype=torch.long)
 
+    def test_projection_prefix_stops_before_linear_and_binds_weights(self) -> None:
+        from unittest.mock import patch
+        from bioprocess_runtime.gemma_ir import compile_gemma_ir
+        from bioprocess_runtime.gemma_ir_interpreter import bind_model_tensors, _projection_prefix
+        from bioprocess_runtime.operational_semantics import build_architecture_manifest, verify_trace_chain
+
+        tokenizer = type("Tokenizer", (), {"vocab_size": 32, "bos_token_id": 2, "eos_token_id": 1, "pad_token_id": 0})()
+        with tempfile.TemporaryDirectory() as directory:
+            program = compile_gemma_ir(build_architecture_manifest(self.model, tokenizer, Path(directory)))
+        parameters = bind_model_tensors(program, self.model)
+        with self.torch.no_grad(), patch("torch.nn.functional.linear", side_effect=AssertionError("Projection executed before prediction")):
+            normalized, records = _projection_prefix(program, parameters, self.input_ids)
+            expected = self.model.model.layers[0].input_layernorm(self.model.model.embed_tokens(self.input_ids))
+        self.assertTrue(self.torch.equal(normalized, expected))
+        self.assertEqual([record["payload"]["opcode"] for record in records], ["EMBEDDING", "SCALE", "RMS_NORM"])
+        self.assertTrue(verify_trace_chain(records)["valid"])
+        with self.assertRaises(ValueError):
+            _projection_prefix(program, parameters, self.torch.tensor([[32]], dtype=self.torch.int64))
+        with self.torch.no_grad():
+            self.model.model.layers[0].self_attn.q_proj.weight[0, 0] += 1
+        with self.assertRaises(ValueError):
+            bind_model_tensors(program, self.model)
+
+    def test_projection_slice_reports_exact_coordinates_and_prefix_failures(self) -> None:
+        from bioprocess_runtime.gemma_ir_interpreter import _projection_slice_report, _projection_bits_tensor, PROJECTION_SLICE_ROLES
+
+        predictions = {role: [[[0] * width for _ in range(30)]] for role, _, width in PROJECTION_SLICE_ROLES}
+        bundle = {"prediction_bits": predictions}
+        plan = {"plan_sha256": "synthetic", "bundle_sha256": "synthetic", "normalized_input": {"sha256": "synthetic"}, "runtime": {},
+                "projection_records": {role: {"expected_kernel_names": ["synthetic"], "expected_environment": {}} for role, _, _ in PROJECTION_SLICE_ROLES}}
+        observed = {role: {"bits": [copy.deepcopy(predictions[role]) for _ in range(3)], "kernel_names": [["synthetic"]] * 3} for role, _, _ in PROJECTION_SLICE_ROLES}
+        observed["value"]["bits"][1][0][29][255] = 1
+        report = _projection_slice_report(plan, bundle, observed, plan["normalized_input"], {})
+        self.assertEqual(report["mismatch_count"], 1)
+        self.assertEqual(report["first_divergence"], {"role": "value", "repetition": 1, "row": 29, "column": 255, "predicted_bits": 0, "observed_bits": 1})
+        self.assertFalse(report["slice_passes_declared_comparison"])
+        self.assertFalse(report["full_first_layer_qualified"])
+        report = _projection_slice_report(plan, bundle, observed, {"sha256": "different"}, {})
+        self.assertEqual(report["first_divergence"], "shared_prefix")
+        for bits in ([[[True, 0]]], [[[1.5, 0]]], [[[0]]]):
+            with self.assertRaises(ValueError):
+                _projection_bits_tensor(bits, [1, 1, 2], "cpu")
+
+    def test_actual_projection_summary_preserves_scope_and_output_hashes(self) -> None:
+        import json
+        from bioprocess_runtime.serialization import canonical_json
+
+        root = Path(__file__).resolve().parent.parent
+        plan = json.loads((root / "results/gemma3_270m_projection_slice_plan.json").read_text(encoding="utf-8"))
+        summary = json.loads((root / "results/gemma3_270m_projection_slice_summary.json").read_text(encoding="utf-8"))
+        body = {key: value for key, value in summary.items() if key != "summary_sha256"}
+        self.assertEqual(summary["summary_sha256"], hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest())
+        self.assertEqual(summary["plan_sha256"], plan["plan_sha256"])
+        self.assertEqual(summary["compared_values_per_repetition"], 46080)
+        self.assertEqual(summary["mismatch_count"], 0)
+        self.assertTrue(summary["original_prefix_matches_shared_ir"])
+        for role in ("query", "key", "value"):
+            self.assertEqual(summary["observed_output_hashes"][role], [plan["projection_records"][role]["prediction"]["sha256"]] * 3)
+        self.assertFalse(summary["full_first_layer_qualified"])
+        self.assertFalse(summary["full_model_independently_qualified"])
+        self.assertFalse(summary["global_exactness_activation_allowed"])
+
+    def test_actual_projection_artifact_integrity_rejects_tampering(self) -> None:
+        import json
+        from bioprocess_runtime.gemma_ir_interpreter import verify_projection_slice, projection_slice_summary
+        from bioprocess_runtime.serialization import canonical_json
+
+        root = Path(__file__).resolve().parent.parent
+        bundle_path = root / "artifacts/gemma3_270m_projection_slice_predictions.json"
+        report_path = root / "artifacts/gemma3_270m_projection_slice_report.json"
+        if not bundle_path.exists() or not report_path.exists():
+            self.skipTest("Tensor-rich projection artifacts are intentionally not committed")
+        program = json.loads((root / "results/gemma3_270m_execution_ir.json").read_text(encoding="utf-8"))
+        plan = json.loads((root / "results/gemma3_270m_projection_slice_plan.json").read_text(encoding="utf-8"))
+        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        verified = verify_projection_slice(program, plan, bundle, report)
+        self.assertTrue(verified["valid"], verified)
+        self.assertEqual(projection_slice_summary(plan, report), json.loads((root / "results/gemma3_270m_projection_slice_summary.json").read_text(encoding="utf-8")))
+        damaged = copy.deepcopy(report)
+        damaged["observations"]["key"]["bits"][0][0][29][255] ^= 1
+        damaged["report_sha256"] = hashlib.sha256(canonical_json({k: v for k, v in damaged.items() if k != "report_sha256"}).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_projection_slice(program, plan, bundle, damaged)["valid"])
+        damaged_plan = copy.deepcopy(plan)
+        damaged_plan["projection_records"]["query"]["numerical_provider"] = "unbound_override"
+        damaged_plan["plan_sha256"] = hashlib.sha256(canonical_json({k: v for k, v in damaged_plan.items() if k != "plan_sha256"}).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_projection_slice(program, damaged_plan, bundle, report)["valid"])
+        damaged_plan = copy.deepcopy(plan)
+        damaged_plan["shared_prefix_independently_qualified"] = True
+        damaged_plan["plan_sha256"] = hashlib.sha256(canonical_json({k: v for k, v in damaged_plan.items() if k != "plan_sha256"}).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_projection_slice(program, damaged_plan, bundle, report)["valid"])
+
+        from argparse import Namespace
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+        from bioprocess_runtime.cli import command_projection_slice
+
+        args = Namespace(operation="run", program=root / "results/gemma3_270m_execution_ir.json", fixture=root / "results/gemma3_270m_ir_execution_summary.json",
+                         query_evidence=root / "results/gemma3_270m_wide_query_holdout.json", split_evidence=root / "results/gemma3_270m_dense_split_holdout.json",
+                         plan=root / "results/gemma3_270m_projection_slice_plan.json", bundle=bundle_path, output=Path("synthetic-report"), summary=None, model_path=Path("synthetic-model"))
+        stdout = StringIO()
+        with patch("torch.cuda.is_available", return_value=True), patch("transformers.AutoModelForCausalLM.from_pretrained"), patch("bioprocess_runtime.gemma_ir_interpreter.acquire_projection_slice", return_value=report), patch.object(Path, "mkdir"), patch.object(Path, "write_text") as writer, redirect_stdout(stdout):
+            self.assertEqual(command_projection_slice(args), 0)
+        writer.assert_called_once()
+        self.assertEqual(json.loads(writer.call_args.args[0]), report)
+        printed = json.loads(stdout.getvalue())
+        self.assertNotIn("observations", printed)
+        self.assertEqual(printed["source_report_sha256"], report["report_sha256"])
+
+    def test_projection_cli_protects_sources_and_prediction_bundle(self) -> None:
+        from argparse import Namespace
+        from bioprocess_runtime.cli import command_projection_slice
+
+        args = Namespace(operation="plan", program=Path("program"), fixture=Path("fixture"), query_evidence=Path("query"),
+                         split_evidence=Path("split"), output=Path("program"), bundle=Path("bundle"), summary=None)
+        with self.assertRaises(ValueError):
+            command_projection_slice(args)
+        args.output = args.bundle
+        with self.assertRaises(ValueError):
+            command_projection_slice(args)
+        args.operation, args.plan = "run", Path("plan")
+        with self.assertRaises(ValueError):
+            command_projection_slice(args)
+        args.operation, args.report, args.summary = "verify", Path("report"), args.program
+        with self.assertRaises(ValueError):
+            command_projection_slice(args)
+
+    def test_rms_float32_roots_and_source_reduction_schedule(self) -> None:
+        from fractions import Fraction
+        from bioprocess_runtime.reference_gemma import rms_root_bits, rms_sum_bits, _rms_f32_value, _rms_f32_round
+
+        self.assertEqual(rms_root_bits(0x40800000, "rsqrt_rne"), 0x3F000000)
+        self.assertEqual(rms_root_bits(0x40800000, "sqrt_rne_then_reciprocal_rne"), 0x3F000000)
+        for bits in (1, 0x3DCCCCCD, 0x40400000, 0x7F7FFFFF):
+            result = rms_root_bits(bits, "rsqrt_rne")
+            value = _rms_f32_value(bits)
+            lower_midpoint = (_rms_f32_value(result - 1) + _rms_f32_value(result)) / 2
+            upper_midpoint = (_rms_f32_value(result) + _rms_f32_value(result + 1)) / 2
+            self.assertLessEqual(lower_midpoint * lower_midpoint * value, 1)
+            self.assertGreaterEqual(upper_midpoint * upper_midpoint * value, 1)
+        values = [0x3F800000] + [_rms_f32_round(Fraction(1, 1 << 24))] * 255
+        self.assertEqual(rms_sum_bits(values, "sequential_float32"), 0x3F800000)
+        self.assertEqual(rms_sum_bits(values, "source_vec4_warp32"), 0x3F80007F)
+        self.assertEqual(rms_sum_bits(values, "exact_sum_float32"), 0x3F800080)
+        for bits in (0, 0x80000000, 0xBF800000, 0x7F800000):
+            with self.assertRaises(ValueError):
+                rms_root_bits(bits, "rsqrt_rne")
+
+    def test_rms_row_rounding_and_signed_zero(self) -> None:
+        from bioprocess_runtime.reference_gemma import rms_row_candidate
+
+        result = rms_row_candidate([0x3F80] * 256, [0] * 256, 1e-6, "source_vec4_warp32", "rsqrt_rne")
+        self.assertEqual(result["mean_bits"], 0x3F800000)
+        self.assertEqual(result["output_bits"], [0x3F80] * 256)
+        zeros = rms_row_candidate([0x8000] + [0] * 255, [0] * 256, 1e-6, "source_vec4_warp32", "rsqrt_rne")
+        self.assertEqual(zeros["output_bits"], [0x8000] + [0] * 255)
+        with self.assertRaises(ValueError):
+            rms_row_candidate([0] * 16, [0] * 16, 1e-6, "source_vec4_warp32", "rsqrt_rne")
+
+    def test_rms_stage_capture_observes_original_module_without_changing_output(self) -> None:
+        from bioprocess_runtime.reference_gemma import _observe_rms_module, _rms_tensor_f32_bits
+
+        with self.torch.no_grad():
+            values = self.model.model.embed_tokens(self.input_ids)
+            module = self.model.model.layers[0].input_layernorm
+            expected = module(values)
+            output, stages = _observe_rms_module(module, values)
+            mean = values.float().pow(2).mean(-1, keepdim=True)
+        self.assertTrue(self.torch.equal(output, expected))
+        self.assertEqual(stages["mean_bits"], _rms_tensor_f32_bits(mean))
+        self.assertEqual(stages["mean_input_metadata"]["axes"], [-1])
+        self.assertEqual(len(stages["rsqrt_bits"]), 4)
+
+    def test_rms_summary_separates_output_agreement_from_stage_conformance(self) -> None:
+        import json
+        from bioprocess_runtime.serialization import canonical_json
+
+        root = Path(__file__).resolve().parent.parent
+        summary = json.loads((root / "results/gemma3_270m_rms_slice_summary.json").read_text(encoding="utf-8"))
+        self.assertEqual(summary["summary_sha256"], hashlib.sha256(canonical_json({k: v for k, v in summary.items() if k != "summary_sha256"}).encode("utf-8")).hexdigest())
+        self.assertFalse(summary["all_stages_candidate_passes"])
+        self.assertEqual(summary["fully_matching_profiles"], [])
+        self.assertTrue(summary["actual_inputs_match_plan"])
+        self.assertTrue(summary["source_template_geometry_matches"])
+        for role, root_failures in (("input_norm", 8), ("query_norm", 30), ("key_norm", 5)):
+            candidate = summary["comparisons"][role]["source_vec4_warp32:rsqrt_rne"]
+            self.assertEqual(candidate["output_mismatch_count"], 0)
+            self.assertEqual(candidate["stage_mismatch_counts"]["mean_bits"], [0] * 3)
+            self.assertEqual(candidate["stage_mismatch_counts"]["denominator_bits"], [0] * 3)
+            self.assertEqual(candidate["stage_mismatch_counts"]["rsqrt_bits"], [root_failures] * 3)
+        self.assertFalse(summary["global_exactness_activation_allowed"])
+
+    def test_rms_artifact_integrity_and_tamper_rejection(self) -> None:
+        import json
+        from bioprocess_runtime.reference_gemma import verify_rms_slice, rms_slice_summary, check_rms_projection_source
+        from bioprocess_runtime.serialization import canonical_json
+
+        root = Path(__file__).resolve().parent.parent
+        bundle_path, report_path = root / "artifacts/gemma3_270m_rms_slice_predictions.json", root / "artifacts/gemma3_270m_rms_slice_report.json"
+        if not bundle_path.exists() or not report_path.exists():
+            self.skipTest("Tensor-rich RMS artifacts are intentionally not committed")
+        program = json.loads((root / "results/gemma3_270m_execution_ir.json").read_text(encoding="utf-8"))
+        plan = json.loads((root / "results/gemma3_270m_rms_slice_plan.json").read_text(encoding="utf-8"))
+        bundle, report = json.loads(bundle_path.read_text(encoding="utf-8")), json.loads(report_path.read_text(encoding="utf-8"))
+        result = verify_rms_slice(program, plan, bundle, report)
+        self.assertTrue(result["valid"], result)
+        self.assertFalse(result["all_stages_candidate_passes"])
+        projection_sources = [json.loads((root / path).read_text(encoding="utf-8")) for path in ("results/gemma3_270m_projection_slice_plan.json", "artifacts/gemma3_270m_projection_slice_predictions.json", "results/gemma3_270m_projection_slice_summary.json")]
+        check_rms_projection_source(program, *projection_sources, plan)
+        wrong_input = copy.deepcopy(plan)
+        wrong_input["roles"]["query_norm"]["input"]["sha256"] = "0" * 64
+        with self.assertRaises(ValueError):
+            check_rms_projection_source(program, *projection_sources, wrong_input)
+        self.assertEqual(rms_slice_summary(plan, report), json.loads((root / "results/gemma3_270m_rms_slice_summary.json").read_text(encoding="utf-8")))
+        for role in report["observations"]:
+            repetitions = report["observations"][role]["repetitions"]
+            self.assertEqual(repetitions[0], repetitions[1])
+            self.assertEqual(repetitions[1], repetitions[2])
+        damaged = copy.deepcopy(report)
+        damaged["all_stages_candidate_passes"] = True
+        damaged["report_sha256"] = hashlib.sha256(canonical_json({k: v for k, v in damaged.items() if k != "report_sha256"}).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_rms_slice(program, plan, bundle, damaged)["valid"])
+        damaged = copy.deepcopy(report)
+        predicted = bundle["roles"]["input_norm"]["predictions"]["source_vec4_warp32:rsqrt_rne"]["rsqrt_bits"][0]
+        observed = damaged["observations"]["input_norm"]["repetitions"][0]["rsqrt_bits"][0]
+        damaged["observations"]["input_norm"]["repetitions"][0]["rsqrt_bits"][0] = predicted if observed != predicted else predicted ^ 1
+        damaged["report_sha256"] = hashlib.sha256(canonical_json({k: v for k, v in damaged.items() if k != "report_sha256"}).encode("utf-8")).hexdigest()
+        self.assertFalse(verify_rms_slice(program, plan, bundle, damaged)["valid"])
+
+        from argparse import Namespace
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+        from bioprocess_runtime.cli import command_rms_slice
+
+        args = Namespace(operation="run", program=root / "results/gemma3_270m_execution_ir.json", projection_plan=root / "results/gemma3_270m_projection_slice_plan.json",
+                         projection_bundle=root / "artifacts/gemma3_270m_projection_slice_predictions.json", projection_summary=root / "results/gemma3_270m_projection_slice_summary.json",
+                         plan=root / "results/gemma3_270m_rms_slice_plan.json", bundle=bundle_path, report=report_path, output=Path("synthetic-rms-report"), summary=None, model_path=Path("synthetic-model"))
+        stdout = StringIO()
+        with patch("torch.cuda.is_available", return_value=True), patch("transformers.AutoModelForCausalLM.from_pretrained"), patch("bioprocess_runtime.reference_gemma.acquire_rms_slice", return_value=report), patch.object(Path, "mkdir"), patch.object(Path, "write_text") as writer, redirect_stdout(stdout):
+            self.assertEqual(command_rms_slice(args), 1)
+        writer.assert_called_once()
+        self.assertEqual(json.loads(writer.call_args.args[0]), report)
+        self.assertNotIn("observations", json.loads(stdout.getvalue()))
+        args.operation, args.reexecute = "verify", False
+        with redirect_stdout(StringIO()):
+            self.assertEqual(command_rms_slice(args), 0)
+
     def test_independent_orchestration_exactly_matches_eager_boundaries(self) -> None:
         from bioprocess_runtime.reference_gemma import fixed_input_equivalence_certificate
 

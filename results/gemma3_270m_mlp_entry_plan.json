@@ -1,0 +1,215 @@
+{
+  "activation_values_used_by_predictor": false,
+  "bundle_sha256": "abc9fcbf7ad180d65cd39f6fe4d7366741a96bf8e50a7846d380294a3c33b506",
+  "candidate_refitting_allowed": false,
+  "code_sha256": "a03cb99cd2ea1ac78387f9fbb903f5d2ece920d88352f8c0d0164a7e1cb98694",
+  "down_projection_executed": false,
+  "full_first_layer_qualified": false,
+  "gate_activation_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "input": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 19200,
+    "sha256": "6478956acb59fa71ff4663ad132cafcee4e33c2cd20f1a9e4d4c65a2a629bf0e",
+    "shape": [
+      1,
+      30,
+      640
+    ]
+  },
+  "instructions": [
+    {
+      "attributes": {
+        "epsilon": 1e-06
+      },
+      "id": "i0028",
+      "inputs": [
+        "layer.0.post_attention_residual"
+      ],
+      "instruction_sha256": "e74754ecb131f866315a9503357ec2a66415611ce92693f92e1941a8bb46d08b",
+      "layer": 0,
+      "opcode": "RMS_NORM",
+      "outputs": [
+        "layer.0.mlp.normalized"
+      ],
+      "parameter_refs": [
+        "model.layers.0.pre_feedforward_layernorm.weight"
+      ],
+      "semantics": "gemma-ir-semantics-v1:RMS_NORM"
+    },
+    {
+      "attributes": {},
+      "id": "i0029",
+      "inputs": [
+        "layer.0.mlp.normalized"
+      ],
+      "instruction_sha256": "5ef8431953570c788d7918fb0d405f1500efd8d9d35a4c6d9ff382ee8422aac4",
+      "layer": 0,
+      "opcode": "LINEAR",
+      "outputs": [
+        "layer.0.mlp.gate"
+      ],
+      "parameter_refs": [
+        "model.layers.0.mlp.gate_proj.weight"
+      ],
+      "semantics": "gemma-ir-semantics-v1:LINEAR"
+    },
+    {
+      "attributes": {},
+      "id": "i0030",
+      "inputs": [
+        "layer.0.mlp.normalized"
+      ],
+      "instruction_sha256": "96655ffaa7e59f3ff40d85c47aa168703198c3b1132f51b4436d5373e431d84c",
+      "layer": 0,
+      "opcode": "LINEAR",
+      "outputs": [
+        "layer.0.mlp.up"
+      ],
+      "parameter_refs": [
+        "model.layers.0.mlp.up_proj.weight"
+      ],
+      "semantics": "gemma-ir-semantics-v1:LINEAR"
+    }
+  ],
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "native_gate_activation_executes_before_up": true,
+  "norm_weight": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 640,
+    "sha256": "cfcfca0324e99ae8213996d96b45390b31906382fb6afdb944289826c24c1b05",
+    "shape": [
+      640
+    ]
+  },
+  "normalization_value_count": 19200,
+  "plan_sha256": "50a87661357f0cf7734000fb810ab9b36c339e9b2e8516a096eedf5939c3d9b3",
+  "predictions": {
+    "gate": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "d7271523f445c1a1a56994ea91dd2afccfd6c067c1b4ad5960d3eac6e2fba592",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    },
+    "normalized": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 19200,
+      "sha256": "28527fa3df0b3c914c721298a06e573681a1c6580dd4b08de7eec9cff784090a",
+      "shape": [
+        1,
+        30,
+        640
+      ]
+    },
+    "up": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 61440,
+      "sha256": "1613f0a0f19ee3c10b004c379eaef66784aef45e79571ed5c1355dece10cb040",
+      "shape": [
+        1,
+        30,
+        2048
+      ]
+    }
+  },
+  "prefix_boundary_reused": true,
+  "product_executed": false,
+  "profile": {
+    "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+    "carry_conversion": "float32 toward zero after every K8",
+    "final_conversion": "bfloat16 RNE",
+    "half_order": "lower_then_upper",
+    "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+    "precision_bits": 25,
+    "quantization": "toward_zero"
+  },
+  "projection_value_count": 122880,
+  "projection_weights": {
+    "gate": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 1310720,
+      "sha256": "09df5fd80d03928ce325d8dd0fececa6e24b0e775facc6d82d651e0dda8e8484",
+      "shape": [
+        2048,
+        640
+      ]
+    },
+    "up": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 1310720,
+      "sha256": "22cc1e8adeab0bed132921ac6eeba7dbc742c330f9f0e8bd99b6c8caeee88958",
+      "shape": [
+        2048,
+        640
+      ]
+    }
+  },
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "scalar_stage_positions": 90,
+  "scalar_stages_sha256": "4abd382158c52699ad55ac2b2f3dc28e8435b6ca7258d7f1c3f7a44e931ef631",
+  "schema_version": 1,
+  "scope": "Fixed-input pre-feedforward lookup RMS and independent K640 serial operand-aligned gate/up predictions from verified residual boundaries; original gate activation executes but is not qualified; stops before activation/up multiplication and down projection.",
+  "shape_transfer_prequalified": false,
+  "sources": {
+    "lookup_evidence": {
+      "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+      "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+      "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+      "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+      "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+    },
+    "post_bundle_sha256": "74b27c8b2b1b56409a227f6d7466c54e4728293cb040af04cf3e2b3b66e982ab",
+    "post_plan_sha256": "507afc11a6711aec2892d5b3c247c7f1b95efad930425eff6467907d2a04f54c",
+    "post_report_sha256": "f02f096fbed9c4e0958fe98e0d27ef6705837f619fe3027b751405b548a87f50",
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+  }
+}

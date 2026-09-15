@@ -1,0 +1,45 @@
+{
+  "base_exponent_fields": [
+    127,
+    128
+  ],
+  "chunk_size": 1048576,
+  "entry_count": 16777216,
+  "expected_kernel_names": [
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+  ],
+  "format": "little-endian uint32 float32 output encodings",
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "lookup_code_sha256": "ea304d5a52e41c25b769ef85c976ef7310a63ab5a14417266c40ca7dcb7a221a",
+  "native_arithmetic_reconstructed": false,
+  "normalized_input_start": 1065353216,
+  "outside_base_domain_enabled": false,
+  "plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit empirical float32 rsqrt lookup/scaling specification for a pinned runtime; normalized table data are observed, not a reconstruction of NVIDIA arithmetic.",
+  "source_rms_report_sha256": "3468b2595dac4c0a3773c03f58a5d0a1fd623cf4e8a80f668dd25c5487147acd",
+  "source_rms_summary_sha256": "e00ea8c17f7637b6610e5108b3c5cfcdda77d4bf55818815ec2cb8fed6acc386",
+  "table_bytes": 67108864
+}

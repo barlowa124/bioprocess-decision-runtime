@@ -1,0 +1,331 @@
+{
+  "acquisition_schedule": [
+    {
+      "bias": null,
+      "call": 0,
+      "mode": "untraced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 0
+    },
+    {
+      "bias": null,
+      "call": 1,
+      "mode": "traced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 0
+    },
+    {
+      "bias": null,
+      "call": 2,
+      "mode": "untraced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 1
+    },
+    {
+      "bias": null,
+      "call": 3,
+      "mode": "traced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 1
+    },
+    {
+      "bias": null,
+      "call": 4,
+      "mode": "untraced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 2
+    },
+    {
+      "bias": null,
+      "call": 5,
+      "mode": "traced",
+      "operator": "torch.nn.functional.linear",
+      "repetition": 2
+    }
+  ],
+  "candidate": {
+    "chunk_size": 192,
+    "id": "k192:bfloat16_rne:sequential_float32_rne",
+    "merge": "sequential_float32_rne",
+    "partial_format": "bfloat16_rne",
+    "partitions": [
+      [
+        0,
+        192
+      ],
+      [
+        192,
+        384
+      ],
+      [
+        384,
+        576
+      ],
+      [
+        576,
+        768
+      ],
+      [
+        768,
+        960
+      ],
+      [
+        960,
+        1152
+      ],
+      [
+        1152,
+        1344
+      ],
+      [
+        1344,
+        1536
+      ],
+      [
+        1536,
+        1728
+      ],
+      [
+        1728,
+        1920
+      ],
+      [
+        1920,
+        2048
+      ]
+    ]
+  },
+  "candidate_passes_dense_holdout": true,
+  "candidate_refitting_allowed": false,
+  "checks": [
+    {
+      "kernel_names_match": true,
+      "same_cuda_device": true,
+      "traced_linear_identity_matches": true,
+      "traced_operand_identity_unchanged": true,
+      "traced_output_geometry_matches": true,
+      "traced_runtime_matches": true,
+      "traced_schedule_matches": true,
+      "traced_source_matches": true,
+      "traced_source_operands_match": true,
+      "untraced_linear_identity_matches": true,
+      "untraced_operand_identity_unchanged": true,
+      "untraced_output_geometry_matches": true,
+      "untraced_output_matches": true,
+      "untraced_runtime_matches": true,
+      "untraced_schedule_matches": true,
+      "untraced_source_matches": true,
+      "untraced_source_operands_match": true
+    },
+    {
+      "kernel_names_match": true,
+      "same_cuda_device": true,
+      "traced_linear_identity_matches": true,
+      "traced_operand_identity_unchanged": true,
+      "traced_output_geometry_matches": true,
+      "traced_runtime_matches": true,
+      "traced_schedule_matches": true,
+      "traced_source_matches": true,
+      "traced_source_operands_match": true,
+      "untraced_linear_identity_matches": true,
+      "untraced_operand_identity_unchanged": true,
+      "untraced_output_geometry_matches": true,
+      "untraced_output_matches": true,
+      "untraced_runtime_matches": true,
+      "untraced_schedule_matches": true,
+      "untraced_source_matches": true,
+      "untraced_source_operands_match": true
+    },
+    {
+      "kernel_names_match": true,
+      "same_cuda_device": true,
+      "traced_linear_identity_matches": true,
+      "traced_operand_identity_unchanged": true,
+      "traced_output_geometry_matches": true,
+      "traced_runtime_matches": true,
+      "traced_schedule_matches": true,
+      "traced_source_matches": true,
+      "traced_source_operands_match": true,
+      "untraced_linear_identity_matches": true,
+      "untraced_operand_identity_unchanged": true,
+      "untraced_output_geometry_matches": true,
+      "untraced_output_matches": true,
+      "untraced_runtime_matches": true,
+      "untraced_schedule_matches": true,
+      "untraced_source_matches": true,
+      "untraced_source_operands_match": true
+    }
+  ],
+  "code_sha256": "d303133ab8e5e8984edda37df77f6b7b3b630e084de9e17fa552339a9da8777b",
+  "complete_matrix_compared": true,
+  "family_mismatch_counts": {
+    "dense": {
+      "traced": [
+        0,
+        0,
+        0
+      ],
+      "untraced": [
+        0,
+        0,
+        0
+      ]
+    },
+    "row_anchored_cancellation": {
+      "traced": [
+        0,
+        0,
+        0
+      ],
+      "untraced": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "first_divergence": null,
+  "fresh_model_prompt_holdout": false,
+  "full_first_layer_qualified": false,
+  "generic_domain_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "hardware_semantics_established": false,
+  "input_row_count": 30,
+  "intermediate_values_observed": false,
+  "kernel_names": [
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ],
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ],
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ]
+  ],
+  "kernel_provenance": "distinct-symbol-set-only; launch order not established",
+  "linear_call_count": 6,
+  "mismatch_counts": [
+    0,
+    0,
+    0
+  ],
+  "model_down_predictions_recomputed": false,
+  "native_fused_partials_observed": false,
+  "native_registers_observed": false,
+  "observed_output_hashes": {
+    "traced": [
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29",
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29",
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29"
+    ],
+    "untraced": [
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29",
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29",
+      "8c3e110750c9218edbaae35a7a84da10ffbff3d22fcd333b06b29a29904f8c29"
+    ]
+  },
+  "original_model_revalidated": false,
+  "pairing_mismatch_counts": {
+    "across_halves": {
+      "traced": [
+        0,
+        0,
+        0
+      ],
+      "untraced": [
+        0,
+        0,
+        0
+      ]
+    },
+    "adjacent": {
+      "traced": [
+        0,
+        0,
+        0
+      ],
+      "untraced": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "plan_sha256": "fe9b0560b23c88047ab47251a1350e9141b7f2481e971d852e6aab02ee847637",
+  "prediction_based_case_selection": false,
+  "prefix_independently_recomputed": false,
+  "qualification_promotion_allowed": false,
+  "repeated_outputs_identical": true,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Empirical synthetic fixed-shape dense non-repeated K2048 holdout of the unchanged K192/BF16-partial/sequential-FP32 candidate; all 19200 outputs, not all possible values, a new model-prompt holdout, full-layer qualification, or hardware proof. Native fused partials and registers are unobserved. Kernel provenance is distinct-symbol-set evidence only, not launch order.",
+  "scope_abstained": false,
+  "seed": 2805751321,
+  "source_report_sha256": "2eb0399bcc8f9e00884ae6534b02c2bf676e5788935632675ec414d0b63744d2",
+  "sources": {
+    "down_sources": {
+      "probe_binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
+      "probe_bundle_sha256": "e25c356ba7c5014450e8ad96e60fbffa5248dedb991da2a3a411caf6d3ca0ac1",
+      "probe_plan_sha256": "90c5793b9f40405a8beda303fee9b8fe92fdc08a5d7a0489f2eaa58f6e247866",
+      "probe_report_sha256": "46e676cb8f0c9316955ba3b95c0368e5523c4a3093f3818531744d0cfda3a62d",
+      "product_bundle_sha256": "c51f26f7250e6091610f51e7c92b2d55e570a02f3c262886218c010048cac7cc",
+      "product_plan_sha256": "fe8209847e914d7e67858a9bba0d5bbe7e9639a185521fc332847eb954c6c542",
+      "product_report_sha256": "5782ca9b5cf0911c5e561b483e36ad497b82d6f19654ba9ed8dd4670f07c89dd",
+      "product_sources": {
+        "entry_bundle_sha256": "abc9fcbf7ad180d65cd39f6fe4d7366741a96bf8e50a7846d380294a3c33b506",
+        "entry_plan_sha256": "50a87661357f0cf7734000fb810ab9b36c339e9b2e8516a096eedf5939c3d9b3",
+        "entry_report_sha256": "4885b19ced0103828ff78318f74a9506ea4aedc83b0d1a57f76df16f8cc34fca",
+        "gelu_evidence": {
+          "layout_report_sha256": "10dd475e3c32b2291d2a9376d4ae13c3e4b7f7ddb8636d6e73f65ab058b1926a",
+          "table_manifest_sha256": "42d4b550ed39314969da7483f9aa6f8a6abc98ee088d8e4573bf10a781d7863b",
+          "table_plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+          "table_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf"
+        },
+        "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+      },
+      "product_summary_sha256": "55732c53ad6042ccf9c9fb59a5f4be54e4f07564af67f955c1dda5b1526683f2",
+      "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+    },
+    "model_bundle_sha256": "3c8dcd60014d2c4461b56fd8f743e4f77bba4377afa328d70e6ae13a64181de1",
+    "model_plan_sha256": "69f92762b842c5818a52007e00a2115f30c1b1fa31dafefc981342792c5b9208",
+    "model_report_sha256": "8befebf82b977194c43af9e1f98120ec9228a566873362b0360557b560bdfbb1",
+    "model_summary_sha256": "9d0c3be77ce806bdcffe86a3215946cc62d7a2829a56b20da75ecfa5d801fe3b",
+    "model_verification_mode": "passing_v2_down_integrity_lineage_and_geometry_only_no_down_numerical_recomputation"
+  },
+  "split_boundaries_observed": false,
+  "status": "passed",
+  "summary_sha256": "4656f3351de4a644c28bf562b691cfd463fbfd806ca4cc8dc7e22537770bc8e5",
+  "untraced_mismatch_counts": [
+    0,
+    0,
+    0
+  ],
+  "value_count": 19200,
+  "vectors_disjoint_from_declared_sources": true,
+  "weight_vector_count": 640
+}

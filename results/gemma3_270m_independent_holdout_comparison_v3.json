@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "kind": "predeclared_full_target_holdout_comparison_summary",
+  "status": "native_comparisons_passed_replay_pending",
+  "protocol_sha256": "60679ba1e76f7ddb0a70ec94c819dd0c487a4965515f9aab143e366028a1c9b1",
+  "plan_sha256": "5e7719e9db7504d094c909131ac6f741dd6b064e9468cff33b062fd4b79a2e36",
+  "report_sha256": "83b4c183531e43781777cf6d544ed6ba59533ded84264b0127741fdb37f5c960",
+  "holdout_code_sha256": "a58a315051f8e61ce9bfb96c987b665aa14c924c2fdff57c3751686953f1e63a",
+  "runner_code_sha256": "f47c391ca85ac8dca07c0b7feba054298bc351b7e47ebe946d34b3062931737a",
+  "cases": [
+    {
+      "case_id": "distinct_tokens",
+      "prediction_sha256": "fd1d6c61ee6bde17e51fa3101bed2a7f008c819d688e127080d2d9a7e1486eff",
+      "report_sha256": "906b58764a2f8d51250fd9f4b86216ebefe1b0026d90077b357c742a7ba2e3f8",
+      "match": true,
+      "mismatch_count": 0,
+      "selected_token_id": 76113,
+      "prediction_restored_prefix_count": 0
+    },
+    {
+      "case_id": "repeated_motif",
+      "prediction_sha256": "a0ac8958a995bdd0ec2127a58a99183d6fd51e8750f5fd39a91c07ce8503a2e9",
+      "report_sha256": "8d1b3aeac0540803741784ecbdb10b0bdfac7a95229907d2f8e04f8fdc5e0878",
+      "match": true,
+      "mismatch_count": 0,
+      "selected_token_id": 75027,
+      "prediction_restored_prefix_count": 494
+    }
+  ],
+  "reused_completed_prediction_cases_on_run_resume": ["distinct_tokens"],
+  "original_native_forward_count": 6,
+  "declared_boundaries_per_forward": 21,
+  "vocabulary_logits_per_forward": 262144,
+  "case_native_reports_recount_exact": true,
+  "both_predictions_frozen_before_native_acquisition": true,
+  "reserved_cases_changed": false,
+  "full_replay_complete": false,
+  "scope": "Two predeclared30-token cases, all18 decoder outputs/final normalization/last-token slice/full vocabulary and token selection matched three native forwards per case. Prediction continuation is disclosed. Fresh replay is separately tracked and pending; no all-internal-state, unrestricted-domain, language-task, clinical or hardware claim.",
+  "full_model_qualified": false,
+  "hardware_semantics_established": false,
+  "qualification_promotion_allowed": false
+}

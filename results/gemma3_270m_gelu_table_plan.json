@@ -1,0 +1,54 @@
+{
+  "acquisition_schedule": "one warm-up and one profiled call per observation; first vector observation defines the table",
+  "activation_class": "transformers.activations.PytorchGELUTanh",
+  "activation_source_sha256": "4b230c2b0d3fd9fef2f15f85a8eb0f9f726b9e4532c6cbb8dd114611f1b6b189",
+  "approximate": "tanh",
+  "code_sha256": "d162d22195a36c41c511876981904f4935276e5947ce8c975944710165f05027",
+  "entry_count": 65280,
+  "finite_outputs_required": true,
+  "format": "little-endian uint16 output encodings; positive finite then negative finite input encodings",
+  "global_exactness_activation_allowed": false,
+  "input_bits_sha256": "81100c8586b90228fcdfc535d5f2dc1222be8d798bad124b03afd8df05858fc2",
+  "layout_prediction_rule": "frozen table slice for the declared finite-input indices",
+  "layout_shape": [
+    1,
+    30,
+    2048
+  ],
+  "layout_window_count": 61440,
+  "layout_window_starts": [
+    0,
+    3840
+  ],
+  "native_arithmetic_reconstructed": false,
+  "nonfinite_inputs_supported": false,
+  "operation": "torch.nn.functional.gelu",
+  "plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+  "repetitions": 3,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit empirical finite-BF16 GELU-tanh mapping for a pinned CUDA runtime; complete input encodings and declared contiguous layouts, not reconstruction of native FP32/tanh arithmetic.",
+  "source_report_sha256": "4885b19ced0103828ff78318f74a9506ea4aedc83b0d1a57f76df16f8cc34fca",
+  "source_summary_sha256": "73a18b2a3938af2bc858937c22b34badefe3f6239e5e856ad0c71b5491aeb6a5",
+  "table_bytes": 130560,
+  "unrestricted_layouts_qualified": false
+}

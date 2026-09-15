@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "kind": "checkpointed_holdout_interruption_record",
+  "cause": "unknown",
+  "original_processes_present": false,
+  "original_log": "gemma_independent_holdout_execution_v3.log",
+  "original_log_file_sha256": "0fcc5c7a24b6f0f0f20cd473f0c4fc171ef5f66e3eb22da2345d2aff7c4db6f8",
+  "holdout_code_sha256": "a58a315051f8e61ce9bfb96c987b665aa14c924c2fdff57c3751686953f1e63a",
+  "runner_code_sha256": "f47c391ca85ac8dca07c0b7feba054298bc351b7e47ebe946d34b3062931737a",
+  "current_source_bindings_unchanged": true,
+  "distinct_tokens": {
+    "status": "complete_uncompared",
+    "completed_instruction_count": 533,
+    "prediction_sha256": "fd1d6c61ee6bde17e51fa3101bed2a7f008c819d688e127080d2d9a7e1486eff",
+    "prediction_file_sha256": "ad738173ff23906fca7f3a8c272549a41b3720ebf4c20aca22bea50f3ac36306"
+  },
+  "repeated_motif": {
+    "status": "interrupted_with_committed_checkpoint",
+    "completed_instruction_count": 494,
+    "last_completed_instruction": "i0493",
+    "layer": 16,
+    "checkpoint_sha256": "959d695c033cffff72b91aa5ae13be72f50d24492470b93edf2d39e7146fb92a",
+    "checkpoint_file_sha256": "1619c269ffc828e9a8864f1e46039460d753126231bc2617e597a4fa9b82574e",
+    "checkpoint_execution_and_live_state_integrity_checked": true
+  },
+  "combined_prediction_plan_published": false,
+  "heldout_native_acquisition_started": false,
+  "recovery": "Resume the same compatible batch with --resume and a new log. Preserve the completed first prediction and disclose restoration of the second-case prefix; revalidate source/runtime/fresh weights before continuation.",
+  "qualification_promotion_allowed": false
+}

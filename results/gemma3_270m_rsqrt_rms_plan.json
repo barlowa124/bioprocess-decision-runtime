@@ -1,0 +1,81 @@
+{
+  "bundle_sha256": "ceb90bcea3561f671bcb4da570638df81ff0d7bfc2347080d0e36b11bcc72f4e",
+  "expected_kernel_names": [
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+  ],
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "lookup_code_sha256": "ea304d5a52e41c25b769ef85c976ef7310a63ab5a14417266c40ca7dcb7a221a",
+  "lookup_evidence": {
+    "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+    "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+    "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+    "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+    "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+  },
+  "lookup_rms_code_sha256": "8e3f32a13343a456d23f8ecb4bfac366b0b84365854d544921a8475a4199b96b",
+  "native_arithmetic_reconstructed": false,
+  "plan_sha256": "e9947832c91aafafafaef41e28bb3fe08211f95dcf4e06b230fce4c11ae8d138",
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "rms_code_sha256": "66e58131242b25429b04a6aca95f110e6200ee7f1dcb3a8ff5b8552cfdf4ed2f",
+  "roles": {
+    "input_norm": {
+      "input_sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+      "input_shape": [
+        1,
+        30,
+        640
+      ],
+      "prediction_sha256": "dd3242017ff4d64c6f5a975ddbb00611a8cdae8b352ee1a549f2ffe0e6b1d750",
+      "weight_sha256": "71f942c47bdb8df296366a4a443856063711540726debbb578ace6478e19e2f7"
+    },
+    "key_norm": {
+      "input_sha256": "243e66b0a1163a0ce5591eb82702abf49e5b8e4148f5e0355a98fcdb86a25cdd",
+      "input_shape": [
+        1,
+        1,
+        30,
+        256
+      ],
+      "prediction_sha256": "0687a5f8964a3ce1276f1a960703254d5db9812b1f45de9a7c210c6fb6fb493a",
+      "weight_sha256": "1f8aab7c05eafe693b868f2e151a6fe300e3cdecb2d136aef4da08f5ad4babc3"
+    },
+    "query_norm": {
+      "input_sha256": "8fe963c89c792755bd2ff9bb032eab4c43c7d9fc71f0659a27499007c16acef0",
+      "input_shape": [
+        1,
+        4,
+        30,
+        256
+      ],
+      "prediction_sha256": "d1bc95060ffb96908f9d1a3e41a00818110ea5b8aa6d3a4f1bd73343b49c161f",
+      "weight_sha256": "4815c67fba665537550f95881b4819e356c4dcbba3dd5245629915def40353ac"
+    }
+  },
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Explicit-lookup RMS regression against preserved actual tensors, with prospective native rsqrt replay at the original small layouts; not native arithmetic reconstruction or full-layer qualification.",
+  "source_data_reused": true,
+  "source_rms_plan_sha256": "7476879c06d274ff4f89a38047db0857be633995c279283280f8963044b86089",
+  "source_rms_report_sha256": "3468b2595dac4c0a3773c03f58a5d0a1fd623cf4e8a80f668dd25c5487147acd"
+}

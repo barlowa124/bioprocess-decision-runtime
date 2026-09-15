@@ -1,0 +1,67 @@
+{
+  "base_repetitions_identical": true,
+  "base_table_usable": true,
+  "global_exactness_activation_allowed": false,
+  "kernel_names_match": true,
+  "layout_validation_required": true,
+  "manifest_sha256": "42d4b550ed39314969da7483f9aa6f8a6abc98ee088d8e4573bf10a781d7863b",
+  "native_arithmetic_reconstructed": false,
+  "plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+  "records": [
+    {
+      "finite_outputs": true,
+      "kernel_names": [
+        "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_"
+      ],
+      "mismatch_count": 0,
+      "mismatch_payload_sha256": null,
+      "output_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf",
+      "repetition": 0
+    },
+    {
+      "finite_outputs": true,
+      "kernel_names": [
+        "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_"
+      ],
+      "mismatch_count": 0,
+      "mismatch_payload_sha256": null,
+      "output_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf",
+      "repetition": 1
+    },
+    {
+      "finite_outputs": true,
+      "kernel_names": [
+        "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLy2EEEEviT0_T1_"
+      ],
+      "mismatch_count": 0,
+      "mismatch_payload_sha256": null,
+      "output_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf",
+      "repetition": 2
+    }
+  ],
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Explicit empirical finite-BF16 GELU-tanh mapping for a pinned CUDA runtime; complete input encodings and declared contiguous layouts, not reconstruction of native FP32/tanh arithmetic.",
+  "table_bytes": 130560,
+  "table_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf"
+}

@@ -1,0 +1,193 @@
+{
+  "candidate_passes": false,
+  "code_sha256": "dec7cffa37aad2748d0e0cf96324ec8492c70089c5936480fdecd4743a851637",
+  "conditions": [
+    {
+      "input_matches": true,
+      "native_bfloat16_cast_matches": true,
+      "persistent_kernel_profile_matches": true,
+      "untraced_bf16_matches": true,
+      "untraced_fp32_matches": true
+    },
+    {
+      "input_matches": true,
+      "native_bfloat16_cast_matches": true,
+      "persistent_kernel_profile_matches": true,
+      "untraced_bf16_matches": true,
+      "untraced_fp32_matches": true
+    },
+    {
+      "input_matches": true,
+      "native_bfloat16_cast_matches": true,
+      "persistent_kernel_profile_matches": true,
+      "untraced_bf16_matches": true,
+      "untraced_fp32_matches": true
+    }
+  ],
+  "cuda_events": [
+    [
+      "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+    ],
+    [
+      "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+    ],
+    [
+      "_ZN43_GLOBAL__N__c5dc35cd_10_SoftMax_cu_0af7be2120softmax_warp_forwardIfffLi5ELb0ELb0EEEvPT0_PKT_iiiPKbib"
+    ]
+  ],
+  "diagnostics": [
+    {
+      "candidate_vs_staged_aten": {
+        "denominator_bits": 480,
+        "exponential_bits": 573,
+        "maximum_bits": 0,
+        "output_bf16_bits": 0,
+        "output_f32_bits": 630,
+        "shifted_bits": 0
+      },
+      "staged_vs_fused_bf16": 0,
+      "staged_vs_fused_fp32": 0
+    },
+    {
+      "candidate_vs_staged_aten": {
+        "denominator_bits": 480,
+        "exponential_bits": 573,
+        "maximum_bits": 0,
+        "output_bf16_bits": 0,
+        "output_f32_bits": 630,
+        "shifted_bits": 0
+      },
+      "staged_vs_fused_bf16": 0,
+      "staged_vs_fused_fp32": 0
+    },
+    {
+      "candidate_vs_staged_aten": {
+        "denominator_bits": 480,
+        "exponential_bits": 573,
+        "maximum_bits": 0,
+        "output_bf16_bits": 0,
+        "output_f32_bits": 630,
+        "shifted_bits": 0
+      },
+      "staged_vs_fused_bf16": 0,
+      "staged_vs_fused_fp32": 0
+    }
+  ],
+  "full_first_layer_qualified": false,
+  "fused_internal_stages_observed": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "input_strides": [
+    [
+      3600,
+      900,
+      30,
+      1
+    ],
+    [
+      3600,
+      900,
+      30,
+      1
+    ],
+    [
+      3600,
+      900,
+      30,
+      1
+    ]
+  ],
+  "mismatch_count": 1890,
+  "mismatch_counts": {
+    "output_bf16_bits": [
+      0,
+      0,
+      0
+    ],
+    "output_f32_bits": [
+      630,
+      630,
+      630
+    ]
+  },
+  "native_exponential_reconstructed": false,
+  "observed_bf16_hashes": [
+    "835af8af91b7d340a392b7029d69f8c7bf98b18d65dae94e1e2e3bedcdc09bc2",
+    "835af8af91b7d340a392b7029d69f8c7bf98b18d65dae94e1e2e3bedcdc09bc2",
+    "835af8af91b7d340a392b7029d69f8c7bf98b18d65dae94e1e2e3bedcdc09bc2"
+  ],
+  "observed_fp32_hashes": [
+    "34f60d7015589a0c8265ae3274e071c26ee2d4d2c98a2a868b602193cdb9b486",
+    "34f60d7015589a0c8265ae3274e071c26ee2d4d2c98a2a868b602193cdb9b486",
+    "34f60d7015589a0c8265ae3274e071c26ee2d4d2c98a2a868b602193cdb9b486"
+  ],
+  "plan_sha256": "e20b473995d94cbea64db6d04c8b980ba78b2fb41c056932e208000390dfdd53",
+  "prefix_independently_recomputed": false,
+  "profile": {
+    "divide": "float32 RNE",
+    "elements": 30,
+    "exponential": "Decimal RN interval enclosing exp, unique float32 RNE encoding",
+    "lanes": 32,
+    "output_cast": "bfloat16 RNE",
+    "padding": "negative infinity then positive-zero exponential",
+    "subtract": "float32 RNE",
+    "sum": "per-lane float32 RNE XOR butterfly",
+    "warp_batch": 2,
+    "xor_offsets": [
+      16,
+      8,
+      4,
+      2,
+      1
+    ]
+  },
+  "row_count": 120,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Fixed-input warp32 softmax candidate on verified serialized first-layer scores; independent FP32 exponential, XOR sum and division, original FP32/BF16 outputs compared; staged ATen diagnostics are not fused-kernel register observations.",
+  "source_report_sha256": "5b9864c859174725489b619ba6f777fa69c0cfed0e9c016b74152ba18b8bfce3",
+  "sources": {
+    "score_bundle_sha256": "a0a11f15368c040dfe4c7271bec6d96a599ac542ed38021a854ab8a3c3b7760d",
+    "score_plan_sha256": "e2667ec3d29e3ae19cc143f24c6860c607bbef0b36873e23c161b523331d00bc",
+    "score_report_sha256": "3b8d45606ddbac8d78452c009eeb1f02f963fcb9ede523a632976326442269fc",
+    "upstream": {
+      "lookup_evidence": {
+        "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+        "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+        "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+        "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+        "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+      },
+      "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+      "rotary_bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+      "rotary_execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+      "rotary_plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+      "rotary_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+      "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+    }
+  },
+  "staged_aten_is_diagnostic": true,
+  "summary_sha256": "cb139fd9b1b02483878474f5fadb622f47a58ad25dcb2a34e6acef51e5928c2c",
+  "value_aggregation_executed": false,
+  "value_count": 3600
+}

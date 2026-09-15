@@ -225,6 +225,304 @@ def execute_gemma_ir(
     )
 
 
+PROJECTION_SLICE_SCOPE = "Fixed-input actual Gemma layer-0 Q/K/V projection comparison; shared PyTorch embedding/scale/input-RMS prefix, independent experimental projection arithmetic, original modules compared only after predictions are saved; not full-layer/model or hardware qualification."
+PROJECTION_SLICE_ROLES = (("query", "q", 1024), ("key", "k", 256), ("value", "v", 256))
+
+
+def _projection_prefix(program: dict[str, Any], parameters: Mapping[str, Any], input_ids: Any) -> tuple[Any, list[dict[str, Any]]]:
+    if not verify_gemma_ir(program)["valid"]:
+        raise ValueError("Projection prefix requires a valid IR")
+    if not isinstance(input_ids, torch.Tensor) or input_ids.dtype != torch.int64 or input_ids.ndim != 2 or input_ids.numel() == 0:
+        raise ValueError("Projection prefix requires rank-two integer token IDs")
+    if bool(torch.any((input_ids < 0) | (input_ids >= program["configuration"]["vocabulary_size"])).item()):
+        raise ValueError("Projection input IDs are outside the vocabulary")
+    target = "layer.0.attention.normalized"
+    needed, selected = {target}, []
+    for instruction in reversed(program["instructions"]):
+        if needed.intersection(instruction["outputs"]):
+            selected.append(instruction)
+            needed.difference_update(instruction["outputs"])
+            needed.update(instruction["inputs"])
+    if needed != {"input_ids"}:
+        raise ValueError("Projection prefix dependency boundary mismatch")
+    states, records = {"input_ids": input_ids}, []
+    symbols = {"B": input_ids.shape[0], "S": input_ids.shape[1]}
+    for instruction in reversed(selected):
+        if instruction["opcode"] not in ("EMBEDDING", "SCALE", "RMS_NORM"):
+            raise ValueError("Unsupported shared-prefix operation")
+        outputs = _execute_instruction(instruction, states, parameters)
+        for name, value in outputs.items():
+            declaration = program["tensors"][name]
+            shape = [symbols.get(dimension, dimension) for dimension in declaration["shape"]]
+            if list(value.shape) != shape or str(value.dtype) != declaration["dtype"]:
+                raise ValueError("Projection prefix violates an IR tensor declaration")
+        states.update(outputs)
+        append_chain_record(records, {"provider": "shared_pytorch_ir_prefix", "instruction_id": instruction["id"],
+                                      "instruction_sha256": instruction["instruction_sha256"], "opcode": instruction["opcode"],
+                                      "inputs": instruction["inputs"], "parameter_refs": instruction["parameter_refs"],
+                                      "outputs": {name: tensor_descriptor(value) for name, value in outputs.items()}})
+    return states[target], records
+
+
+def _projection_arithmetic_commitment() -> str:
+    import inspect
+    from . import gemma_wmma_candidate as numerical, gemma_float_semantics as scalar, gemma_reduction_semantics as reductions
+
+    names = ("operand_aligned_product_bits", "_operand_aligned_accumulator", "_float32_carry", "_floor_log2",
+             "_at_least_power_of_two", "_scale_power_of_two", "_round_units", "split_k_candidate_bits", "_split_partitions", "_merge_split_partials")
+    return _sha256({"functions": {name: inspect.getsource(getattr(numerical, name)) for name in names},
+                    "scalar_module": inspect.getsource(scalar), "reduction_module": inspect.getsource(reductions)})
+
+
+def _projection_environment() -> dict[str, Any]:
+    import os
+    import platform
+    import transformers
+
+    return {"torch": str(torch.__version__), "cuda": torch.version.cuda, "transformers": transformers.__version__,
+            "python": platform.python_version(), "device": torch.cuda.get_device_name(),
+            "capability": list(torch.cuda.get_device_capability()),
+            "bf16_reduced_precision_reduction": torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction,
+            "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+            "allow_tf32": torch.backends.cuda.matmul.allow_tf32, "float32_matmul_precision": torch.get_float32_matmul_precision(),
+            "cuda_autocast_enabled": torch.is_autocast_enabled(), "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG")}
+
+
+def _projection_context(program: dict[str, Any], model: Any, token_ids: list[list[int]]) -> tuple[dict[str, Any], Any, list[dict[str, Any]], dict[str, Any]]:
+    _require_torch()
+    if not _rectangular_integer_rows(token_ids) or len(token_ids) != 1 or len(token_ids[0]) != 30:
+        raise ValueError("Projection slice is restricted to one 30-token input")
+    if model.training or model.config._attn_implementation != "eager":
+        raise ValueError("Projection slice requires evaluation mode and declared eager attention")
+    parameters = bind_model_tensors(program, model, verify_hashes=True)
+    device = parameters["model.embed_tokens.weight"].device
+    if device.type != "cuda" or device.index != torch.cuda.current_device():
+        raise ValueError("Projection slice requires the current CUDA device")
+    ids = torch.tensor(token_ids, dtype=torch.int64, device=device)
+    with torch.no_grad():
+        normalized, records = _projection_prefix(program, parameters, ids)
+    if list(normalized.shape) != [1, 30, 640] or normalized.dtype != torch.bfloat16:
+        raise ValueError("Unsupported projection input shape or dtype")
+    instructions = {}
+    for role, short, width in PROJECTION_SLICE_ROLES:
+        module = getattr(model.model.layers[0].self_attn, f"{short}_proj")
+        name = f"model.layers.0.self_attn.{short}_proj.weight"
+        if type(module) is not torch.nn.Linear or module.bias is not None or list(module.weight.shape) != [width, 640] or module.weight.dtype != torch.bfloat16 or module.weight.device != device:
+            raise ValueError("Unsupported actual projection module")
+        if module.weight is not parameters[name]:
+            raise ValueError("Original projection does not use the bound parameter")
+        found = [item for item in program["instructions"] if item["outputs"] == [f"layer.0.{role}.flat"]]
+        if len(found) != 1 or found[0]["opcode"] != "LINEAR" or found[0]["inputs"] != ["layer.0.attention.normalized"] or found[0]["parameter_refs"] != [name]:
+            raise ValueError("Actual projection instruction binding mismatch")
+        instructions[role] = found[0]
+    return parameters, normalized, records, instructions
+
+
+def _projection_bits_tensor(bits: Any, shape: list[int], device: Any) -> Any:
+    if not isinstance(bits, list) or len(bits) != shape[0] or any(
+        not isinstance(rows, list) or len(rows) != shape[1] or any(not isinstance(row, list) or len(row) != shape[2] or
+        any(type(value) is not int or not 0 <= value <= 65535 for value in row) for row in rows) for rows in bits
+    ):
+        raise ValueError("Malformed projection bit tensor")
+    return torch.tensor(bits, dtype=torch.uint16).view(torch.bfloat16).to(device)
+
+
+def build_projection_slice(program: dict[str, Any], model: Any, fixture: dict[str, Any], query_evidence: dict[str, Any], split_evidence: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    from .gemma_wmma_candidate import operand_aligned_product_bits, split_k_candidate_bits, OPERAND_ALIGNMENT_PROFILE, DENSE_SPLIT_PROFILE
+
+    for evidence, count in ((query_evidence, 4096), (split_evidence, 1024)):
+        if _sha256({k: v for k, v in evidence.items() if k != "report_sha256"}) != evidence.get("report_sha256") or evidence.get("tested_case_count") != count or evidence.get("candidate_passes_within_declared_scope") is not True:
+            raise ValueError("Projection slice requires intact passing controlled evidence")
+    if fixture.get("program_sha256") != program["program_sha256"]:
+        raise ValueError("Input fixture belongs to another IR")
+    parameters, normalized, prefix, instructions = _projection_context(program, model, fixture["input_token_ids"])
+    input_ids = torch.tensor(fixture["input_token_ids"], dtype=torch.int64, device=normalized.device)
+    if tensor_sha256(input_ids) != fixture["input_ids"]["sha256"]:
+        raise ValueError("Fixture token commitment mismatch")
+    input_bits = normalized.detach().cpu().view(torch.uint16).tolist()
+    outputs, predictions = {}, {}
+    for role, short, width in PROJECTION_SLICE_ROLES:
+        name = f"model.layers.0.self_attn.{short}_proj.weight"
+        weights = parameters[name].detach().cpu().view(torch.uint16).tolist()
+        oracle = operand_aligned_product_bits if role == "query" else lambda left, right: split_k_candidate_bits(left, right, *DENSE_SPLIT_PROFILE)
+        bits = [[[oracle(row, weight) for weight in weights] for row in input_bits[0]]]
+        predictions[role] = bits
+        predicted = _projection_bits_tensor(bits, [1, 30, width], normalized.device)
+        evidence = query_evidence if role == "query" else split_evidence
+        outputs[role] = {"instruction_id": instructions[role]["id"], "instruction_sha256": instructions[role]["instruction_sha256"],
+                         "input_tensor": "layer.0.attention.normalized", "output_tensor": f"layer.0.{role}.flat",
+                         "weight_name": name, "weight": tensor_descriptor(parameters[name]), "prediction": tensor_descriptor(predicted),
+                         "numerical_provider": "operand_alignment_v1" if role == "query" else "split_k64_bf16_serial_fp32_v1",
+                         "expected_kernel_names": evidence["cuda_kernel_names"][0], "expected_environment": evidence["environment"],
+                         "source_evidence_sha256": evidence["report_sha256"]}
+    bundle = {"program_sha256": program["program_sha256"], "input_token_ids": fixture["input_token_ids"],
+              "normalized_input_bits": input_bits, "prediction_bits": predictions}
+    body = {"schema_version": 1, "scope": PROJECTION_SLICE_SCOPE, "program_sha256": program["program_sha256"],
+            "input_fixture_sha256": _sha256(fixture), "input_token_ids": fixture["input_token_ids"], "input_ids": tensor_descriptor(input_ids),
+            "model_binding": {"class": type(model).__module__ + "." + type(model).__name__, "config_sha256": _sha256(model.config.to_dict()),
+                              "parameter_commitments_sha256": _sha256(program["parameter_commitments"])},
+            "normalized_input": tensor_descriptor(normalized), "shared_prefix_records": prefix, "shared_prefix_root": prefix[-1]["record_hash"],
+            "projection_records": outputs, "numeric_profile": {"partial": dict(OPERAND_ALIGNMENT_PROFILE), "split": list(DENSE_SPLIT_PROFILE)},
+            "arithmetic_implementation_sha256": _projection_arithmetic_commitment(),
+            "runtime": _projection_environment(), "bundle_sha256": _sha256(bundle), "predicted_value_count": 46080,
+            "source_evidence_verification": "commitments_only; use the source experiment verifiers for source replay",
+            "shared_prefix_independently_qualified": False, "candidate_refitting_allowed": False,
+            "full_first_layer_qualified": False, "global_exactness_activation_allowed": False}
+    return {**body, "plan_sha256": _sha256(body)}, bundle
+
+
+def _check_projection_plan(program: dict[str, Any], plan: dict[str, Any], bundle: dict[str, Any]) -> None:
+    from .gemma_wmma_candidate import OPERAND_ALIGNMENT_PROFILE, DENSE_SPLIT_PROFILE
+
+    if plan.get("scope") != PROJECTION_SLICE_SCOPE or plan.get("predicted_value_count") != 46080 or any(plan.get(key) is not False for key in ("shared_prefix_independently_qualified", "candidate_refitting_allowed", "full_first_layer_qualified", "global_exactness_activation_allowed")):
+        raise ValueError("Projection scope or qualification boundary mismatch")
+    if plan.get("arithmetic_implementation_sha256") != _projection_arithmetic_commitment() or canonical_json(plan["numeric_profile"]) != canonical_json({"partial": OPERAND_ALIGNMENT_PROFILE, "split": list(DENSE_SPLIT_PROFILE)}):
+        raise ValueError("Projection arithmetic implementation or profile mismatch")
+    if not verify_gemma_ir(program)["valid"] or plan["program_sha256"] != program["program_sha256"]:
+        raise ValueError("Projection program commitment mismatch")
+    if _sha256({k: v for k, v in plan.items() if k != "plan_sha256"}) != plan["plan_sha256"] or _sha256(bundle) != plan["bundle_sha256"]:
+        raise ValueError("Projection plan or tensor-bundle commitment mismatch")
+    if bundle["program_sha256"] != plan["program_sha256"] or canonical_json(bundle["input_token_ids"]) != canonical_json(plan["input_token_ids"]):
+        raise ValueError("Projection bundle identity mismatch")
+    ids = plan["input_token_ids"]
+    if not _rectangular_integer_rows(ids) or len(ids) != 1 or len(ids[0]) != 30 or any(not 0 <= value < program["configuration"]["vocabulary_size"] for value in ids[0]):
+        raise ValueError("Projection token domain mismatch")
+    if any(plan["input_ids"].get(key) != value for key, value in tensor_descriptor(torch.tensor(ids, dtype=torch.int64)).items() if key != "device") or plan["model_binding"]["parameter_commitments_sha256"] != _sha256(program["parameter_commitments"]):
+        raise ValueError("Projection token or model commitment mismatch")
+    if not verify_trace_chain(plan["shared_prefix_records"], plan["shared_prefix_root"])["valid"]:
+        raise ValueError("Projection shared-prefix witness mismatch")
+    needed, selected = {"layer.0.attention.normalized"}, []
+    for instruction in reversed(program["instructions"]):
+        if needed.intersection(instruction["outputs"]):
+            selected.append(instruction)
+            needed.difference_update(instruction["outputs"])
+            needed.update(instruction["inputs"])
+    if len(selected) != len(plan["shared_prefix_records"]) or needed != {"input_ids"}:
+        raise ValueError("Projection prefix coverage mismatch")
+    for instruction, record in zip(reversed(selected), plan["shared_prefix_records"]):
+        payload = record["payload"]
+        if payload.get("provider") != "shared_pytorch_ir_prefix" or any(payload.get(key) != instruction[key] for key in ("opcode", "inputs", "parameter_refs")) or payload.get("instruction_id") != instruction["id"] or payload.get("instruction_sha256") != instruction["instruction_sha256"] or set(payload.get("outputs", {})) != set(instruction["outputs"]):
+            raise ValueError("Projection prefix is not bound to the declared IR")
+    if canonical_json(plan["shared_prefix_records"][-1]["payload"]["outputs"]["layer.0.attention.normalized"]) != canonical_json(plan["normalized_input"]):
+        raise ValueError("Projection boundary is not the shared-prefix output")
+    if set(plan["projection_records"]) != {role for role, _, _ in PROJECTION_SLICE_ROLES} or set(bundle["prediction_bits"]) != set(plan["projection_records"]):
+        raise ValueError("Missing or substituted projection roles")
+    normalized = _projection_bits_tensor(bundle["normalized_input_bits"], [1, 30, 640], "cpu")
+    if any(plan["normalized_input"].get(key) != value for key, value in tensor_descriptor(normalized).items() if key != "device"):
+        raise ValueError("Projection normalized input bits or metadata mismatch")
+    for role, short, width in PROJECTION_SLICE_ROLES:
+        record = plan["projection_records"][role]
+        name = f"model.layers.0.self_attn.{short}_proj.weight"
+        instruction = next(item for item in program["instructions"] if item["outputs"] == [f"layer.0.{role}.flat"])
+        prediction = _projection_bits_tensor(bundle["prediction_bits"][role], [1, 30, width], "cpu")
+        provider = "operand_alignment_v1" if role == "query" else "split_k64_bf16_serial_fp32_v1"
+        if any(record["prediction"].get(key) != value for key, value in tensor_descriptor(prediction).items() if key != "device") or any(record["weight"].get(key) != program["parameter_commitments"][name][key] for key in ("shape", "dtype")):
+            raise ValueError("Projection tensor metadata mismatch")
+        if record["weight_name"] != name or record["weight"]["sha256"] != program["parameter_commitments"][name]["sha256"] or record["instruction_sha256"] != instruction["instruction_sha256"] or record["instruction_id"] != instruction["id"] or record["numerical_provider"] != provider or record["input_tensor"] != "layer.0.attention.normalized" or record["output_tensor"] != instruction["outputs"][0] or tensor_sha256(prediction) != record["prediction"]["sha256"]:
+            raise ValueError("Projection instruction, weight, or prediction binding mismatch")
+
+
+def _projection_slice_report(plan: dict[str, Any], bundle: dict[str, Any], observations: dict[str, Any], actual_prefix: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(observations, dict) or set(observations) != set(plan["projection_records"]):
+        raise ValueError("Projection comparison is missing roles")
+    if not isinstance(actual_prefix, dict) or not isinstance(runtime, dict):
+        raise ValueError("Missing projection prefix or runtime metadata")
+    matches, differences = {}, []
+    for role, _, width in PROJECTION_SLICE_ROLES:
+        item = observations[role]
+        if not isinstance(item["bits"], list) or len(item["bits"]) != 3 or not isinstance(item["kernel_names"], list) or len(item["kernel_names"]) != 3 or any(not isinstance(names, list) or not names or any(not isinstance(name, str) or not name for name in names) for names in item["kernel_names"]):
+            raise ValueError("Missing projection repetitions or kernel names")
+        predicted = _projection_bits_tensor(bundle["prediction_bits"][role], [1, 30, width], "cpu").view(torch.int16)
+        for repetition, bits in enumerate(item["bits"]):
+            actual = _projection_bits_tensor(bits, [1, 30, width], "cpu").view(torch.int16)
+            for batch, row, column in (actual != predicted).nonzero().tolist():
+                differences.append({"role": role, "repetition": repetition, "row": row, "column": column,
+                                    "predicted_bits": int(predicted[batch, row, column]) & 65535, "observed_bits": int(actual[batch, row, column]) & 65535})
+        expected = plan["projection_records"][role]
+        matches[role] = {"value_count": 30 * width,
+                         "repeated_outputs_identical": all(bits == item["bits"][0] for bits in item["bits"]),
+                         "kernel_names_match": all(names == expected["expected_kernel_names"] for names in item["kernel_names"]),
+                         "source_environment_match": all(canonical_json(runtime.get(key)) == canonical_json(value) for key, value in expected["expected_environment"].items())}
+    prefix_match = canonical_json(actual_prefix) == canonical_json(plan["normalized_input"])
+    scope_match = canonical_json(runtime) == canonical_json(plan["runtime"]) and all(item["kernel_names_match"] and item["source_environment_match"] for item in matches.values())
+    body = {"schema_version": 1, "scope": PROJECTION_SLICE_SCOPE, "plan_sha256": plan["plan_sha256"], "bundle_sha256": plan["bundle_sha256"],
+            "original_prefix_input": actual_prefix, "original_prefix_matches_shared_ir": prefix_match,
+            "observations": observations, "runtime": runtime, "projection_summaries": matches,
+            "mismatch_count": len(differences), "mismatches": differences, "projection_values_bit_exact": not differences,
+            "source_kernel_environment_match": scope_match, "slice_passes_declared_comparison": prefix_match and not differences and scope_match,
+            "first_divergence": ("shared_prefix" if not prefix_match else differences[0] if differences else None),
+            "compared_values_per_repetition": 46080, "shared_prefix_independently_qualified": False,
+            "full_first_layer_qualified": False, "full_model_independently_qualified": False,
+            "hardware_semantics_established": False, "global_exactness_activation_allowed": False}
+    return {**body, "report_sha256": _sha256(body)}
+
+
+def acquire_projection_slice(program: dict[str, Any], model: Any, plan: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+    from .gemma_reduction_backend import _profile_call
+
+    _check_projection_plan(program, plan, bundle)
+    parameters, normalized, prefix, _ = _projection_context(program, model, plan["input_token_ids"])
+    binding = {"class": type(model).__module__ + "." + type(model).__name__, "config_sha256": _sha256(model.config.to_dict()),
+               "parameter_commitments_sha256": _sha256(program["parameter_commitments"])}
+    if binding != plan["model_binding"] or canonical_json(prefix) != canonical_json(plan["shared_prefix_records"]) or tensor_descriptor(normalized) != plan["normalized_input"]:
+        raise ValueError("Model or shared prefix no longer matches the prediction plan")
+    captured = []
+
+    class BoundaryReached(Exception):
+        pass
+
+    def capture(module: Any, args: Any) -> None:
+        captured.append(args[0].detach().clone())
+        raise BoundaryReached()
+
+    handle = model.model.layers[0].self_attn.q_proj.register_forward_pre_hook(capture)
+    try:
+        with torch.no_grad():
+            model(input_ids=torch.tensor(plan["input_token_ids"], dtype=torch.int64, device=normalized.device),
+                  attention_mask=torch.ones((1, 30), dtype=torch.int64, device=normalized.device), use_cache=False, logits_to_keep=1)
+    except BoundaryReached:
+        pass
+    finally:
+        handle.remove()
+    if len(captured) != 1:
+        raise ValueError("Original model did not reach exactly one projection boundary")
+    observations = {}
+    with torch.no_grad():
+        for role, short, width in PROJECTION_SLICE_ROLES:
+            module = getattr(model.model.layers[0].self_attn, f"{short}_proj")
+            bits, kernels = [], []
+            for _ in range(3):
+                output, names = _profile_call(lambda: module(captured[0]))
+                if output.dtype != torch.bfloat16 or list(output.shape) != [1, 30, width] or output.device != normalized.device:
+                    raise ValueError("Original projection output violates the declared tensor type")
+                bits.append(output.detach().cpu().view(torch.uint16).tolist())
+                kernels.append(names)
+            observations[role] = {"bits": bits, "kernel_names": kernels}
+    bind_model_tensors(program, model, verify_hashes=True)
+    return _projection_slice_report(plan, bundle, observations, tensor_descriptor(captured[0]), _projection_environment())
+
+
+def verify_projection_slice(program: dict[str, Any], plan: dict[str, Any], bundle: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
+    try:
+        _check_projection_plan(program, plan, bundle)
+        expected = _projection_slice_report(plan, bundle, report["observations"], report["original_prefix_input"], report["runtime"])
+        valid = canonical_json(expected) == canonical_json(report)
+        return {"valid": valid, "mode": "integrity_only", "slice_passes_declared_comparison": expected["slice_passes_declared_comparison"],
+                "projection_summaries": expected["projection_summaries"], "mismatch_count": expected["mismatch_count"],
+                "first_divergence": expected["first_divergence"], "global_exactness_activation_allowed": False}
+    except (KeyError, TypeError, ValueError, RuntimeError, AttributeError, StopIteration) as error:
+        return {"valid": False, "reason": str(error)}
+
+
+def projection_slice_summary(plan: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
+    body = {key: value for key, value in report.items() if key not in ("observations", "mismatches", "report_sha256")}
+    body.update({"source_report_sha256": report["report_sha256"], "program_sha256": plan["program_sha256"],
+                 "model_binding": plan["model_binding"], "input_token_ids": plan["input_token_ids"],
+                 "projection_records": plan["projection_records"], "arithmetic_implementation_sha256": plan["arithmetic_implementation_sha256"],
+                 "observed_output_hashes": {role: [tensor_sha256(_projection_bits_tensor(bits, [1, 30, width], "cpu")) for bits in report["observations"][role]["bits"]] for role, _, width in PROJECTION_SLICE_ROLES}})
+    return {**body, "summary_sha256": _sha256(body)}
+
+
 def compare_ir_execution(
     program: dict[str, Any], execution: GemmaIrExecution, expected_records: list[dict[str, Any]]
 ) -> dict[str, Any]:

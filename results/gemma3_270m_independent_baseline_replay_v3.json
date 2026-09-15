@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "kind": "completed_full_baseline_replay_receipt",
+  "prediction_sha256": "27df8b72a8891abd0326220760d3eaf2a6b18c94bd3bd06b389c329e536a7b75",
+  "report_sha256": "737297c6fe982a4eb4773ddb262c31d2604095513ae5d1727e0e8fca05ac67fe",
+  "runner_code_sha256": "f47c391ca85ac8dca07c0b7feba054298bc351b7e47ebe946d34b3062931737a",
+  "checkpoint_sha256": "14aa6dabda9d421b7538e7033083c238df8abaf04cd075033663472075a6f24b",
+  "source_file_sha256": {
+    "prediction": "4f4cafa5d5027c45fa7c0c044775788e37107cf5785d0541da5d82d2f1cda3f2",
+    "report": "bfd4f3a6703f1dbf5b66e4ab56ca9db1726c5c7066528def4e99378fa228532a",
+    "replay_log": "ca846e865bdf4bcf6ae66286063e4cf6aa2dfd434abaaa6db369b6bf7e6b297b",
+    "supervisor_log": "ef45240a3fb17aded27fa616aa9a7ff946c07710a8770e1d41fbad392e1c0ae2",
+    "checkpoint": "3062e933609548b9eedf90e1e34f66c2883d8b563825354e3b33bb73d778007f"
+  },
+  "completed_instruction_count": 533,
+  "checkpoint_matches_original_execution": true,
+  "checkpoint_resume": null,
+  "cli_valid": true,
+  "cli_match": true,
+  "reexecute_requested": true,
+  "baseline_exit_code": 0,
+  "replay_exit_code": 0,
+  "selected_token_id": 10784,
+  "scope": "Fresh complete independent prediction is preserved in the replay checkpoint and was compared exactly with the original execution. The pinned CLI log reports successful fresh native report equality; the unchanged verifier requires both prediction and native replay before valid/match/exit0. This is operational replay evidence, not external authenticity or hardware proof.",
+  "end_to_end_holdouts_executed": false,
+  "full_model_qualified": false,
+  "hardware_semantics_established": false
+}

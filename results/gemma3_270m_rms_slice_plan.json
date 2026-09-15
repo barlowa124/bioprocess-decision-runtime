@@ -1,0 +1,504 @@
+{
+  "arithmetic_implementation_sha256": "66e58131242b25429b04a6aca95f110e6200ee7f1dcb3a8ff5b8552cfdf4ed2f",
+  "bundle_sha256": "ec990982c8464319d61bb769b1c37320b7045b12a17992063c143dc2e5a7b531",
+  "candidate_refitting_allowed": false,
+  "compared_values_per_profile": 57600,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "independent_embedding_scale_matches_source": true,
+  "installed_header_sha256": {
+    "SharedReduceOps.h": "5e5c2696f41fed55d1960f233a8929036784f3329e34d24d91a8c895ddcbc122",
+    "cuda/Reduce.cuh": "96eb29c88942e1377f421369eb4174c93d8265947743d9218493b40c0e4c1d4d"
+  },
+  "linked_binary_correspondence_established": false,
+  "plan_sha256": "7476879c06d274ff4f89a38047db0857be633995c279283280f8963044b86089",
+  "profiles": [
+    {
+      "id": "source_vec4_warp32:rsqrt_rne",
+      "reduction": "source_vec4_warp32",
+      "root": "rsqrt_rne"
+    },
+    {
+      "id": "source_vec4_warp32:sqrt_rne_then_reciprocal_rne",
+      "reduction": "source_vec4_warp32",
+      "root": "sqrt_rne_then_reciprocal_rne"
+    },
+    {
+      "id": "sequential_float32:rsqrt_rne",
+      "reduction": "sequential_float32",
+      "root": "rsqrt_rne"
+    },
+    {
+      "id": "sequential_float32:sqrt_rne_then_reciprocal_rne",
+      "reduction": "sequential_float32",
+      "root": "sqrt_rne_then_reciprocal_rne"
+    },
+    {
+      "id": "exact_sum_float32:rsqrt_rne",
+      "reduction": "exact_sum_float32",
+      "root": "rsqrt_rne"
+    },
+    {
+      "id": "exact_sum_float32:sqrt_rne_then_reciprocal_rne",
+      "reduction": "exact_sum_float32",
+      "root": "sqrt_rne_then_reciprocal_rne"
+    }
+  ],
+  "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+  "roles": {
+    "input_norm": {
+      "epsilon": 1e-06,
+      "input": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 19200,
+        "sha256": "67e79cc3f9d26e9aaa13f8ede516b631919f53c4cbfdabc30aba35241bb9de26",
+        "shape": [
+          1,
+          30,
+          640
+        ]
+      },
+      "input_strides": [
+        19200,
+        640,
+        1
+      ],
+      "instruction_id": "i0007",
+      "instruction_sha256": "bde106d560444a7af1f7622bd51c84095f4f8980bd6f8014ec6dbb3bae0fd209",
+      "output_tensor": "layer.0.attention.normalized",
+      "profiles": {
+        "exact_sum_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "3a349d5ab616d0aaf6dd9b143e102473f430f969eadb313f35f78db82197c907"
+        },
+        "exact_sum_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "996a5f9a0bf278ec76ac1c7f0dab0d48dbcd26dd1eb27b6ffaf90a1aaa4816fb"
+        },
+        "sequential_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "09cb87b4b1857e600bb0aae524ae1090088d8e6a0614e178f75168c69c6060ca",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "0aeea1a68442f08707b173686e2ebd68a5e70adbe0aa882c143ac6c0cdeeb4c1"
+        },
+        "sequential_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "09cb87b4b1857e600bb0aae524ae1090088d8e6a0614e178f75168c69c6060ca",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "12ba3712cad485748f8aca578a39dd4da406c4688889cd682e3700de4211e35d"
+        },
+        "source_vec4_warp32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "53c9e1900fab52a8a25999464e5f4232bebf4863cae5136627b301e2a9ffe40e"
+        },
+        "source_vec4_warp32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 19200,
+            "sha256": "75501cdbc12c6471240304849f872f810dfd5afb051904425b562eb5542d6ca7",
+            "shape": [
+              1,
+              30,
+              640
+            ]
+          },
+          "prediction_sha256": "81c19671eca2627580f9b4fa49ef95ad267af17a35b4b276a5f772b7e2b91ccd"
+        }
+      },
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 640,
+        "sha256": "71f942c47bdb8df296366a4a443856063711540726debbb578ace6478e19e2f7",
+        "shape": [
+          640
+        ]
+      },
+      "weight_name": "model.layers.0.input_layernorm.weight"
+    },
+    "key_norm": {
+      "epsilon": 1e-06,
+      "input": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 7680,
+        "sha256": "243e66b0a1163a0ce5591eb82702abf49e5b8e4148f5e0355a98fcdb86a25cdd",
+        "shape": [
+          1,
+          1,
+          30,
+          256
+        ]
+      },
+      "input_strides": [
+        7680,
+        256,
+        256,
+        1
+      ],
+      "instruction_id": "i0015",
+      "instruction_sha256": "81d945457fa483fcbd88fbe044a39ff44d3046f71cdd6a78064997136c77afa5",
+      "output_tensor": "layer.0.key.normalized",
+      "profiles": {
+        "exact_sum_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "04aa2bd8f6239f54c56faf80964dd8411b2115b1dfe9040abd2c79423c8f2260"
+        },
+        "exact_sum_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "e3c38cd58891541104a6d7f4ac5d19d7fd3982bee4fbfde3d62bff1e438b0b2a"
+        },
+        "sequential_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "f86ef640b169181f2ec399059eb4b250c71afb7db90ee138f7f067f5a516bedf"
+        },
+        "sequential_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "b91c1053f40e35e7dc86eaeafb64b64f9b282a5b85b8bb12a560b56c8fd45831"
+        },
+        "source_vec4_warp32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "66dfd63ea9d1f5b3138d2a4d0ef1747ddc5e90eee79784fb30dc7bbf91e1557e"
+        },
+        "source_vec4_warp32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 7680,
+            "sha256": "2d6741eb7534eb0ff851d535b913721c4ed9a13ea32773f6cb1c559550b227ed",
+            "shape": [
+              1,
+              1,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "1f55ccdd7554101aca43e314de6b8f9f1ce0d5ea05f5fa62515a3f1f878a2f90"
+        }
+      },
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 256,
+        "sha256": "1f8aab7c05eafe693b868f2e151a6fe300e3cdecb2d136aef4da08f5ad4babc3",
+        "shape": [
+          256
+        ]
+      },
+      "weight_name": "model.layers.0.self_attn.k_norm.weight"
+    },
+    "query_norm": {
+      "epsilon": 1e-06,
+      "input": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 30720,
+        "sha256": "8fe963c89c792755bd2ff9bb032eab4c43c7d9fc71f0659a27499007c16acef0",
+        "shape": [
+          1,
+          4,
+          30,
+          256
+        ]
+      },
+      "input_strides": [
+        30720,
+        256,
+        1024,
+        1
+      ],
+      "instruction_id": "i0014",
+      "instruction_sha256": "3e84f435d1739324b5cb6296f836c403fce58569636ec4b4e97751eb31d6c473",
+      "output_tensor": "layer.0.query.normalized",
+      "profiles": {
+        "exact_sum_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "8d66f4a386ad2148879625b2be7855a077df088ae947f8ef0d26cdf939de4797"
+        },
+        "exact_sum_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "b113aa212287fa2a6c85e4b76217eea45fa9167a98784b403d405c25e5a476db"
+        },
+        "sequential_float32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "89d26cef18c8f2f432cd12c04d1092233d6151bf3093f72b12782cd06c1b25a9",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "b3877665b917cb6c30bbb613d61a5355134e8a7255bf8980f0dfc92c09a4d053"
+        },
+        "sequential_float32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "89d26cef18c8f2f432cd12c04d1092233d6151bf3093f72b12782cd06c1b25a9",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "946cfb8fb9b49639b2aaee50e27ff8a273a6690757982acf82b5baecf41ba5f4"
+        },
+        "source_vec4_warp32:rsqrt_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "8f1c5b73f5fef2c16ef15fa459bca16955fea5e7696f929dc5c70ff3f69f4c8b"
+        },
+        "source_vec4_warp32:sqrt_rne_then_reciprocal_rne": {
+          "output": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "d09e0c51b5ca46e0f30aef090c80f94fd82427de365dea3544f06c2db79c4443",
+            "shape": [
+              1,
+              4,
+              30,
+              256
+            ]
+          },
+          "prediction_sha256": "fac7f6965c3251c54f70cd899708a1ee1699bdf7fc9fcb00d1de0102e1386f64"
+        }
+      },
+      "weight": {
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "kind": "tensor",
+        "layout": "torch.strided",
+        "numel": 256,
+        "sha256": "4815c67fba665537550f95881b4819e356c4dcbba3dd5245629915def40353ac",
+        "shape": [
+          256
+        ]
+      },
+      "weight_name": "model.layers.0.self_attn.q_norm.weight"
+    }
+  },
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "float32_matmul_precision": "highest",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "transformers": "4.53.3"
+  },
+  "schema_version": 1,
+  "scope": "Fixed-input actual layer-0 input/Q/K RMS characterization with independently specified finite arithmetic candidates and observed ATen stages; not fresh-prompt validation, linked-binary proof, or first-layer qualification.",
+  "source_projection_plan_sha256": "850f26d97f1f1dcd99ed72cfdaa8d6945016afd847cd618ff753c677bcf14e8e",
+  "source_projection_summary_sha256": "4b6d89cffb5b9d94c58d9af16f251455f0382c846af9bdb15ac88c28dfa0ae76",
+  "source_reference": "PyTorch v2.7.1 ReduceMomentKernel.cu mean factor is float32(num_outputs)/numel",
+  "source_validation": "projection bundle and summary integrity; use projection-slice-verify --reexecute for full source replay",
+  "template_assumptions": {
+    "block_height": 16,
+    "block_width": 32,
+    "cross_warp_or_global_reduction": false,
+    "input_vector_size": 4,
+    "shuffle_offsets": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ]
+  }
+}

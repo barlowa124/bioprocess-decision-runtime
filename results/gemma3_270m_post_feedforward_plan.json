@@ -1,0 +1,312 @@
+{
+  "all_fp32_vector_internals_observed": false,
+  "bundle_sha256": "6a7641876aa9b3d5f70b797a3f93295e39f68809d3ba371b8f8d7d00ab18e86f",
+  "candidate_refitting_allowed": false,
+  "code_sha256": "ad634700fdfc9f08b8f71bf36d4d00a7e3613e75b5dbeba1bc768f2bd8d8993a",
+  "completeFirstLayerQualified": false,
+  "connected_first_layer_independently_recomputed": false,
+  "epoch_scope": "fixed_source_case_only",
+  "expected_rms_symbols": [
+    "Memcpy DtoH (Device -> Pageable)",
+    "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+    "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+    "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+    "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLy2EEEEviT0_T1_",
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_50_GLOBAL__N__f7789698_12_PowKernel_cu_fe73ebd8_314029pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLy2EEEEviS6_T1_",
+    "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+  ],
+  "final_model_norm_executed": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "implementation_commitment": {
+    "Gemma3DecoderLayer": "74347332a6e1cc397933fc3e42da48a3840a8f523da4cbe5947b743507563c23",
+    "Gemma3ForCausalLM": "31377770dffd89de57853a32921825964a6c92d5d026e09119c850bb432ea37c",
+    "Gemma3MLP": "03df2d7685cf8446594448cbd33ef676a2b088779d99d9803abe3bed2ec7ad9b",
+    "Gemma3RMSNorm": "2a18f679fdfe238c12b3b382b502d9b70b42fff34269836b61212a8eccfdd52a",
+    "Gemma3TextModel": "31f6c37d69a5615478fd698d468a07650d31e4fc9a4fd619fe1be7bd375dd47e",
+    "Linear": "b6069b59d9608ca56723a18719cd65f405961748b61bfa02ecffb2bc56b40e0b"
+  },
+  "input": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 19200,
+    "sha256": "c646197c7654ccec700532b44923a4c67121af3d96c611e00090ddc32819fbea",
+    "shape": [
+      1,
+      30,
+      640
+    ]
+  },
+  "instructions": [
+    {
+      "attributes": {
+        "epsilon": 1e-06
+      },
+      "id": "i0034",
+      "inputs": [
+        "layer.0.mlp.down"
+      ],
+      "instruction_sha256": "1ae76944d7de392e26216657a0dfac39aee5035bb54ffc3e2054be86769951b4",
+      "layer": 0,
+      "opcode": "RMS_NORM",
+      "outputs": [
+        "layer.0.mlp.post_normalized"
+      ],
+      "parameter_refs": [
+        "model.layers.0.post_feedforward_layernorm.weight"
+      ],
+      "semantics": "gemma-ir-semantics-v1:RMS_NORM"
+    },
+    {
+      "attributes": {
+        "output_dtype": "torch.bfloat16"
+      },
+      "id": "i0035",
+      "inputs": [
+        "layer.0.post_attention_residual",
+        "layer.0.mlp.post_normalized"
+      ],
+      "instruction_sha256": "bb1bc67d5205d083e119da899a09b352e643b036a5435677a175b16961db1a11",
+      "layer": 0,
+      "opcode": "ADD",
+      "outputs": [
+        "hidden.1"
+      ],
+      "parameter_refs": [],
+      "semantics": "gemma-ir-semantics-v1:ADD"
+    }
+  ],
+  "kernel_provenance": "distinct-symbol-set-only; launch order not established",
+  "later_layers_executed": false,
+  "logits_executed": false,
+  "model_binding": {
+    "class": "transformers.models.gemma3.modeling_gemma3.Gemma3ForCausalLM",
+    "config_sha256": "94a45418019f478e30b3e630e5d719da8fa885f6a4954634ded02c654a6e55fd",
+    "parameter_commitments_sha256": "d64937d2e04391694f616a506e80d00422379b3fb3f32388f80fbec3249c8ad0"
+  },
+  "native_arithmetic_reconstructed": false,
+  "native_fused_registers_observed": false,
+  "normalized_value_count": 19200,
+  "original_forward_count": 6,
+  "plan_sha256": "b18692848f4e85c962ca2f688f8e580ff569846024cc150688d3fc2cb53517ac",
+  "predictions": {
+    "normalized": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 19200,
+      "sha256": "106cacf327d1965c16e5317ddd8d0d46cab88e749803a51fc94b2fef07ab3644",
+      "shape": [
+        1,
+        30,
+        640
+      ]
+    },
+    "residual": {
+      "device": "cpu",
+      "dtype": "torch.bfloat16",
+      "kind": "tensor",
+      "layout": "torch.strided",
+      "numel": 19200,
+      "sha256": "5e08ec14753640c920cbe96f9adb0790172dd8fb700421cb1b1ba97cb231a438",
+      "shape": [
+        1,
+        30,
+        640
+      ]
+    }
+  },
+  "prefix_boundary_reused": true,
+  "prefix_independently_recomputed": false,
+  "qualification_promotion_allowed": false,
+  "qualified": false,
+  "repetitions": 3,
+  "residual_base": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 19200,
+    "sha256": "6478956acb59fa71ff4663ad132cafcee4e33c2cd20f1a9e4d4c65a2a629bf0e",
+    "shape": [
+      1,
+      30,
+      640
+    ]
+  },
+  "residual_value_count": 19200,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "scalar_stage_positions": 90,
+  "scalar_stages_sha256": "0bab222512367ba75897fc7994cc6e7bee05b27809bae7fee4d58259677a2f50",
+  "schema_version": 1,
+  "scope": "Fixed-case post-feedforward RMS640 with registered empirical rsqrt and independent BF16 residual ADD to hidden.1 from verified reused branches. Observed ATen mean/denominator/rsqrt stages and original ADD boundaries, not all FP32 vector internals, fused registers, complete native semantics, independently connected first-layer execution, or hardware qualification. Distinct CUDA symbol sets do not establish launch order. No later layer, final normalization, or logits execution.",
+  "sources": {
+    "candidate": {
+      "chunk_size": 192,
+      "id": "k192:bfloat16_rne:sequential_float32_rne",
+      "merge": "sequential_float32_rne",
+      "partial_format": "bfloat16_rne",
+      "partitions": [
+        [
+          0,
+          192
+        ],
+        [
+          192,
+          384
+        ],
+        [
+          384,
+          576
+        ],
+        [
+          576,
+          768
+        ],
+        [
+          768,
+          960
+        ],
+        [
+          960,
+          1152
+        ],
+        [
+          1152,
+          1344
+        ],
+        [
+          1344,
+          1536
+        ],
+        [
+          1536,
+          1728
+        ],
+        [
+          1728,
+          1920
+        ],
+        [
+          1920,
+          2048
+        ]
+      ]
+    },
+    "dense_k2048": {
+      "bundle_sha256": "a5d8986c0afb15db046ba5e9a7582a15533250c9ebcd07bbefcb252b1015d18f",
+      "plan_payload_sha256": "17e159533d3ee57ad5c234b945ce56fdd6de16c1c2e55420f2eb7c31cb35ce23",
+      "plan_sha256": "fe9b0560b23c88047ab47251a1350e9141b7f2481e971d852e6aab02ee847637",
+      "report_payload_sha256": "af8a23ceb2a0ad5d65f0cf5efff92e23981af7e3b68bd169bc336922fec66046",
+      "report_sha256": "2eb0399bcc8f9e00884ae6534b02c2bf676e5788935632675ec414d0b63744d2"
+    },
+    "dense_sources": {
+      "down_sources": {
+        "probe_binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
+        "probe_bundle_sha256": "e25c356ba7c5014450e8ad96e60fbffa5248dedb991da2a3a411caf6d3ca0ac1",
+        "probe_plan_sha256": "90c5793b9f40405a8beda303fee9b8fe92fdc08a5d7a0489f2eaa58f6e247866",
+        "probe_report_sha256": "46e676cb8f0c9316955ba3b95c0368e5523c4a3093f3818531744d0cfda3a62d",
+        "product_bundle_sha256": "c51f26f7250e6091610f51e7c92b2d55e570a02f3c262886218c010048cac7cc",
+        "product_plan_sha256": "fe8209847e914d7e67858a9bba0d5bbe7e9639a185521fc332847eb954c6c542",
+        "product_report_sha256": "5782ca9b5cf0911c5e561b483e36ad497b82d6f19654ba9ed8dd4670f07c89dd",
+        "product_sources": {
+          "entry_bundle_sha256": "abc9fcbf7ad180d65cd39f6fe4d7366741a96bf8e50a7846d380294a3c33b506",
+          "entry_plan_sha256": "50a87661357f0cf7734000fb810ab9b36c339e9b2e8516a096eedf5939c3d9b3",
+          "entry_report_sha256": "4885b19ced0103828ff78318f74a9506ea4aedc83b0d1a57f76df16f8cc34fca",
+          "gelu_evidence": {
+            "layout_report_sha256": "10dd475e3c32b2291d2a9376d4ae13c3e4b7f7ddb8636d6e73f65ab058b1926a",
+            "table_manifest_sha256": "42d4b550ed39314969da7483f9aa6f8a6abc98ee088d8e4573bf10a781d7863b",
+            "table_plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+            "table_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf"
+          },
+          "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+        },
+        "product_summary_sha256": "55732c53ad6042ccf9c9fb59a5f4be54e4f07564af67f955c1dda5b1526683f2",
+        "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+      },
+      "model_bundle_sha256": "3c8dcd60014d2c4461b56fd8f743e4f77bba4377afa328d70e6ae13a64181de1",
+      "model_plan_sha256": "69f92762b842c5818a52007e00a2115f30c1b1fa31dafefc981342792c5b9208",
+      "model_report_sha256": "8befebf82b977194c43af9e1f98120ec9228a566873362b0360557b560bdfbb1",
+      "model_summary_sha256": "9d0c3be77ce806bdcffe86a3215946cc62d7a2829a56b20da75ecfa5d801fe3b",
+      "model_verification_mode": "passing_v2_down_integrity_lineage_and_geometry_only_no_down_numerical_recomputation"
+    },
+    "lookup_evidence": {
+      "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+      "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+      "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+      "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+      "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+    },
+    "model_down": {
+      "bundle_sha256": "3c8dcd60014d2c4461b56fd8f743e4f77bba4377afa328d70e6ae13a64181de1",
+      "plan_payload_sha256": "1f956e0f52ac93336403295962b9a9fa9cb7394bed30d51d5d5b0327e0f4a63e",
+      "plan_sha256": "69f92762b842c5818a52007e00a2115f30c1b1fa31dafefc981342792c5b9208",
+      "report_payload_sha256": "6e94f0465e032c8d1a577dbbe9661ccd22df52a13966693bcb092211e1aa9951",
+      "report_sha256": "8befebf82b977194c43af9e1f98120ec9228a566873362b0360557b560bdfbb1"
+    },
+    "post_attention": {
+      "bundle_sha256": "74b27c8b2b1b56409a227f6d7466c54e4728293cb040af04cf3e2b3b66e982ab",
+      "plan_payload_sha256": "e1c11d284cad1547c640fe62f6ab5974a9d33cb5e273a8acf314c526b108b933",
+      "plan_sha256": "507afc11a6711aec2892d5b3c247c7f1b95efad930425eff6467907d2a04f54c",
+      "report_payload_sha256": "2e4702739de0164a1553e9cea3a382c5830af7069f9a7a6600a2cdac45c0b713",
+      "report_sha256": "f02f096fbed9c4e0958fe98e0d27ef6705837f619fe3027b751405b548a87f50"
+    },
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "runtime": {
+      "allow_tf32": false,
+      "bf16_reduced_precision_reduction": true,
+      "capability": [
+        8,
+        9
+      ],
+      "cublas_workspace_config": null,
+      "cuda": "12.8",
+      "cuda_autocast_enabled": false,
+      "deterministic_algorithms": false,
+      "device": "NVIDIA GeForce RTX 4090",
+      "driver_version": "616.56",
+      "float32_matmul_precision": "highest",
+      "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+      "python": "3.11.9",
+      "torch": "2.7.1+cu128",
+      "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+      "transformers": "4.53.3"
+    }
+  },
+  "value_count": 38400,
+  "weight": {
+    "device": "cpu",
+    "dtype": "torch.bfloat16",
+    "kind": "tensor",
+    "layout": "torch.strided",
+    "numel": 640,
+    "sha256": "4f192399abb688d9d4dbcc5fb577cda75ed4cff8f9afcf1fee70c541e0762ef6",
+    "shape": [
+      640
+    ]
+  }
+}

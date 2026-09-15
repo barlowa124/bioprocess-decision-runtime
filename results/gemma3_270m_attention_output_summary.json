@@ -1,0 +1,436 @@
+{
+  "aggregation_value_count": 30720,
+  "candidate_passes": false,
+  "checks": [
+    {
+      "original_concatenation_matches": true,
+      "projection_input_matches_prediction": true,
+      "pv_operands_match": true,
+      "returned_head_coordinates_match": true,
+      "source_inputs_match": true,
+      "untraced_concatenation_matches": true,
+      "untraced_head_coordinates_match": true,
+      "untraced_projection_matches": true
+    },
+    {
+      "original_concatenation_matches": true,
+      "projection_input_matches_prediction": true,
+      "pv_operands_match": true,
+      "returned_head_coordinates_match": true,
+      "source_inputs_match": true,
+      "untraced_concatenation_matches": true,
+      "untraced_head_coordinates_match": true,
+      "untraced_projection_matches": true
+    },
+    {
+      "original_concatenation_matches": true,
+      "projection_input_matches_prediction": true,
+      "pv_operands_match": true,
+      "returned_head_coordinates_match": true,
+      "source_inputs_match": true,
+      "untraced_concatenation_matches": true,
+      "untraced_head_coordinates_match": true,
+      "untraced_projection_matches": true
+    }
+  ],
+  "code_sha256": "98e147e4df9c8d6f806c5c87ca98d295c496cca16aa41f2e6dff68e55d086903",
+  "first_divergence": {
+    "coordinate": [
+      0,
+      0,
+      4
+    ],
+    "observed_bits": 16210,
+    "predicted_bits": 16209,
+    "repetition": 0,
+    "stage": "projected"
+  },
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "mismatch_count": 18039,
+  "mismatch_counts": {
+    "concatenated": [
+      0,
+      0,
+      0
+    ],
+    "head_output": [
+      0,
+      0,
+      0
+    ],
+    "projected": [
+      6013,
+      6013,
+      6013
+    ]
+  },
+  "observed_hashes": {
+    "concatenated": [
+      "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+      "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+      "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0"
+    ],
+    "head_output": [
+      "a72f4a5151dbae5e02802756596f549cd7bdbedc0aae0fb314240f83552cf76a",
+      "a72f4a5151dbae5e02802756596f549cd7bdbedc0aae0fb314240f83552cf76a",
+      "a72f4a5151dbae5e02802756596f549cd7bdbedc0aae0fb314240f83552cf76a"
+    ],
+    "projected": [
+      "a11cbe2d84696d7acbb733c0aca1ed494e4b18ce0b4fb1abba1b6cc77749005a",
+      "a11cbe2d84696d7acbb733c0aca1ed494e4b18ce0b4fb1abba1b6cc77749005a",
+      "a11cbe2d84696d7acbb733c0aca1ed494e4b18ce0b4fb1abba1b6cc77749005a"
+    ]
+  },
+  "operand_geometry": [
+    {
+      "projection_geometry": [
+        {
+          "strides": [
+            30720,
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+            "shape": [
+              1,
+              30,
+              1024
+            ]
+          }
+        },
+        {
+          "strides": [
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 655360,
+            "sha256": "010e224276b7d183e7c2bc1599cbbb4300585432a1a19aabaf695fdf9970dc91",
+            "shape": [
+              640,
+              1024
+            ]
+          }
+        }
+      ],
+      "pv_geometry": [
+        {
+          "strides": [
+            900,
+            30,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 3600,
+            "sha256": "21c2b35894b877abf424600f550a48be6ac11f39aa07df64713feeda9d3e5449",
+            "shape": [
+              4,
+              30,
+              30
+            ]
+          }
+        },
+        {
+          "strides": [
+            0,
+            256,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "c19a67193ab527b61284d573e880726c4dc7d0f75cd5bd30f245a5f14542e382",
+            "shape": [
+              4,
+              30,
+              256
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "projection_geometry": [
+        {
+          "strides": [
+            30720,
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+            "shape": [
+              1,
+              30,
+              1024
+            ]
+          }
+        },
+        {
+          "strides": [
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 655360,
+            "sha256": "010e224276b7d183e7c2bc1599cbbb4300585432a1a19aabaf695fdf9970dc91",
+            "shape": [
+              640,
+              1024
+            ]
+          }
+        }
+      ],
+      "pv_geometry": [
+        {
+          "strides": [
+            900,
+            30,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 3600,
+            "sha256": "21c2b35894b877abf424600f550a48be6ac11f39aa07df64713feeda9d3e5449",
+            "shape": [
+              4,
+              30,
+              30
+            ]
+          }
+        },
+        {
+          "strides": [
+            0,
+            256,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "c19a67193ab527b61284d573e880726c4dc7d0f75cd5bd30f245a5f14542e382",
+            "shape": [
+              4,
+              30,
+              256
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "projection_geometry": [
+        {
+          "strides": [
+            30720,
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "928a75dfb68e656e8d414020782b517daf7ff5a85ece792f00548ccb195c2bd0",
+            "shape": [
+              1,
+              30,
+              1024
+            ]
+          }
+        },
+        {
+          "strides": [
+            1024,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 655360,
+            "sha256": "010e224276b7d183e7c2bc1599cbbb4300585432a1a19aabaf695fdf9970dc91",
+            "shape": [
+              640,
+              1024
+            ]
+          }
+        }
+      ],
+      "pv_geometry": [
+        {
+          "strides": [
+            900,
+            30,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 3600,
+            "sha256": "21c2b35894b877abf424600f550a48be6ac11f39aa07df64713feeda9d3e5449",
+            "shape": [
+              4,
+              30,
+              30
+            ]
+          }
+        },
+        {
+          "strides": [
+            0,
+            256,
+            1
+          ],
+          "tensor": {
+            "device": "cuda:0",
+            "dtype": "torch.bfloat16",
+            "kind": "tensor",
+            "layout": "torch.strided",
+            "numel": 30720,
+            "sha256": "c19a67193ab527b61284d573e880726c4dc7d0f75cd5bd30f245a5f14542e382",
+            "shape": [
+              4,
+              30,
+              256
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "plan_sha256": "8ed91b0c4e66c455491794038673cea72c2138a252e7da0f817e7cac02899ab1",
+  "post_attention_norm_executed": false,
+  "prefix_independently_recomputed": false,
+  "profile": {
+    "aggregation_candidate_length": 32,
+    "aggregation_padding": "two appended positive-zero operands on each side; experimental, not asserted hardware padding",
+    "aggregation_reduction_length": 30,
+    "coordinate_mapping": "transpose(0,2,1,3), reshape(1,30,1024)",
+    "dot": {
+      "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+      "carry_conversion": "float32 toward zero after every K8",
+      "final_conversion": "bfloat16 RNE",
+      "half_order": "lower_then_upper",
+      "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+      "precision_bits": 25,
+      "quantization": "toward_zero"
+    },
+    "projection_reduction_length": 1024
+  },
+  "projection_cuda_events": [
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_64x1_tn_align8EEvNT_6ParamsE",
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+    ]
+  ],
+  "projection_value_count": 19200,
+  "pv_cuda_events": [
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_nn_align2EEvNT_6ParamsE"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_nn_align2EEvNT_6ParamsE"
+    ],
+    [
+      "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_32x1_nn_align2EEvNT_6ParamsE"
+    ]
+  ],
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Frozen fixed-input value aggregation and attention output projection on verified serialized probability/V boundaries; K30-to-K32 zero-padding and K1024 dot candidates, not prequalified shape transfer or complete-layer equivalence.",
+  "source_report_sha256": "c3c2bb3ab80d6f8da9a6b17ae46b89dc9830eddc236562651c4c0db76255a374",
+  "sources": {
+    "lookup_softmax_bundle_sha256": "66940b3aadedb7aaeab93e8de6cdd720c340f1914129e686ec2a1d0657d6b96a",
+    "lookup_softmax_plan_sha256": "09eaa33d508242ac20c4617dcf65ddc20e4167ad20c127c830d92cbb295f58c6",
+    "lookup_softmax_report_sha256": "917e7dfe52d2939b1cae1a77606e4cb5c64a2a0c30bb93760e1cb6c1c0bd0e57",
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "upstream": {
+      "score_bundle_sha256": "a0a11f15368c040dfe4c7271bec6d96a599ac542ed38021a854ab8a3c3b7760d",
+      "score_plan_sha256": "e2667ec3d29e3ae19cc143f24c6860c607bbef0b36873e23c161b523331d00bc",
+      "score_report_sha256": "3b8d45606ddbac8d78452c009eeb1f02f963fcb9ede523a632976326442269fc",
+      "upstream": {
+        "lookup_evidence": {
+          "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+          "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+          "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+          "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+          "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+        },
+        "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+        "rotary_bundle_sha256": "03fc5e04636fbae78f814e7f780f2b0d56e31c573715ff2359721dbed7435c87",
+        "rotary_execution_root": "ca636a916dfbf94d24fedcd2fc6068987ad8fe920e7d50439acf528a8a60ecd6",
+        "rotary_plan_sha256": "ccab2e17eb9872a762f4c17db94956277b91eda99b82b13dffefb0ec37bc51d8",
+        "rotary_report_sha256": "10dc2042c7731646d59e9308064e49bbc021d8dcce9beebbc7b3ca7a94806b17",
+        "table_manifest_sha256": "0a5fa8049fdd084c481197d2e2b91fa6e3111232ff17bf46c8a897676634c666"
+      }
+    }
+  },
+  "summary_sha256": "59cd71288a496029228f1acc0030c533e79111e9cefd63e4a805a57c77469101"
+}

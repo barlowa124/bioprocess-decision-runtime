@@ -1,0 +1,191 @@
+{
+  "candidate": {
+    "chunk_size": 192,
+    "id": "k192:bfloat16_rne:sequential_float32_rne",
+    "merge": "sequential_float32_rne",
+    "partial_format": "bfloat16_rne",
+    "partitions": [
+      [
+        0,
+        192
+      ],
+      [
+        192,
+        384
+      ],
+      [
+        384,
+        576
+      ],
+      [
+        576,
+        768
+      ],
+      [
+        768,
+        960
+      ],
+      [
+        960,
+        1152
+      ],
+      [
+        1152,
+        1344
+      ],
+      [
+        1344,
+        1536
+      ],
+      [
+        1536,
+        1728
+      ],
+      [
+        1728,
+        1920
+      ],
+      [
+        1920,
+        2048
+      ]
+    ]
+  },
+  "candidate_refitting_allowed": false,
+  "checks": [
+    {
+      "boundary_geometry_matches": true,
+      "checkpoint_weight_matches": true,
+      "declared_order_matches": true,
+      "kernel_names_match": false,
+      "linear_geometry_matches_boundaries": true,
+      "linear_input_lineage_matches": true,
+      "linear_output_lineage_matches": true,
+      "linear_weight_matches": true,
+      "postnorm_not_executed": true,
+      "same_cuda_device": true,
+      "source_input_matches": true,
+      "untraced_output_matches": true,
+      "weight_pointer_matches": true
+    },
+    {
+      "boundary_geometry_matches": true,
+      "checkpoint_weight_matches": true,
+      "declared_order_matches": true,
+      "kernel_names_match": false,
+      "linear_geometry_matches_boundaries": true,
+      "linear_input_lineage_matches": true,
+      "linear_output_lineage_matches": true,
+      "linear_weight_matches": true,
+      "postnorm_not_executed": true,
+      "same_cuda_device": true,
+      "source_input_matches": true,
+      "untraced_output_matches": true,
+      "weight_pointer_matches": true
+    },
+    {
+      "boundary_geometry_matches": true,
+      "checkpoint_weight_matches": true,
+      "declared_order_matches": true,
+      "kernel_names_match": false,
+      "linear_geometry_matches_boundaries": true,
+      "linear_input_lineage_matches": true,
+      "linear_output_lineage_matches": true,
+      "linear_weight_matches": true,
+      "postnorm_not_executed": true,
+      "same_cuda_device": true,
+      "source_input_matches": true,
+      "untraced_output_matches": true,
+      "weight_pointer_matches": true
+    }
+  ],
+  "code_sha256": "66028749987e428877771fa4eaf7222ed97bc2b5fced850f06ef1a33a872c86b",
+  "down_matches": false,
+  "first_divergence": "kernel_names_match",
+  "fresh_prompt_holdout": false,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_partitioning_established": false,
+  "hardware_semantics_established": false,
+  "intermediate_values_observed": false,
+  "kernel_names": [
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ],
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ],
+    [
+      "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_",
+      "ampere_bf16_s16816gemm_bf16_64x64_ldg8_f2f_stages_64x5_tn"
+    ]
+  ],
+  "mismatch_counts": [
+    0,
+    0,
+    0
+  ],
+  "observed_output_hashes": [
+    "c646197c7654ccec700532b44923a4c67121af3d96c611e00090ddc32819fbea",
+    "c646197c7654ccec700532b44923a4c67121af3d96c611e00090ddc32819fbea",
+    "c646197c7654ccec700532b44923a4c67121af3d96c611e00090ddc32819fbea"
+  ],
+  "plan_sha256": "50186e55487e6ad7b436b68a6b90a148866068e83e10552f83409ffee868cf81",
+  "post_feedforward_layernorm_executed": false,
+  "prefix_boundary_reused": true,
+  "prefix_independently_recomputed": false,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "schema_version": 1,
+  "scope": "Fixed-case original eager MLP down projection from the reused verified product boundary; unchanged unique controlled K2048 candidate hypothesis, not hardware partition/accumulator proof, new-prompt holdout, or full-layer qualification. This down-stage workflow has not previously acquired the model down output; the prefix is not independently recomputed.",
+  "shape_transfer_prequalified": false,
+  "source_report_sha256": "e682052be39f6b941c1f2810a57117223c04d7f5039d54194dceee9ab0262114",
+  "sources": {
+    "probe_binding_sha256": "a9ec512521d3cc2dd2d6224663a9c8986c464c9b5296852830a919b57b618d79",
+    "probe_bundle_sha256": "e25c356ba7c5014450e8ad96e60fbffa5248dedb991da2a3a411caf6d3ca0ac1",
+    "probe_plan_sha256": "90c5793b9f40405a8beda303fee9b8fe92fdc08a5d7a0489f2eaa58f6e247866",
+    "probe_report_sha256": "46e676cb8f0c9316955ba3b95c0368e5523c4a3093f3818531744d0cfda3a62d",
+    "product_bundle_sha256": "c51f26f7250e6091610f51e7c92b2d55e570a02f3c262886218c010048cac7cc",
+    "product_plan_sha256": "fe8209847e914d7e67858a9bba0d5bbe7e9639a185521fc332847eb954c6c542",
+    "product_report_sha256": "5782ca9b5cf0911c5e561b483e36ad497b82d6f19654ba9ed8dd4670f07c89dd",
+    "product_sources": {
+      "entry_bundle_sha256": "abc9fcbf7ad180d65cd39f6fe4d7366741a96bf8e50a7846d380294a3c33b506",
+      "entry_plan_sha256": "50a87661357f0cf7734000fb810ab9b36c339e9b2e8516a096eedf5939c3d9b3",
+      "entry_report_sha256": "4885b19ced0103828ff78318f74a9506ea4aedc83b0d1a57f76df16f8cc34fca",
+      "gelu_evidence": {
+        "layout_report_sha256": "10dd475e3c32b2291d2a9376d4ae13c3e4b7f7ddb8636d6e73f65ab058b1926a",
+        "table_manifest_sha256": "42d4b550ed39314969da7483f9aa6f8a6abc98ee088d8e4573bf10a781d7863b",
+        "table_plan_sha256": "8d80218da1c31e52b79da2a08abe4eeb2fa8afbaabc8a063bb09312e8cd89dd6",
+        "table_sha256": "f4206fa5bbb4d373a8c6d6643c152ee6fe385972fc1e089a261d7515632bb7cf"
+      },
+      "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+    },
+    "product_summary_sha256": "55732c53ad6042ccf9c9fb59a5f4be54e4f07564af67f955c1dda5b1526683f2",
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712"
+  },
+  "split_boundaries_observed": false,
+  "summary_sha256": "c0375a1adf318cbda61b558ee0a99167fbc5064688a6c36230d54568fe31a10c",
+  "uses_empirical_gelu_specification": true,
+  "value_count": 19200
+}

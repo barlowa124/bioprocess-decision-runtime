@@ -1,0 +1,143 @@
+{
+  "checks": [
+    {
+      "mean_geometry_matches": true,
+      "source_inputs_match": true,
+      "untraced_outputs_match": true
+    },
+    {
+      "mean_geometry_matches": true,
+      "source_inputs_match": true,
+      "untraced_outputs_match": true
+    },
+    {
+      "mean_geometry_matches": true,
+      "source_inputs_match": true,
+      "untraced_outputs_match": true
+    }
+  ],
+  "code_sha256": "b65455e160ed2ebd08605026c8355fd3224d45c6b6c277587a7fca176af44030",
+  "cuda_events": [
+    [
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_50_GLOBAL__N__f7789698_12_PowKernel_cu_fe73ebd8_314029pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLy2EEEEviS6_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ],
+    [
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_50_GLOBAL__N__f7789698_12_PowKernel_cu_fe73ebd8_314029pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLy2EEEEviS6_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ],
+    [
+      "Memcpy DtoH (Device -> Pageable)",
+      "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+      "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+      "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLy2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLy2EEEEviT0_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_50_GLOBAL__N__f7789698_12_PowKernel_cu_fe73ebd8_314029pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLy2EEEEviS6_T1_",
+      "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLy2EEEEviT0_T1_"
+    ]
+  ],
+  "first_divergence": null,
+  "full_first_layer_qualified": false,
+  "global_exactness_activation_allowed": false,
+  "hardware_semantics_established": false,
+  "mismatch_counts": {
+    "denominator_bits": [
+      0,
+      0,
+      0
+    ],
+    "mean_bits": [
+      0,
+      0,
+      0
+    ],
+    "normalized": [
+      0,
+      0,
+      0
+    ],
+    "residual": [
+      0,
+      0,
+      0
+    ],
+    "rsqrt_bits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "mlp_executed": false,
+  "native_arithmetic_reconstructed": false,
+  "observed_output_hashes": {
+    "normalized": [
+      "781082567d37d852b1a46fe57ece8ec5d4f22fa14e30613be05b0956c6266b07",
+      "781082567d37d852b1a46fe57ece8ec5d4f22fa14e30613be05b0956c6266b07",
+      "781082567d37d852b1a46fe57ece8ec5d4f22fa14e30613be05b0956c6266b07"
+    ],
+    "residual": [
+      "6478956acb59fa71ff4663ad132cafcee4e33c2cd20f1a9e4d4c65a2a629bf0e",
+      "6478956acb59fa71ff4663ad132cafcee4e33c2cd20f1a9e4d4c65a2a629bf0e",
+      "6478956acb59fa71ff4663ad132cafcee4e33c2cd20f1a9e4d4c65a2a629bf0e"
+    ]
+  },
+  "plan_sha256": "507afc11a6711aec2892d5b3c247c7f1b95efad930425eff6467907d2a04f54c",
+  "post_attention_matches": true,
+  "pre_feedforward_norm_executed": false,
+  "prefix_independently_recomputed": false,
+  "runtime": {
+    "allow_tf32": false,
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cublas_workspace_config": null,
+    "cuda": "12.8",
+    "cuda_autocast_enabled": false,
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "driver_version": "616.56",
+    "float32_matmul_precision": "highest",
+    "gpu_uuid_sha256": "90e158db5a7e0730485b55a41fd56a6c283f437f0e3ea0d349d14a8c9f3466d7",
+    "python": "3.11.9",
+    "torch": "2.7.1+cu128",
+    "torch_git_version": "e2d141dbde55c2a4370fac5165b0561b6af4798b",
+    "transformers": "4.53.3"
+  },
+  "runtime_matches_plan": true,
+  "scalar_stage_positions": 90,
+  "schema_version": 1,
+  "scope": "Fixed-input post-attention lookup RMS and BF16 residual addition from verified serialized projection/hidden boundaries; native scalar stages and residual compared before pre-feedforward normalization, not complete-layer qualification.",
+  "source_report_sha256": "f02f096fbed9c4e0958fe98e0d27ef6705837f619fe3027b751405b548a87f50",
+  "sources": {
+    "dense_plan_sha256": "f67582df976f1c871877aec48b6bcd7716da809b043ffa57b582eb25d8403a23",
+    "dense_report_sha256": "c08cde73067c84b531929faae6368db857171fe8f773aa7f46f5a5779556d2e2",
+    "lookup_evidence": {
+      "domain_plan_sha256": "bbecc3ba764258091c47e95f02e2a9340c9d1661e63e648fde14a035492e980b",
+      "domain_report_sha256": "79c375bc8c149ff5476569dddad7419e88965cd1a4b0b6df7df779811d45774e",
+      "table_manifest_sha256": "a832455d502524bfcec4a780ab509765882734b68fce663d722b6f4b7fd7c3e4",
+      "table_plan_sha256": "f6c661e5f6778040f0ead45875e0ace75b3fa9c7ff8744f8d51d0231c4caff71",
+      "table_sha256": "218fc04d271773269367dedf4cff9ff719081b1218c3d67d248d8d6126040246"
+    },
+    "program_sha256": "a32274520915ed7dcbf48634499c9e434270b59116ea6c19fdee8ca8637e4712",
+    "survivor_bundle_sha256": "1103d0a0c8910726c3e23d7b39875320a0bd1515c0601d9ba90d1e4f1adad665",
+    "survivor_plan_sha256": "42c35a08c60257e910ecafe7a4c3600f55e883365f76d23733ecf952da11b272",
+    "survivor_report_sha256": "a3c3269534d2a2d0ef97ee8515d222d90c628b8f643cb23cc20c444511fdc15f"
+  },
+  "summary_sha256": "97a222095bf6971684213de68eeedf77c4dbdc90fb330e1ba4668d30864d5583",
+  "value_count": 38400
+}

@@ -1,0 +1,5444 @@
+{
+  "candidate_refitting_allowed": false,
+  "candidate_selection": "retain inputs only when all three frozen candidates predict different bits; no CUDA selection",
+  "cases": [
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20352,
+        0,
+        0,
+        0,
+        17152,
+        0,
+        53120,
+        17152
+      ],
+      "index": 0,
+      "predicted_bits": {
+        "exact": 17280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17152
+      },
+      "right_bits_sha256": "435602de94c13cef6862cd63c524a46f5c4ea0e44320469f1189b8428b5c2214"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15616,
+        0,
+        0,
+        0,
+        0,
+        52224,
+        15616,
+        19456,
+        0,
+        0
+      ],
+      "index": 1,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 15616,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "021c318b22953371046f793c0ec0047dcb7160b44bae1bf0125c5484e4265b3a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        16000,
+        52608,
+        0,
+        16000,
+        19840,
+        0,
+        0
+      ],
+      "index": 2,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 16000,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "00b6ebb73f3beccce26c374b8d95ae1ce0ee721c0507c3ff42e17e33467eb441"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        52480,
+        0,
+        0,
+        15872,
+        19712,
+        0,
+        15872,
+        0,
+        0
+      ],
+      "index": 3,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15872
+      },
+      "right_bits_sha256": "bec3aeaacf32f9cc78a0caaee9f1ba90a7a826a2a66ba26cfa93a59a2978f6a1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        16640,
+        20352,
+        16640,
+        0,
+        53120,
+        0,
+        0
+      ],
+      "index": 4,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 16640,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "b0dc3dad15ecf8dd61d247a9dcf2cc2572ea32182a8fd2ce2282a1479b876bfe"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        52736,
+        48256,
+        0,
+        0,
+        19968,
+        48256
+      ],
+      "index": 5,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "ae0fb371f8de344500fafdb09444e798afb22c5fa70ad549a0667c9553c83283"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        49792,
+        54400,
+        0,
+        21632,
+        49792
+      ],
+      "index": 6,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "386f683f83b03b34d4ce4fb735af70fa50b321c8dd4ce7a06bc1585406daddf3"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        53760,
+        50048,
+        20992,
+        0,
+        0,
+        50048,
+        0,
+        0
+      ],
+      "index": 7,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "ab53e756b350f00f3a257de437890d3490339b9d6815917185bcc30a762eba55"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        20096,
+        15616,
+        0,
+        0,
+        52864,
+        15616
+      ],
+      "index": 8,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "f56822823ad6d59ec341e97cda77e4e7586559512541ce24ac3f153c7a157564"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        21120,
+        16000,
+        0,
+        53888,
+        16000
+      ],
+      "index": 9,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "02a355d4e45056f8e0a979a12cc529bd02f2c28d19ff7fbaa218aa2b5cabf09d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49664,
+        21504,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        54272,
+        49664
+      ],
+      "index": 10,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49664
+      },
+      "right_bits_sha256": "405a684470dd4c0d45d5c65a1f1f91182cc7897786830f7a7c16c7e8a60404bd"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        20352,
+        49152,
+        0,
+        0,
+        0,
+        53120,
+        49152
+      ],
+      "index": 11,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "d4b655b6c7fec33cb259329f7c03bca771d06201b9775bc61e6f86908f95b277"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49152,
+        20864,
+        0,
+        0,
+        0,
+        53632,
+        0,
+        49152,
+        0,
+        0
+      ],
+      "index": 12,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "b46bd57787f8902b163a262ff97cefc9c782662cd9c603fc918208225a530dd5"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53376,
+        0,
+        17280,
+        0,
+        0,
+        0,
+        0,
+        0,
+        20608,
+        17280
+      ],
+      "index": 13,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "1a816155dd523f737684de73db6ec9f8febdd2e500369dceeec8d5ca43d13b21"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53760,
+        0,
+        0,
+        0,
+        49280,
+        20992,
+        49280,
+        0,
+        0
+      ],
+      "index": 14,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "561ef4ba85e4d829a2141eb050386e889ec4bab0100263119fd0728e840a6a89"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        52224,
+        0,
+        0,
+        48384,
+        0,
+        0,
+        0,
+        19456,
+        48384
+      ],
+      "index": 15,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48384
+      },
+      "right_bits_sha256": "29e16662e3b293e6c9a8f78a2b7cca51270462a1dbafc80bdedbf667ecaa0a9c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16896,
+        0,
+        0,
+        16896,
+        53888,
+        0,
+        21120,
+        0,
+        0
+      ],
+      "index": 16,
+      "predicted_bits": {
+        "exact": 17024,
+        "pairwise_float32_rne": 16896,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "2cd592517876f258ce4b12c074b8f6574c40bff636567611c2e9b9bd526ddada"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52352,
+        48384,
+        0,
+        0,
+        0,
+        19584,
+        48384,
+        0,
+        0,
+        0
+      ],
+      "index": 17,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48384
+      },
+      "right_bits_sha256": "2628b55bf9c4cd94a5cf865a3dc06701b04d738ff77638224fcb21e47fc89186"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        20608,
+        0,
+        16512,
+        53376,
+        16512,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 18,
+      "predicted_bits": {
+        "exact": 16640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16512
+      },
+      "right_bits_sha256": "2b4d50ce0fe4ca77fffbec41a507396dafc23497ff58d0d1a47ef8451fdd0194"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16256,
+        54144,
+        0,
+        0,
+        21376,
+        16256,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 19,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "00e2cdb20dbb64d17e7440d03a8eb9a8c59a2ba6a5bd7ba9c96286a537e9dfeb"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        17024,
+        53120,
+        20352,
+        17024
+      ],
+      "index": 20,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "ad7b8fc1c2e20290d8921fd6e0a4f9703aeed608ed194cdcb92e46f3fee989d8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        52352,
+        15872,
+        19584,
+        0,
+        0,
+        15872,
+        0,
+        0
+      ],
+      "index": 21,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15872
+      },
+      "right_bits_sha256": "f88f7ba63ba564a92f3089d2f55ac3d78e7c29f3856ac96c26e629a070d50c28"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49536,
+        0,
+        20224,
+        0,
+        52992,
+        0,
+        0,
+        49536,
+        0,
+        0
+      ],
+      "index": 22,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "a601bc11a4c7bd79efe31819bc62820724bc33fda1faaaa4142fa0777bb56a0e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        52992,
+        0,
+        48512,
+        0,
+        20224,
+        48512,
+        0,
+        0
+      ],
+      "index": 23,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "3678f5b2fb7725b394f189f120d40446a285d5f2e19be592433df69e688939c2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        17280,
+        0,
+        20480,
+        0,
+        0,
+        53248,
+        17280,
+        0,
+        0
+      ],
+      "index": 24,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "eaed22f368df115eac05128f921f7790011da538395ff5966cde34cbd64215d3"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        15744,
+        0,
+        53248,
+        20480,
+        15744
+      ],
+      "index": 25,
+      "predicted_bits": {
+        "exact": 15872,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15744
+      },
+      "right_bits_sha256": "8fbb31a9b74cf41dc3adac4b5425640aa38c2fb64ff9ffa62eb7abd112c0e4b2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        20096,
+        48128,
+        0,
+        52864,
+        48128,
+        0,
+        0
+      ],
+      "index": 26,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "871a5ad8bb839f7698eadfd8bdaf3e13aaa626bbd94efdc76c981186810847f8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        52608,
+        0,
+        48384,
+        0,
+        19840,
+        48384,
+        0,
+        0
+      ],
+      "index": 27,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48384
+      },
+      "right_bits_sha256": "f0df7025c7c104da96bcffe1aed7dec187893601447e3a7514b8a162166ec94e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48512,
+        0,
+        0,
+        0,
+        20864,
+        48512,
+        53632,
+        0,
+        0,
+        0
+      ],
+      "index": 28,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 48512,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "7d930bc574fcbe342dc636ac293b759dec5d312c92dbc291d333f5275538a79d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        21504,
+        0,
+        16384,
+        0,
+        0,
+        54272,
+        16384
+      ],
+      "index": 29,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "97690a195049d5cabb87f4fddbcc6c2de40018b8bc977983233f419bdfe05f61"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49024,
+        19712,
+        0,
+        52480,
+        0,
+        49024,
+        0,
+        0
+      ],
+      "index": 30,
+      "predicted_bits": {
+        "exact": 49152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49024
+      },
+      "right_bits_sha256": "02d2bb08d3e076b5891102773d7e8f294b205a6898ef4e362cd61cd2f0391616"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        54144,
+        0,
+        49792,
+        0,
+        0,
+        0,
+        0,
+        21376,
+        49792
+      ],
+      "index": 31,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "3717808bc65e902a901532aa71bc04664052e2b7e828e0e12e9de0504ebd8f12"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49664,
+        0,
+        0,
+        53120,
+        0,
+        49664,
+        20352,
+        0,
+        0
+      ],
+      "index": 32,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 49664,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "5c1b53c354548bf534640f393c9d06e900da7724c59e6d2c24c9e8714884a0c8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        19328,
+        15488,
+        0,
+        52096,
+        15488,
+        0,
+        0,
+        0
+      ],
+      "index": 33,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "3ae0229c5b6c068624027714cdf5b95fa50e74fff366a45297cbce067df03c51"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54656,
+        49920,
+        0,
+        0,
+        21888,
+        0,
+        49920,
+        0,
+        0,
+        0
+      ],
+      "index": 34,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "da9d8b287def9865a1130d215ac4cf273a624a02f85ea4d51733bd86872b1dc7"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        54912,
+        0,
+        17024,
+        22144,
+        17024,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 35,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "f44659f725981431b62d7d0cb6bb5b0d5fa34be28f97f36c85c5b96dd81c3035"
+    },
+    {
+      "hypothetical_partial_bits": [
+        19200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        48640,
+        51968,
+        48640
+      ],
+      "index": 36,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48640
+      },
+      "right_bits_sha256": "d457b10bb30858be52333a8cb67e85876bbbb91afad172505083092b97d10e8d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54272,
+        49280,
+        0,
+        0,
+        0,
+        21504,
+        0,
+        49280,
+        0,
+        0
+      ],
+      "index": 37,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "20f56fe5d12b5d4fec5dc7ddb77fc20aafaa597513dabe13cc92c8e5e3fc4eaf"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        53888,
+        49152,
+        21120,
+        49152,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 38,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "56abac1d772152710bbdaba4e4614a5ab2a76758fc7a1d5dfd83d5e94630f303"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49920,
+        20736,
+        0,
+        0,
+        0,
+        53504,
+        49920,
+        0,
+        0
+      ],
+      "index": 39,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "792d3ee72541b278d459a63facb01052c9c79610cbe22e3d46abe7452d77fc9a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        52736,
+        48768,
+        0,
+        0,
+        0,
+        0,
+        0,
+        19968,
+        48768
+      ],
+      "index": 40,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "6b3244fdc3ce6b95cf7f50c454237af57a9d46c6d70e84a93da9c1214986c9b8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        49024,
+        0,
+        53888,
+        0,
+        0,
+        21120,
+        49024
+      ],
+      "index": 41,
+      "predicted_bits": {
+        "exact": 49152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49024
+      },
+      "right_bits_sha256": "160d24fe4cd1ab8b210f3c9f599e2b3f865bc37fee74ffdbffc86cc4f7c5406b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48384,
+        19968,
+        52736,
+        0,
+        48384,
+        0,
+        0,
+        0
+      ],
+      "index": 42,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48384
+      },
+      "right_bits_sha256": "2c89d89cd34d37d79120d33cacb81f57eba473e306953ba18ff832a48b009348"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        50048,
+        21888,
+        0,
+        0,
+        54656,
+        0,
+        50048,
+        0,
+        0
+      ],
+      "index": 43,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "320076027eee81fb2c157db6e8d8cc8fac6146263f8dae4cb6911fc9901e86ab"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53760,
+        0,
+        0,
+        48896,
+        0,
+        0,
+        20992,
+        48896,
+        0,
+        0
+      ],
+      "index": 44,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "13f7d19533f6cfeeec6c7dd261ce623968b8f73689086e74f201ef6ad4bb194f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52864,
+        0,
+        0,
+        0,
+        0,
+        48768,
+        0,
+        0,
+        20096,
+        48768
+      ],
+      "index": 45,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "09ecd8754e7311aebbcca3234bc8427f223ba044732fade011d68997c2f90589"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        21888,
+        0,
+        0,
+        0,
+        0,
+        49664,
+        0,
+        54656,
+        49664
+      ],
+      "index": 46,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49664
+      },
+      "right_bits_sha256": "c8f3be12592cffaba25c2518582833e3c5e5848a8d02130ade0aba86584a836e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48128,
+        0,
+        48128,
+        20480,
+        53248,
+        0,
+        0,
+        0
+      ],
+      "index": 47,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 48128,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "61a1a1e85bc9985697a6ee5f6cf23c26cced81c7b4bee6e1ffe1c40d9a470b4e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20096,
+        0,
+        0,
+        0,
+        0,
+        16256,
+        52864,
+        16256,
+        0,
+        0
+      ],
+      "index": 48,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "1dbbb4fc47a24267ad87a0c6082e9033b92b45fb89af36daa079af75fefa8df2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        17280,
+        0,
+        0,
+        0,
+        55040,
+        17280,
+        0,
+        22272,
+        0,
+        0
+      ],
+      "index": 49,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 17280,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "c751d05ce901ecf815b8ffd3c9a9fc1a102e8ef298203bd375b16ddc0a41c18f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        19072,
+        48000,
+        0,
+        51840,
+        48000,
+        0,
+        0
+      ],
+      "index": 50,
+      "predicted_bits": {
+        "exact": 48128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48000
+      },
+      "right_bits_sha256": "8df2fd6b3e1e5d720f13411491b71631c573d696c5ebffbc231c9a923544e53c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49664,
+        0,
+        0,
+        0,
+        53632,
+        0,
+        0,
+        0,
+        20864,
+        49664
+      ],
+      "index": 51,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49664
+      },
+      "right_bits_sha256": "912a58d3298219e9b0f55c60eae758c200c2b321ee9e4d317fd35c47bca50405"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49920,
+        0,
+        21248,
+        0,
+        0,
+        0,
+        54016,
+        49920,
+        0,
+        0
+      ],
+      "index": 52,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "e6d2d78c81f77d0ec51ffcbf20c3bb9c463ed9bd17897085608b92e3b303db23"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54656,
+        0,
+        0,
+        16768,
+        0,
+        0,
+        0,
+        0,
+        21888,
+        16768
+      ],
+      "index": 53,
+      "predicted_bits": {
+        "exact": 16896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16768
+      },
+      "right_bits_sha256": "a920086a658e0b04ea9c4ec25a51374272b806cbb846ee39c3672037e736074b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        20736,
+        0,
+        48896,
+        53504,
+        48896,
+        0,
+        0
+      ],
+      "index": 54,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "3c96dd9006194356f495c88aafd81553f290436d7b89e906d238e279ef30b803"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        48768,
+        0,
+        53504,
+        48768,
+        20736,
+        0,
+        0
+      ],
+      "index": 55,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 48768,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "84bdcff1a44a865ae471c49b7471a715a8e09ef98ba8cfa54ec764f6f5dd1f31"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51456,
+        0,
+        0,
+        0,
+        0,
+        0,
+        48000,
+        0,
+        18688,
+        48000
+      ],
+      "index": 56,
+      "predicted_bits": {
+        "exact": 48128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48000
+      },
+      "right_bits_sha256": "03b1aeb2a044d2eb7969392fc244052821e0bdebf3a0c65250ee3d62bde5b58f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        21248,
+        0,
+        0,
+        49152,
+        0,
+        54016,
+        49152,
+        0,
+        0
+      ],
+      "index": 57,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "09b22896e3818820262b7aa296f1b5b44798c98b99dc4e7e5d44f0049d657dbf"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52864,
+        0,
+        0,
+        0,
+        0,
+        16896,
+        0,
+        0,
+        20096,
+        16896
+      ],
+      "index": 58,
+      "predicted_bits": {
+        "exact": 17024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16896
+      },
+      "right_bits_sha256": "572f50f249c5a668d8b81c673afd1c6b0e55f5e410fd21724af05035b5437a2e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51456,
+        0,
+        0,
+        48256,
+        0,
+        18688,
+        48256,
+        0,
+        0,
+        0
+      ],
+      "index": 59,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "7c13797630a306e6dd58fc7976e57defbe969ea05131556be2256412a216a5ef"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20736,
+        0,
+        0,
+        0,
+        15616,
+        0,
+        53504,
+        15616,
+        0,
+        0
+      ],
+      "index": 60,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "456dfe4c69bbcd8aa979dcee6d4f4eabf7e33d28366b3a526223b179dcf47952"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        50048,
+        0,
+        20480,
+        0,
+        53248,
+        0,
+        50048,
+        0,
+        0
+      ],
+      "index": 61,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "cb202d15988a7da11904f4f75b5c20e0fa312c1c38d19080820462fdd7e7776e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16256,
+        19584,
+        0,
+        0,
+        52352,
+        16256,
+        0,
+        0,
+        0
+      ],
+      "index": 62,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "f097399368b6763efa9c6d563e98c157aedfacc21f74a32ec352dee1c45b7162"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20608,
+        49792,
+        0,
+        0,
+        53376,
+        0,
+        0,
+        49792,
+        0,
+        0
+      ],
+      "index": 63,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "dff018a359c7a2d49f2d620db1e97e96f346518887d9128688d869d3d1c83379"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53760,
+        0,
+        0,
+        16000,
+        20992,
+        0,
+        0,
+        16000,
+        0,
+        0
+      ],
+      "index": 64,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "3e9caa12a4e35e9194bbe89d072c11de7e4e73fcf1cc0eeade03d71fbd2ad29b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20480,
+        0,
+        0,
+        49536,
+        0,
+        53248,
+        0,
+        49536,
+        0,
+        0
+      ],
+      "index": 65,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "d5cf022c7d5e50c18c6f276c92540e4ba5bb8f3b3d3823e6052d9e504d831580"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49152,
+        0,
+        0,
+        0,
+        0,
+        20992,
+        0,
+        0,
+        53760,
+        49152
+      ],
+      "index": 66,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "dc6bc2eada7ee84d2664cd8243631f8186365dd274e6dafb01ea8e8e265bdaf6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        17024,
+        0,
+        0,
+        0,
+        21504,
+        54272,
+        17024
+      ],
+      "index": 67,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "6dd7e26b633eaa81899fc468c1b020f99f3db9e3a8926aefb092195357e86569"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        16384,
+        53888,
+        21120,
+        16384
+      ],
+      "index": 68,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "206ab445d3642dcc6e57be50631371754a7a6235bc2cd93cded83f0a91534c2a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20096,
+        0,
+        0,
+        0,
+        0,
+        16384,
+        52864,
+        16384
+      ],
+      "index": 69,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "4687089b0e8d3b5d1d0b90ebd18f99d39b2100678eeb3a6c79f7b40cd5719694"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49792,
+        54912,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        22144,
+        49792
+      ],
+      "index": 70,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "ce742f732ed0c4958a580bee1a39354f169f569d8350137dbae3f80bb09c77d6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        48384,
+        0,
+        0,
+        52352,
+        19584,
+        48384
+      ],
+      "index": 71,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48384
+      },
+      "right_bits_sha256": "16694d9ba364b2f66ffa9fc3f17cabd65dda4f26a3fd12ce84fd85c8c50c8716"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48768,
+        0,
+        0,
+        53632,
+        0,
+        0,
+        20864,
+        48768
+      ],
+      "index": 72,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "b1c7c379c22834a507e4dda66d6aaa30a889e1971d662cc2eb0eb12458bc2680"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        20224,
+        0,
+        0,
+        0,
+        0,
+        48128,
+        0,
+        52992,
+        48128
+      ],
+      "index": 73,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "afd4d03b9dee88afce6454381e016b2359c2efab6f2a6f8479215a2220c9ea90"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48768,
+        0,
+        0,
+        0,
+        53760,
+        48768,
+        20992,
+        0,
+        0
+      ],
+      "index": 74,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 48768,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "0825a495040ccaacbfe3a21e90759c03ff860ac47f6aea4b15dd680209ea9408"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15616,
+        0,
+        0,
+        52736,
+        19968,
+        0,
+        0,
+        15616,
+        0,
+        0
+      ],
+      "index": 75,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "5e2c6be17f3b1dec311630aeecae558465d1f224b77d3f5d6bc88a686278933d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51456,
+        0,
+        0,
+        0,
+        0,
+        0,
+        15360,
+        0,
+        18688,
+        15360
+      ],
+      "index": 76,
+      "predicted_bits": {
+        "exact": 15488,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15360
+      },
+      "right_bits_sha256": "2508c8719462bc5f606048a3ded154710c35803f3b69b2271935be84b25dec44"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49792,
+        53632,
+        20864,
+        0,
+        49792,
+        0,
+        0,
+        0
+      ],
+      "index": 77,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "9d979f1eeacab01e9fe524959171011e573962dbeb4bcfad402eb4e7148dbc07"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        19200,
+        0,
+        0,
+        0,
+        48256,
+        0,
+        51968,
+        48256
+      ],
+      "index": 78,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "99a8aacd035676d21c22d7ee1187897cb2d0b30381b51a6eacce4ede25d44fff"
+    },
+    {
+      "hypothetical_partial_bits": [
+        17024,
+        0,
+        54912,
+        0,
+        0,
+        0,
+        22144,
+        17024,
+        0,
+        0
+      ],
+      "index": 79,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "44dcf6a628f6f7bd8527be69fd521f4ad72ed0447254e930d9d89d85d7067e9f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        54016,
+        16640,
+        0,
+        0,
+        0,
+        0,
+        21248,
+        16640
+      ],
+      "index": 80,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "a4b6a1c567934263f91858d93f82060c6c42d364723e9af6f99b3e82ff21270b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48512,
+        0,
+        0,
+        0,
+        48512,
+        19072,
+        51840,
+        0,
+        0,
+        0
+      ],
+      "index": 81,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 48512,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "9614800b972166d50927284e67b6bfcef3e4c2cf6802ffdc8d1c6d20686f39c6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53120,
+        0,
+        0,
+        0,
+        16768,
+        20352,
+        16768,
+        0,
+        0
+      ],
+      "index": 82,
+      "predicted_bits": {
+        "exact": 16896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16768
+      },
+      "right_bits_sha256": "24bd500cb90d8fc1b2685a46f6b276d884f64cf209d398e47fddfa61b632693f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16000,
+        0,
+        53888,
+        21120,
+        0,
+        0,
+        16000,
+        0,
+        0
+      ],
+      "index": 83,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "0a75043e229af9f3b6fd6e4cb4506cfaba11192db23846510302a9dfe0a6e169"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48256,
+        0,
+        0,
+        51456,
+        18688,
+        0,
+        48256,
+        0,
+        0,
+        0
+      ],
+      "index": 84,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "cbe02f6af38cc5b0873f5fa9d457565552ad43f260b8d9e5807ecc508e26315b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19840,
+        0,
+        0,
+        16128,
+        52608,
+        16128,
+        0,
+        0,
+        0
+      ],
+      "index": 85,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16128
+      },
+      "right_bits_sha256": "aaefca8b577515b7ce118ab697eaa4d0ec3952dea0e53cd187a5d32c3e0745e9"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53376,
+        0,
+        49280,
+        0,
+        20608,
+        0,
+        49280,
+        0,
+        0
+      ],
+      "index": 86,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "630b744fcf7d00e4341ed17eef9e1bd061822e503fa36f7837d0df31b2b4b6ea"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        20480,
+        17280,
+        53248,
+        0,
+        17280,
+        0,
+        0
+      ],
+      "index": 87,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "1ab0db880c773c15ee18247d23daf1e755d41420d88b2dd41575c7685621366a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20864,
+        0,
+        17280,
+        0,
+        0,
+        0,
+        53632,
+        17280
+      ],
+      "index": 88,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "a6d76902143e7d948adbb1f29ef9fe51ebfb4dd4f21b9cb0fad1371257a4a5c7"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51456,
+        48128,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        18688,
+        48128
+      ],
+      "index": 89,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "d6ce641cc45387c257ae773ceb395f60ec70227f9612366bba337a71de8ceb4e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20608,
+        17024,
+        0,
+        0,
+        53376,
+        17024,
+        0,
+        0
+      ],
+      "index": 90,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "0d8533f908c8962baf4a40122a557c2d69cfc414d21d3ed587d2e9556c5ecfe4"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54144,
+        16640,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        21376,
+        16640
+      ],
+      "index": 91,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "516345bddadcd7594a8b6cc1b064b6082a20c814253269b46969be2617138b85"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        16128,
+        0,
+        19456,
+        52224,
+        16128
+      ],
+      "index": 92,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16128
+      },
+      "right_bits_sha256": "8bfe9eb332d65614c9bc87ad4857e07874a2b157ab9d4cdc0bf0bfbf1a901ae1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15488,
+        0,
+        20096,
+        0,
+        0,
+        52864,
+        0,
+        15488,
+        0,
+        0
+      ],
+      "index": 93,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "4f02cc344f2dcadc080be5430d898f0f337a23a4908390ba0ca28c808469f73a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        17024,
+        0,
+        53120,
+        0,
+        0,
+        0,
+        20352,
+        17024,
+        0,
+        0
+      ],
+      "index": 94,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "10e5f7479c3a245e594b7784f6a77a44a70128523120c0991e73e933b1f2f45e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        52480,
+        48768,
+        0,
+        0,
+        0,
+        0,
+        0,
+        19712,
+        48768
+      ],
+      "index": 95,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "8ee2932b17930142b23e956e54e83d832a0a80b2ebac79da244cc7e04e30b881"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        49280,
+        20096,
+        49280,
+        0,
+        52864,
+        0,
+        0
+      ],
+      "index": 96,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 49280,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "82a794eaf4f63107db0dabcbf97779949de6678014d06201594417d735c64437"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        48000,
+        51456,
+        0,
+        0,
+        0,
+        18688,
+        48000
+      ],
+      "index": 97,
+      "predicted_bits": {
+        "exact": 48128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48000
+      },
+      "right_bits_sha256": "7b1800869d7715369b9058f1be3a14ef232e13aec4e542925488912ca9e0da04"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        49408,
+        0,
+        53376,
+        49408,
+        20608,
+        0,
+        0
+      ],
+      "index": 98,
+      "predicted_bits": {
+        "exact": 49536,
+        "pairwise_float32_rne": 49408,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "69b694df327f580ce71bd393ddf68d28d12c4a19dae94cd01d79b161281a5133"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53120,
+        0,
+        0,
+        16256,
+        20352,
+        0,
+        0,
+        16256,
+        0,
+        0
+      ],
+      "index": 99,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "7ce6de67087001ad1318f8d25c63396a1267f624e9db3671b6edf5dcc1d1a594"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        48640,
+        0,
+        0,
+        20864,
+        0,
+        53632,
+        48640
+      ],
+      "index": 100,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48640
+      },
+      "right_bits_sha256": "896c86ea007c4d687a8f5228c0852319f33e7cb559568988997d8ae379215f28"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49152,
+        0,
+        0,
+        0,
+        49152,
+        52480,
+        19712,
+        0,
+        0,
+        0
+      ],
+      "index": 101,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 49152,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "4216dbce2b49da1910556d719bd38737a3250a391d16129b95235dec42fcfd5c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20864,
+        0,
+        48896,
+        0,
+        0,
+        53632,
+        0,
+        48896,
+        0,
+        0
+      ],
+      "index": 102,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "471ecc55fada010d95b1ef3413e2e40f461fdb7fb8d86bb0fd1be34eafbfd842"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        15232,
+        0,
+        0,
+        0,
+        19584,
+        52352,
+        15232
+      ],
+      "index": 103,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "7745a4dd82d06ee332f1b8262529edeac4d73357b233e77ccfce67603f0adbeb"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16640,
+        0,
+        53376,
+        20608,
+        0,
+        16640,
+        0,
+        0,
+        0
+      ],
+      "index": 104,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "71f970bc8416351683062e18e5345f8ae4ed65ceded9f8ceba29e0c5b73ff206"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20096,
+        48256,
+        0,
+        0,
+        52864,
+        0,
+        48256,
+        0,
+        0,
+        0
+      ],
+      "index": 105,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "17cdc3b6fd75a0372d67f2004875af84b49a9fc640c393251132633866a0224e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48256,
+        19072,
+        0,
+        0,
+        51840,
+        0,
+        48256,
+        0,
+        0
+      ],
+      "index": 106,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "4c4fa966dcf8164db51c2bc774f85902977d21001b9c259541423b398329256e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        16640,
+        0,
+        0,
+        54016,
+        0,
+        0,
+        21248,
+        16640
+      ],
+      "index": 107,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "8c363121dc18afee2375c90810588ea17fe16d06e54cfdaf6b30f4a9e4df5519"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16768,
+        0,
+        0,
+        20224,
+        52992,
+        16768,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 108,
+      "predicted_bits": {
+        "exact": 16896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16768
+      },
+      "right_bits_sha256": "84dd7d5151081af63532a657fc47170138857193dfebf41f86495bba20ff84a8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        18944,
+        0,
+        48128,
+        0,
+        0,
+        51712,
+        0,
+        48128,
+        0,
+        0
+      ],
+      "index": 109,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "c90c78333bf992f56353a2a42e146b2881b52a056a9812f178c58e0c5f96752d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15232,
+        51712,
+        0,
+        0,
+        18944,
+        15232,
+        0,
+        0,
+        0
+      ],
+      "index": 110,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "2fc72da4a2d453e034add29efe70e2b5cc5172bc7c9a28ba53e019ec2257e22d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        15232,
+        0,
+        0,
+        0,
+        0,
+        52608,
+        19840,
+        15232
+      ],
+      "index": 111,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "50cb2696e366ff68054e404d6e7e55806f0845332d7ea97ef7df9d9aba77d698"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        50048,
+        22400,
+        55168,
+        50048
+      ],
+      "index": 112,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "14f279a7fe6c7a8c4277068caae289d86478cde97e70cdcd1c54aa0d35ce6bda"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        51968,
+        48512,
+        19200,
+        48512,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 113,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "8b4619e026ce63bf28b75ddee1b084e34bc841e1c7a5f08d8bfa833a8ae1cbef"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48768,
+        0,
+        0,
+        52480,
+        48768,
+        19712,
+        0,
+        0,
+        0
+      ],
+      "index": 114,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 48768,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "50958d1e8f5f2822d2f035bee1ce6bc4ea85d26a7c4a6d8f9d5cf576b5f588d4"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20480,
+        0,
+        0,
+        0,
+        48896,
+        0,
+        53248,
+        48896,
+        0,
+        0
+      ],
+      "index": 115,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "e14a309625a8789b200e1db1b8ae8bdad9c817764f1469040de50931e452073b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        52096,
+        0,
+        16128,
+        19328,
+        16128,
+        0,
+        0
+      ],
+      "index": 116,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16128
+      },
+      "right_bits_sha256": "4185992df904637be73fc93264d118f334e6795918498fb75fa5e487093548f5"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        19328,
+        48256,
+        52096,
+        48256,
+        0,
+        0
+      ],
+      "index": 117,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "610632e3ae79f2497835a5bdcfd0ffe83e4c97cd6f71d17d5beac7d98b430f64"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49536,
+        54528,
+        0,
+        0,
+        0,
+        0,
+        21760,
+        49536
+      ],
+      "index": 118,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "79efc0276944e7efa708fc81173d15e7df2635e41bcd6db73a3b9caf26e79e4a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49664,
+        0,
+        49664,
+        21760,
+        0,
+        54528,
+        0,
+        0
+      ],
+      "index": 119,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 49664,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "f5b9b72ff2688a4164dc2f9b428d6b9784a96f5bf0daa52ad69768c14e81aaad"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        54272,
+        0,
+        0,
+        0,
+        17024,
+        21504,
+        17024,
+        0,
+        0
+      ],
+      "index": 120,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "c5f6da240afe77983b522b787092925f37895f82d5330cc88c1a087de5c9e641"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48640,
+        52480,
+        0,
+        19712,
+        0,
+        48640,
+        0,
+        0,
+        0
+      ],
+      "index": 121,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48640
+      },
+      "right_bits_sha256": "02132286fd1df4579a33406df5df54b5850b5d5262c76b82ae997c11da64ef8f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15616,
+        20608,
+        53376,
+        15616,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 122,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "6684a19e77c5c15b7ad02331f2b5d38924266991c8db2c33d2c5bc3447ae85a1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        21376,
+        0,
+        0,
+        49536,
+        54144,
+        49536,
+        0,
+        0
+      ],
+      "index": 123,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "6867c92b9c95fdb3e65a55602ed9f6becf757b0261eb63e981d17c07074d04ad"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48384,
+        0,
+        0,
+        52096,
+        48384,
+        19328,
+        0,
+        0,
+        0
+      ],
+      "index": 124,
+      "predicted_bits": {
+        "exact": 48512,
+        "pairwise_float32_rne": 48384,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "a67fe089f428fd1415e5d579bf29c4584e041d7fd70e3473b0489fc692ec5175"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        15488,
+        0,
+        19712,
+        0,
+        0,
+        52480,
+        15488
+      ],
+      "index": 125,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "4dbdb6990ad83dd6b4080cfbfc770747ef16da90752131db1f95445ab97883d8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        21248,
+        0,
+        16384,
+        0,
+        0,
+        54016,
+        16384
+      ],
+      "index": 126,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "cc6d3c2470ad5fcd27b9592ac3e079fde249d1cfb1956ec3bf00b64489094f67"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        53632,
+        0,
+        0,
+        0,
+        49024,
+        20864,
+        49024
+      ],
+      "index": 127,
+      "predicted_bits": {
+        "exact": 49152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49024
+      },
+      "right_bits_sha256": "93e489b0c5d4618ea8209a81d3394333f77243650a58576d923801bf04afb60c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49664,
+        0,
+        0,
+        0,
+        0,
+        0,
+        20352,
+        53120,
+        49664
+      ],
+      "index": 128,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49664
+      },
+      "right_bits_sha256": "f2bd0bfb26b4b554421990a69db411ed375f56b037a357543278fb8915f30f97"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49280,
+        20480,
+        0,
+        53248,
+        0,
+        49280,
+        0,
+        0
+      ],
+      "index": 129,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "239c4f87adc7cd9c4b0adbaed8b98ddace0c645b2efb5f53c46363d759237b55"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        49280,
+        20352,
+        49280,
+        53120,
+        0,
+        0,
+        0
+      ],
+      "index": 130,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 49280,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "c6cbee16a78aee889e5334ec29be49982728406983d0d8e2dc92305c47a9078e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        20480,
+        0,
+        0,
+        17280,
+        53248,
+        17280,
+        0,
+        0,
+        0
+      ],
+      "index": 131,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "5bf114d04f51fae68d54f27b4f40589a4cc4a2d3cc78c093e363a84e4ff4b61f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15616,
+        0,
+        0,
+        52608,
+        19840,
+        0,
+        15616,
+        0,
+        0,
+        0
+      ],
+      "index": 132,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "c32f423e3f7d9299e0e28ef789d3c073a7e669d2fe6fc3eacf17d090e9ce8757"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20480,
+        16640,
+        0,
+        53248,
+        0,
+        16640,
+        0,
+        0
+      ],
+      "index": 133,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "4c251638bc9523d18534f3f931a456399aed7593695617159431c4a25329460d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        52736,
+        0,
+        16384,
+        0,
+        19968,
+        16384
+      ],
+      "index": 134,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "9af3e8b56e76a11cfcea1264ff0ac0e25fdd074f176dff48e1a2d7ab86de42fc"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53376,
+        0,
+        0,
+        0,
+        17024,
+        20608,
+        17024,
+        0,
+        0
+      ],
+      "index": 135,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "33d14d49df81f7887c69062fd9ae375cbdad64f9a1b1f7a9fc25cfca89fc29b2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19840,
+        0,
+        0,
+        0,
+        0,
+        0,
+        15616,
+        52608,
+        15616
+      ],
+      "index": 136,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "ca9401d5067d747e5573dbea4f5e99f7ffa44791715525fa50052321f0bfd169"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        15488,
+        15488,
+        19968,
+        0,
+        52736,
+        0,
+        0
+      ],
+      "index": 137,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 15488,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "96128f9523172807cda335eff10770ea678c3db36c56ce4c9d63590dd0639c9f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52224,
+        48128,
+        0,
+        0,
+        19456,
+        0,
+        0,
+        48128,
+        0,
+        0
+      ],
+      "index": 138,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "83d2befdda9df21bf74fb22f075852c43efec945aefa7ec0de6b1b129c24aea3"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52480,
+        0,
+        0,
+        48512,
+        0,
+        19712,
+        0,
+        48512,
+        0,
+        0
+      ],
+      "index": 139,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "e9002eae7d4cd9d6c5626b146ec442edbbc53ce078cbfad980cfba77e31ab52f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54784,
+        0,
+        0,
+        49792,
+        0,
+        0,
+        0,
+        0,
+        22016,
+        49792
+      ],
+      "index": 140,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "6efaf9f21f6c65fc6b0c8b405e9533092195d34dd1f6fb417caacd693d611f47"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        17280,
+        0,
+        20864,
+        0,
+        0,
+        53632,
+        17280,
+        0,
+        0
+      ],
+      "index": 141,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "e77a84bdd2f1f347492bae5a66daddf5e60f280f92344bc582f073e635f05ad6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16128,
+        53888,
+        0,
+        0,
+        21120,
+        16128,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 142,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16128
+      },
+      "right_bits_sha256": "0c5fb38f074c4788596de7809802825806236f403f5f28e19f19a80b2f8a822b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        54016,
+        16384,
+        0,
+        21248,
+        0,
+        16384,
+        0,
+        0,
+        0
+      ],
+      "index": 143,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "f4cff77669029718b08365e7853c28c68565d2adb8a0eb439b55c28b3d5dfd99"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        21632,
+        0,
+        0,
+        0,
+        17024,
+        54400,
+        17024
+      ],
+      "index": 144,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "e97ff0241a6c123f1542a67d33a878e0a7b3daa56386dbdafb8afe93e6f3c7cf"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        19328,
+        0,
+        16000,
+        52096,
+        0,
+        16000,
+        0,
+        0
+      ],
+      "index": 145,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "f17dee0ad78f7bf15a06f548c37c9a63ecfa023ba76721ea4d113e3fba240d26"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16384,
+        0,
+        0,
+        0,
+        0,
+        0,
+        20736,
+        53504,
+        16384
+      ],
+      "index": 146,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "68639ddd7c9297dcdb6a9bf0cf70aa8c850ab8d240594c70ed2c0234ba1f08fd"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53120,
+        49536,
+        0,
+        0,
+        20352,
+        0,
+        49536,
+        0,
+        0
+      ],
+      "index": 147,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "465f6b840f014f61a0d81b92957cddbe0949c0959544bba7a4b1c0f3111a3bc8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        54400,
+        0,
+        17280,
+        0,
+        21632,
+        17280,
+        0,
+        0
+      ],
+      "index": 148,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "e1b1965433372afe13564cd2b2e4ff8cbcfd10e5758e89414cccef4c90d61bd3"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        17152,
+        0,
+        53760,
+        17152,
+        20992,
+        0,
+        0
+      ],
+      "index": 149,
+      "predicted_bits": {
+        "exact": 17280,
+        "pairwise_float32_rne": 17152,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "109aa934023194752ecc2d8e9894ec1d8663b24e487d38de8bfa2cc1b00c99f7"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51712,
+        15616,
+        0,
+        0,
+        0,
+        18944,
+        15616,
+        0,
+        0,
+        0
+      ],
+      "index": 150,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "023778759eca9c3f4ff1a69e91e50ac1c30137c0ef14f6cb90bafd88dc618959"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53248,
+        16768,
+        0,
+        0,
+        20480,
+        0,
+        0,
+        16768,
+        0,
+        0
+      ],
+      "index": 151,
+      "predicted_bits": {
+        "exact": 16896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16768
+      },
+      "right_bits_sha256": "9df5c01de5cc327265d1fb0abfcf5afa8ba799c4cea98360cc31bfba9a91817d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20736,
+        0,
+        16512,
+        0,
+        0,
+        53504,
+        0,
+        16512,
+        0,
+        0
+      ],
+      "index": 152,
+      "predicted_bits": {
+        "exact": 16640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16512
+      },
+      "right_bits_sha256": "b7923a40d4aee0eb6c856e2befb32532d2e46c844ae663496eb82bfbfc06594d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        52608,
+        49280,
+        0,
+        19840,
+        49280,
+        0,
+        0
+      ],
+      "index": 153,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "afed92a0243f0dce3d23eeff696fb1cfce55d748f3f818968313e519dea57cc6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15872,
+        0,
+        0,
+        15872,
+        53248,
+        0,
+        20480,
+        0,
+        0
+      ],
+      "index": 154,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 15872,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "09192f33effe8bcd76f858296908d455064a7cc42a415d5b6f4e62142e786714"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        16000,
+        52096,
+        0,
+        19328,
+        0,
+        16000,
+        0,
+        0
+      ],
+      "index": 155,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "9620fef2adc5fd1908418a5f030f304c85b982bcc952679f6565391a2baed7b5"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20224,
+        0,
+        0,
+        48512,
+        52992,
+        48512,
+        0,
+        0
+      ],
+      "index": 156,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "7be2a8d44565e1384f258e091631da940c95390831019d7f79d7d169c8098a85"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49792,
+        54656,
+        0,
+        0,
+        21888,
+        49792,
+        0,
+        0,
+        0
+      ],
+      "index": 157,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "29a35ec224858b98b000d842c144cd1a9379af71117de82f3ff5200f246a22aa"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19968,
+        0,
+        49280,
+        0,
+        52736,
+        49280,
+        0,
+        0,
+        0
+      ],
+      "index": 158,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "cf75167bf1af3b03399d510c13df3f37ce75dad18b8a43f7a69152ec1af58b45"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        53504,
+        49920,
+        0,
+        0,
+        20736,
+        49920
+      ],
+      "index": 159,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "49e565cdf299ad50e89bb81acd7ad4509278af11a12f9718de016685ab979a69"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15872,
+        0,
+        0,
+        52992,
+        15872,
+        0,
+        20224,
+        0,
+        0
+      ],
+      "index": 160,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 15872,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "3b05323a6ee1b557bf484aae97deb580172a9ac673455df22b71af24c150866b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        20736,
+        0,
+        0,
+        49920,
+        53504,
+        49920,
+        0,
+        0,
+        0
+      ],
+      "index": 161,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "fa47bba383fac11b2baf1006e024014b62c47f89cf92886db0f8332bc682c433"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16896,
+        0,
+        0,
+        20096,
+        0,
+        16896,
+        52864,
+        0,
+        0
+      ],
+      "index": 162,
+      "predicted_bits": {
+        "exact": 17024,
+        "pairwise_float32_rne": 16896,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "26ab1c5eee82e90b3424cf67189de947276f2a8c8fffb214055ffede0c7366f9"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        20480,
+        0,
+        0,
+        0,
+        49152,
+        0,
+        0,
+        53248,
+        49152
+      ],
+      "index": 163,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "a47391ab6bdf231061ede30e12a4cb1a8941d14141ea4d25ef98e322ad726918"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53632,
+        0,
+        0,
+        0,
+        16768,
+        0,
+        20864,
+        16768,
+        0,
+        0
+      ],
+      "index": 164,
+      "predicted_bits": {
+        "exact": 16896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16768
+      },
+      "right_bits_sha256": "b256414db6bf33e6918f46e25ad34156a68fb91aca496df2ae49b8a4660b1ae6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        21760,
+        49408,
+        0,
+        0,
+        0,
+        54528,
+        49408
+      ],
+      "index": 165,
+      "predicted_bits": {
+        "exact": 49536,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49408
+      },
+      "right_bits_sha256": "a2e4453bcbacf2f03032bfd84e3800411fa9316a2795f90ab523f5ff72f8d697"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16384,
+        0,
+        53248,
+        0,
+        0,
+        0,
+        20480,
+        16384,
+        0,
+        0
+      ],
+      "index": 166,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "b4f7db6d59f093035195c2b442a181e03e9d6ac01b39db145da6f1d28e0666f1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        21120,
+        49408,
+        0,
+        53888,
+        0,
+        0,
+        49408,
+        0,
+        0
+      ],
+      "index": 167,
+      "predicted_bits": {
+        "exact": 49536,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49408
+      },
+      "right_bits_sha256": "04dd5382f67acf58f9bf8e07c0a44c9c52be2df45a719ae39dd8076221dca1ce"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        52736,
+        0,
+        49536,
+        19968,
+        49536,
+        0,
+        0
+      ],
+      "index": 168,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "006993e767aca1c2e68012fc9583b193581834b3ba918c0c5153f29bc74c6ff8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20608,
+        0,
+        0,
+        48512,
+        0,
+        53376,
+        48512,
+        0,
+        0,
+        0
+      ],
+      "index": 169,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "5a5eed012b8355ad338583c2713333f6f546f7bab83e87f3b9910879b7a92253"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        51584,
+        0,
+        0,
+        0,
+        15488,
+        18816,
+        15488,
+        0,
+        0
+      ],
+      "index": 170,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "1fefb3a621aac93997921537e3874cff55311b45518c14c518abaac5da2e94fc"
+    },
+    {
+      "hypothetical_partial_bits": [
+        50048,
+        21760,
+        0,
+        0,
+        0,
+        0,
+        54528,
+        50048,
+        0,
+        0
+      ],
+      "index": 171,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "35f97068737015ef8e2dbef6b76198eeef6e7d7bb177de1ccd5007a6b9bb8a60"
+    },
+    {
+      "hypothetical_partial_bits": [
+        51456,
+        15232,
+        0,
+        0,
+        0,
+        0,
+        18688,
+        15232,
+        0,
+        0
+      ],
+      "index": 172,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "42bdd1f09caee6d9a8b254b892e18859e619da9183e6cc19fb61389e6aa18a1d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48000,
+        18560,
+        51328,
+        0,
+        0,
+        48000,
+        0,
+        0
+      ],
+      "index": 173,
+      "predicted_bits": {
+        "exact": 48128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48000
+      },
+      "right_bits_sha256": "83d92ef2583bede96d5f37df4f984d880f042cc6fc6a186d698666423a21ef71"
+    },
+    {
+      "hypothetical_partial_bits": [
+        17024,
+        0,
+        53376,
+        0,
+        0,
+        0,
+        0,
+        0,
+        20608,
+        17024
+      ],
+      "index": 174,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "4a2bbcbca0b6fa6e40c96313796e02a1b0f62a708347f35a29bd079524f39280"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48512,
+        51712,
+        0,
+        0,
+        18944,
+        0,
+        48512,
+        0,
+        0,
+        0
+      ],
+      "index": 175,
+      "predicted_bits": {
+        "exact": 48640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48512
+      },
+      "right_bits_sha256": "bb7ca23fa56826d8cb67c45f4f7ff03a3e80d9a2c9e3c7c86ccc87f6921a7a5d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53248,
+        0,
+        16256,
+        0,
+        20480,
+        0,
+        16256,
+        0,
+        0,
+        0
+      ],
+      "index": 176,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "f10080b5117e5e1d6a21686eefab1fa0c808fe7ddc242903e38168e326d9ec68"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        50048,
+        50048,
+        53504,
+        0,
+        20736,
+        0,
+        0
+      ],
+      "index": 177,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 50048,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "3ea8b287e4b75cb0f922522aaf7aab7c484d0242f127879a8b862e0054ca41b2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53120,
+        0,
+        0,
+        49920,
+        0,
+        20352,
+        49920,
+        0,
+        0,
+        0
+      ],
+      "index": 178,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "575779fff304a8f1fbefd027756de917b0b9b1cf3b31b69773afd28546017fd6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        15488,
+        0,
+        0,
+        20352,
+        0,
+        0,
+        53120,
+        15488
+      ],
+      "index": 179,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "d9d6ce7a78d39e6b9b13884b9f8b4cfbd2213025ddc6dc1fb7233806e6da8289"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        21504,
+        49536,
+        54272,
+        49536
+      ],
+      "index": 180,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "62d948bf0a6e2fa9b37568173b2b9a754e9058087f4af835199a0169bc802081"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49536,
+        53888,
+        21120,
+        0,
+        0,
+        49536,
+        0,
+        0
+      ],
+      "index": 181,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "d31dd9d512b32ea2df58b4b4c074a8b6b9d8116e64e444b2a5fa72cf554920c8"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15360,
+        0,
+        0,
+        15360,
+        52096,
+        0,
+        19328,
+        0,
+        0
+      ],
+      "index": 182,
+      "predicted_bits": {
+        "exact": 15488,
+        "pairwise_float32_rne": 15360,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "4870d79570358e1f7099d1c8863d4bce79b98ae656010fd24ee91d18cbfc01d0"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        16128,
+        53120,
+        0,
+        20352,
+        16128
+      ],
+      "index": 183,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16128
+      },
+      "right_bits_sha256": "ef61c420cfe06f42a71c163fb945750603db26dc3882f145ef63e110ab18563e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        53248,
+        49536,
+        20480,
+        49536,
+        0,
+        0
+      ],
+      "index": 184,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "2a0113e5fad799ff6904dd0dd886b8f75ad62289848837e634b2533b678b17a2"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        20480,
+        48896,
+        0,
+        0,
+        53248,
+        48896
+      ],
+      "index": 185,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "f2e7f40218019c51c2f401c68a856d23447af276b0ac61e4e94f3831e04824d9"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        53120,
+        49792,
+        20352,
+        49792,
+        0,
+        0
+      ],
+      "index": 186,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "e86105bedb3ce9daddb4cd2ac11953d845e3f71bebfcd65839db5d40da604253"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48896,
+        0,
+        48896,
+        52352,
+        19584,
+        0,
+        0,
+        0
+      ],
+      "index": 187,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 48896,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "f659f916e2086b8ac84d7972f39935e4cccd9c63305b2b61d8547dd5a1e87976"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15488,
+        0,
+        19584,
+        0,
+        0,
+        0,
+        0,
+        52352,
+        15488
+      ],
+      "index": 188,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "b6a1db6ae83781a23177e4c4377bb27fcb15efe31eefd5b63efd64aeaa84a64e"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15232,
+        51712,
+        18944,
+        15232,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 189,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "24b215f5129a1b4ab8cca38cab104320f919a94238804b517bffc94e88147647"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16384,
+        0,
+        20096,
+        0,
+        0,
+        52864,
+        16384,
+        0,
+        0,
+        0
+      ],
+      "index": 190,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "a840ecb0556d69082fe26e89653872b3192893e09a32308e5a527f95ad0808c0"
+    },
+    {
+      "hypothetical_partial_bits": [
+        19712,
+        0,
+        0,
+        0,
+        16384,
+        0,
+        52480,
+        16384,
+        0,
+        0
+      ],
+      "index": 191,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "c09e11e7d17fc806d6af0608885a38fa110dc0d7bdf9dc7022d46704c6c918e1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48128,
+        0,
+        0,
+        0,
+        19328,
+        48128,
+        0,
+        52096,
+        0,
+        0
+      ],
+      "index": 192,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 48128,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "727eb5f86d864268a27cb488ec706f4b22affdf1a0bbb5a96fbfe4249cf14199"
+    },
+    {
+      "hypothetical_partial_bits": [
+        21760,
+        16640,
+        54528,
+        16640,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 193,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "e21e4ff115788835cdad6b725a790a5971a6a0defab8d6ec4ba3541ba1520356"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49024,
+        0,
+        49024,
+        53504,
+        20736,
+        0,
+        0,
+        0
+      ],
+      "index": 194,
+      "predicted_bits": {
+        "exact": 49152,
+        "pairwise_float32_rne": 49024,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "6f80ea17893ea1349fa2eb8ffde9b1f16a04eea970c3eb21beebb26e02a6c325"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54400,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        50048,
+        21632,
+        50048
+      ],
+      "index": 195,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "334163d7cf76bb46fdb149d6608f070804e0fc007bbfd15a48ea9b0598f21f92"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48256,
+        52608,
+        0,
+        0,
+        19840,
+        0,
+        48256,
+        0,
+        0,
+        0
+      ],
+      "index": 196,
+      "predicted_bits": {
+        "exact": 48384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48256
+      },
+      "right_bits_sha256": "1dddf9abf9d5830ce6f1f313eb0a525bced69b252bec3e9cb1fce4797da2a52a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53120,
+        48640,
+        0,
+        20352,
+        48640,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 197,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48640
+      },
+      "right_bits_sha256": "3d979f5cb0959bd4a34a72d63a9b5616be83a8a57c0d2bfc38eb308798c90e9c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48768,
+        0,
+        0,
+        19328,
+        48768,
+        0,
+        52096,
+        0,
+        0
+      ],
+      "index": 198,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 48768,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "c34a872753ad8c581d26db0e87b28c36838ec74c17a56632ee2d7e659a66ac86"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15360,
+        0,
+        0,
+        51840,
+        0,
+        0,
+        0,
+        19072,
+        15360
+      ],
+      "index": 199,
+      "predicted_bits": {
+        "exact": 15488,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15360
+      },
+      "right_bits_sha256": "696c954216409a591982b8cecd87cc2b75c515722952819e2412a2227ed59c9f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        52352,
+        0,
+        15488,
+        0,
+        0,
+        19584,
+        15488
+      ],
+      "index": 200,
+      "predicted_bits": {
+        "exact": 15616,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15488
+      },
+      "right_bits_sha256": "0a289a4c857da8474eba9500afab5ada272a3ab143fe4d4435ba19e6dad71dcb"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16896,
+        21888,
+        0,
+        0,
+        54656,
+        0,
+        16896,
+        0,
+        0,
+        0
+      ],
+      "index": 201,
+      "predicted_bits": {
+        "exact": 17024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16896
+      },
+      "right_bits_sha256": "d88b7a9c45e98673e7fc74f61e93d12fd2c7d5556902e962767fefd88c5ba054"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53376,
+        0,
+        16512,
+        20608,
+        16512,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 202,
+      "predicted_bits": {
+        "exact": 16640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16512
+      },
+      "right_bits_sha256": "cf413dbfcb23e0990841fecda7c1713a452ef8c2e21be774a39e30e6c57eb4aa"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48896,
+        53504,
+        20736,
+        0,
+        0,
+        48896,
+        0,
+        0
+      ],
+      "index": 203,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "b986b1cac7cf0edbf3ab25dc4e4b9e9db8f6d673bb195deaa71c9d8fbcfdd764"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15616,
+        0,
+        20224,
+        0,
+        0,
+        52992,
+        15616,
+        0,
+        0
+      ],
+      "index": 204,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "87228cdd756a8fb508d4c207c3268ff98309b7f95817bc56fd791b0e34fcab16"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16000,
+        0,
+        0,
+        0,
+        0,
+        53632,
+        0,
+        20864,
+        16000
+      ],
+      "index": 205,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "eef5ed85c6b9578cc23c669e37b1ab735100444d94e7e31e838a27fce948baa6"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53504,
+        48768,
+        0,
+        0,
+        20736,
+        48768,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 206,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "bb1222b18aec20efd8479687a2d7b1e89d7739f98fce65d9a2bb2e355b7bda06"
+    },
+    {
+      "hypothetical_partial_bits": [
+        54016,
+        0,
+        17024,
+        0,
+        21248,
+        0,
+        17024,
+        0,
+        0,
+        0
+      ],
+      "index": 207,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "b6de57bcb8e0bbd440abd7db1f1fcb7e115ffaf9efa21ca191561eada5118bf1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52992,
+        0,
+        0,
+        16512,
+        0,
+        0,
+        0,
+        0,
+        20224,
+        16512
+      ],
+      "index": 208,
+      "predicted_bits": {
+        "exact": 16640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16512
+      },
+      "right_bits_sha256": "0bfa8c6253a20239c1f4862eab0c9724fcec07d71cd7b9ccad192b9a0cc06d1b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52352,
+        15744,
+        0,
+        0,
+        19584,
+        0,
+        0,
+        15744,
+        0,
+        0
+      ],
+      "index": 209,
+      "predicted_bits": {
+        "exact": 15872,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15744
+      },
+      "right_bits_sha256": "41955d0072f450c8d2bb40a396781e43b69f0459c35bcfbaca50b7c5a1efa605"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48768,
+        0,
+        0,
+        21120,
+        53888,
+        0,
+        0,
+        48768,
+        0,
+        0
+      ],
+      "index": 210,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "fdb96fc1a0679ac65efb0995e44644da4be83604f4ec2ff467cea5e15e63d25f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49408,
+        0,
+        0,
+        0,
+        0,
+        0,
+        21760,
+        0,
+        54528,
+        49408
+      ],
+      "index": 211,
+      "predicted_bits": {
+        "exact": 49536,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49408
+      },
+      "right_bits_sha256": "db81ec57bdeb080e35a6705fe6cc579794eeebdbe189f964f0e808fcd1fcaa98"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16000,
+        19584,
+        0,
+        0,
+        0,
+        52352,
+        16000,
+        0,
+        0,
+        0
+      ],
+      "index": 212,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "42c5b8c46a0b3fcdfc318bc877b9c80140e86147425603f5dce38d2d9bd9ae31"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        15360,
+        18560,
+        51328,
+        15360,
+        0,
+        0
+      ],
+      "index": 213,
+      "predicted_bits": {
+        "exact": 15488,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15360
+      },
+      "right_bits_sha256": "e22eeb573debec8334c9c9756fa1eab7000bbfc329f5d9ce832afa11587eb023"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        53120,
+        17024,
+        0,
+        20352,
+        0,
+        17024,
+        0,
+        0
+      ],
+      "index": 214,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "b8e269f730ecd154f38c5cc5c6490605d750084495f04e73b28abe5fe78c2e6a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        19584,
+        0,
+        0,
+        0,
+        48128,
+        52352,
+        48128,
+        0,
+        0,
+        0
+      ],
+      "index": 215,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "dfa36877f67fb583837bd22821f865a07b63c545794e8d4158621ceb60f1d192"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53632,
+        0,
+        0,
+        0,
+        49536,
+        20864,
+        0,
+        49536,
+        0,
+        0
+      ],
+      "index": 216,
+      "predicted_bits": {
+        "exact": 49664,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49536
+      },
+      "right_bits_sha256": "d65e34d044f2ec95a64a1fa0785de67dbb00ace85b78901a8ec218d1a8613a29"
+    },
+    {
+      "hypothetical_partial_bits": [
+        53632,
+        0,
+        0,
+        15744,
+        0,
+        20864,
+        0,
+        15744,
+        0,
+        0
+      ],
+      "index": 217,
+      "predicted_bits": {
+        "exact": 15872,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15744
+      },
+      "right_bits_sha256": "6c97c5eb37befbc6a764715a33b04582650f60bd0649a8cea3b73dab6725959f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19328,
+        0,
+        0,
+        0,
+        0,
+        48896,
+        0,
+        52096,
+        48896
+      ],
+      "index": 218,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48896
+      },
+      "right_bits_sha256": "fe6254a0a5370b77a1d15868c6269a5f808f2753aef792825634940254468eb1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        15744,
+        51840,
+        0,
+        0,
+        19072,
+        0,
+        0,
+        15744,
+        0,
+        0
+      ],
+      "index": 219,
+      "predicted_bits": {
+        "exact": 15872,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15744
+      },
+      "right_bits_sha256": "01d347af63826417ace2c95255aeb9bee29e95badc27ca8907e71717cdd247f5"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49920,
+        0,
+        0,
+        0,
+        22272,
+        0,
+        0,
+        55040,
+        49920
+      ],
+      "index": 220,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "95fa3d05e1c6ea81e075b08240c69b51b297a5de374599816d0fd00d22ccac3c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        53760,
+        0,
+        49920,
+        0,
+        20992,
+        49920,
+        0,
+        0,
+        0
+      ],
+      "index": 221,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49920
+      },
+      "right_bits_sha256": "3ace1c524bb4cd43c6fa78109bc735b2c2a138e749e021a0e5be9233a00905aa"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        17024,
+        22016,
+        0,
+        54784,
+        17024
+      ],
+      "index": 222,
+      "predicted_bits": {
+        "exact": 17152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17024
+      },
+      "right_bits_sha256": "6b68c9b05cbb921985e571b8198e80b028fad832561c37e7a1ddaefa1f0fd61c"
+    },
+    {
+      "hypothetical_partial_bits": [
+        21248,
+        0,
+        0,
+        0,
+        16384,
+        54016,
+        16384,
+        0,
+        0,
+        0
+      ],
+      "index": 223,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "af47c42d1909194a23dd1447860c65fd2b8235b6791a1fd0b90dcae4ff20b8e3"
+    },
+    {
+      "hypothetical_partial_bits": [
+        20992,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        17152,
+        53760,
+        17152
+      ],
+      "index": 224,
+      "predicted_bits": {
+        "exact": 17280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17152
+      },
+      "right_bits_sha256": "97a9f25128ca0051aa81ab3c06766c4ee273504784f98a40533349d9601d3cda"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        20736,
+        16512,
+        0,
+        0,
+        53504,
+        16512,
+        0,
+        0
+      ],
+      "index": 225,
+      "predicted_bits": {
+        "exact": 16640,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16512
+      },
+      "right_bits_sha256": "3cc77d76162f703d3c921c7975a419445cb3ff52289879d5a9dd1a662371d233"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15616,
+        0,
+        53504,
+        0,
+        20736,
+        15616,
+        0,
+        0,
+        0
+      ],
+      "index": 226,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "df24237f91d349b171cd2ce602ad608e536e05e3a74a2f84907ad0b2a20428ae"
+    },
+    {
+      "hypothetical_partial_bits": [
+        17152,
+        0,
+        54784,
+        0,
+        22016,
+        0,
+        17152,
+        0,
+        0,
+        0
+      ],
+      "index": 227,
+      "predicted_bits": {
+        "exact": 17280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17152
+      },
+      "right_bits_sha256": "8339b11eef4912ff4214091e95405faae2cc51392c9f34566cdd1d56bc8ecf6f"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        48896,
+        0,
+        0,
+        0,
+        21120,
+        48896,
+        53888,
+        0,
+        0
+      ],
+      "index": 228,
+      "predicted_bits": {
+        "exact": 49024,
+        "pairwise_float32_rne": 48896,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "71b1fcf9b29e07a7dd09ed1a78c06be553646b7c8eb679869515c1b4f7c30327"
+    },
+    {
+      "hypothetical_partial_bits": [
+        50048,
+        0,
+        0,
+        20480,
+        53248,
+        0,
+        50048,
+        0,
+        0,
+        0
+      ],
+      "index": 229,
+      "predicted_bits": {
+        "exact": 50176,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 50048
+      },
+      "right_bits_sha256": "6d9703b4d9fec7860ca5e9921366490f770c1c39d4cde79423648fb467bf335a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        49792,
+        0,
+        0,
+        20736,
+        53504,
+        49792
+      ],
+      "index": 230,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "81144f6c800b5321da3908540476f764c6cdb101b7403a5afcfd97fc0c0c859a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        49664,
+        0,
+        54400,
+        49664,
+        21632,
+        0,
+        0
+      ],
+      "index": 231,
+      "predicted_bits": {
+        "exact": 49792,
+        "pairwise_float32_rne": 49664,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "bbf667ce7925f6848103a7f53a7240d5b2e49922afb030a2437f3783bc7025e4"
+    },
+    {
+      "hypothetical_partial_bits": [
+        49280,
+        19712,
+        0,
+        0,
+        52480,
+        0,
+        49280,
+        0,
+        0,
+        0
+      ],
+      "index": 232,
+      "predicted_bits": {
+        "exact": 49408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49280
+      },
+      "right_bits_sha256": "39ae43217f4ff9b570887ea8a7981ccad731a25b09d15459c4788b1368147399"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        52352,
+        0,
+        0,
+        0,
+        0,
+        15616,
+        0,
+        19584,
+        15616
+      ],
+      "index": 233,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "7f2b8e45524e7ef216dcd25fd9ad5ea8a608f3f43663033632ab32f7da509774"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        21248,
+        0,
+        17280,
+        0,
+        54016,
+        17280,
+        0,
+        0,
+        0
+      ],
+      "index": 234,
+      "predicted_bits": {
+        "exact": 17408,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 17280
+      },
+      "right_bits_sha256": "a68c3f7058cac367b0b5eabcaf419e00e93e63c44405799acc00da85f770e8b5"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        53376,
+        0,
+        16256,
+        20608,
+        0,
+        16256,
+        0,
+        0
+      ],
+      "index": 235,
+      "predicted_bits": {
+        "exact": 16384,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16256
+      },
+      "right_bits_sha256": "8c99451a18e4a915db65ecf13f23717c9cd731f48b0fb9cea4cdb09a874e1aae"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16128,
+        0,
+        0,
+        0,
+        19968,
+        16128,
+        52736,
+        0,
+        0
+      ],
+      "index": 236,
+      "predicted_bits": {
+        "exact": 16256,
+        "pairwise_float32_rne": 16128,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "76934d7ea2f03fc60782533e9f43520c4dbda8bf0e592eb923811241dc55ff3b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        15616,
+        53504,
+        0,
+        0,
+        0,
+        20736,
+        15616,
+        0,
+        0
+      ],
+      "index": 237,
+      "predicted_bits": {
+        "exact": 15744,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15616
+      },
+      "right_bits_sha256": "415c77d612172203c1cdef6e0b8f0a12e79d0d3dbec456ccf1b15cdec7da84fd"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        54016,
+        0,
+        16640,
+        21248,
+        16640
+      ],
+      "index": 238,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "e8eeb0e7f2781fd5bb609d6f27e11419ae6cbcb6f71c79cc93e987702b52a0fe"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        54272,
+        49152,
+        0,
+        21504,
+        49152,
+        0,
+        0,
+        0
+      ],
+      "index": 239,
+      "predicted_bits": {
+        "exact": 49280,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49152
+      },
+      "right_bits_sha256": "2dcab9a0d73aafc9413e46bb95b39fe7a92b3bf2b3cfd8868c4af49c2d5a6623"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        49920,
+        0,
+        49920,
+        54016,
+        0,
+        21248,
+        0,
+        0
+      ],
+      "index": 240,
+      "predicted_bits": {
+        "exact": 50048,
+        "pairwise_float32_rne": 49920,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "72fa48a0cb4fc66673da2af5ccf86378ecc0f8867d1f07974aeb900a51b18c85"
+    },
+    {
+      "hypothetical_partial_bits": [
+        48128,
+        0,
+        0,
+        0,
+        48128,
+        20352,
+        53120,
+        0,
+        0,
+        0
+      ],
+      "index": 241,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 48128,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "14009564b88a4b13895918d54feee52b6865a14800fd19094d11c25dd2b146b0"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19456,
+        0,
+        0,
+        0,
+        0,
+        0,
+        15872,
+        52224,
+        15872
+      ],
+      "index": 242,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15872
+      },
+      "right_bits_sha256": "2ffd4f3f2282e5d56b81dc72babcfe953e6821cd100b938670930af9218edddb"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48128,
+        0,
+        0,
+        0,
+        0,
+        19968,
+        52736,
+        48128
+      ],
+      "index": 243,
+      "predicted_bits": {
+        "exact": 48256,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48128
+      },
+      "right_bits_sha256": "98b92c92330590f28531392c4f1a6d79a13a3989bcfc8ca02aeca548994851d7"
+    },
+    {
+      "hypothetical_partial_bits": [
+        16000,
+        20736,
+        0,
+        0,
+        53504,
+        16000,
+        0,
+        0,
+        0,
+        0
+      ],
+      "index": 244,
+      "predicted_bits": {
+        "exact": 16128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16000
+      },
+      "right_bits_sha256": "0ac29d7e97d18ba34292c67a4c8ddd3b43f2945ab1a26faa8266bcc9459c58c9"
+    },
+    {
+      "hypothetical_partial_bits": [
+        19840,
+        0,
+        0,
+        0,
+        0,
+        48640,
+        52608,
+        48640,
+        0,
+        0
+      ],
+      "index": 245,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48640
+      },
+      "right_bits_sha256": "ed6eef5831d5982ee6bb99d01390d20d729547c964ee07b6338619028a055f0a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        17152,
+        0,
+        20480,
+        17152,
+        53248,
+        0,
+        0
+      ],
+      "index": 246,
+      "predicted_bits": {
+        "exact": 17280,
+        "pairwise_float32_rne": 17152,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "b141e7a8b03c823f828a4923a677ab4df5992258f89ca84720dc2d57b530c2cf"
+    },
+    {
+      "hypothetical_partial_bits": [
+        52480,
+        48000,
+        0,
+        0,
+        19712,
+        0,
+        0,
+        48000,
+        0,
+        0
+      ],
+      "index": 247,
+      "predicted_bits": {
+        "exact": 48128,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48000
+      },
+      "right_bits_sha256": "e7ecb0ebf5bc3607cd4f6dc28ac7b39b018aa1b7d80dd91afe016abf6c15954b"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19968,
+        0,
+        48768,
+        52736,
+        0,
+        0,
+        48768,
+        0,
+        0
+      ],
+      "index": 248,
+      "predicted_bits": {
+        "exact": 48896,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 48768
+      },
+      "right_bits_sha256": "3bb06d36f67f5f73e0277fa4484f2d235e8d67e11bd190a1cbbce88e68171b70"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49024,
+        0,
+        54016,
+        0,
+        21248,
+        0,
+        49024,
+        0,
+        0
+      ],
+      "index": 249,
+      "predicted_bits": {
+        "exact": 49152,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49024
+      },
+      "right_bits_sha256": "1b36b659b149034feb0c9425c297194216663c9d519d776037231d5ace5a687a"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        19968,
+        15232,
+        0,
+        52736,
+        0,
+        0,
+        15232,
+        0,
+        0
+      ],
+      "index": 250,
+      "predicted_bits": {
+        "exact": 15360,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15232
+      },
+      "right_bits_sha256": "ff8837bb2a16702e43a881f670016e4e224d0025a9c1b0d182504ec711859467"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        49792,
+        0,
+        0,
+        21888,
+        0,
+        0,
+        0,
+        54656,
+        49792
+      ],
+      "index": 251,
+      "predicted_bits": {
+        "exact": 49920,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 49792
+      },
+      "right_bits_sha256": "2b12b9a311f84a84083640bec4b44c2312f13526eadbbcaa88c7cca32d8321d1"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        15872,
+        0,
+        0,
+        53632,
+        0,
+        20864,
+        15872
+      ],
+      "index": 252,
+      "predicted_bits": {
+        "exact": 16000,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 15872
+      },
+      "right_bits_sha256": "15c9f96479a9a95b8abeff51b7421c303c361ca46c77bd4dc751fa76ff398266"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        16384,
+        0,
+        20736,
+        53504,
+        0,
+        16384,
+        0,
+        0,
+        0
+      ],
+      "index": 253,
+      "predicted_bits": {
+        "exact": 16512,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16384
+      },
+      "right_bits_sha256": "8bc787e007c9809fe5a0a1acbca6a575ffc7d6e679828ed7859954edae28e86d"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        0,
+        0,
+        16640,
+        0,
+        0,
+        53888,
+        21120,
+        16640
+      ],
+      "index": 254,
+      "predicted_bits": {
+        "exact": 16768,
+        "pairwise_float32_rne": 0,
+        "sequential_float32_rne": 16640
+      },
+      "right_bits_sha256": "939e2396ffc276888de1bad8c23074c322d9b6cc583901b510730d6fc78c29c7"
+    },
+    {
+      "hypothetical_partial_bits": [
+        0,
+        0,
+        48640,
+        0,
+        0,
+        51840,
+        48640,
+        19072,
+        0,
+        0
+      ],
+      "index": 255,
+      "predicted_bits": {
+        "exact": 48768,
+        "pairwise_float32_rne": 48640,
+        "sequential_float32_rne": 0
+      },
+      "right_bits_sha256": "c501fe094652f9ad0e43815c0beacf67f73ed86a3c136836b2cb0ee3a33791ab"
+    }
+  ],
+  "diagnosis_sha256": "402c316cd8620eacffc8577bf1a2f137b71d78ccda2ab845472d8383839c8fa0",
+  "expected_environment": {
+    "bf16_reduced_precision_reduction": true,
+    "capability": [
+      8,
+      9
+    ],
+    "cuda": "12.8",
+    "deterministic_algorithms": false,
+    "device": "NVIDIA GeForce RTX 4090",
+    "torch": "2.7.1+cu128"
+  },
+  "expected_kernel_names": [
+    "_ZN7cutlass7Kernel2I67cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_64x1_tn_align8EEvNT_6ParamsE",
+    "_ZN8cublasLt19splitKreduce_kernelILi32ELi16Ei13__nv_bfloat16S1_fS1_Lb0ES1_S1_S1_Lb1ELb0ELb0EEEvNS_18cublasSplitKParamsIT4_EEPKT2_PKT8_PT7_PT3_PKS3_SG_PKT9_S7_PSH_PvxPS3_PiSM_SM_SG_SG_SG_SG_SG_"
+  ],
+  "finalists": [
+    {
+      "chunk_size": 64,
+      "partial_format": "bfloat16_rne",
+      "reduction": "exact"
+    },
+    {
+      "chunk_size": 64,
+      "partial_format": "bfloat16_rne",
+      "reduction": "sequential_float32_rne"
+    },
+    {
+      "chunk_size": 64,
+      "partial_format": "bfloat16_rne",
+      "reduction": "pairwise_float32_rne"
+    }
+  ],
+  "generator": "xorshift32-discriminating-split-merges-v1",
+  "global_exactness_activation_allowed": false,
+  "hypothetical_partials_observed": false,
+  "input_pairs_disjoint_from_development": true,
+  "input_shape": [
+    30,
+    640
+  ],
+  "input_value_bits": 16384,
+  "left_bits_sha256": "3c10c47d99b0178d2a33db5c18d6d77fa899097d5128a024836a5fdc2e903c43",
+  "partial_accumulation_profile": {
+    "alignment_exponent": "max(nonzero operand exponent sums, normalized incoming accumulator exponent)",
+    "carry_conversion": "float32 toward zero after every K8",
+    "final_conversion": "bfloat16 RNE",
+    "half_order": "lower_then_upper",
+    "operand_domain": "zero and finite normal bfloat16; signed-zero propagation unqualified",
+    "precision_bits": 25,
+    "quantization": "toward_zero"
+  },
+  "plan_sha256": "e13a92eff2ee7c1bfbe189fe584a9c3e2f3d7aa97381f91c335aab6b873f5087",
+  "predictions_sha256": "8e326633dde27fe21ddc9982e034f19338b38d2b786a50e95960a7026ba2b71a",
+  "schema_version": 1,
+  "scope": "Prospective discrimination among three frozen K64/bfloat16-partial merge candidates; candidate-selected inputs, no observed-output fitting, no unrestricted split-K or hardware qualification.",
+  "seed": 1908730155,
+  "source_verification": "integrity_only; use gemma-split-k-diagnosis for source recomputation",
+  "weight_shape": [
+    256,
+    640
+  ]
+}
