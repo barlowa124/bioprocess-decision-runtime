@@ -49,6 +49,30 @@ Two earlier bounded studies are retained for context: capturing and intervening 
 - Per-layer explicit-attention versus SDPA comparisons using identical Q/K/V tensors and masks for non-softcapped attention; softcapped configurations are rejected because SDPA cannot reproduce the score transform
 - Exhaustive reference/eager/deployed checks over caller-declared finite canonical input grids
 
+## Toward explaining a writing failure (in progress)
+
+The companion [oncology-coscientist](https://github.com/barlowa124/oncology-coscientist)
+repository observed that Ollama gemma3 4b/12b/27b, asked only to restate
+computed survival metrics, wrote numbers that do not exist in the results
+(e.g. 0.688 for a recorded 0.647). This repository's machinery can inspect a
+forward pass of the 270M checkpoint, so the question is whether the same
+failure exists at a scale the machinery covers. Predeclared, held-out,
+preserved whichever way they came out:
+
+| Step | Protocol | Result |
+|---|---|---|
+| 1. Same full report prompt, 270M, HF eager greedy and Ollama gemma3:270m | `results/gemma3_270m_fabrication_probe_v1.md` | **Class C, inconclusive**: both backends echoed the plan JSON and never reached the metric section; 12 emitted numbers all verified |
+| 2. Task shrunk to "restate a recorded value" at five context sizes; 10 development + 17 sealed held-out cases | `results/gemma3_270m_copy_drift_protocol_v1.md`, `..._copy_drift_v1.md` | **No drift**: no held-out output contained a number absent from the record. **Misattribution appears at L3–L4** (5 of 8 held-out cases with four or more values in context): the model answers with a *different recorded* value, e.g. 0.695 for an asked 0.609. Full-table restatement (L5): omission |
+
+What this establishes so far: at 270M the failure mode reachable is
+in-context misretrieval (right set, wrong item), not invention of new values.
+Whether the 4b+ inventions are the same mechanism at larger scale is not
+established, and this checkpoint cannot answer it directly. The recorded
+misattribution forward passes are the next inspection target; extending the
+independent execution machinery to a fabricating checkpoint (gemma3 4b: new
+architecture variant) is a separate, larger effort whose feasibility has not
+yet been assessed.
+
 ## What this does not demonstrate
 
 - A validated bioreactor model or control strategy
