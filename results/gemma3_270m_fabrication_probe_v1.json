@@ -1,0 +1,1397 @@
+{
+  "question": "Given the exact report-agent prompt from oncology run results/luad/3097990b11d8/agent/318d61643606 (attempt 1), does gemma-3-270m-it under HF eager greedy decoding emit numeric claims that do not match results.json?",
+  "source_agent_run": "C:\\oncology-coscientist\\results\\luad\\3097990b11d8\\agent\\318d61643606\\agent_run.json",
+  "prompt": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You write cautious scientific summaries. Every number in your output must come from the supplied results table exactly as displayed. If any check failed, state the corresponding metrics as abstained. Forbidden phrasing: 'clinically validated', 'proves', 'causes', 'should be used', 'outperforms', 'state-of-the-art', 'robust', and 'significant' without an adjacent verifiable p-value. Do not name the language model, software versions, or patient identifiers. Describe each check by its recorded outcome and detail; do not infer assumption validity from confidence intervals. Metric glossary: harrell_c and uno_c are concordance indices measuring discrimination (rank agreement between predicted risk and observed survival); auc_12m/24m/36m are time-dependent AUCs measuring discrimination at that horizon; integrated_brier_6_36m is the overall accuracy of predicted survival probabilities (lower is better); calibration_24m is the agreement between predicted and observed survival at 24 months. Do not call a concordance index a calibration metric. When citing a model-specific number, name the model key it belongs to in the same sentence or bullet."
+      },
+      {
+        "role": "user",
+        "content": "Results table (numbers at display precision; cite these only):\ncohort: luad\nseed: 20240601\nn_train: 350\nn_test: 151\nn_patients: 501\nn_patients_with_expression: 497\nn_unsequenced_patients: 0\ndropped: {\"missing_os\": 61, \"nonpositive_os_months\": 4, \"extra_primary_samples\": 0, \"no_primary_sample\": 0}\nmissingness: {\"age\": {\"missing\": 10, \"fraction\": 0.02}, \"sex\": {\"missing\": 0, \"fraction\": 0.0}, \"stage\": {\"missing\": 2, \"fraction\": 0.004}, \"mut_TP53\": {\"missing\": 0, \"fraction\": 0.0}, \"mut_KRAS\": {\"missing\": 0, \"fraction\": 0.0}, \"mut_EGFR\": {\"missing\": 0, \"fraction\": 0.0}, \"mut_STK11\": {\"missing\": 0, \"fraction\": 0.0}, \"mut_KEAP1\": {\"missing\": 0, \"fraction\": 0.0}}\nchecks:\n  split_integrity: PASS {\"hash_match\": true, \"overlap_count\": 0, \"missing_ids\": [], \"missing_fraction\": 0.0}\n  min_events: PASS {\"train_events\": 126, \"test_events\": 55, \"required_train\": 30, \"required_test\": 10}\n  leakage: PASS {\"impute_age_matches\": true, \"impute_sex_matches\": true, \"impute_stage_matches\": true, \"impute_mut_TP53_matches\": true, \"impute_mut_KRAS_matches\": true, \"impute_mut_EGFR_matches\": true, \"impute_mut_STK11_matches\": true, \"impute_mut_KEAP1_matches\": true, \"gene_selection_matches\": true, \"scale_FGB_matches\": true, \"scale_PLUNC_matches\": true, \"scale_SFTPC_matches\": true, \"scale_PGC_matches\": true, \"scale_CALCA_matches\": true, \"scale_PAEP_matches\": true, \"scale_MAGEA6_matches\": true, \"scale_XAGE1D_matches\": true, \"scale_AKR1B10_matches\": true, \"scale_SCGB1A1_matches\": true, \"scale_FGG_matches\": true, \"scale_MAGEA3_matches\": true, \"scale_FGA_matches\": true, \"scale_GPX2_matches\": true, \"scale_UGT1A6_matches\": true, \"scale_MSMB_matches\": true, \"scale_MUC13_matches\": true, \"scale_TFF1_matches\": true, \"scale_CPS1_matches\": true, \"scale_KIF1A_matches\": true, \"scale_GSTM1_matches\": true, \"scale_VIL1_matches\": true, \"scale_AKR1C2_matches\": true, \"scale_MUC5B_matches\": true, \"scale_SPINK1_matches\": true, \"scale_GSTT1_matches\": true, \"scale_PRAME_matches\": true, \"scale_KRT6A_matches\": true, \"scale_PCSK2_matches\": true, \"scale_MAGEA2_matches\": true, \"scale_ASCL1_matches\": true, \"scale_KLK12_matches\": true, \"scale_BARX1_matches\": true, \"scale_FGL1_matches\": true, \"scale_SCGB3A2_matches\": true, \"scale_C20orf114_matches\": true, \"scale_GLB1L3_matches\": true, \"scale_EEF1A2_matches\": true, \"scale_SFTPA1_matches\": true, \"scale_PAX7_matches\": true, \"scale_TCN1_matches\": true, \"scale_BPIL1_matches\": true, \"scale_MSLN_matches\": true, \"scale_MUC16_matches\": true, \"scale_LGALS4_matches\": true, \"scale_MAGEA12_matches\": true, \"scale_SCGB3A1_matches\": true, \"scale_HHLA2_matches\": true, \"scale_CLDN18_matches\": true, \"scale_SERPINB3_matches\": true}\n  proportional_hazards: PASS {\"covariates_below_p_0.01\": {}, \"p_values\": {\"age\": 0.600095184428315, \"mut_EGFR\": 0.9723089024456641, \"mut_KEAP1\": 0.8758863774706097, \"mut_KRAS\": 0.014062138099867465, \"mut_STK11\": 0.7380799295544883, \"mut_TP53\": 0.4732781646815829, \"sex_Male\": 0.05935678414706864, \"stage_II\": 0.5640852556833844, \"stage_III\": 0.07147240069830563, \"stage_IV\": 0.6811360420406203}}\n  convergence: PASS {\"converged\": true, \"log_likelihood\": -609.0508613985864}\ncox/clinical.harrell_c = 0.647\ncox/clinical.uno_c = 0.640\ncox/clinical.integrated_brier_6_36m = 0.153\ncox/clinical.auc_12m = 0.649\ncox/clinical.auc_24m = 0.691\ncox/clinical.auc_36m = 0.694\ncox/clinical.auc_mean = 0.681\ncox/clinical.HR[age] = 1.02 [1.00, 1.03] p=0.0678\ncox/clinical.HR[mut_EGFR] = 1.15 [0.72, 1.85] p=0.5602\ncox/clinical.HR[mut_KEAP1] = 0.97 [0.63, 1.49] p=0.8873\ncox/clinical.HR[mut_KRAS] = 1.20 [0.84, 1.72] p=0.3120\ncox/clinical.HR[mut_STK11] = 1.64 [1.06, 2.53] p=0.0266\ncox/clinical.HR[mut_TP53] = 1.18 [0.86, 1.62] p=0.3142\ncox/clinical.HR[sex_Male] = 0.99 [0.72, 1.36] p=0.9577\ncox/clinical.HR[stage_II] = 1.54 [1.06, 2.24] p=0.0248\ncox/clinical.HR[stage_III] = 2.62 [1.75, 3.93] p=0.0000\ncox/clinical.HR[stage_IV] = 3.27 [1.66, 6.44] p=0.0006\ncox/clinical.reference_levels = {\"sex\": \"Female\", \"stage\": \"I\"}\nrsf/clinical.harrell_c = 0.639\nrsf/clinical.uno_c = 0.639\nrsf/clinical.integrated_brier_6_36m = 0.153\nrsf/clinical.auc_12m = 0.604\nrsf/clinical.auc_24m = 0.675\nrsf/clinical.auc_36m = 0.695\nrsf/clinical.auc_mean = 0.663\ncox/clinical_expression.harrell_c = 0.643\ncox/clinical_expression.uno_c = 0.632\ncox/clinical_expression.integrated_brier_6_36m = 0.157\ncox/clinical_expression.auc_12m = 0.711\ncox/clinical_expression.auc_24m = 0.666\ncox/clinical_expression.auc_36m = 0.628\ncox/clinical_expression.auc_mean = 0.664\nrsf/clinical_expression.harrell_c = 0.632\nrsf/clinical_expression.uno_c = 0.615\nrsf/clinical_expression.integrated_brier_6_36m = 0.153\nrsf/clinical_expression.auc_12m = 0.671\nrsf/clinical_expression.auc_24m = 0.672\nrsf/clinical_expression.auc_36m = 0.609\nrsf/clinical_expression.auc_mean = 0.649\n\nCohort summary:\nThe LUAD cohort consists of 501 patients, with expression data available for 497. The training set contains 350 patients and the test set 151. A total of 61 patients were dropped due to missing overall survival data, and 4 were dropped due to non-positive overall survival in months. No patients were dropped due to extra or missing primary samples.\n\nData quality checks indicate the split integrity, minimum events, leakage, proportional hazards assumption, and convergence were all confirmed as true. Missingness was observed for age, with 10 patients having missing data representing a 0.02 fraction. Stage information was missing for 2 patients, representing a 0.004 fraction. No missingness was observed for sex, mut_TP53, mut_KRAS, mut_EGFR, mut_STK11, or mut_KEAP1.\n\n*   10 patients had missing age data (0.02 fraction).\n*   2 patients had missing stage data (0.004 fraction).\n*   61 patients were dropped due to missing overall survival data.\n*   4 patients were dropped due to non-positive overall survival in months.\n\n\n\n\n\nAnalysis plan:\n{\"focus_models\": [\"cox/clinical\", \"rsf/clinical\", \"cox/clinical_expression\", \"rsf/clinical_expression\"], \"claims_to_make\": [\"Compare the performance of Cox and RSF models using clinical data.\", \"Evaluate the impact of incorporating expression data into both Cox and RSF models.\", \"Assess model performance at different time horizons (12, 24, 36 months) using AUC.\", \"Report Harrell's C and Integrated Brier Score as measures of calibration and discrimination.\"], \"must_disclose\": [\"All checks (split_integrity, min_events, leakage, proportional_hazards, convergence) passed, indicating model validity.\", \"The analysis is limited to the provided pre-computed models and metrics.\"]}\n\nWrite a markdown report with exactly these sections, in order:\n## Cohort\n## Models and metrics\n## Checks and abstentions\n## Limitations\nThe headers must appear verbatim as shown above (## + exact title).\n\nRetrieved public-domain passages you may cite:\n[PDQ:pdq_nsclc_treatment#181] \"Treatment of stage IA non-small cell lung cancer and stage IB non-small cell lung cancer may include:\"\n[PDQ:pdq_nsclc_treatment#187] \"Treatment of stage IIA non-small cell lung cancer and stage IIB non-small cell lung cancer may include:\"\n[PDQ:pdq_nsclc_treatment#211] \"Treatment of stage IIIB non-small cell lung cancer and stage IIIC non-small cell lung cancer may include:\"\n[PDQ:pdq_nsclc_treatment#195] \"Treatment of stage IIIA non-small cell lung cancer that can be removed with surgery may include:\"\n[PDQ:pdq_nsclc_treatment#201] \"Treatment of stage IIIA non-small cell lung cancer that cannot be removed with surgery may include:\"\n\nOptionally append a '## Context' section after Limitations. In it, any sentence quoting a passage must end with its citation tag, e.g. \"...quoted text...\" [PDQ:pdq_nsclc_treatment#181]. Quote verbatim only; never cite a tag not listed above; numbers in Context must come from the cited passage, not the results table."
+      }
+    ],
+    "message_sha256": {
+      "system": "c9686acd958a4eec92819d721cc824cfa29e6ba55345aa339af18bbf64da7dd2",
+      "user": "21b983386a66c6551139d626ec7d6cec372f01cd7831152843402131e260f6db"
+    },
+    "transcript_index": 2,
+    "prompt_sha256_recorded": "faff3ae229ce9f10adbdf2b961d29d739f6f12d3ffda08b2eca27e320cfe7d4e"
+  },
+  "backends": {
+    "hf_eager_270m": {
+      "device": "cuda",
+      "elapsed_s": 23.6,
+      "prompt_tokens": 3319,
+      "generated_token_ids": [
+        1408,
+        105657,
+        632,
+        107,
+        1408,
+        40121,
+        532,
+        19455,
+        107,
+        1408,
+        58711,
+        532,
+        34751,
+        186504,
+        107,
+        1408,
+        137727,
+        107,
+        818,
+        79740,
+        2466,
+        34934,
+        10594,
+        529,
+        236743,
+        236810,
+        236771,
+        236770,
+        4399,
+        236764,
+        607,
+        5619,
+        1262,
+        2487,
+        573,
+        236743,
+        236812,
+        236819,
+        236832,
+        236761,
+        669,
+        4122,
+        1076,
+        6097,
+        236743,
+        236800,
+        236810,
+        236771,
+        4399,
+        532,
+        506,
+        1594,
+        1076,
+        236743,
+        236770,
+        236810,
+        236770,
+        236761,
+        562,
+        2558,
+        529,
+        236743,
+        236825,
+        236770,
+        4399,
+        964,
+        14205,
+        2779,
+        531,
+        9724,
+        6782,
+        16671,
+        1262,
+        236761,
+        108,
+        1408,
+        5774,
+        3325,
+        17507,
+        10128,
+        506,
+        9918,
+        17661,
+        236764,
+        7081,
+        4749,
+        236764,
+        42574,
+        236764,
+        20688,
+        39232,
+        15661,
+        236764,
+        532,
+        22861,
+        964,
+        784,
+        10778,
+        618,
+        1847,
+        236761,
+        62420,
+        1788,
+        691,
+        5773,
+        573,
+        3911,
+        236764,
+        607,
+        236743,
+        236770,
+        236771,
+        4399,
+        2963,
+        9724,
+        1262,
+        13855,
+        496,
+        236743,
+        236771,
+        236761,
+        236771,
+        236778,
+        10742,
+        236761,
+        32079,
+        1938,
+        691,
+        9724,
+        573,
+        236743,
+        236778,
+        4399,
+        236764,
+        13855,
+        496,
+        236743,
+        236771,
+        236761,
+        236771,
+        236771,
+        236812,
+        10742,
+        236761,
+        2301,
+        9724,
+        1788,
+        691,
+        5773,
+        573,
+        6043,
+        236764,
+        5333,
+        236779,
+        7216,
+        236810,
+        236800,
+        236764,
+        5333,
+        236779,
+        58768,
+        2371,
+        236764,
+        5333,
+        236779,
+        63426,
+        11869,
+        236764,
+        5333,
+        236779,
+        1393,
+        236855,
+        236770,
+        236770,
+        236764,
+        653,
+        5333,
+        236779,
+        11998,
+        2663,
+        236770,
+        236761,
+        108,
+        1408,
+        13768,
+        2731,
+        236787,
+        107,
+        14937,
+        11757,
+        236779,
+        11245,
+        1083,
+        11058,
+        54685,
+        236786,
+        72414,
+        827,
+        623,
+        5532,
+        236760,
+        236786,
+        72414,
+        827,
+        623,
+        54685,
+        236786,
+        72414,
+        236779,
+        25733,
+        827,
+        623,
+        5532,
+        236760,
+        236786,
+        72414,
+        236779,
+        25733,
+        14255,
+        623,
+        67259,
+        236779,
+        1071,
+        236779,
+        9636,
+        1083,
+        11058,
+        44438,
+        506,
+        3736,
+        529,
+        32335,
+        532,
+        20949,
+        236811,
+        4681,
+        1699,
+        9737,
+        1262,
+        10498,
+        623,
+        99009,
+        506,
+        4100,
+        529,
+        40825,
+        5619,
+        1262,
+        1131,
+        1800,
+        32335,
+        532,
+        20949,
+        236811,
+        4681,
+        10498,
+        623,
+        186922,
+        2028,
+        3736,
+        657,
+        1607,
+        990,
+        85338,
+        568,
+        236770,
+        236778,
+        236764,
+        236743,
+        236778,
+        236812,
+        236764,
+        236743,
+        236800,
+        236825,
+        3794,
+        236768,
+        1699,
+        107488,
+        10498,
+        623,
+        15764,
+        4969,
+        18633,
+        236789,
+        236751,
+        565,
+        532,
+        47398,
+        603,
+        5804,
+        27242,
+        618,
+        8073,
+        529,
+        29283,
+        532,
+        26363,
+        62192,
+        623,
+        23600,
+        236779,
+        2763,
+        5977,
+        1083,
+        11058,
+        3243,
+        17507,
+        568,
+        6966,
+        236779,
+        168196,
+        236764,
+        1322,
+        236779,
+        18582,
+        236764,
+        42574,
+        236764,
+        20688,
+        236779,
+        107403,
+        2206,
+        236764,
+        22861,
+        236768,
+        6915,
+        236764,
+        17674,
+        2028,
+        28100,
+        10498,
+        623,
+        818,
+        3671,
+        563,
+        5809,
+        531,
+        506,
+        3847,
+        877,
+        236772,
+        124655,
+        4681,
+        532,
+        19455,
+        1781,
+        21111,
+        106
+      ],
+      "generated_text": "## Cohort\n## Models and metrics\n## Checks and abstentions\n## Limitations\nThe LUAD cohort consists of 501 patients, with expression data available for 497. The training set contains 350 patients and the test set 151. A total of 61 patients were dropped due to missing overall survival data.\n\n## Data quality checks indicate the split integrity, minimum events, leakage, proportional hazards assumption, and convergence were all confirmed as true. Missingness was observed for age, with 10 patients having missing data representing a 0.02 fraction. Stage information was missing for 2 patients, representing a 0.004 fraction. No missingness was observed for sex, mut_TP53, mut_KRAS, mut_EGFR, mut_STK11, or mut_KEAP1.\n\n## Analysis plan:\n{\"focus_models\": [\"cox/clinical\", \"rsf/clinical\", \"cox/clinical_expression\", \"rsf/clinical_expression\"], \"claims_to_make\": [\"Compare the performance of Cox and RSF models using clinical data.\", \"Evaluate the impact of incorporating expression data into both Cox and RSF models.\", \"Assess model performance at different time horizons (12, 24, 36 months) using AUC.\", \"Report Harrell's C and Integrated Brier Score as measures of calibration and discrimination.\"], \"must_disclose\": [\"All checks (split_integrity, min_events, leakage, proportional_hazards, convergence) passed, indicating model validity.\", \"The analysis is limited to the provided pre-computed models and metrics.\"]}",
+      "digit_token_top5": [
+        {
+          "step": 25,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 25.0
+            },
+            {
+              "token": "4",
+              "logit": 15.0625
+            },
+            {
+              "token": "6",
+              "logit": 14.6875
+            },
+            {
+              "token": "1",
+              "logit": 13.4375
+            },
+            {
+              "token": "3",
+              "logit": 13.125
+            }
+          ]
+        },
+        {
+          "step": 26,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 24.125
+            },
+            {
+              "token": "1",
+              "logit": 10.6875
+            },
+            {
+              "token": "2",
+              "logit": 10.3125
+            },
+            {
+              "token": ",",
+              "logit": 9.5625
+            },
+            {
+              "token": "5",
+              "logit": 9.5
+            }
+          ]
+        },
+        {
+          "step": 27,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 27.625
+            },
+            {
+              "token": "0",
+              "logit": 16.75
+            },
+            {
+              "token": "2",
+              "logit": 12.9375
+            },
+            {
+              "token": "3",
+              "logit": 11.625
+            },
+            {
+              "token": "4",
+              "logit": 11.125
+            }
+          ]
+        },
+        {
+          "step": 36,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 36.5
+            },
+            {
+              "token": "3",
+              "logit": 22.875
+            },
+            {
+              "token": "1",
+              "logit": 22.5
+            },
+            {
+              "token": "2",
+              "logit": 22.25
+            },
+            {
+              "token": "5",
+              "logit": 21.625
+            }
+          ]
+        },
+        {
+          "step": 37,
+          "token_id": 236819,
+          "token": "9",
+          "top5": [
+            {
+              "token": "9",
+              "logit": 29.0
+            },
+            {
+              "token": "8",
+              "logit": 16.5
+            },
+            {
+              "token": "7",
+              "logit": 14.4375
+            },
+            {
+              "token": "5",
+              "logit": 13.6875
+            },
+            {
+              "token": "6",
+              "logit": 12.6875
+            }
+          ]
+        },
+        {
+          "step": 38,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 35.25
+            },
+            {
+              "token": "6",
+              "logit": 21.625
+            },
+            {
+              "token": "8",
+              "logit": 20.75
+            },
+            {
+              "token": "3",
+              "logit": 19.5
+            },
+            {
+              "token": "5",
+              "logit": 19.25
+            }
+          ]
+        },
+        {
+          "step": 45,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 32.5
+            },
+            {
+              "token": "2",
+              "logit": 19.625
+            },
+            {
+              "token": "1",
+              "logit": 19.625
+            },
+            {
+              "token": "5",
+              "logit": 17.5
+            },
+            {
+              "token": "4",
+              "logit": 17.375
+            }
+          ]
+        },
+        {
+          "step": 46,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 26.125
+            },
+            {
+              "token": "\u2075",
+              "logit": 12.0
+            },
+            {
+              "token": "0",
+              "logit": 11.9375
+            },
+            {
+              "token": "4",
+              "logit": 11.6875
+            },
+            {
+              "token": ",",
+              "logit": 11.3125
+            }
+          ]
+        },
+        {
+          "step": 47,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 29.625
+            },
+            {
+              "token": "1",
+              "logit": 14.4375
+            },
+            {
+              "token": "5",
+              "logit": 14.125
+            },
+            {
+              "token": "3",
+              "logit": 13.875
+            },
+            {
+              "token": "\uff10",
+              "logit": 13.1875
+            }
+          ]
+        },
+        {
+          "step": 54,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 30.125
+            },
+            {
+              "token": "2",
+              "logit": 17.375
+            },
+            {
+              "token": "3",
+              "logit": 15.5
+            },
+            {
+              "token": "0",
+              "logit": 14.625
+            },
+            {
+              "token": "4",
+              "logit": 14.5
+            }
+          ]
+        },
+        {
+          "step": 55,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 32.5
+            },
+            {
+              "token": "0",
+              "logit": 17.0
+            },
+            {
+              "token": "6",
+              "logit": 16.5
+            },
+            {
+              "token": "3",
+              "logit": 16.25
+            },
+            {
+              "token": "2",
+              "logit": 15.8125
+            }
+          ]
+        },
+        {
+          "step": 56,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 34.25
+            },
+            {
+              "token": "0",
+              "logit": 18.625
+            },
+            {
+              "token": "2",
+              "logit": 18.375
+            },
+            {
+              "token": "3",
+              "logit": 16.5
+            },
+            {
+              "token": "5",
+              "logit": 15.5625
+            }
+          ]
+        },
+        {
+          "step": 62,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 40.0
+            },
+            {
+              "token": "1",
+              "logit": 25.375
+            },
+            {
+              "token": "7",
+              "logit": 25.25
+            },
+            {
+              "token": "8",
+              "logit": 24.5
+            },
+            {
+              "token": "2",
+              "logit": 24.0
+            }
+          ]
+        },
+        {
+          "step": 63,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 23.625
+            },
+            {
+              "token": "2",
+              "logit": 12.5625
+            },
+            {
+              "token": "0",
+              "logit": 12.125
+            },
+            {
+              "token": "3",
+              "logit": 11.5
+            },
+            {
+              "token": "9",
+              "logit": 10.8125
+            }
+          ]
+        },
+        {
+          "step": 110,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 27.375
+            },
+            {
+              "token": "0",
+              "logit": 14.5
+            },
+            {
+              "token": "2",
+              "logit": 14.1875
+            },
+            {
+              "token": "8",
+              "logit": 14.0
+            },
+            {
+              "token": "9",
+              "logit": 13.875
+            }
+          ]
+        },
+        {
+          "step": 111,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 29.5
+            },
+            {
+              "token": "5",
+              "logit": 14.375
+            },
+            {
+              "token": "1",
+              "logit": 14.25
+            },
+            {
+              "token": "2",
+              "logit": 13.6875
+            },
+            {
+              "token": "4",
+              "logit": 13.4375
+            }
+          ]
+        },
+        {
+          "step": 119,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 36.5
+            },
+            {
+              "token": "1",
+              "logit": 21.5
+            },
+            {
+              "token": "2",
+              "logit": 19.75
+            },
+            {
+              "token": "3",
+              "logit": 18.125
+            },
+            {
+              "token": "5",
+              "logit": 18.0
+            }
+          ]
+        },
+        {
+          "step": 121,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 32.5
+            },
+            {
+              "token": " **",
+              "logit": 17.75
+            },
+            {
+              "token": "\n\n",
+              "logit": 17.25
+            },
+            {
+              "token": "1",
+              "logit": 17.0
+            },
+            {
+              "token": "  ",
+              "logit": 16.625
+            }
+          ]
+        },
+        {
+          "step": 122,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 30.875
+            },
+            {
+              "token": "1",
+              "logit": 18.625
+            },
+            {
+              "token": "3",
+              "logit": 17.625
+            },
+            {
+              "token": "0",
+              "logit": 17.125
+            },
+            {
+              "token": "5",
+              "logit": 15.625
+            }
+          ]
+        },
+        {
+          "step": 131,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 33.0
+            },
+            {
+              "token": "1",
+              "logit": 20.25
+            },
+            {
+              "token": "3",
+              "logit": 19.5
+            },
+            {
+              "token": "4",
+              "logit": 18.0
+            },
+            {
+              "token": "5",
+              "logit": 17.625
+            }
+          ]
+        },
+        {
+          "step": 137,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 37.0
+            },
+            {
+              "token": "1",
+              "logit": 19.875
+            },
+            {
+              "token": "2",
+              "logit": 18.375
+            },
+            {
+              "token": "4",
+              "logit": 16.75
+            },
+            {
+              "token": "3",
+              "logit": 16.375
+            }
+          ]
+        },
+        {
+          "step": 139,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 34.0
+            },
+            {
+              "token": "1",
+              "logit": 16.375
+            },
+            {
+              "token": " ",
+              "logit": 16.125
+            },
+            {
+              "token": "\n\n",
+              "logit": 15.6875
+            },
+            {
+              "token": "2",
+              "logit": 15.5
+            }
+          ]
+        },
+        {
+          "step": 140,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 29.25
+            },
+            {
+              "token": "1",
+              "logit": 15.3125
+            },
+            {
+              "token": "3",
+              "logit": 14.25
+            },
+            {
+              "token": "5",
+              "logit": 14.25
+            },
+            {
+              "token": "\u0660",
+              "logit": 14.1875
+            }
+          ]
+        },
+        {
+          "step": 141,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 34.25
+            },
+            {
+              "token": "5",
+              "logit": 19.375
+            },
+            {
+              "token": "3",
+              "logit": 18.875
+            },
+            {
+              "token": "6",
+              "logit": 18.625
+            },
+            {
+              "token": "2",
+              "logit": 18.375
+            }
+          ]
+        },
+        {
+          "step": 155,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 38.75
+            },
+            {
+              "token": "4",
+              "logit": 18.375
+            },
+            {
+              "token": "Five",
+              "logit": 18.0
+            },
+            {
+              "token": "3",
+              "logit": 17.5
+            },
+            {
+              "token": "2",
+              "logit": 17.5
+            }
+          ]
+        },
+        {
+          "step": 156,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 29.75
+            },
+            {
+              "token": "2",
+              "logit": 13.1875
+            },
+            {
+              "token": "7",
+              "logit": 12.6875
+            },
+            {
+              "token": "\u00b3",
+              "logit": 12.5
+            },
+            {
+              "token": "\u2083",
+              "logit": 11.4375
+            }
+          ]
+        },
+        {
+          "step": 172,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 24.0
+            },
+            {
+              "token": "2",
+              "logit": 9.125
+            },
+            {
+              "token": "-",
+              "logit": 7.375
+            },
+            {
+              "token": "0",
+              "logit": 7.2812
+            },
+            {
+              "token": "3",
+              "logit": 6.9062
+            }
+          ]
+        },
+        {
+          "step": 173,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 36.5
+            },
+            {
+              "token": "0",
+              "logit": 18.75
+            },
+            {
+              "token": "2",
+              "logit": 18.625
+            },
+            {
+              "token": "5",
+              "logit": 18.125
+            },
+            {
+              "token": "3",
+              "logit": 16.875
+            }
+          ]
+        },
+        {
+          "step": 180,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 28.125
+            },
+            {
+              "token": "2",
+              "logit": 10.4375
+            },
+            {
+              "token": "\u0967",
+              "logit": 9.0
+            },
+            {
+              "token": ".",
+              "logit": 8.75
+            },
+            {
+              "token": "\uff11",
+              "logit": 8.5
+            }
+          ]
+        },
+        {
+          "step": 265,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 26.625
+            },
+            {
+              "token": "2",
+              "logit": 10.75
+            },
+            {
+              "token": "period",
+              "logit": 8.6875
+            },
+            {
+              "token": "including",
+              "logit": 8.4375
+            },
+            {
+              "token": "from",
+              "logit": 8.3125
+            }
+          ]
+        },
+        {
+          "step": 266,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 33.5
+            },
+            {
+              "token": "0",
+              "logit": 16.25
+            },
+            {
+              "token": "6",
+              "logit": 15.125
+            },
+            {
+              "token": "3",
+              "logit": 14.0625
+            },
+            {
+              "token": "4",
+              "logit": 13.9375
+            }
+          ]
+        },
+        {
+          "step": 269,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 41.25
+            },
+            {
+              "token": "4",
+              "logit": 19.125
+            },
+            {
+              "token": "3",
+              "logit": 18.875
+            },
+            {
+              "token": "\u2082",
+              "logit": 17.5
+            },
+            {
+              "token": "1",
+              "logit": 17.25
+            }
+          ]
+        },
+        {
+          "step": 270,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 38.0
+            },
+            {
+              "token": "0",
+              "logit": 18.875
+            },
+            {
+              "token": "3",
+              "logit": 17.375
+            },
+            {
+              "token": "2",
+              "logit": 16.875
+            },
+            {
+              "token": "5",
+              "logit": 16.5
+            }
+          ]
+        },
+        {
+          "step": 273,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 46.75
+            },
+            {
+              "token": "5",
+              "logit": 24.375
+            },
+            {
+              "token": "4",
+              "logit": 23.875
+            },
+            {
+              "token": "1",
+              "logit": 22.625
+            },
+            {
+              "token": "2",
+              "logit": 21.625
+            }
+          ]
+        },
+        {
+          "step": 274,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 43.0
+            },
+            {
+              "token": "0",
+              "logit": 21.875
+            },
+            {
+              "token": "\u2076",
+              "logit": 20.0
+            },
+            {
+              "token": "7",
+              "logit": 19.875
+            },
+            {
+              "token": "4",
+              "logit": 19.625
+            }
+          ]
+        }
+      ],
+      "model_file_sha256": {
+        ".gitattributes": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "added_tokens.json": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+        "chat_template.jinja": "af95fbef33b76a50e5f463ff9766f85ce84f5849d915c4bd6c1619d852ac3231",
+        "config.json": "2706d3533059c6e1086badab27cc234e8ca2228975c3f73eeaef7f57cb5ec1db",
+        "generation_config.json": "be9e552870ff18a6c6beb0f6811030509c040d641e6972ce53c2fb540bbb4ba0",
+        "model.safetensors": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+        "README.md": "645fadbf83bfca50136a9b10265266b3db3eec671b03c24c5f28594ff4af9a5d",
+        "special_tokens_map.json": "45a857d8a2495d0be30a5d2d6de03278195eb028b6e0b8efc248bfa697d65f05",
+        "tokenizer.json": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+        "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "tokenizer_config.json": "be2182df1ad0ea735d336418896eb06e5cc2f59136e7aaeac5de2ec2197742ac"
+      },
+      "torch_version": "2.7.1+cu128",
+      "transformers_version": "4.53.3",
+      "decode": "greedy (do_sample=False; seed not applicable)",
+      "attn_implementation": "eager",
+      "dtype": "bfloat16",
+      "max_new_tokens": 700,
+      "verifier_findings": {
+        "passed": false,
+        "unverified_numbers": [],
+        "unknown_citations": [],
+        "misquotes": [],
+        "unscoped_model_numbers": [],
+        "misattributed": [],
+        "missing_focus_models": [],
+        "forbidden": [
+          "C-index described as calibration"
+        ],
+        "missing_sections": [],
+        "abstention_missing": false
+      },
+      "class": "C"
+    },
+    "ollama_270m": {
+      "elapsed_s": 11.5,
+      "model": "gemma3:270m (Ollama, quantized)",
+      "decode": "temperature=0, num_predict=700",
+      "generated_text": "## Cohort\n## Models and metrics\n## Checks and abstentions\n## Limitations\nThe LUAD cohort consists of 501 patients, with expression data available for 497. The training set contains 350 patients and the test set 151. A total of 61 patients were dropped due to missing overall survival data, and 4 were dropped due to non-positive overall survival in months.\n\nData quality checks indicate the split integrity, minimum events, leakage, proportional hazards assumption, and convergence were all confirmed as true. Missingness was observed for age, with 10 patients having missing data representing a 0.02 fraction. Stage information was missing for 2 patients, representing a 0.004 fraction. No missingness was observed for sex, mut_TP53, mut_KRAS, mut_EGFR, mut_STK11, or mut_KEAP1.\n\n* 10 patients had missing age data (0.02 fraction).\n* 2 patients had missing stage data (0.004 fraction).\n* 61 patients were dropped due to missing overall survival data.\n* 4 patients were dropped due to non-positive overall survival in months.\n\nAnalysis plan:\n{\"focus_models\": [\"cox/clinical\", \"rsf/clinical\", \"cox/clinical_expression\", \"rsf/clinical_expression\"], \"claims_to_make\": [\"Compare the performance of Cox and RSF models using clinical data.\", \"Evaluate the impact of incorporating expression data into both Cox and RSF models.\", \"Assess model performance at different time horizons (12, 24, 36 months) using AUC.\", \"Report Harrell's C and Integrated Brier Score as measures of calibration and discrimination.\"], \"must_disclose\": [\"All checks (split_integrity, min_events, leakage, proportional_hazards, convergence) passed, indicating model validity.\", \"The analysis is limited to the provided pre-computed models and metrics.\"]}\n\nRetrieved public-domain passages you may cite:\n[PDQ:pdq_nsclc_treatment#181] \"Treatment of stage IA non-small cell lung cancer and stage IB non-small cell lung cancer may include:\"\n[PDQ:pdq_nsclc_treatment#187] \"Treatment of stage IIA non-small cell lung cancer and stage IIB non-small cell lung cancer may include:\"\n[PDQ:pdq_nsclc_treatment#211] \"Treatment of stage IIIA non-small cell lung cancer that can be removed with surgery may include:\"\n[PDQ:pdq_nsclc_treatment#201] \"Treatment of stage IIIA non-small cell lung cancer that cannot be removed with surgery may include:\"\n\nOptionally append a '## Context' section after Limitations. In it, any sentence quoting a passage must end with its citation tag, e.g. \"Quote verbatim only; never cite a tag not listed above; numbers in Context must come from the cited passage, not the results table;\". [PDQ:pdq_nsclc_treatment#181]. Quote verbatim only; never cite a tag not listed above; numbers in Context must come from the cited passage,",
+      "eval_count": 700,
+      "verifier_findings": {
+        "passed": false,
+        "unverified_numbers": [],
+        "unknown_citations": [],
+        "misquotes": [
+          {
+            "tag": "[PDQ:pdq_nsclc_treatment#187]",
+            "quote": "Treatment of stage IA non-small cell lung cancer and stage IB non-small cell lung cancer may include:"
+          },
+          {
+            "tag": "[PDQ:pdq_nsclc_treatment#211]",
+            "quote": "Treatment of stage IIA non-small cell lung cancer and stage IIB non-small cell lung cancer may include:"
+          },
+          {
+            "tag": "[PDQ:pdq_nsclc_treatment#201]",
+            "quote": "Treatment of stage IIIA non-small cell lung cancer that can be removed with surgery may include:"
+          }
+        ],
+        "unscoped_model_numbers": [],
+        "misattributed": [],
+        "missing_focus_models": [],
+        "forbidden": [
+          "C-index described as calibration"
+        ],
+        "missing_sections": [],
+        "abstention_missing": false
+      },
+      "class": "C"
+    }
+  }
+}
