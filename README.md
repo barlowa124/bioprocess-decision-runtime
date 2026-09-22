@@ -385,6 +385,10 @@ Replay first verifies the audit chain and refuses to proceed if the supplied pol
 7. **Mechanistic hypotheses require intervention:** activation separability alone is not semantic proof.
 8. **Language models cannot define authority:** Gemma may select from an approved program grammar but cannot create governing rules or limits.
 
+## Dependency pinning and security posture
+
+The runtime is pinned to PyTorch 2.7.1+cu128 and Transformers 4.53.3 because the numerical evidence is bound to those exact versions. `pip-audit` reports known advisories against that Transformers release; upgrading requires re-running the pinned verification. The tooling loads a fixed local checkpoint and runs offline. It is not intended for network-exposed or untrusted-input deployment.
+
 ## Path toward a research evaluation
 
 A meaningful next study would compare this approach with PID/MPC baselines and a black-box ML baseline in a documented process simulator. Evaluation should measure control performance, constraint violations, abstention behavior, false alarms, operator-review burden, deterministic replay, and investigation time. Process SMEs would need to define scientifically defensible parameters and acceptance criteria.
