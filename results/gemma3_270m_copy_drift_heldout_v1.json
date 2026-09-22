@@ -1,0 +1,152 @@
+[
+  {
+    "level": "L1",
+    "target": [
+      "cox/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded result: the Harrell C for cox/clinical_expression is 0.643.\nState the Harrell C for cox/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L2",
+    "target": [
+      "cox/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L3",
+    "target": [
+      "cox/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L4",
+    "target": [
+      "cox/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L1",
+    "target": [
+      "rsf/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded result: the Harrell C for rsf/clinical_expression is 0.632.\nState the Harrell C for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L2",
+    "target": [
+      "rsf/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- rsf/clinical_expression: Harrell C 0.632\n- cox/clinical_expression: Harrell C 0.643\nState the Harrell C for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L3",
+    "target": [
+      "rsf/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L4",
+    "target": [
+      "rsf/clinical_expression",
+      "harrell_c"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L1",
+    "target": [
+      "rsf/clinical_expression",
+      "auc_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded result: the AUC at 36 months for rsf/clinical_expression is 0.609.\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L2",
+    "target": [
+      "rsf/clinical_expression",
+      "auc_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- rsf/clinical_expression: AUC at 36 months 0.609\n- cox/clinical_expression: AUC at 36 months 0.628\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L3",
+    "target": [
+      "rsf/clinical_expression",
+      "auc_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- rsf/clinical: AUC at 36 months 0.695\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical_expression: AUC at 36 months 0.609\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L4",
+    "target": [
+      "rsf/clinical_expression",
+      "auc_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L1",
+    "target": [
+      "rsf/clinical_expression",
+      "integrated_brier_6_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded result: the integrated Brier score (6-36 months) for rsf/clinical_expression is 0.153.\nState the integrated Brier score (6-36 months) for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L2",
+    "target": [
+      "rsf/clinical_expression",
+      "integrated_brier_6_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- rsf/clinical_expression: integrated Brier score (6-36 months) 0.153\n- cox/clinical_expression: integrated Brier score (6-36 months) 0.157\nState the integrated Brier score (6-36 months) for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L3",
+    "target": [
+      "rsf/clinical_expression",
+      "integrated_brier_6_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results:\n- cox/clinical: integrated Brier score (6-36 months) 0.153\n- rsf/clinical: integrated Brier score (6-36 months) 0.153\n- cox/clinical_expression: integrated Brier score (6-36 months) 0.157\n- rsf/clinical_expression: integrated Brier score (6-36 months) 0.153\nState the integrated Brier score (6-36 months) for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L4",
+    "target": [
+      "rsf/clinical_expression",
+      "integrated_brier_6_36m"
+    ],
+    "set": "heldout",
+    "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the integrated Brier score (6-36 months) for rsf/clinical_expression. Answer with the number only."
+  },
+  {
+    "level": "L5",
+    "target": null,
+    "set": "heldout",
+    "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nWrite a markdown table with one row per model and one column per metric, using exactly the recorded values. No other text."
+  }
+]
