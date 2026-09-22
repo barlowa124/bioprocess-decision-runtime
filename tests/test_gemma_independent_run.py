@@ -20,6 +20,13 @@ import test_gemma_third_layer_entry as entry_tests
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 class VocabularyEvidenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

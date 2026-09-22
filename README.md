@@ -1,13 +1,10 @@
 # Bioprocess Decision Runtime
 
-A public, synthetic demonstration of **interpretable-by-construction**, bounded AI-assisted decision logic for a bioprocess scenario.
+An **independently executable, bit-exact specification of a fixed Gemma 3 270M checkpoint**, with source-bound evidence, predeclared held-out comparisons, replay, and explicit failure — alongside an executable, advisory-only policy language for a synthetic bioprocess scenario.
 
-The project now tests two related objectives:
+The question this repository answers is deliberately narrow: for a fixed model, runtime, and declared inputs, can a separate implementation reproduce every declared intermediate boundary and the complete output, record how it did so, and reject a run that disagrees — even when the final token happens to match? The answer here is yes, within the stated scope; one candidate was rejected on exactly that basis and the failure is preserved below.
 
-1. **Investigate internal computation:** capture Gemma residual-stream activations, test candidate concept directions on held-out prompts, and apply controlled residual-stream interventions.
-2. **Require executable decisions:** constrain Gemma to a small evidence-bound program whose claims must exactly match independent execution of an approved policy.
-
-The central question is not whether a second model can invent a convincing explanation for a first model. It is whether internal-representation claims can survive causal tests and whether the operational decision can be represented as an executable, inspectable policy whose inputs, mathematical contributions, rules, and limits are preserved in the decision record.
+Two earlier bounded studies are retained for context: capturing and intervening on Gemma residual-stream activations (Objective A), and constraining Gemma to an evidence-bound decision program that must match independent execution of an approved policy (Objective B). Neither claims a semantic explanation of the model; the central question throughout is whether claims survive independent execution and causal tests rather than whether a second model can invent a convincing rationale.
 
 > **Research prototype only.** This repository uses synthetic scenarios and illustrative policy values. It is not validated, qualified, or intended for GMP, clinical, laboratory, manufacturing, process-control, or patient-care use. It does not claim regulatory acceptance or patient-safety assurance.
 

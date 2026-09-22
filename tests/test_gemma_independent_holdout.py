@@ -13,6 +13,13 @@ from bioprocess_runtime.gemma_checkpoint import _load, _publish, CheckpointStore
 from bioprocess_runtime.gemma_rotary_slice import _seal, _check_hash
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 class GatingTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()

@@ -18,6 +18,13 @@ from bioprocess_runtime.gemma_rotary_slice import _sha, _seal
 from test_gemma_first_layer import ROOT, real_program, profiles, synthetic_context, execute_synthetic, native_pair
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 class FakeTokenizer:
     all_special_ids = [1, 2, 300000]
     init_kwargs = {"secret": "never serialize", "chat_template": "never serialize"}

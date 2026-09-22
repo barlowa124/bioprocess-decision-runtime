@@ -25,6 +25,13 @@ from test_gemma_second_layer import synthetic_context as second_context, native_
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def synthetic_context():
     program, ids, snapshots, providers = first_context()
     _, _, right, _ = second_context()

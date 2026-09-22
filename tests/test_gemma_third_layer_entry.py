@@ -19,6 +19,13 @@ from test_gemma_first_layer import real_program, providers, profiles, cheap_rms,
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 class EntryTests(unittest.TestCase):
     def test_recorded_entry_preserves_scope_and_complete_comparisons(self):
         load = lambda name: json.loads((ROOT / "results" / name).read_text(encoding="utf-8"))

@@ -24,6 +24,13 @@ ROOT = Path(__file__).resolve().parent.parent
 HAS_GEMMA = importlib.util.find_spec("torch") and importlib.util.find_spec("transformers")
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def archived_v1():
     path = ROOT / "artifacts/gemma_mlp_down_v1_source.py"
     if not path.exists():

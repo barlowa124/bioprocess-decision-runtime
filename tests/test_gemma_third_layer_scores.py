@@ -19,6 +19,13 @@ import test_gemma_third_layer_entry as entry_tests
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def roots():
     result = {name: np.full(scores.SHAPES[name], 0x3F80, dtype=np.uint16) for name in scores.ROOTS}
     result[scores.SIN].fill(0)

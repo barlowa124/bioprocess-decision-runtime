@@ -26,6 +26,13 @@ from test_gemma_two_layers import synthetic_context, synthetic_patches
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def baseline_fixture(stack, program=None, providers=None):
     program = real_program() if program is None else program
     ids = [list(range(30))]

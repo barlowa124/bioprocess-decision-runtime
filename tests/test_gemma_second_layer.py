@@ -24,6 +24,13 @@ from test_gemma_first_layer import real_program, profiles, providers, cheap_rms,
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def synthetic_context():
     program = real_program()
     snapshots = {}

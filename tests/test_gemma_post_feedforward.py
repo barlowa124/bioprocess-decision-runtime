@@ -18,6 +18,13 @@ from bioprocess_runtime.gemma_rotary_slice import _sha, _seal
 ROOT = Path(__file__).resolve().parent.parent
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def program():
     return json.loads((ROOT / "results/gemma3_270m_execution_ir.json").read_text(encoding="utf-8"))
 

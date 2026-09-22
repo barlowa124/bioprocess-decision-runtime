@@ -17,6 +17,13 @@ from bioprocess_runtime.gemma_float_semantics import decode_finite_bfloat16
 ROOT = Path(__file__).resolve().parent.parent
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 class K2048ProbeTests(unittest.TestCase):
     def test_grid_and_merge_discrimination(self) -> None:
         grid = candidates()

@@ -12,6 +12,13 @@ from bioprocess_runtime.serialization import canonical_json
 ROOT = Path(__file__).resolve().parent.parent
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def _load(name: str) -> dict:
     return json.loads((ROOT / "results" / name).read_text(encoding="utf-8"))
 

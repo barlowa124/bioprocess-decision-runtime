@@ -21,6 +21,13 @@ from bioprocess_runtime.operational_semantics import append_chain_record
 ROOT = Path(__file__).resolve().parents[1]
 
 
+try:
+    import torch  # noqa: F401
+    import transformers  # noqa: F401
+except ModuleNotFoundError:
+    raise unittest.SkipTest("requires .[gemma] extras")
+
+
 def real_program():
     return json.loads((ROOT / "results/gemma3_270m_execution_ir.json").read_text(encoding="utf-8"))
 
