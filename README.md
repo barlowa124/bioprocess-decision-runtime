@@ -1,5 +1,18 @@
 # Bioprocess Decision Runtime
 
+**The 60-second version.** This repo does two things: (1) it re-implements a
+fixed Gemma 3 270M checkpoint's forward pass as an independent program — all
+18 layers plus the full 262,144-logit vocabulary projection — and verifies it
+reproduces the pinned reference bit-for-bit on declared inputs, including a
+preserved failure where the sampled token matched but 49 logits differed;
+(2) it runs an advisory-only policy engine for a synthetic bioprocess
+scenario where every decision is an inspectable execution trace with explicit
+abstention, provenance, and a hash-chained audit log. Everything here is
+scoped to exactly what the evidence shows — the
+[results table](#results-at-a-glance) states the bounds, and
+[What this does not demonstrate](#what-this-does-not-demonstrate) lists what
+is *not* claimed. **Reviewers:** start at [Results at a glance](#results-at-a-glance).
+
 An **independently executable, bit-exact specification of a fixed Gemma 3 270M checkpoint**, with source-bound evidence, predeclared held-out comparisons, replay, and explicit failure — alongside an executable, advisory-only policy language for a synthetic bioprocess scenario.
 
 The question this repository answers is deliberately narrow: for a fixed model, runtime, and declared inputs, can a separate implementation reproduce every declared intermediate boundary and the complete output, record how it did so, and reject a run that disagrees — even when the final token happens to match? The answer here is yes, within the stated scope; one candidate was rejected on exactly that basis and the failure is preserved below.
