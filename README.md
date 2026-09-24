@@ -160,7 +160,7 @@ Run `check-index` after staging to verify that Git contains the exact working-fi
 
 After extraction, double-click `launch-demo.cmd` on Windows or run `python -m bioprocess_runtime.demo_ui --port 0` from the extracted directory. This opens saved evidence and the synthetic advisory demo, not model inference. `handoff-manifest.json` contains the source commit, per-file hashes and observed environment versions. `handoff-requirements.txt` pins the installed Python distributions, excluding this project and installation tooling.
 
-Fresh numerical execution requires a separately installed matching environment. The tested runtime uses Python 3.11.9, PyTorch 2.7.1+cu128, Transformers 4.53.3, and the recorded NVIDIA/CUDA configuration. A live virtual environment and system driver are not portable archive contents, and dependency wheels are not bundled. On a stable compatible machine, install the matching CUDA-enabled PyTorch distribution, install the pinned requirements from the extracted bundle, then install this source tree with `pip install --no-deps -e .`. Read the recorded runtime fields before attempting a new numerical experiment. Incompatible runtimes fail closed. Do not launch fresh inference merely to view the saved demo, especially while the workstation's shutdown issue is unresolved.
+Fresh numerical execution requires a separately installed matching environment. The tested runtime uses Python 3.11.9, PyTorch 2.7.1+cu128, Transformers 4.53.3, and the recorded NVIDIA/CUDA configuration. A live virtual environment and system driver are not portable archive contents, and dependency wheels are not bundled. On a stable compatible machine, install the matching CUDA-enabled PyTorch distribution, install the pinned requirements from the extracted bundle, then install this source tree with `pip install --no-deps -e .`. Read the recorded runtime fields before attempting a new numerical experiment. Incompatible runtimes fail closed. Do not launch fresh inference just to view the saved demo, especially while the workstation's shutdown issue is unresolved.
 
 ## Generic independent execution toward the MVP
 
@@ -428,7 +428,7 @@ The runtime is pinned to PyTorch 2.7.1+cu128 and Transformers 4.53.3 because the
 
 ## Path toward a research evaluation
 
-A meaningful next study would compare this approach with PID/MPC baselines and a black-box ML baseline in a documented process simulator. Evaluation should measure control performance, constraint violations, abstention behavior, false alarms, operator-review burden, deterministic replay, and investigation time. Process SMEs would need to define scientifically defensible parameters and acceptance criteria.
+A next study would compare this approach with PID/MPC baselines and a black-box ML baseline in a documented process simulator. Evaluation should measure control performance, constraint violations, abstention behavior, false alarms, operator-review burden, deterministic replay, and investigation time. Process SMEs would need to define scientifically defensible parameters and acceptance criteria.
 
 ## References
 
