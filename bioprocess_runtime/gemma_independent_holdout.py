@@ -279,7 +279,7 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     directory = args.directory.resolve()
-    if ROOT / "artifacts" not in directory.parents or not 1 <= args.workers <= 4:
+    if (ROOT / "artifacts").resolve() not in directory.parents or not 1 <= args.workers <= 4:
         raise ValueError("Use a dedicated ignored artifacts subdirectory and one to four workers")
     existing = directory.exists()
     if args.resume and not existing or args.operation in ("plan", "run") and existing and not args.resume or args.operation in ("compare", "verify") and not existing:

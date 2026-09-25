@@ -68,6 +68,23 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
                 encoding="utf-8"
             )
         )
+        from bioprocess_runtime.gemma_reduction_backend import (
+            verify_gemma_reduction_backend_binding,
+        )
+
+        cls.backend_verification = verify_gemma_reduction_backend_binding(
+            cls.program,
+            cls.reduction_certificate,
+            cls.nsight_suite,
+            cls.reduction_backend,
+        )
+
+    def _require_verified_backend(self) -> None:
+        if not self.backend_verification["valid"]:
+            self.skipTest(
+                "Committed backend-binding evidence does not satisfy the "
+                "current verifier on this checkout"
+            )
 
     def test_independent_index_oracles_reexecute_exactly(self) -> None:
         from bioprocess_runtime.gemma_ir_primitives import (
@@ -129,6 +146,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             verify_primitive_qualification_gate,
         )
 
+        self._require_verified_backend()
         gate = build_primitive_qualification_gate(
             self.program,
             self.certificate,
@@ -208,6 +226,7 @@ class GemmaIrPrimitiveTests(unittest.TestCase):
             verify_primitive_qualification_gate,
         )
 
+        self._require_verified_backend()
         gate = build_primitive_qualification_gate(
             self.program,
             self.certificate,

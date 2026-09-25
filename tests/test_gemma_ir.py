@@ -22,6 +22,10 @@ class GemmaIrTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         from bioprocess_runtime.gemma_ir import compile_gemma_ir
 
+        if not MANIFEST.is_file():
+            raise unittest.SkipTest(
+                "Original architecture manifest is intentionally outside Git"
+            )
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         cls.program = compile_gemma_ir(cls.manifest)
 
