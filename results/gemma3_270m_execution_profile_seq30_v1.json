@@ -1,0 +1,632 @@
+{
+  "schema_version": 1,
+  "kind": "explicit_execution_profile_declaration",
+  "scope": "Declaration and conformance checking of the frozen S=30 execution profile. No model inference, numerical replay, proof, or causal claim.",
+  "profile": {
+    "profile_id": "gemma3_270m_seq30_v1",
+    "status": "frozen_regression_profile_not_a_general_interface",
+    "model": {
+      "checkpoint_reference": "unsloth/gemma-3-270m-it bound by file SHA-256, not by name",
+      "class": "Gemma3ForCausalLM",
+      "layers": 18,
+      "hidden_size": 640,
+      "attention_heads": 4,
+      "head_dimension": 256,
+      "mlp_intermediate": 2048,
+      "vocabulary_size": 262144,
+      "dtype": "torch.bfloat16",
+      "attention_implementation": "eager",
+      "layer_types_recorded": {
+        "sliding_attention_layers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "full_attention_layers": [
+          5,
+          11,
+          17
+        ]
+      },
+      "model_file_sha256": {
+        ".gitattributes": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "added_tokens.json": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+        "chat_template.jinja": "af95fbef33b76a50e5f463ff9766f85ce84f5849d915c4bd6c1619d852ac3231",
+        "config.json": "2706d3533059c6e1086badab27cc234e8ca2228975c3f73eeaef7f57cb5ec1db",
+        "generation_config.json": "be9e552870ff18a6c6beb0f6811030509c040d641e6972ce53c2fb540bbb4ba0",
+        "model.safetensors": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+        "README.md": "645fadbf83bfca50136a9b10265266b3db3eec671b03c24c5f28594ff4af9a5d",
+        "special_tokens_map.json": "45a857d8a2495d0be30a5d2d6de03278195eb028b6e0b8efc248bfa697d65f05",
+        "tokenizer.json": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+        "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "tokenizer_config.json": "be2182df1ad0ea735d336418896eb06e5cc2f59136e7aaeac5de2ec2197742ac"
+      }
+    },
+    "input_domain": {
+      "batch_size": 1,
+      "sequence_length": 30,
+      "position_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "mask": {
+        "kind": "causal_lower_triangular",
+        "allowed_windows": [
+          null,
+          512
+        ],
+        "masked_fill_bfloat16_bits": "0xFF7F"
+      }
+    },
+    "decoding_paths": {
+      "independent_engine": {
+        "strategy": "greedy_argmax",
+        "logit_domain": "finite_bfloat16_only",
+        "cache": "none_full_context_recompute",
+        "use_cache": false,
+        "tie_break": "first index via numpy argmax over sign-magnitude-ordered BF16 bits"
+      },
+      "native_acquisition_copy_drift_v1": {
+        "strategy": "greedy (harness do_sample=False overrides generation_config do_sample=True)",
+        "use_cache": true,
+        "cache_implementation": "hybrid",
+        "sliding_window": 512,
+        "sliding_window_pattern": 6,
+        "max_new_tokens": 400,
+        "output_scores": true,
+        "inert_under_greedy": [
+          "top_k",
+          "top_p",
+          "temperature"
+        ]
+      },
+      "decode_paths_established_equivalent": false
+    },
+    "shape_specializations": [
+      {
+        "file": "gemma_independent.py",
+        "contains": [
+          "sequence != 30",
+          "window != 512"
+        ],
+        "meaning": "causal-mask gate admits only S=30 with a full or sliding-512 window"
+      },
+      {
+        "file": "gemma_independent.py",
+        "contains": [
+          "list(range(30))",
+          "[30, 640]"
+        ],
+        "meaning": "position IDs, rotary packet positions and embedding snapshots pinned to 0..29"
+      },
+      {
+        "file": "gemma_first_layer.py",
+        "contains": [
+          "[1, 30]",
+          "[1, 4, 30, 30]",
+          "[1, 30, 640]"
+        ],
+        "meaning": "token IDs, softmax and hidden-state shapes fixed at S=30"
+      },
+      {
+        "file": "gemma_softmax_lookup.py",
+        "contains": [
+          "len(bits) != 30"
+        ],
+        "meaning": "softmax row lookup requires exactly 30 values"
+      },
+      {
+        "file": "gemma_softmax_slice.py",
+        "contains": [
+          "\"elements\": 30",
+          "\"lanes\": 32",
+          "[1, 4, 30, 30]"
+        ],
+        "meaning": "30 values padded into the 32-lane reduction tree"
+      },
+      {
+        "file": "gemma_rotary_slice.py",
+        "contains": [
+          "positions != list(range(30))",
+          "len(frequency_bits) != 128"
+        ],
+        "meaning": "rotary evidence covers positions 0..29 and 128 frequencies only"
+      },
+      {
+        "file": "gemma_attention_scores.py",
+        "contains": [
+          "(1, 4, 30, 30)",
+          "(1, 1, 30, 256)"
+        ],
+        "meaning": "score, mask and K/V shapes fixed at S=30"
+      },
+      {
+        "file": "gemma_attention_output.py",
+        "contains": [
+          "\"aggregation_reduction_length\": 30",
+          "\"aggregation_candidate_length\": 32"
+        ],
+        "meaning": "attention-value aggregation pads 30 positions to 32 candidates"
+      },
+      {
+        "file": "gemma_second_layer.py",
+        "contains": [
+          "[1, 30, 640]",
+          "[1, 4, 30, 30]"
+        ],
+        "meaning": "second-layer state and softmax shapes fixed at S=30"
+      },
+      {
+        "file": "gemma_two_layers.py",
+        "contains": [
+          "len(ids[0]) != 30"
+        ],
+        "meaning": "two-layer connected prediction rejects non-30 inputs"
+      },
+      {
+        "file": "gemma_third_layer_scores.py",
+        "contains": [
+          "[1, 4, 30, 256]",
+          "[list(range(30))]"
+        ],
+        "meaning": "third-layer Q/K/V shapes and position IDs fixed at S=30"
+      },
+      {
+        "file": "gemma_first_layer_holdout.py",
+        "contains": [
+          "selected[:30]",
+          "[1, 30]"
+        ],
+        "meaning": "first-layer holdout cases are 30 raw token IDs"
+      },
+      {
+        "file": "gemma_two_layers_holdout.py",
+        "contains": [
+          "selected[:30]",
+          "[1, 30]"
+        ],
+        "meaning": "two-layer holdout cases are 30 raw token IDs"
+      }
+    ],
+    "reduction_layout": {
+      "softmax": {
+        "row_values": 30,
+        "tree_lanes": 32,
+        "padding_entries": 2,
+        "padding_semantics": "negative infinity then positive-zero exponential"
+      },
+      "attention_value_matmul": {
+        "positions": 30,
+        "padded_to": 32
+      },
+      "rotary": {
+        "positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29
+        ],
+        "frequencies": 128,
+        "provider_kind": "fixed_position_empirical_global_rotary_v1"
+      }
+    },
+    "arithmetic_coverage": {
+      "supported_opcodes": [
+        "ADD",
+        "ARANGE",
+        "ARGMAX",
+        "CAUSAL_MASK",
+        "EMBEDDING",
+        "GELU_TANH",
+        "LINEAR",
+        "MATMUL_AV",
+        "MATMUL_QK",
+        "MUL",
+        "REPEAT_KV",
+        "RESHAPE_TRANSPOSE_HEADS",
+        "RMS_NORM",
+        "ROTARY_APPLY_PAIR",
+        "ROTARY_TABLE",
+        "SCALE",
+        "SLICE_LAST_TOKEN",
+        "SOFTMAX",
+        "TRANSPOSE_RESHAPE_HEADS"
+      ],
+      "linear_profiles": {
+        "serial": "operand_alignment_v1",
+        "key_value": "dense_split_profile",
+        "output": "k128:bfloat16_rne:sequential_float32_rne",
+        "down": "supported_candidate",
+        "vocabulary": {
+          "mode": "gemv",
+          "profile": "gemv_k640_stride8_fp32_rne_halves_bf16_v1",
+          "requires_explicit_opt_in": true
+        }
+      },
+      "primitive_evidence": [
+        "empirical per-element rsqrt/exp/GELU lookup specifications",
+        "fixed-position empirical global rotary table (positions 0..29)",
+        "checked fixed-position local rotary constants",
+        "softmax row lookup over 30-value rows"
+      ]
+    },
+    "bound_artifacts": {
+      "baseline_token_ids": "results/gemma3_270m_independent_baseline_tokens.json",
+      "operational_semantics_summary": "results/gemma3_270m_operational_semantics_summary.json",
+      "independent_holdout_declaration": "results/gemma3_270m_independent_holdout_declaration.json",
+      "copy_drift_probe": "results/gemma3_270m_copy_drift_v1.json"
+    },
+    "non_claims": [
+      "Arbitrary sequence lengths, batch sizes, or position ranges",
+      "Equivalence between the cached hybrid acquisition path and the full-recompute independent path",
+      "Hardware or kernel-level arithmetic semantics",
+      "Unrestricted-input or full-model qualification",
+      "Causal explanation of any recorded output"
+    ]
+  },
+  "declaration_sha256": "18700c03a7b172b593388f28fb4fcc3ae5426b68e7702a77288020885f894712",
+  "module_sha256": "1235359244697d3b9f784af8ad8bdaa698a5fc198ac75a7872958ef9e600c81a",
+  "artifact_checks": [
+    {
+      "check": "holdout_declaration.batch_size",
+      "expected": 1,
+      "observed": 1,
+      "passed": true
+    },
+    {
+      "check": "holdout_declaration.sequence_length",
+      "expected": 30,
+      "observed": 30,
+      "passed": true
+    },
+    {
+      "check": "holdout_declaration.position_ids",
+      "expected": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "observed": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "passed": true
+    },
+    {
+      "check": "holdout_declaration.instruction_count",
+      "expected": 533,
+      "observed": 533,
+      "passed": true
+    },
+    {
+      "check": "baseline.sequence_count",
+      "expected": 1,
+      "observed": 1,
+      "passed": true
+    },
+    {
+      "check": "baseline.token_count",
+      "expected": 30,
+      "observed": 30,
+      "passed": true
+    },
+    {
+      "check": "operational_summary.token_count",
+      "expected": 30,
+      "observed": 30,
+      "passed": true
+    },
+    {
+      "check": "copy_drift.decode",
+      "expected": "greedy",
+      "observed": "greedy",
+      "passed": true
+    },
+    {
+      "check": "copy_drift.dtype",
+      "expected": "bfloat16",
+      "observed": "bfloat16",
+      "passed": true
+    },
+    {
+      "check": "copy_drift.attn_implementation",
+      "expected": "eager",
+      "observed": "eager",
+      "passed": true
+    },
+    {
+      "check": "copy_drift.max_new_tokens",
+      "expected": 400,
+      "observed": 400,
+      "passed": true
+    },
+    {
+      "check": "copy_drift.model_file_sha256",
+      "expected": {
+        ".gitattributes": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "added_tokens.json": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+        "chat_template.jinja": "af95fbef33b76a50e5f463ff9766f85ce84f5849d915c4bd6c1619d852ac3231",
+        "config.json": "2706d3533059c6e1086badab27cc234e8ca2228975c3f73eeaef7f57cb5ec1db",
+        "generation_config.json": "be9e552870ff18a6c6beb0f6811030509c040d641e6972ce53c2fb540bbb4ba0",
+        "model.safetensors": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+        "README.md": "645fadbf83bfca50136a9b10265266b3db3eec671b03c24c5f28594ff4af9a5d",
+        "special_tokens_map.json": "45a857d8a2495d0be30a5d2d6de03278195eb028b6e0b8efc248bfa697d65f05",
+        "tokenizer.json": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+        "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "tokenizer_config.json": "be2182df1ad0ea735d336418896eb06e5cc2f59136e7aaeac5de2ec2197742ac"
+      },
+      "observed": {
+        ".gitattributes": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "added_tokens.json": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+        "chat_template.jinja": "af95fbef33b76a50e5f463ff9766f85ce84f5849d915c4bd6c1619d852ac3231",
+        "config.json": "2706d3533059c6e1086badab27cc234e8ca2228975c3f73eeaef7f57cb5ec1db",
+        "generation_config.json": "be9e552870ff18a6c6beb0f6811030509c040d641e6972ce53c2fb540bbb4ba0",
+        "model.safetensors": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+        "README.md": "645fadbf83bfca50136a9b10265266b3db3eec671b03c24c5f28594ff4af9a5d",
+        "special_tokens_map.json": "45a857d8a2495d0be30a5d2d6de03278195eb028b6e0b8efc248bfa697d65f05",
+        "tokenizer.json": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+        "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+        "tokenizer_config.json": "be2182df1ad0ea735d336418896eb06e5cc2f59136e7aaeac5de2ec2197742ac"
+      },
+      "passed": true
+    }
+  ],
+  "source_checks": [
+    {
+      "file": "gemma_independent.py",
+      "meaning": "causal-mask gate admits only S=30 with a full or sliding-512 window",
+      "literals": [
+        "sequence != 30",
+        "window != 512"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_independent.py",
+      "meaning": "position IDs, rotary packet positions and embedding snapshots pinned to 0..29",
+      "literals": [
+        "list(range(30))",
+        "[30, 640]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_first_layer.py",
+      "meaning": "token IDs, softmax and hidden-state shapes fixed at S=30",
+      "literals": [
+        "[1, 30]",
+        "[1, 4, 30, 30]",
+        "[1, 30, 640]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_softmax_lookup.py",
+      "meaning": "softmax row lookup requires exactly 30 values",
+      "literals": [
+        "len(bits) != 30"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_softmax_slice.py",
+      "meaning": "30 values padded into the 32-lane reduction tree",
+      "literals": [
+        "\"elements\": 30",
+        "\"lanes\": 32",
+        "[1, 4, 30, 30]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_rotary_slice.py",
+      "meaning": "rotary evidence covers positions 0..29 and 128 frequencies only",
+      "literals": [
+        "positions != list(range(30))",
+        "len(frequency_bits) != 128"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_attention_scores.py",
+      "meaning": "score, mask and K/V shapes fixed at S=30",
+      "literals": [
+        "(1, 4, 30, 30)",
+        "(1, 1, 30, 256)"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_attention_output.py",
+      "meaning": "attention-value aggregation pads 30 positions to 32 candidates",
+      "literals": [
+        "\"aggregation_reduction_length\": 30",
+        "\"aggregation_candidate_length\": 32"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_second_layer.py",
+      "meaning": "second-layer state and softmax shapes fixed at S=30",
+      "literals": [
+        "[1, 30, 640]",
+        "[1, 4, 30, 30]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_two_layers.py",
+      "meaning": "two-layer connected prediction rejects non-30 inputs",
+      "literals": [
+        "len(ids[0]) != 30"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_third_layer_scores.py",
+      "meaning": "third-layer Q/K/V shapes and position IDs fixed at S=30",
+      "literals": [
+        "[1, 4, 30, 256]",
+        "[list(range(30))]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_first_layer_holdout.py",
+      "meaning": "first-layer holdout cases are 30 raw token IDs",
+      "literals": [
+        "selected[:30]",
+        "[1, 30]"
+      ],
+      "missing": [],
+      "passed": true
+    },
+    {
+      "file": "gemma_two_layers_holdout.py",
+      "meaning": "two-layer holdout cases are 30 raw token IDs",
+      "literals": [
+        "selected[:30]",
+        "[1, 30]"
+      ],
+      "missing": [],
+      "passed": true
+    }
+  ],
+  "artifacts_conform": true,
+  "sources_conform": true,
+  "model_inference_performed": false,
+  "conformant": true,
+  "report_sha256": "756ab2e2dc3347f7ffcdddd1489db52c982ba595924ff5834da28196fc2cbb10"
+}

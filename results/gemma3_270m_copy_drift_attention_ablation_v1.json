@@ -1,0 +1,899 @@
+{
+  "schema_version": 1,
+  "kind": "cpu_attention_ablation_at_decision",
+  "scope": "Post-softmax attention ablation toward emitted/asked value token spans at the recorded wrong-digit decision step, manual full-recompute greedy decode on CPU. Bounded causal-structure evidence: it tests whether attention to the source span is necessary for the wrong selection under this backend/path.",
+  "sources": {
+    "probe": {
+      "filename": "gemma3_270m_copy_drift_v1.json",
+      "sha256": "71644ed97ffb943272953ddee13d08be909a83d41259d6b16eb2db945fcd6056"
+    },
+    "counterfactual": {
+      "filename": "gemma3_270m_copy_drift_counterfactual_v1.json",
+      "sha256": "7bddc079b2a76adf38a0955ad5b39dd47ea8ffcd917aaa15881e57c7de72ca08"
+    },
+    "attention_capture": {
+      "filename": "gemma3_270m_copy_drift_attention_capture_v1.json",
+      "sha256": "6a7f78e88bf8279e8de08de2994d52f47a255a5cb9a15099ff7415e30da644e0"
+    },
+    "harness": {
+      "filename": "gemma_copy_drift_attention_ablation_v1.py",
+      "sha256": "725e4870bf35276274b8664bb80ad0b811d66f7ae9e8b2702732d0ed47de9e10"
+    }
+  },
+  "binding": {
+    "model_safetensors_sha256": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+    "backend": "cpu",
+    "dtype": "bfloat16",
+    "attn_implementation": "eager",
+    "torch_version": "2.7.1",
+    "transformers_version": "4.53.3",
+    "decode_path": "manual full-context recompute, use_cache=False",
+    "intervention": "post-softmax attention weights zeroed at the decision step's last query row; no renormalization"
+  },
+  "results": [
+    {
+      "case": "c12",
+      "condition": "none",
+      "ablated_layers": [],
+      "ablated_heads": null,
+      "ablated_span_label": null,
+      "ablated_token_positions": [
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "7",
+          "logit": 14.75
+        },
+        {
+          "token": "3",
+          "logit": 11.875
+        },
+        {
+          "token": "\n",
+          "logit": 11.125
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 10.1875
+        },
+        {
+          "token": "9",
+          "logit": 7.6562
+        }
+      ],
+      "selected_token_id_at_decision": 236832,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L5_all_emit",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        106,
+        106
+      ],
+      "generated_text": "0.64<end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 10.1875
+        },
+        {
+          "token": "3",
+          "logit": 10.125
+        },
+        {
+          "token": "\n",
+          "logit": 10.0625
+        },
+        {
+          "token": "7",
+          "logit": 9.125
+        },
+        {
+          "token": "9",
+          "logit": 4.3438
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L5H1_emit",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": [
+        1
+      ],
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236800,
+        106
+      ],
+      "generated_text": "0.643<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "3",
+          "logit": 14.3125
+        },
+        {
+          "token": "7",
+          "logit": 14.125
+        },
+        {
+          "token": "\n",
+          "logit": 11.75
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 10.1875
+        },
+        {
+          "token": "9",
+          "logit": 8.375
+        }
+      ],
+      "selected_token_id_at_decision": 236800,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L11_all_emit",
+      "ablated_layers": [
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        106,
+        106
+      ],
+      "generated_text": "0.64<end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 8.6875
+        },
+        {
+          "token": "\n",
+          "logit": 7.3125
+        },
+        {
+          "token": "3",
+          "logit": 5.3125
+        },
+        {
+          "token": " ",
+          "logit": -0.4766
+        },
+        {
+          "token": "9",
+          "logit": -0.6953
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L5_L11_all_emit",
+      "ablated_layers": [
+        5,
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        106,
+        106
+      ],
+      "generated_text": "0.64<end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 7.7812
+        },
+        {
+          "token": "\n",
+          "logit": 6.2812
+        },
+        {
+          "token": "3",
+          "logit": 3.6719
+        },
+        {
+          "token": " ",
+          "logit": -1.7109
+        },
+        {
+          "token": "9",
+          "logit": -2.7656
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "all_layers_emit",
+      "ablated_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        106,
+        106
+      ],
+      "generated_text": "0.64<end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 8.4375
+        },
+        {
+          "token": "\n",
+          "logit": 7.125
+        },
+        {
+          "token": "3",
+          "logit": 5.3125
+        },
+        {
+          "token": " ",
+          "logit": -0.7695
+        },
+        {
+          "token": "9",
+          "logit": -1.5938
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L5H2_ask_control",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": [
+        2
+      ],
+      "ablated_span_label": "ask",
+      "ablated_token_positions": [
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "7",
+          "logit": 16.25
+        },
+        {
+          "token": "3",
+          "logit": 12.0
+        },
+        {
+          "token": "\n",
+          "logit": 11.625
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 10.375
+        },
+        {
+          "token": "9",
+          "logit": 8.4375
+        }
+      ],
+      "selected_token_id_at_decision": 236832,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c12",
+      "condition": "L5_L11_all_ask_control",
+      "ablated_layers": [
+        5,
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "ask",
+      "ablated_token_positions": [
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "decision_step": 4,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "7",
+          "logit": 19.0
+        },
+        {
+          "token": "\n",
+          "logit": 11.4375
+        },
+        {
+          "token": "8",
+          "logit": 10.0
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.75
+        },
+        {
+          "token": "9",
+          "logit": 9.625
+        }
+      ],
+      "selected_token_id_at_decision": 236832,
+      "expected_emitted_digit": "7",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "none",
+      "ablated_layers": [],
+      "ablated_heads": null,
+      "ablated_span_label": null,
+      "ablated_token_positions": [
+        68,
+        69,
+        70,
+        71,
+        72
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 14.625
+        },
+        {
+          "token": "3",
+          "logit": 10.5625
+        },
+        {
+          "token": "\n",
+          "logit": 10.125
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.5625
+        },
+        {
+          "token": "5",
+          "logit": 6.125
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L5_all_emit",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 12.125
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.3125
+        },
+        {
+          "token": "\n",
+          "logit": 9.3125
+        },
+        {
+          "token": "3",
+          "logit": 8.25
+        },
+        {
+          "token": "5",
+          "logit": 3.9062
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L5H1_emit",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": [
+        1
+      ],
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 14.25
+        },
+        {
+          "token": "3",
+          "logit": 10.25
+        },
+        {
+          "token": "\n",
+          "logit": 10.1875
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.75
+        },
+        {
+          "token": "5",
+          "logit": 5.7812
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L11_all_emit",
+      "ablated_layers": [
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 9.375
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.0
+        },
+        {
+          "token": "\n",
+          "logit": 8.5
+        },
+        {
+          "token": "3",
+          "logit": 8.1875
+        },
+        {
+          "token": "5",
+          "logit": 2.7812
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L5_L11_all_emit",
+      "ablated_layers": [
+        5,
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        106,
+        106,
+        106
+      ],
+      "generated_text": "0.6<end_of_turn><end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 8.25
+        },
+        {
+          "token": "\n",
+          "logit": 7.625
+        },
+        {
+          "token": "4",
+          "logit": 7.0625
+        },
+        {
+          "token": "3",
+          "logit": 5.75
+        },
+        {
+          "token": "5",
+          "logit": 0.6953
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "all_layers_emit",
+      "ablated_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "emit",
+      "ablated_token_positions": [
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        106,
+        106,
+        106
+      ],
+      "generated_text": "0.6<end_of_turn><end_of_turn><end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "<end_of_turn>",
+          "logit": 8.4375
+        },
+        {
+          "token": "\n",
+          "logit": 7.6562
+        },
+        {
+          "token": "4",
+          "logit": 6.4375
+        },
+        {
+          "token": "3",
+          "logit": 5.6562
+        },
+        {
+          "token": "5",
+          "logit": 0.6406
+        }
+      ],
+      "selected_token_id_at_decision": 106,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L5H2_ask_control",
+      "ablated_layers": [
+        5
+      ],
+      "ablated_heads": [
+        2
+      ],
+      "ablated_span_label": "ask",
+      "ablated_token_positions": [
+        68,
+        69,
+        70,
+        71,
+        72
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 14.875
+        },
+        {
+          "token": "3",
+          "logit": 10.875
+        },
+        {
+          "token": "\n",
+          "logit": 10.375
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.75
+        },
+        {
+          "token": "5",
+          "logit": 6.3438
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    },
+    {
+      "case": "c16",
+      "condition": "L5_L11_all_ask_control",
+      "ablated_layers": [
+        5,
+        11
+      ],
+      "ablated_heads": null,
+      "ablated_span_label": "ask",
+      "ablated_token_positions": [
+        68,
+        69,
+        70,
+        71,
+        72
+      ],
+      "decision_step": 3,
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "generated_text": "0.647<end_of_turn>",
+      "top5_at_decision": [
+        {
+          "token": "4",
+          "logit": 14.9375
+        },
+        {
+          "token": "3",
+          "logit": 10.6875
+        },
+        {
+          "token": "\n",
+          "logit": 10.1875
+        },
+        {
+          "token": "<end_of_turn>",
+          "logit": 9.75
+        },
+        {
+          "token": "5",
+          "logit": 6.375
+        }
+      ],
+      "selected_token_id_at_decision": 236812,
+      "expected_emitted_digit": "4",
+      "expected_asked_digit": "3"
+    }
+  ],
+  "limitations": [
+    "Ablating post-softmax mass without renormalization attenuates the head's output magnitude as well as its direction; a flip shows necessity of the attended span under this intervention semantics.",
+    "Single-token-span ablation in selected heads; distributed redundancy can mask necessity.",
+    "CPU full-recompute path only; cached hybrid and CUDA paths are unobserved."
+  ],
+  "report_sha256": "2c96c3abf1241c36c2848c91febc3d5deaa67a66e29f8aa8e6ac08d0d7fd6a37"
+}

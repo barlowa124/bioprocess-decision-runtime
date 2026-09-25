@@ -1,0 +1,4212 @@
+{
+  "schema_version": 1,
+  "kind": "cpu_counterfactual_binding_probe",
+  "scope": "CPU-backend prompt interventions on already-observed misattribution cases; entity/position/value binding discrimination. Not fresh confirmatory evidence, not a CUDA-path claim, not an internal-mechanism proof.",
+  "sources": {
+    "probe": {
+      "filename": "gemma3_270m_copy_drift_v1.json",
+      "sha256": "71644ed97ffb943272953ddee13d08be909a83d41259d6b16eb2db945fcd6056"
+    },
+    "protocol": {
+      "filename": "gemma3_270m_copy_drift_counterfactual_protocol_v1.md",
+      "sha256": "b20df0b1e828b3db4da55a7c08649af254dbbf060cb0bb6537fbeacd226a846a"
+    },
+    "sealed_cases": {
+      "filename": "gemma3_270m_copy_drift_counterfactual_cases_v1.json",
+      "sha256": "8c4806ec3ea3d5bde0be5ddccba38b6dc83d38e5b03c402c353c018faae4bb80"
+    },
+    "cpu_replay": {
+      "filename": "gemma3_270m_copy_drift_cpu_replay_v1.json",
+      "sha256": "8995a7f32de28d6c6f3393139ff13e7047d938e43f52ccd6376e8b2c1be12d72"
+    },
+    "harness": {
+      "filename": "gemma_copy_drift_counterfactual_v1.py",
+      "sha256": "a13c258ab31bdd0214e7b9d1eb665ed1990ec9f0cba9ef94e7ebd536f243321e"
+    }
+  },
+  "binding": {
+    "model_safetensors_sha256": "700b710a9a99c295ed546647aa81cacf9f81f4c573ea2be613a0e2517a44afab",
+    "backend": "cpu",
+    "dtype": "bfloat16",
+    "attn_implementation": "eager",
+    "torch_version": "2.7.1",
+    "transformers_version": "4.53.3",
+    "decode_path": "hybrid (generation_config default)",
+    "new_tokens_per_case": 8
+  },
+  "targets": {
+    "3": {
+      "asked_entity": "cox/clinical",
+      "asked_metric": "harrell_c",
+      "asked_value": 0.647,
+      "recorded_emitted": 0.64,
+      "owner_entity": "cox/clinical",
+      "owner_metric": "uno_c",
+      "owner_is_asked": true
+    },
+    "12": {
+      "asked_entity": "cox/clinical_expression",
+      "asked_metric": "harrell_c",
+      "asked_value": 0.643,
+      "recorded_emitted": 0.647,
+      "owner_entity": "cox/clinical",
+      "owner_metric": "harrell_c",
+      "owner_is_asked": false
+    },
+    "16": {
+      "asked_entity": "rsf/clinical_expression",
+      "asked_metric": "harrell_c",
+      "asked_value": 0.632,
+      "recorded_emitted": 0.643,
+      "owner_entity": "cox/clinical_expression",
+      "owner_metric": "harrell_c",
+      "owner_is_asked": false
+    },
+    "17": {
+      "asked_entity": "rsf/clinical_expression",
+      "asked_metric": "harrell_c",
+      "asked_value": 0.632,
+      "recorded_emitted": 0.643,
+      "owner_entity": "cox/clinical_expression",
+      "owner_metric": "harrell_c",
+      "owner_is_asked": false
+    },
+    "20": {
+      "asked_entity": "rsf/clinical_expression",
+      "asked_metric": "auc_36m",
+      "asked_value": 0.609,
+      "recorded_emitted": 0.695,
+      "owner_entity": "rsf/clinical",
+      "owner_metric": "auc_36m",
+      "owner_is_asked": false
+    },
+    "21": {
+      "asked_entity": "rsf/clinical_expression",
+      "asked_metric": "auc_36m",
+      "asked_value": 0.609,
+      "recorded_emitted": 0.153,
+      "owner_entity": "rsf/clinical_expression",
+      "owner_metric": "integrated_brier_6_36m",
+      "owner_is_asked": true
+    }
+  },
+  "cases": [
+    {
+      "case_id": "c3_baseline",
+      "source_case_index": 3,
+      "variant": "baseline",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.375
+            },
+            {
+              "token": "1",
+              "logit": 6.3438
+            },
+            {
+              "token": "2",
+              "logit": 4.9375
+            },
+            {
+              "token": "3",
+              "logit": 4.75
+            },
+            {
+              "token": "4",
+              "logit": 4.7188
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.0
+            },
+            {
+              "token": "\n",
+              "logit": 16.625
+            },
+            {
+              "token": " ",
+              "logit": 16.0
+            },
+            {
+              "token": "0",
+              "logit": 15.875
+            },
+            {
+              "token": "7",
+              "logit": 15.75
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 16.625
+            },
+            {
+              "token": "\n",
+              "logit": 11.4375
+            },
+            {
+              "token": "3",
+              "logit": 11.1875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.3125
+            },
+            {
+              "token": "5",
+              "logit": 8.5
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 11.125
+            },
+            {
+              "token": "\n",
+              "logit": 10.5625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.8125
+            },
+            {
+              "token": "3",
+              "logit": 9.6875
+            },
+            {
+              "token": "9",
+              "logit": 5.5312
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "asked"
+    },
+    {
+      "case_id": "c3_row_swap",
+      "source_case_index": 3,
+      "variant": "row_swap",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.64",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        107,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.875
+            },
+            {
+              "token": "1",
+              "logit": 6.3438
+            },
+            {
+              "token": "2",
+              "logit": 4.9688
+            },
+            {
+              "token": "4",
+              "logit": 4.8438
+            },
+            {
+              "token": "3",
+              "logit": 4.75
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 22.0
+            },
+            {
+              "token": "\n",
+              "logit": 16.625
+            },
+            {
+              "token": "0",
+              "logit": 16.0
+            },
+            {
+              "token": " ",
+              "logit": 15.625
+            },
+            {
+              "token": "7",
+              "logit": 15.0625
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.8125
+            },
+            {
+              "token": "3",
+              "logit": 14.25
+            },
+            {
+              "token": "\n",
+              "logit": 11.6875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.0625
+            },
+            {
+              "token": "0",
+              "logit": 8.875
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.64,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c3_value_move",
+      "source_case_index": 3,
+      "variant": "value_move",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.777, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.777",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236832,
+        236832,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.4375
+            },
+            {
+              "token": "1",
+              "logit": 6.3438
+            },
+            {
+              "token": "2",
+              "logit": 4.9375
+            },
+            {
+              "token": "4",
+              "logit": 4.75
+            },
+            {
+              "token": "3",
+              "logit": 4.7188
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 20.0
+            },
+            {
+              "token": "6",
+              "logit": 19.5
+            },
+            {
+              "token": "\n",
+              "logit": 15.6875
+            },
+            {
+              "token": " ",
+              "logit": 15.6875
+            },
+            {
+              "token": "0",
+              "logit": 15.0625
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 20.0
+            },
+            {
+              "token": "\n",
+              "logit": 11.6875
+            },
+            {
+              "token": "6",
+              "logit": 11.125
+            },
+            {
+              "token": "8",
+              "logit": 10.75
+            },
+            {
+              "token": "5",
+              "logit": 10.3125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 22.625
+            },
+            {
+              "token": "\n",
+              "logit": 13.5625
+            },
+            {
+              "token": "8",
+              "logit": 11.75
+            },
+            {
+              "token": "6",
+              "logit": 11.0625
+            },
+            {
+              "token": "9",
+              "logit": 9.1875
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.777,
+      "classification": "sentinel"
+    },
+    {
+      "case_id": "c3_entity_rename",
+      "source_case_index": 3,
+      "variant": "entity_rename",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"zz_uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"zz_uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"zz_uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"zz_uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.64",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        107,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.0
+            },
+            {
+              "token": "1",
+              "logit": 5.875
+            },
+            {
+              "token": "2",
+              "logit": 4.5938
+            },
+            {
+              "token": "3",
+              "logit": 4.4375
+            },
+            {
+              "token": "4",
+              "logit": 4.375
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 22.875
+            },
+            {
+              "token": "\n",
+              "logit": 16.25
+            },
+            {
+              "token": "0",
+              "logit": 16.0
+            },
+            {
+              "token": "7",
+              "logit": 15.625
+            },
+            {
+              "token": " ",
+              "logit": 15.5625
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 16.625
+            },
+            {
+              "token": "\n",
+              "logit": 11.3125
+            },
+            {
+              "token": "3",
+              "logit": 10.875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.5
+            },
+            {
+              "token": "5",
+              "logit": 8.375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.64,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c3_metric_swap",
+      "source_case_index": 3,
+      "variant": "metric_swap",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"uno_c\": 0.64, \"harrell_c\": 0.647, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.64",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.5625
+            },
+            {
+              "token": "1",
+              "logit": 6.7188
+            },
+            {
+              "token": "2",
+              "logit": 5.0625
+            },
+            {
+              "token": "4",
+              "logit": 4.7812
+            },
+            {
+              "token": "3",
+              "logit": 4.75
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 21.625
+            },
+            {
+              "token": "\n",
+              "logit": 16.25
+            },
+            {
+              "token": " ",
+              "logit": 15.5
+            },
+            {
+              "token": "0",
+              "logit": 15.4375
+            },
+            {
+              "token": "  ",
+              "logit": 15.1875
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.75
+            },
+            {
+              "token": "3",
+              "logit": 14.125
+            },
+            {
+              "token": "\n",
+              "logit": 11.5625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.125
+            },
+            {
+              "token": "5",
+              "logit": 8.6875
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.64,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c3_value_scramble",
+      "source_case_index": 3,
+      "variant": "value_scramble",
+      "level": "L4",
+      "target": [
+        "cox/clinical",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.674, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.675, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.676, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.677, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for cox/clinical. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.5
+            },
+            {
+              "token": "1",
+              "logit": 6.4062
+            },
+            {
+              "token": "2",
+              "logit": 5.0
+            },
+            {
+              "token": "3",
+              "logit": 4.8438
+            },
+            {
+              "token": "4",
+              "logit": 4.7812
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.0
+            },
+            {
+              "token": "\n",
+              "logit": 16.875
+            },
+            {
+              "token": "0",
+              "logit": 16.125
+            },
+            {
+              "token": " ",
+              "logit": 16.0
+            },
+            {
+              "token": "7",
+              "logit": 15.6875
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 16.875
+            },
+            {
+              "token": "\n",
+              "logit": 11.6875
+            },
+            {
+              "token": "3",
+              "logit": 11.3125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.3125
+            },
+            {
+              "token": "5",
+              "logit": 8.8125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 17.75
+            },
+            {
+              "token": "3",
+              "logit": 15.375
+            },
+            {
+              "token": "\n",
+              "logit": 12.75
+            },
+            {
+              "token": "9",
+              "logit": 11.0
+            },
+            {
+              "token": "8",
+              "logit": 10.5625
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "asked"
+    },
+    {
+      "case_id": "c12_baseline",
+      "source_case_index": 12,
+      "variant": "baseline",
+      "level": "L3",
+      "target": [
+        "cox/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.6875
+            },
+            {
+              "token": "1",
+              "logit": 7.25
+            },
+            {
+              "token": "4",
+              "logit": 5.4375
+            },
+            {
+              "token": "2",
+              "logit": 5.125
+            },
+            {
+              "token": "3",
+              "logit": 4.9688
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.0
+            },
+            {
+              "token": "\n",
+              "logit": 17.75
+            },
+            {
+              "token": "0",
+              "logit": 16.375
+            },
+            {
+              "token": "  ",
+              "logit": 16.25
+            },
+            {
+              "token": " ",
+              "logit": 15.75
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 14.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.75
+            },
+            {
+              "token": "\n",
+              "logit": 9.75
+            },
+            {
+              "token": "3",
+              "logit": 9.5
+            },
+            {
+              "token": "5",
+              "logit": 6.0
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 14.75
+            },
+            {
+              "token": "3",
+              "logit": 11.875
+            },
+            {
+              "token": "\n",
+              "logit": 11.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.1875
+            },
+            {
+              "token": "9",
+              "logit": 7.6562
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c12_row_swap",
+      "source_case_index": 12,
+      "variant": "row_swap",
+      "level": "L3",
+      "target": [
+        "cox/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical: Harrell C 0.639\n- cox/clinical: Harrell C 0.647\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only.",
+      "generated_text": "0.643",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.4375
+            },
+            {
+              "token": "1",
+              "logit": 7.9375
+            },
+            {
+              "token": "4",
+              "logit": 5.7812
+            },
+            {
+              "token": "2",
+              "logit": 5.6562
+            },
+            {
+              "token": "3",
+              "logit": 5.4062
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.875
+            },
+            {
+              "token": "\n",
+              "logit": 18.5
+            },
+            {
+              "token": "  ",
+              "logit": 17.25
+            },
+            {
+              "token": "0",
+              "logit": 17.125
+            },
+            {
+              "token": " ",
+              "logit": 16.625
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.3125
+            },
+            {
+              "token": "\n",
+              "logit": 10.3125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.75
+            },
+            {
+              "token": "3",
+              "logit": 9.6875
+            },
+            {
+              "token": "5",
+              "logit": 6.5312
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 15.6875
+            },
+            {
+              "token": "\n",
+              "logit": 11.625
+            },
+            {
+              "token": "7",
+              "logit": 10.5
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.375
+            },
+            {
+              "token": "9",
+              "logit": 7.0312
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.643,
+      "classification": "asked"
+    },
+    {
+      "case_id": "c12_value_move",
+      "source_case_index": 12,
+      "variant": "value_move",
+      "level": "L3",
+      "target": [
+        "cox/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.777\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.875
+            },
+            {
+              "token": "1",
+              "logit": 7.4688
+            },
+            {
+              "token": "4",
+              "logit": 5.5938
+            },
+            {
+              "token": "2",
+              "logit": 5.375
+            },
+            {
+              "token": "3",
+              "logit": 5.1875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.125
+            },
+            {
+              "token": "7",
+              "logit": 18.25
+            },
+            {
+              "token": "\n",
+              "logit": 17.5
+            },
+            {
+              "token": "0",
+              "logit": 16.375
+            },
+            {
+              "token": "  ",
+              "logit": 15.75
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.6875
+            },
+            {
+              "token": "3",
+              "logit": 12.25
+            },
+            {
+              "token": "\n",
+              "logit": 10.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.6875
+            },
+            {
+              "token": "5",
+              "logit": 7.5625
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 21.875
+            },
+            {
+              "token": "8",
+              "logit": 12.125
+            },
+            {
+              "token": "\n",
+              "logit": 12.0625
+            },
+            {
+              "token": "6",
+              "logit": 11.25
+            },
+            {
+              "token": "9",
+              "logit": 11.0
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c12_entity_rename",
+      "source_case_index": 12,
+      "variant": "entity_rename",
+      "level": "L3",
+      "target": [
+        "cox/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- zzz/other: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.1875
+            },
+            {
+              "token": "1",
+              "logit": 7.7188
+            },
+            {
+              "token": "4",
+              "logit": 5.6875
+            },
+            {
+              "token": "2",
+              "logit": 5.6562
+            },
+            {
+              "token": "3",
+              "logit": 5.5938
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 25.375
+            },
+            {
+              "token": "\n",
+              "logit": 18.875
+            },
+            {
+              "token": "0",
+              "logit": 17.25
+            },
+            {
+              "token": "  ",
+              "logit": 17.25
+            },
+            {
+              "token": "7",
+              "logit": 16.75
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.125
+            },
+            {
+              "token": "3",
+              "logit": 12.3125
+            },
+            {
+              "token": "\n",
+              "logit": 11.0
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.25
+            },
+            {
+              "token": "5",
+              "logit": 7.0312
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 17.75
+            },
+            {
+              "token": "3",
+              "logit": 13.9375
+            },
+            {
+              "token": "\n",
+              "logit": 12.5625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.625
+            },
+            {
+              "token": "8",
+              "logit": 9.75
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c12_value_scramble",
+      "source_case_index": 12,
+      "variant": "value_scramble",
+      "level": "L3",
+      "target": [
+        "cox/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.681\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for cox/clinical_expression. Answer with the number only.",
+      "generated_text": "0.681",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236828,
+        236770,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.75
+            },
+            {
+              "token": "1",
+              "logit": 7.3125
+            },
+            {
+              "token": "4",
+              "logit": 5.4688
+            },
+            {
+              "token": "2",
+              "logit": 5.25
+            },
+            {
+              "token": "3",
+              "logit": 5.0938
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.5
+            },
+            {
+              "token": "\n",
+              "logit": 18.0
+            },
+            {
+              "token": "0",
+              "logit": 17.0
+            },
+            {
+              "token": "  ",
+              "logit": 16.25
+            },
+            {
+              "token": " ",
+              "logit": 16.125
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236828,
+          "token": "8",
+          "top5": [
+            {
+              "token": "8",
+              "logit": 14.0625
+            },
+            {
+              "token": "4",
+              "logit": 13.4375
+            },
+            {
+              "token": "3",
+              "logit": 12.5
+            },
+            {
+              "token": "\n",
+              "logit": 11.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.6875
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 13.75
+            },
+            {
+              "token": "\n",
+              "logit": 8.6875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 8.125
+            },
+            {
+              "token": "0",
+              "logit": 3.7812
+            },
+            {
+              "token": "2",
+              "logit": 3.7188
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.681,
+      "classification": "scrambled"
+    },
+    {
+      "case_id": "c16_baseline",
+      "source_case_index": 16,
+      "variant": "baseline",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.6875
+            },
+            {
+              "token": "1",
+              "logit": 7.3125
+            },
+            {
+              "token": "4",
+              "logit": 5.5312
+            },
+            {
+              "token": "2",
+              "logit": 5.1562
+            },
+            {
+              "token": "3",
+              "logit": 5.0312
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.0
+            },
+            {
+              "token": "\n",
+              "logit": 17.875
+            },
+            {
+              "token": "  ",
+              "logit": 16.875
+            },
+            {
+              "token": "0",
+              "logit": 16.625
+            },
+            {
+              "token": " ",
+              "logit": 16.0
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 14.625
+            },
+            {
+              "token": "3",
+              "logit": 10.5625
+            },
+            {
+              "token": "\n",
+              "logit": 10.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.5625
+            },
+            {
+              "token": "5",
+              "logit": 6.125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 13.75
+            },
+            {
+              "token": "3",
+              "logit": 12.9375
+            },
+            {
+              "token": "\n",
+              "logit": 11.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.1875
+            },
+            {
+              "token": "9",
+              "logit": 7.625
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c16_row_swap",
+      "source_case_index": 16,
+      "variant": "row_swap",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- rsf/clinical_expression: Harrell C 0.632\n- cox/clinical_expression: Harrell C 0.643\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.8125
+            },
+            {
+              "token": "1",
+              "logit": 7.4688
+            },
+            {
+              "token": "4",
+              "logit": 5.6562
+            },
+            {
+              "token": "2",
+              "logit": 5.3125
+            },
+            {
+              "token": "3",
+              "logit": 5.2188
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.5
+            },
+            {
+              "token": "\n",
+              "logit": 17.625
+            },
+            {
+              "token": "0",
+              "logit": 16.25
+            },
+            {
+              "token": "  ",
+              "logit": 16.125
+            },
+            {
+              "token": " ",
+              "logit": 15.625
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 13.625
+            },
+            {
+              "token": "3",
+              "logit": 10.875
+            },
+            {
+              "token": "\n",
+              "logit": 9.875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.5625
+            },
+            {
+              "token": "5",
+              "logit": 5.6562
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 16.0
+            },
+            {
+              "token": "3",
+              "logit": 12.25
+            },
+            {
+              "token": "\n",
+              "logit": 11.6875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.5
+            },
+            {
+              "token": "9",
+              "logit": 8.9375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c16_value_move",
+      "source_case_index": 16,
+      "variant": "value_move",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.777\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.5625
+            },
+            {
+              "token": "1",
+              "logit": 7.1875
+            },
+            {
+              "token": "4",
+              "logit": 5.4062
+            },
+            {
+              "token": "2",
+              "logit": 5.0
+            },
+            {
+              "token": "3",
+              "logit": 4.875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.625
+            },
+            {
+              "token": "\n",
+              "logit": 17.75
+            },
+            {
+              "token": "0",
+              "logit": 16.375
+            },
+            {
+              "token": "7",
+              "logit": 16.0
+            },
+            {
+              "token": "  ",
+              "logit": 16.0
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.1875
+            },
+            {
+              "token": "3",
+              "logit": 10.8125
+            },
+            {
+              "token": "\n",
+              "logit": 10.5
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.8125
+            },
+            {
+              "token": "5",
+              "logit": 6.8125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 14.75
+            },
+            {
+              "token": "3",
+              "logit": 14.0625
+            },
+            {
+              "token": "\n",
+              "logit": 11.6875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.1875
+            },
+            {
+              "token": "9",
+              "logit": 8.375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c16_entity_rename",
+      "source_case_index": 16,
+      "variant": "entity_rename",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- zzz/other: Harrell C 0.643\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.8125
+            },
+            {
+              "token": "1",
+              "logit": 7.4375
+            },
+            {
+              "token": "4",
+              "logit": 5.3125
+            },
+            {
+              "token": "2",
+              "logit": 5.1562
+            },
+            {
+              "token": "3",
+              "logit": 5.125
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 23.875
+            },
+            {
+              "token": "\n",
+              "logit": 18.0
+            },
+            {
+              "token": "  ",
+              "logit": 16.5
+            },
+            {
+              "token": "0",
+              "logit": 16.375
+            },
+            {
+              "token": " ",
+              "logit": 16.0
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 14.5
+            },
+            {
+              "token": "3",
+              "logit": 12.9375
+            },
+            {
+              "token": "\n",
+              "logit": 10.5625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.6875
+            },
+            {
+              "token": "5",
+              "logit": 6.5938
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 16.625
+            },
+            {
+              "token": "3",
+              "logit": 14.75
+            },
+            {
+              "token": "\n",
+              "logit": 12.25
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.1875
+            },
+            {
+              "token": "9",
+              "logit": 9.8125
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c16_value_scramble",
+      "source_case_index": 16,
+      "variant": "value_scramble",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: Harrell C 0.647\n- rsf/clinical: Harrell C 0.639\n- cox/clinical_expression: Harrell C 0.677\n- rsf/clinical_expression: Harrell C 0.632\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.647",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.8125
+            },
+            {
+              "token": "1",
+              "logit": 7.4375
+            },
+            {
+              "token": "4",
+              "logit": 5.5312
+            },
+            {
+              "token": "2",
+              "logit": 5.25
+            },
+            {
+              "token": "3",
+              "logit": 5.125
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.125
+            },
+            {
+              "token": "\n",
+              "logit": 18.25
+            },
+            {
+              "token": "0",
+              "logit": 16.75
+            },
+            {
+              "token": "7",
+              "logit": 16.5
+            },
+            {
+              "token": "  ",
+              "logit": 16.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 12.4375
+            },
+            {
+              "token": "7",
+              "logit": 10.5
+            },
+            {
+              "token": "3",
+              "logit": 10.5
+            },
+            {
+              "token": "\n",
+              "logit": 10.0625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.4375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 21.625
+            },
+            {
+              "token": "8",
+              "logit": 12.125
+            },
+            {
+              "token": "\n",
+              "logit": 11.9375
+            },
+            {
+              "token": "9",
+              "logit": 11.25
+            },
+            {
+              "token": "6",
+              "logit": 10.9375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.647,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c17_baseline",
+      "source_case_index": 17,
+      "variant": "baseline",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.643",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 14.125
+            },
+            {
+              "token": "1",
+              "logit": 7.6875
+            },
+            {
+              "token": "2",
+              "logit": 6.1875
+            },
+            {
+              "token": "3",
+              "logit": 5.9688
+            },
+            {
+              "token": "4",
+              "logit": 5.7188
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 20.875
+            },
+            {
+              "token": "\n",
+              "logit": 16.125
+            },
+            {
+              "token": " ",
+              "logit": 14.9375
+            },
+            {
+              "token": "0",
+              "logit": 14.6875
+            },
+            {
+              "token": "7",
+              "logit": 13.875
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.0625
+            },
+            {
+              "token": "3",
+              "logit": 13.1875
+            },
+            {
+              "token": "\n",
+              "logit": 11.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.25
+            },
+            {
+              "token": "5",
+              "logit": 7.9375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 11.75
+            },
+            {
+              "token": "\n",
+              "logit": 10.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.875
+            },
+            {
+              "token": "7",
+              "logit": 9.125
+            },
+            {
+              "token": "9",
+              "logit": 5.5938
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.643,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c17_row_swap",
+      "source_case_index": 17,
+      "variant": "row_swap",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.643",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.5
+            },
+            {
+              "token": "1",
+              "logit": 6.7812
+            },
+            {
+              "token": "2",
+              "logit": 5.375
+            },
+            {
+              "token": "4",
+              "logit": 5.1875
+            },
+            {
+              "token": "3",
+              "logit": 5.1875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 21.125
+            },
+            {
+              "token": "\n",
+              "logit": 15.875
+            },
+            {
+              "token": " ",
+              "logit": 14.9375
+            },
+            {
+              "token": "0",
+              "logit": 14.6875
+            },
+            {
+              "token": "7",
+              "logit": 14.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.625
+            },
+            {
+              "token": "3",
+              "logit": 11.8125
+            },
+            {
+              "token": "\n",
+              "logit": 11.0625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.3125
+            },
+            {
+              "token": "5",
+              "logit": 7.7812
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 11.6875
+            },
+            {
+              "token": "\n",
+              "logit": 10.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.875
+            },
+            {
+              "token": "7",
+              "logit": 8.5625
+            },
+            {
+              "token": "9",
+              "logit": 5.4688
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.643,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c17_value_move",
+      "source_case_index": 17,
+      "variant": "value_move",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.777, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.643",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236812,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 14.0625
+            },
+            {
+              "token": "1",
+              "logit": 7.7812
+            },
+            {
+              "token": "2",
+              "logit": 6.3125
+            },
+            {
+              "token": "3",
+              "logit": 6.0938
+            },
+            {
+              "token": "4",
+              "logit": 5.875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 19.25
+            },
+            {
+              "token": "7",
+              "logit": 16.0
+            },
+            {
+              "token": "\n",
+              "logit": 15.375
+            },
+            {
+              "token": " ",
+              "logit": 14.25
+            },
+            {
+              "token": "0",
+              "logit": 13.9375
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.5625
+            },
+            {
+              "token": "3",
+              "logit": 10.75
+            },
+            {
+              "token": "\n",
+              "logit": 10.6875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.0
+            },
+            {
+              "token": "5",
+              "logit": 8.125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 10.8125
+            },
+            {
+              "token": "\n",
+              "logit": 9.9375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.5
+            },
+            {
+              "token": "7",
+              "logit": 9.1875
+            },
+            {
+              "token": "9",
+              "logit": 5.1875
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.643,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c17_entity_rename",
+      "source_case_index": 17,
+      "variant": "entity_rename",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"zzz/other\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.632",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236800,
+        236778,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.8125
+            },
+            {
+              "token": "1",
+              "logit": 7.5
+            },
+            {
+              "token": "2",
+              "logit": 5.9688
+            },
+            {
+              "token": "3",
+              "logit": 5.7812
+            },
+            {
+              "token": "4",
+              "logit": 5.4375
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 20.5
+            },
+            {
+              "token": "\n",
+              "logit": 16.25
+            },
+            {
+              "token": "0",
+              "logit": 14.75
+            },
+            {
+              "token": " ",
+              "logit": 14.6875
+            },
+            {
+              "token": "1",
+              "logit": 13.875
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 16.375
+            },
+            {
+              "token": "4",
+              "logit": 12.75
+            },
+            {
+              "token": "\n",
+              "logit": 11.75
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.0
+            },
+            {
+              "token": "2",
+              "logit": 8.9375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 18.125
+            },
+            {
+              "token": "\n",
+              "logit": 13.75
+            },
+            {
+              "token": "9",
+              "logit": 13.0
+            },
+            {
+              "token": "8",
+              "logit": 10.6875
+            },
+            {
+              "token": "3",
+              "logit": 10.4375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.632,
+      "classification": "asked"
+    },
+    {
+      "case_id": "c17_value_scramble",
+      "source_case_index": 17,
+      "variant": "value_scramble",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "harrell_c"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.677, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the Harrell C for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.677",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236832,
+        236832,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 14.0625
+            },
+            {
+              "token": "1",
+              "logit": 7.8125
+            },
+            {
+              "token": "2",
+              "logit": 6.2812
+            },
+            {
+              "token": "3",
+              "logit": 6.0625
+            },
+            {
+              "token": "4",
+              "logit": 5.8438
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 20.5
+            },
+            {
+              "token": "\n",
+              "logit": 15.9375
+            },
+            {
+              "token": " ",
+              "logit": 14.625
+            },
+            {
+              "token": "0",
+              "logit": 14.5625
+            },
+            {
+              "token": "7",
+              "logit": 14.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 14.125
+            },
+            {
+              "token": "3",
+              "logit": 13.3125
+            },
+            {
+              "token": "\n",
+              "logit": 11.25
+            },
+            {
+              "token": "4",
+              "logit": 10.5625
+            },
+            {
+              "token": "6",
+              "logit": 9.3125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236832,
+          "token": "7",
+          "top5": [
+            {
+              "token": "7",
+              "logit": 15.125
+            },
+            {
+              "token": "\n",
+              "logit": 11.8125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 11.1875
+            },
+            {
+              "token": "6",
+              "logit": 7.2188
+            },
+            {
+              "token": "2",
+              "logit": 6.5312
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.677,
+      "classification": "scrambled"
+    },
+    {
+      "case_id": "c20_baseline",
+      "source_case_index": 20,
+      "variant": "baseline",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- rsf/clinical: AUC at 36 months 0.695\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical_expression: AUC at 36 months 0.609\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.694",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236819,
+        236812,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.875
+            },
+            {
+              "token": "1",
+              "logit": 8.4375
+            },
+            {
+              "token": "3",
+              "logit": 7.2188
+            },
+            {
+              "token": "2",
+              "logit": 6.7188
+            },
+            {
+              "token": "4",
+              "logit": 6.2188
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 25.375
+            },
+            {
+              "token": "  ",
+              "logit": 18.375
+            },
+            {
+              "token": "7",
+              "logit": 16.5
+            },
+            {
+              "token": "0",
+              "logit": 16.5
+            },
+            {
+              "token": "5",
+              "logit": 15.8125
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236819,
+          "token": "9",
+          "top5": [
+            {
+              "token": "9",
+              "logit": 18.25
+            },
+            {
+              "token": "2",
+              "logit": 15.6875
+            },
+            {
+              "token": "\n",
+              "logit": 12.625
+            },
+            {
+              "token": "0",
+              "logit": 11.875
+            },
+            {
+              "token": "1",
+              "logit": 11.1875
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 13.0625
+            },
+            {
+              "token": "5",
+              "logit": 12.8125
+            },
+            {
+              "token": "\n",
+              "logit": 10.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.4375
+            },
+            {
+              "token": "6",
+              "logit": 6.75
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.694,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c20_row_swap",
+      "source_case_index": 20,
+      "variant": "row_swap",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- rsf/clinical_expression: AUC at 36 months 0.609\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical: AUC at 36 months 0.695\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.694",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236819,
+        236812,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.0
+            },
+            {
+              "token": "1",
+              "logit": 8.625
+            },
+            {
+              "token": "3",
+              "logit": 7.5938
+            },
+            {
+              "token": "2",
+              "logit": 6.9375
+            },
+            {
+              "token": "4",
+              "logit": 6.4062
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 25.5
+            },
+            {
+              "token": "  ",
+              "logit": 18.0
+            },
+            {
+              "token": "7",
+              "logit": 16.75
+            },
+            {
+              "token": "0",
+              "logit": 16.625
+            },
+            {
+              "token": "5",
+              "logit": 16.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236819,
+          "token": "9",
+          "top5": [
+            {
+              "token": "9",
+              "logit": 15.0625
+            },
+            {
+              "token": "0",
+              "logit": 14.5
+            },
+            {
+              "token": "2",
+              "logit": 12.0625
+            },
+            {
+              "token": "\n",
+              "logit": 11.75
+            },
+            {
+              "token": "1",
+              "logit": 9.9375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 15.0625
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.6875
+            },
+            {
+              "token": "\n",
+              "logit": 10.3125
+            },
+            {
+              "token": "5",
+              "logit": 8.625
+            },
+            {
+              "token": "6",
+              "logit": 6.5625
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.694,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c20_value_move",
+      "source_case_index": 20,
+      "variant": "value_move",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- rsf/clinical: AUC at 36 months 0.695\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical_expression: AUC at 36 months 0.777\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.694",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236819,
+        236812,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.125
+            },
+            {
+              "token": "1",
+              "logit": 8.375
+            },
+            {
+              "token": "3",
+              "logit": 7.3125
+            },
+            {
+              "token": "2",
+              "logit": 6.7812
+            },
+            {
+              "token": "4",
+              "logit": 6.1875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.75
+            },
+            {
+              "token": "  ",
+              "logit": 17.5
+            },
+            {
+              "token": "7",
+              "logit": 16.625
+            },
+            {
+              "token": "\n",
+              "logit": 16.125
+            },
+            {
+              "token": "0",
+              "logit": 16.125
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236819,
+          "token": "9",
+          "top5": [
+            {
+              "token": "9",
+              "logit": 21.25
+            },
+            {
+              "token": "2",
+              "logit": 17.625
+            },
+            {
+              "token": "\n",
+              "logit": 13.25
+            },
+            {
+              "token": "8",
+              "logit": 13.0
+            },
+            {
+              "token": "1",
+              "logit": 12.375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236812,
+          "token": "4",
+          "top5": [
+            {
+              "token": "4",
+              "logit": 13.0
+            },
+            {
+              "token": "5",
+              "logit": 12.75
+            },
+            {
+              "token": "\n",
+              "logit": 10.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 9.3125
+            },
+            {
+              "token": "6",
+              "logit": 6.7812
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.694,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c20_entity_rename",
+      "source_case_index": 20,
+      "variant": "entity_rename",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- zzz/other: AUC at 36 months 0.695\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical_expression: AUC at 36 months 0.609\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.628",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236778,
+        236828,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 12.875
+            },
+            {
+              "token": "1",
+              "logit": 8.5
+            },
+            {
+              "token": "3",
+              "logit": 7.3125
+            },
+            {
+              "token": "2",
+              "logit": 6.6562
+            },
+            {
+              "token": "4",
+              "logit": 6.125
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 25.375
+            },
+            {
+              "token": "  ",
+              "logit": 18.75
+            },
+            {
+              "token": "0",
+              "logit": 16.875
+            },
+            {
+              "token": "7",
+              "logit": 16.5
+            },
+            {
+              "token": "\n",
+              "logit": 16.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 16.25
+            },
+            {
+              "token": "9",
+              "logit": 15.8125
+            },
+            {
+              "token": "0",
+              "logit": 12.9375
+            },
+            {
+              "token": "\n",
+              "logit": 12.5625
+            },
+            {
+              "token": "1",
+              "logit": 11.125
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236828,
+          "token": "8",
+          "top5": [
+            {
+              "token": "8",
+              "logit": 20.375
+            },
+            {
+              "token": "\n",
+              "logit": 12.25
+            },
+            {
+              "token": "9",
+              "logit": 11.6875
+            },
+            {
+              "token": "6",
+              "logit": 8.8125
+            },
+            {
+              "token": "7",
+              "logit": 8.75
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.628,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c20_value_scramble",
+      "source_case_index": 20,
+      "variant": "value_scramble",
+      "level": "L3",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results:\n- cox/clinical: AUC at 36 months 0.694\n- rsf/clinical: AUC at 36 months 0.729\n- cox/clinical_expression: AUC at 36 months 0.628\n- rsf/clinical_expression: AUC at 36 months 0.609\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.628",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236825,
+        236778,
+        236828,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.25
+            },
+            {
+              "token": "1",
+              "logit": 8.75
+            },
+            {
+              "token": "3",
+              "logit": 7.6875
+            },
+            {
+              "token": "2",
+              "logit": 7.1562
+            },
+            {
+              "token": "4",
+              "logit": 6.5312
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236825,
+          "token": "6",
+          "top5": [
+            {
+              "token": "6",
+              "logit": 24.25
+            },
+            {
+              "token": "7",
+              "logit": 18.875
+            },
+            {
+              "token": "  ",
+              "logit": 17.375
+            },
+            {
+              "token": "0",
+              "logit": 16.875
+            },
+            {
+              "token": "\n",
+              "logit": 15.9375
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236778,
+          "token": "2",
+          "top5": [
+            {
+              "token": "2",
+              "logit": 17.75
+            },
+            {
+              "token": "9",
+              "logit": 17.0
+            },
+            {
+              "token": "\n",
+              "logit": 12.875
+            },
+            {
+              "token": "0",
+              "logit": 11.875
+            },
+            {
+              "token": "1",
+              "logit": 11.75
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236828,
+          "token": "8",
+          "top5": [
+            {
+              "token": "8",
+              "logit": 18.75
+            },
+            {
+              "token": "\n",
+              "logit": 12.3125
+            },
+            {
+              "token": "9",
+              "logit": 10.9375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.75
+            },
+            {
+              "token": "6",
+              "logit": 7.9688
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.628,
+      "classification": "other_present"
+    },
+    {
+      "case_id": "c21_baseline",
+      "source_case_index": 21,
+      "variant": "baseline",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.153",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236770,
+        236810,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.625
+            },
+            {
+              "token": "1",
+              "logit": 8.4375
+            },
+            {
+              "token": "2",
+              "logit": 7.0625
+            },
+            {
+              "token": "3",
+              "logit": 7.0
+            },
+            {
+              "token": "4",
+              "logit": 6.1875
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 19.5
+            },
+            {
+              "token": "0",
+              "logit": 17.125
+            },
+            {
+              "token": "\n",
+              "logit": 14.9375
+            },
+            {
+              "token": "6",
+              "logit": 14.9375
+            },
+            {
+              "token": "2",
+              "logit": 13.9375
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 17.75
+            },
+            {
+              "token": "\n",
+              "logit": 13.1875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.3125
+            },
+            {
+              "token": "0",
+              "logit": 9.5625
+            },
+            {
+              "token": "3",
+              "logit": 9.4375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 15.8125
+            },
+            {
+              "token": "7",
+              "logit": 14.1875
+            },
+            {
+              "token": "\n",
+              "logit": 13.0
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 11.3125
+            },
+            {
+              "token": "6",
+              "logit": 9.75
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.153,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c21_row_swap",
+      "source_case_index": 21,
+      "variant": "row_swap",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.0000",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236771,
+        236771,
+        236771,
+        236771,
+        107,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.1875
+            },
+            {
+              "token": "1",
+              "logit": 7.1875
+            },
+            {
+              "token": "```",
+              "logit": 6.3438
+            },
+            {
+              "token": "2",
+              "logit": 5.9688
+            },
+            {
+              "token": "3",
+              "logit": 5.9062
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 20.125
+            },
+            {
+              "token": "1",
+              "logit": 19.5
+            },
+            {
+              "token": "6",
+              "logit": 19.375
+            },
+            {
+              "token": "5",
+              "logit": 16.5
+            },
+            {
+              "token": "8",
+              "logit": 16.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.875
+            },
+            {
+              "token": "\n",
+              "logit": 13.375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.8125
+            },
+            {
+              "token": "5",
+              "logit": 10.5625
+            },
+            {
+              "token": "8",
+              "logit": 10.0625
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 14.3125
+            },
+            {
+              "token": "\n",
+              "logit": 13.75
+            },
+            {
+              "token": "5",
+              "logit": 11.9375
+            },
+            {
+              "token": "1",
+              "logit": 11.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 11.375
+            }
+          ]
+        },
+        {
+          "step": 5,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 17.0
+            },
+            {
+              "token": "\n",
+              "logit": 15.1875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 13.3125
+            },
+            {
+              "token": "1",
+              "logit": 12.625
+            },
+            {
+              "token": "5",
+              "logit": 12.5625
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.0,
+      "classification": "novel"
+    },
+    {
+      "case_id": "c21_value_move",
+      "source_case_index": 21,
+      "variant": "value_move",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.777, \"integrated_brier_6_36m\": 0.153}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.153",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236770,
+        236810,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.5
+            },
+            {
+              "token": "1",
+              "logit": 8.375
+            },
+            {
+              "token": "2",
+              "logit": 6.9375
+            },
+            {
+              "token": "3",
+              "logit": 6.9062
+            },
+            {
+              "token": "4",
+              "logit": 6.125
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 19.375
+            },
+            {
+              "token": "0",
+              "logit": 18.0
+            },
+            {
+              "token": "6",
+              "logit": 15.5
+            },
+            {
+              "token": "\n",
+              "logit": 15.25
+            },
+            {
+              "token": "5",
+              "logit": 14.5
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 18.125
+            },
+            {
+              "token": "\n",
+              "logit": 13.125
+            },
+            {
+              "token": "0",
+              "logit": 10.25
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.125
+            },
+            {
+              "token": "3",
+              "logit": 9.9375
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 15.9375
+            },
+            {
+              "token": "7",
+              "logit": 14.375
+            },
+            {
+              "token": "\n",
+              "logit": 13.125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 11.3125
+            },
+            {
+              "token": "6",
+              "logit": 9.9375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.153,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c21_entity_rename",
+      "source_case_index": 21,
+      "variant": "entity_rename",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"zz_integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"zz_integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"zz_integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"zz_integrated_brier_6_36m\": 0.153}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.0",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236771,
+        107,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.625
+            },
+            {
+              "token": "1",
+              "logit": 8.0625
+            },
+            {
+              "token": "3",
+              "logit": 6.9062
+            },
+            {
+              "token": "2",
+              "logit": 6.8125
+            },
+            {
+              "token": "```",
+              "logit": 6.6562
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 19.125
+            },
+            {
+              "token": "1",
+              "logit": 18.875
+            },
+            {
+              "token": "6",
+              "logit": 16.875
+            },
+            {
+              "token": "\n",
+              "logit": 15.5625
+            },
+            {
+              "token": "5",
+              "logit": 15.4375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.0,
+      "classification": "novel"
+    },
+    {
+      "case_id": "c21_metric_swap",
+      "source_case_index": 21,
+      "variant": "metric_swap",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.153}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.153}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.157}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"integrated_brier_6_36m\": 0.153, \"auc_36m\": 0.609}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.153",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236770,
+        236810,
+        236800,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.5
+            },
+            {
+              "token": "1",
+              "logit": 8.25
+            },
+            {
+              "token": "2",
+              "logit": 6.8438
+            },
+            {
+              "token": "3",
+              "logit": 6.75
+            },
+            {
+              "token": "4",
+              "logit": 6.0
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 19.75
+            },
+            {
+              "token": "0",
+              "logit": 17.625
+            },
+            {
+              "token": "6",
+              "logit": 15.625
+            },
+            {
+              "token": "\n",
+              "logit": 15.125
+            },
+            {
+              "token": "5",
+              "logit": 14.25
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236810,
+          "token": "5",
+          "top5": [
+            {
+              "token": "5",
+              "logit": 18.25
+            },
+            {
+              "token": "\n",
+              "logit": 13.4375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 10.5
+            },
+            {
+              "token": "0",
+              "logit": 9.875
+            },
+            {
+              "token": "3",
+              "logit": 9.75
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236800,
+          "token": "3",
+          "top5": [
+            {
+              "token": "3",
+              "logit": 15.8125
+            },
+            {
+              "token": "7",
+              "logit": 15.125
+            },
+            {
+              "token": "\n",
+              "logit": 13.3125
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 11.625
+            },
+            {
+              "token": "6",
+              "logit": 10.125
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.153,
+      "classification": "recorded_emitted"
+    },
+    {
+      "case_id": "c21_value_scramble",
+      "source_case_index": 21,
+      "variant": "value_scramble",
+      "level": "L4",
+      "target": [
+        "rsf/clinical_expression",
+        "auc_36m"
+      ],
+      "prompt": "Recorded results (JSON): {\"cox/clinical\": {\"harrell_c\": 0.647, \"uno_c\": 0.64, \"auc_12m\": 0.649, \"auc_24m\": 0.691, \"auc_36m\": 0.694, \"integrated_brier_6_36m\": 0.187}, \"rsf/clinical\": {\"harrell_c\": 0.639, \"uno_c\": 0.639, \"auc_12m\": 0.604, \"auc_24m\": 0.675, \"auc_36m\": 0.695, \"integrated_brier_6_36m\": 0.188}, \"cox/clinical_expression\": {\"harrell_c\": 0.643, \"uno_c\": 0.632, \"auc_12m\": 0.711, \"auc_24m\": 0.666, \"auc_36m\": 0.628, \"integrated_brier_6_36m\": 0.189}, \"rsf/clinical_expression\": {\"harrell_c\": 0.632, \"uno_c\": 0.615, \"auc_12m\": 0.671, \"auc_24m\": 0.672, \"auc_36m\": 0.609, \"integrated_brier_6_36m\": 0.19}}\nState the AUC at 36 months for rsf/clinical_expression. Answer with the number only.",
+      "generated_text": "0.189",
+      "generated_token_ids": [
+        236771,
+        236761,
+        236770,
+        236828,
+        236819,
+        106
+      ],
+      "digit_token_top5": [
+        {
+          "step": 0,
+          "token_id": 236771,
+          "token": "0",
+          "top5": [
+            {
+              "token": "0",
+              "logit": 13.6875
+            },
+            {
+              "token": "1",
+              "logit": 8.3125
+            },
+            {
+              "token": "3",
+              "logit": 7.0
+            },
+            {
+              "token": "2",
+              "logit": 6.9375
+            },
+            {
+              "token": "4",
+              "logit": 6.0938
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "token_id": 236770,
+          "token": "1",
+          "top5": [
+            {
+              "token": "1",
+              "logit": 19.0
+            },
+            {
+              "token": "0",
+              "logit": 16.375
+            },
+            {
+              "token": "\n",
+              "logit": 14.6875
+            },
+            {
+              "token": "6",
+              "logit": 14.0
+            },
+            {
+              "token": "2",
+              "logit": 13.5
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "token_id": 236828,
+          "token": "8",
+          "top5": [
+            {
+              "token": "8",
+              "logit": 14.6875
+            },
+            {
+              "token": "\n",
+              "logit": 12.625
+            },
+            {
+              "token": "9",
+              "logit": 12.375
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 12.25
+            },
+            {
+              "token": "5",
+              "logit": 9.5
+            }
+          ]
+        },
+        {
+          "step": 4,
+          "token_id": 236819,
+          "token": "9",
+          "top5": [
+            {
+              "token": "9",
+              "logit": 17.875
+            },
+            {
+              "token": "8",
+              "logit": 14.75
+            },
+            {
+              "token": "\n",
+              "logit": 13.875
+            },
+            {
+              "token": "<end_of_turn>",
+              "logit": 12.625
+            },
+            {
+              "token": "7",
+              "logit": 12.375
+            }
+          ]
+        }
+      ],
+      "first_decimal": 0.189,
+      "classification": "scrambled"
+    }
+  ],
+  "report_sha256": "a7184c01cdb9cb3967345ceb7e2d2114f8300ca453a2873661ebc11cc914f5c4"
+}
