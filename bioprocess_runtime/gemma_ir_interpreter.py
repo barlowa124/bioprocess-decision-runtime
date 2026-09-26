@@ -110,11 +110,14 @@ def _execute_instruction(
         )
         values = ((normalized * (1.0 + parameter_values[0].float())).type_as(value),)
     elif opcode == "RMS_NORM_PLAIN":
+        # Qwen/Llama RMSNorm order: cast the normalized stream to input dtype
+        # first, then apply the weight in input dtype — distinct from the
+        # Gemma (1 + weight) multiply-in-fp32 ordering.
         value = inputs[0]
         normalized = value.float() * torch.rsqrt(
             value.float().pow(2).mean(-1, keepdim=True) + attributes["epsilon"]
         )
-        values = ((normalized * parameter_values[0].float()).type_as(value),)
+        values = (parameter_values[0] * normalized.type_as(value),)
     elif opcode == "LINEAR":
         values = (functional.linear(inputs[0], parameter_values[0]),)
     elif opcode == "LINEAR_BIAS":

@@ -1,0 +1,85 @@
+{
+ "backend": "cpu",
+ "deployed_sdpa_correspondence_established": false,
+ "execution_profile": "huggingface_eager",
+ "first_divergence": null,
+ "full_execution_records_committed": false,
+ "hardware_instruction_semantics_established": false,
+ "input_ids": {
+  "device": "cpu",
+  "dtype": "torch.int64",
+  "kind": "tensor",
+  "layout": "torch.strided",
+  "numel": 5,
+  "sha256": "7897e3474037e3f7a9b02e7abb75042602406858c63456ebf21b4f29933f9c61",
+  "shape": [
+   1,
+   5
+  ]
+ },
+ "input_token_ids": [
+  [
+   151644,
+   872,
+   198,
+   6023,
+   151645
+  ]
+ ],
+ "instruction_coverage_complete": true,
+ "instruction_coverage_count": 608,
+ "logits_bit_exact": true,
+ "manifest_sha256": "adc9ed8e1da175a67330c191e9fa258bb96c833c1c29242ddcb04ac2e7bde6f1",
+ "max_abs_diff": 0.0,
+ "model": {
+  "dtype": "torch.bfloat16",
+  "family": "qwen2",
+  "head_dim": "derived (hidden_size 896 / heads 14 = 64)",
+  "snapshot_revision": "060db6499f32faf8b98477b0a26969ef7d8b9987",
+  "source": "huggingface:Qwen/Qwen2.5-0.5B",
+  "tie_word_embeddings": true
+ },
+ "observed_logits": {
+  "device": "cpu",
+  "dtype": "torch.bfloat16",
+  "kind": "tensor",
+  "layout": "torch.strided",
+  "numel": 151936,
+  "sha256": "9e254b1e77b94c78ae5bfa08c21650472dad7a3c65ef1e70716ac0b1862bd885",
+  "shape": [
+   1,
+   1,
+   151936
+  ]
+ },
+ "observed_token_ids": [
+  136
+ ],
+ "predicted_logits": {
+  "device": "cpu",
+  "dtype": "torch.bfloat16",
+  "kind": "tensor",
+  "layout": "torch.strided",
+  "numel": 151936,
+  "sha256": "9e254b1e77b94c78ae5bfa08c21650472dad7a3c65ef1e70716ac0b1862bd885",
+  "shape": [
+   1,
+   1,
+   151936
+  ]
+ },
+ "predicted_token_ids": [
+  136
+ ],
+ "program_sha256": "62107e0b44172f8c68ec79887900208f0818b5ede9b4a770dd80abc52159c346",
+ "schema_version": 1,
+ "scope": "Compact fixed-input commitment to a bit-exact typed-IR prediction against pinned Hugging Face eager execution for a real Qwen/Qwen2.5-0.5B checkpoint on CPU at bf16; full instruction records are omitted and no SDPA, fused-kernel, hardware-semantic, unrestricted-input, or fp32-equality claim is established. A randomly initialized fp32 Qwen2 model of a smaller shape diverges from eager by one fp32 ulp (max abs diff 1.19e-07 observed); fp32 equality is asserted only within a tight bound. This certificate does not extend to other Qwen2 checkpoints or sizes without their own runs.",
+ "sdpa_comparison": {
+  "logits_bit_exact": false,
+  "max_abs_diff_observed": 0.546875,
+  "note": "Fused SDPA path diverges from eager at bf16; excluded from equivalence claims."
+ },
+ "selected_tokens_exact": true,
+ "torch_version": "2.7.1",
+ "transformers_version": "4.53.3"
+}

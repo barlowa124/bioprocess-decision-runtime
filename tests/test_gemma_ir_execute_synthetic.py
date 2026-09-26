@@ -9,7 +9,10 @@ checkpoint certificate.
 """
 
 import hashlib
+import importlib.util
+import tempfile
 import unittest
+from pathlib import Path
 
 try:
     import torch
@@ -63,8 +66,11 @@ def _fill(shapes, family):
 def _rms(x, w, eps, offset):
     normalized = x.float() * torch.rsqrt(
         x.float().pow(2).mean(-1, keepdim=True) + eps)
-    factor = (1.0 + w.float()) if offset else w.float()
-    return (normalized * factor).type_as(x)
+    if offset:
+        # Gemma ordering: multiply in float32, cast once.
+        return (normalized * (1.0 + w.float())).type_as(x)
+    # Qwen/Llama ordering: cast first, then multiply by the bf16 weight.
+    return w * normalized.type_as(x)
 
 
 def _rotary_table(inv_freq, positions, batch, scale=1.0, position_scale=None):
@@ -273,6 +279,63 @@ class SyntheticExecutionTests(unittest.TestCase):
             float(cfg["query_pre_attn_scalar"]) ** -0.5,
             cfg["rope_scaling"]["factor"])
         self._check(config, shapes, "Gemma3ForCausalLM", "gemma", reference)
+
+
+@unittest.skipUnless(
+    importlib.util.find_spec("transformers") is not None,
+    "transformers is not installed",
+)
+class HuggingFaceEquivalenceTests(unittest.TestCase):
+    """Randomly initialized Qwen2 checkpoint: IR interpreter output vs HF
+    eager forward. At bf16 — the dtype real Qwen checkpoints ship in — the
+    agreement is bit-identical (torch.equal). At fp32, HF's internal op
+    ordering diverges by one ulp (observed max abs diff 1.19e-07), so fp32
+    is asserted against a tight bound instead of equality. The fused SDPA
+    path is excluded entirely: it is a different reduction schedule and
+    legitimately diverges in bf16 (~0.55 observed)."""
+
+    def _check(self, dtype, exact):
+        import tempfile as _tempfile
+        from transformers import Qwen2Config, Qwen2ForCausalLM
+
+        config = Qwen2Config(
+            vocab_size=99, hidden_size=64, intermediate_size=128,
+            num_hidden_layers=2, num_attention_heads=4, num_key_value_heads=2,
+            use_sliding_window=False, tie_word_embeddings=True,
+            max_position_embeddings=64, rope_theta=1000000.0,
+            rms_norm_eps=1e-6, torch_dtype=dtype,
+        )
+        model = Qwen2ForCausalLM(config).to(dtype).eval()
+        model.config._attn_implementation = "eager"
+        tokenizer = type("Tokenizer", (), {
+            "vocab_size": 99, "bos_token_id": 1,
+            "eos_token_id": 2, "pad_token_id": 0})()
+        with _tempfile.TemporaryDirectory() as directory:
+            from bioprocess_runtime.operational_semantics import (
+                build_architecture_manifest)
+            manifest = build_architecture_manifest(
+                model, tokenizer, Path(directory))
+        program = compile_gemma_ir(manifest)
+        self.assertTrue(verify_gemma_ir(program, manifest)["valid"])
+        from bioprocess_runtime.gemma_ir_interpreter import bind_model_tensors
+        params = bind_model_tensors(program, model)
+        ids = torch.tensor([[3, 11, 7, 40, 12]], dtype=torch.int64)
+        with torch.no_grad():
+            expected = model(ids).logits[:, -1:, :]
+        execution = execute_gemma_ir(program, params, ids)
+        if exact:
+            self.assertTrue(torch.equal(execution.logits, expected))
+        else:
+            self.assertTrue(torch.allclose(
+                execution.logits.float(), expected.float(), atol=1e-5))
+        self.assertTrue(torch.equal(
+            execution.selected_token_id, expected[:, -1, :].argmax(dim=-1)))
+
+    def test_random_qwen2_bf16_logits_equal_eager(self):
+        self._check(torch.bfloat16, exact=True)
+
+    def test_random_qwen2_fp32_logits_match_eager_within_ulp(self):
+        self._check(torch.float32, exact=False)
 
 
 if __name__ == "__main__":

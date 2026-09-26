@@ -42,7 +42,7 @@ SEMANTICS: dict[str, dict[str, Any]] = {
     # legacy semantics subset so recompiled pinned programs stay byte-identical.
     "LINEAR_BIAS": {"equation": "output[...,o] = sum_i input[...,i] * weight[o,i] + bias[o]", "rounding": "execution-profile multiply-accumulate, bias addition, and reduction order required"},
     "SILU": {"equation": "output[i] = cast(float32(input[i]) * sigmoid(float32(input[i])), output_dtype)", "rounding": "execution-profile sigmoid, multiplication, and cast semantics required"},
-    "RMS_NORM_PLAIN": {"equation": "output = cast(input * rsqrt(mean(float32(input)^2, last_axis) + epsilon) * float32(weight), input_dtype)", "rounding": "execution-profile reduction, rsqrt, multiplication, and cast semantics required"},
+    "RMS_NORM_PLAIN": {"equation": "output = weight * cast(input * rsqrt(mean(float32(input)^2, last_axis) + epsilon), input_dtype)", "rounding": "execution-profile reduction, rsqrt, cast-order, and multiplication semantics required"},
 }
 
 
