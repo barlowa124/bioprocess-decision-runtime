@@ -38,10 +38,30 @@ SEMANTICS: dict[str, dict[str, Any]] = {
     "MUL": {"equation": "output[i] = cast(left[i] * right[i], output_dtype)", "rounding": "execution-profile multiplication and cast semantics required"},
     "SLICE_LAST_TOKEN": {"equation": "output[b,0,h] = input[b,sequence_length-1,h]", "rounding": "none"},
     "ARGMAX": {"equation": "output[b] is the lowest token index whose value equals max_token input[b,0,token]", "rounding": "none"},
+    # Extended-family opcodes. Programs that only use legacy opcodes emit the
+    # legacy semantics subset so recompiled pinned programs stay byte-identical.
+    "LINEAR_BIAS": {"equation": "output[...,o] = sum_i input[...,i] * weight[o,i] + bias[o]", "rounding": "execution-profile multiply-accumulate, bias addition, and reduction order required"},
+    "SILU": {"equation": "output[i] = cast(float32(input[i]) * sigmoid(float32(input[i])), output_dtype)", "rounding": "execution-profile sigmoid, multiplication, and cast semantics required"},
+    "RMS_NORM_PLAIN": {"equation": "output = cast(input * rsqrt(mean(float32(input)^2, last_axis) + epsilon) * float32(weight), input_dtype)", "rounding": "execution-profile reduction, rsqrt, multiplication, and cast semantics required"},
 }
 
 
 ALLOWED_OPCODES = frozenset(SEMANTICS)
+# The opcode set pinned at the original 270m evidence boundary. Frozen programs
+# carry exactly these semantics entries and must keep verifying byte-identical.
+LEGACY_OPCODES = frozenset(
+    {
+        "ARANGE", "EMBEDDING", "SCALE", "ROTARY_TABLE", "CAUSAL_MASK",
+        "RMS_NORM", "LINEAR", "RESHAPE_TRANSPOSE_HEADS", "ROTARY_APPLY_PAIR",
+        "REPEAT_KV", "MATMUL_QK", "SOFTCAP", "ADD", "SOFTMAX", "MATMUL_AV",
+        "TRANSPOSE_RESHAPE_HEADS", "GELU_TANH", "MUL", "SLICE_LAST_TOKEN",
+        "ARGMAX",
+    }
+)
+# Config-bound activation names mapped to declared opcodes. Approximate-gelu
+# variants other than the pinned tanh form stay unbound rather than compiled
+# under a different equation.
+ACTIVATION_OPCODES = {"gelu_pytorch_tanh": "GELU_TANH", "silu": "SILU"}
 
 
 def _shape(*dimensions: int | str) -> list[int | str]:
@@ -75,7 +95,26 @@ def _require_config(config: dict[str, Any], field: str, expected_type: type) -> 
     return value
 
 
-def _resolve_layer_types(config: dict[str, Any], layers: int) -> list[str]:
+def _resolve_family(manifest: dict[str, Any], config: dict[str, Any]) -> str:
+    # "gemma": (1 + weight) RMS norms and a sqrt(hidden) embedding-scale
+    # fallback. "standard": plain RMS-norm weights and no embedding scale
+    # (Qwen/Llama-style decoders). Resolution is explicit and fail-closed.
+    model = manifest["model"]
+    model_type = str(config.get("model_type") or "").lower()
+    klass = str(model.get("class") or "").lower()
+    if model_type.startswith("gemma") or "gemma" in klass:
+        return "gemma"
+    if model_type in {"qwen2", "qwen3", "llama", "mistral", "mixtral"} or klass.startswith(
+        ("qwen", "llama", "mistral", "mixtral")
+    ):
+        return "standard"
+    raise ValueError(
+        f"Cannot resolve architecture family from model_type={model_type!r} "
+        f"class={model.get('class')!r}"
+    )
+
+
+def _resolve_layer_types(config: dict[str, Any], layers: int, sliding_window: Any) -> list[str]:
     # Explicit layer_types wins (Gemma-3 configs carry it). Otherwise derive
     # from sliding_window_pattern (Gemma-2 style: every pattern-th layer is
     # full-attention, the rest sliding), else a uniform layout.
@@ -89,7 +128,7 @@ def _resolve_layer_types(config: dict[str, Any], layers: int) -> list[str]:
                 "full_attention" if (index + 1) % pattern == 0 else "sliding_attention"
                 for index in range(layers)
             ]
-        elif config.get("sliding_window") is not None:
+        elif sliding_window is not None:
             layer_types = ["sliding_attention"] * layers
         else:
             layer_types = ["full_attention"] * layers
@@ -133,19 +172,37 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     intermediate = _require_config(config, "intermediate_size", int)
     heads = _require_config(config, "num_attention_heads", int)
     kv_heads = _require_config(config, "num_key_value_heads", int)
-    head_dimension = _require_config(config, "head_dim", int)
     vocabulary = _require_config(config, "vocab_size", int)
+    # head_dim is an explicit Gemma config field; standard decoders derive it.
+    head_dimension = config.get("head_dim")
+    if head_dimension is None:
+        if heads <= 0 or hidden % heads != 0:
+            raise ValueError("Invalid Gemma attention dimensions")
+        head_dimension = hidden // heads
+    elif not isinstance(head_dimension, int) or isinstance(head_dimension, bool):
+        raise ValueError("Invalid or missing Gemma configuration field head_dim")
+    family = _resolve_family(manifest, config)
+    # use_sliding_window: false disables sliding attention even when a
+    # sliding_window value is present (Qwen-2 configs pair the two).
     sliding_window = config.get("sliding_window")
-    if sliding_window is not None and (
+    if config.get("use_sliding_window") is False:
+        sliding_window = None
+    elif sliding_window is not None and (
         not isinstance(sliding_window, int)
         or isinstance(sliding_window, bool)
         or sliding_window <= 0
     ):
         raise ValueError("Invalid Gemma sliding_window")
     epsilon = config.get("rms_norm_eps")
-    layer_types = _resolve_layer_types(config, layers)
+    layer_types = _resolve_layer_types(config, layers, sliding_window)
     if not isinstance(epsilon, (int, float)) or epsilon <= 0:
         raise ValueError("Invalid RMS normalization epsilon")
+    activation_name = config.get("hidden_act") or config.get("hidden_activation") or (
+        "gelu_pytorch_tanh" if family == "gemma" else "silu"
+    )
+    activation_opcode = ACTIVATION_OPCODES.get(activation_name)
+    if activation_opcode is None:
+        raise ValueError(f"Unsupported hidden_act {activation_name!r}")
     rope_position_scaling = _resolve_rope_scaling(config)
     uses_sliding = "sliding_attention" in layer_types
     if uses_sliding and sliding_window is None:
@@ -153,6 +210,17 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     if heads <= 0 or kv_heads <= 0 or heads % kv_heads != 0 or hidden <= 0:
         raise ValueError("Invalid Gemma attention dimensions")
     parameters = _parameter_map(manifest)
+    # Sandwich (Gemma-2/3) layers bind pre/post-feedforward norms around the
+    # MLP; standard decoders run residual-then-norm instead. The layout must
+    # be uniform across the whole stack.
+    sandwich_marks = sum(
+        f"model.layers.{layer}.pre_feedforward_layernorm.weight" in parameters
+        and f"model.layers.{layer}.post_feedforward_layernorm.weight" in parameters
+        for layer in range(layers)
+    )
+    if sandwich_marks not in (0, layers):
+        raise ValueError("Inconsistent feedforward normalization across layers")
+    sandwich = sandwich_marks == layers
     required_parameters = {
         "model.embed_tokens.weight",
         "model.rotary_emb.inv_freq",
@@ -171,10 +239,15 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
                 f"{prefix}.mlp.down_proj.weight",
                 f"{prefix}.input_layernorm.weight",
                 f"{prefix}.post_attention_layernorm.weight",
-                f"{prefix}.pre_feedforward_layernorm.weight",
-                f"{prefix}.post_feedforward_layernorm.weight",
             }
         )
+        if sandwich:
+            required_parameters.update(
+                {
+                    f"{prefix}.pre_feedforward_layernorm.weight",
+                    f"{prefix}.post_feedforward_layernorm.weight",
+                }
+            )
     missing = sorted(required_parameters - parameters.keys())
     if missing:
         raise ValueError(f"Architecture manifest is missing required tensors: {missing}")
@@ -186,6 +259,7 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     lm_head_parameter = (
         "lm_head.weight" if "lm_head.weight" in parameters else "model.embed_tokens.weight"
     )
+    norm_opcode = "RMS_NORM" if family == "gemma" else "RMS_NORM_PLAIN"
 
     tensors: dict[str, dict[str, Any]] = {
         "input_ids": {"shape": _shape("B", "S"), "dtype": "torch.int64", "producer": "EXTERNAL"}
@@ -234,26 +308,68 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     )
     if not dtype.startswith("torch."):
         dtype = f"torch.{dtype}"
-    emit("ARANGE", ["input_ids"], {"position_ids": (_shape(1, "S"), "torch.int64")}, attributes={"sequence_length": "S"})
-    emit(
-        "EMBEDDING",
-        ["input_ids"],
-        {"embedding_unscaled": (_shape("B", "S", hidden), dtype)},
-        parameters_used=["model.embed_tokens.weight"],
-    )
-    if has_embed_scale:
-        emit(
-            "SCALE",
-            ["embedding_unscaled"],
-            {"hidden.0": (_shape("B", "S", hidden), dtype)},
-            parameters_used=["model.embed_tokens.embed_scale"],
+
+    def emit_linear(
+        input_name: str,
+        output_name: str,
+        output_shape: list[int | str],
+        *,
+        layer: int | None,
+        weight_name: str,
+    ) -> None:
+        # Projection bias is presence-driven: Qwen-2 binds q/k/v biases while
+        # Gemma projections are bias-free.
+        bias_name = (
+            f"{weight_name[:-len('.weight')]}.bias"
+            if weight_name.endswith(".weight")
+            else f"{weight_name}.bias"
         )
-    else:
+        if bias_name in parameters:
+            emit(
+                "LINEAR_BIAS",
+                [input_name],
+                {output_name: (output_shape, dtype)},
+                layer=layer,
+                parameters_used=[weight_name, bias_name],
+            )
+        else:
+            emit(
+                "LINEAR",
+                [input_name],
+                {output_name: (output_shape, dtype)},
+                layer=layer,
+                parameters_used=[weight_name],
+            )
+
+    emit("ARANGE", ["input_ids"], {"position_ids": (_shape(1, "S"), "torch.int64")}, attributes={"sequence_length": "S"})
+    if has_embed_scale or family == "gemma":
         emit(
-            "SCALE",
-            ["embedding_unscaled"],
+            "EMBEDDING",
+            ["input_ids"],
+            {"embedding_unscaled": (_shape("B", "S", hidden), dtype)},
+            parameters_used=["model.embed_tokens.weight"],
+        )
+        if has_embed_scale:
+            emit(
+                "SCALE",
+                ["embedding_unscaled"],
+                {"hidden.0": (_shape("B", "S", hidden), dtype)},
+                parameters_used=["model.embed_tokens.embed_scale"],
+            )
+        else:
+            emit(
+                "SCALE",
+                ["embedding_unscaled"],
+                {"hidden.0": (_shape("B", "S", hidden), dtype)},
+                attributes={"scalar": float(hidden) ** 0.5},
+            )
+    else:
+        # Standard-family embeddings carry no output scale.
+        emit(
+            "EMBEDDING",
+            ["input_ids"],
             {"hidden.0": (_shape("B", "S", hidden), dtype)},
-            attributes={"scalar": float(hidden) ** 0.5},
+            parameters_used=["model.embed_tokens.weight"],
         )
     global_rotary_attributes = {"attention_scaling": 1.0}
     if rope_position_scaling != 1.0:
@@ -299,7 +415,7 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         prefix = f"model.layers.{layer}"
         input_hidden = f"hidden.{layer}"
         emit(
-            "RMS_NORM",
+            norm_opcode,
             [input_hidden],
             {f"layer.{layer}.attention.normalized": (_shape("B", "S", hidden), dtype)},
             layer=layer,
@@ -309,12 +425,12 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         normalized = f"layer.{layer}.attention.normalized"
         for projection, count in (("query", heads), ("key", kv_heads), ("value", kv_heads)):
             parameter = projection[0] if projection != "value" else "v"
-            emit(
-                "LINEAR",
-                [normalized],
-                {f"layer.{layer}.{projection}.flat": (_shape("B", "S", count * head_dimension), dtype)},
+            emit_linear(
+                normalized,
+                f"layer.{layer}.{projection}.flat",
+                _shape("B", "S", count * head_dimension),
                 layer=layer,
-                parameters_used=[f"{prefix}.self_attn.{parameter}_proj.weight"],
+                weight_name=f"{prefix}.self_attn.{parameter}_proj.weight",
             )
             emit(
                 "RESHAPE_TRANSPOSE_HEADS",
@@ -326,7 +442,7 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         query_rotary_input = f"layer.{layer}.query.heads"
         if f"{prefix}.self_attn.q_norm.weight" in parameters:
             emit(
-                "RMS_NORM",
+                norm_opcode,
                 [f"layer.{layer}.query.heads"],
                 {f"layer.{layer}.query.normalized": (_shape("B", heads, "S", head_dimension), dtype)},
                 layer=layer,
@@ -337,7 +453,7 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         key_rotary_input = f"layer.{layer}.key.heads"
         if f"{prefix}.self_attn.k_norm.weight" in parameters:
             emit(
-                "RMS_NORM",
+                norm_opcode,
                 [f"layer.{layer}.key.heads"],
                 {f"layer.{layer}.key.normalized": (_shape("B", kv_heads, "S", head_dimension), dtype)},
                 layer=layer,
@@ -431,46 +547,56 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
             layer=layer,
             attributes={"heads": heads, "head_dimension": head_dimension},
         )
-        emit(
-            "LINEAR",
-            [f"layer.{layer}.attention.concatenated"],
-            {f"layer.{layer}.attention.projected": (_shape("B", "S", hidden), dtype)},
+        emit_linear(
+            f"layer.{layer}.attention.concatenated",
+            f"layer.{layer}.attention.projected",
+            _shape("B", "S", hidden),
             layer=layer,
-            parameters_used=[f"{prefix}.self_attn.o_proj.weight"],
+            weight_name=f"{prefix}.self_attn.o_proj.weight",
         )
-        emit(
-            "RMS_NORM",
-            [f"layer.{layer}.attention.projected"],
-            {f"layer.{layer}.attention.post_normalized": (_shape("B", "S", hidden), dtype)},
-            layer=layer,
-            parameters_used=[f"{prefix}.post_attention_layernorm.weight"],
-            attributes={"epsilon": epsilon},
-        )
+        if sandwich:
+            # Gemma-2/3: post-attention norm sits between o_proj and residual,
+            # and a dedicated pre-feedforward norm gates the MLP.
+            emit(
+                norm_opcode,
+                [f"layer.{layer}.attention.projected"],
+                {f"layer.{layer}.attention.post_normalized": (_shape("B", "S", hidden), dtype)},
+                layer=layer,
+                parameters_used=[f"{prefix}.post_attention_layernorm.weight"],
+                attributes={"epsilon": epsilon},
+            )
+            attention_residual_input = f"layer.{layer}.attention.post_normalized"
+        else:
+            attention_residual_input = f"layer.{layer}.attention.projected"
         emit(
             "ADD",
-            [input_hidden, f"layer.{layer}.attention.post_normalized"],
+            [input_hidden, attention_residual_input],
             {f"layer.{layer}.post_attention_residual": (_shape("B", "S", hidden), dtype)},
             layer=layer,
             attributes={"output_dtype": dtype},
         )
         emit(
-            "RMS_NORM",
+            norm_opcode,
             [f"layer.{layer}.post_attention_residual"],
             {f"layer.{layer}.mlp.normalized": (_shape("B", "S", hidden), dtype)},
             layer=layer,
-            parameters_used=[f"{prefix}.pre_feedforward_layernorm.weight"],
+            parameters_used=[
+                f"{prefix}.pre_feedforward_layernorm.weight"
+                if sandwich
+                else f"{prefix}.post_attention_layernorm.weight"
+            ],
             attributes={"epsilon": epsilon},
         )
         for projection in ("gate", "up"):
-            emit(
-                "LINEAR",
-                [f"layer.{layer}.mlp.normalized"],
-                {f"layer.{layer}.mlp.{projection}": (_shape("B", "S", intermediate), dtype)},
+            emit_linear(
+                f"layer.{layer}.mlp.normalized",
+                f"layer.{layer}.mlp.{projection}",
+                _shape("B", "S", intermediate),
                 layer=layer,
-                parameters_used=[f"{prefix}.mlp.{projection}_proj.weight"],
+                weight_name=f"{prefix}.mlp.{projection}_proj.weight",
             )
         emit(
-            "GELU_TANH",
+            activation_opcode,
             [f"layer.{layer}.mlp.gate"],
             {f"layer.{layer}.mlp.activated_gate": (_shape("B", "S", intermediate), dtype)},
             layer=layer,
@@ -482,31 +608,35 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
             layer=layer,
             attributes={"output_dtype": dtype},
         )
-        emit(
-            "LINEAR",
-            [f"layer.{layer}.mlp.product"],
-            {f"layer.{layer}.mlp.down": (_shape("B", "S", hidden), dtype)},
+        emit_linear(
+            f"layer.{layer}.mlp.product",
+            f"layer.{layer}.mlp.down",
+            _shape("B", "S", hidden),
             layer=layer,
-            parameters_used=[f"{prefix}.mlp.down_proj.weight"],
+            weight_name=f"{prefix}.mlp.down_proj.weight",
         )
-        emit(
-            "RMS_NORM",
-            [f"layer.{layer}.mlp.down"],
-            {f"layer.{layer}.mlp.post_normalized": (_shape("B", "S", hidden), dtype)},
-            layer=layer,
-            parameters_used=[f"{prefix}.post_feedforward_layernorm.weight"],
-            attributes={"epsilon": epsilon},
-        )
+        if sandwich:
+            emit(
+                norm_opcode,
+                [f"layer.{layer}.mlp.down"],
+                {f"layer.{layer}.mlp.post_normalized": (_shape("B", "S", hidden), dtype)},
+                layer=layer,
+                parameters_used=[f"{prefix}.post_feedforward_layernorm.weight"],
+                attributes={"epsilon": epsilon},
+            )
+            mlp_residual_input = f"layer.{layer}.mlp.post_normalized"
+        else:
+            mlp_residual_input = f"layer.{layer}.mlp.down"
         emit(
             "ADD",
-            [f"layer.{layer}.post_attention_residual", f"layer.{layer}.mlp.post_normalized"],
+            [f"layer.{layer}.post_attention_residual", mlp_residual_input],
             {f"hidden.{layer + 1}": (_shape("B", "S", hidden), dtype)},
             layer=layer,
             attributes={"output_dtype": dtype},
         )
 
     emit(
-        "RMS_NORM",
+        norm_opcode,
         [f"hidden.{layers}"],
         {"hidden.final": (_shape("B", "S", hidden), dtype)},
         parameters_used=["model.norm.weight"],
@@ -517,11 +647,12 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         ["hidden.final"],
         {"hidden.last": (_shape("B", 1, hidden), dtype)},
     )
-    emit(
-        "LINEAR",
-        ["hidden.last"],
-        {"logits.last": (_shape("B", 1, vocabulary), dtype)},
-        parameters_used=[lm_head_parameter],
+    emit_linear(
+        "hidden.last",
+        "logits.last",
+        _shape("B", 1, vocabulary),
+        layer=None,
+        weight_name=lm_head_parameter,
     )
     final_cap = config.get("final_logit_softcapping")
     logits_output = "logits.last"
@@ -562,7 +693,21 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         "external_inputs": ["input_ids"],
         "declared_outputs": [logits_output, "selected_token_id"],
         "parameter_commitments": parameters,
-        "semantics": copy.deepcopy(SEMANTICS),
+        # Programs using extended-family opcodes declare the full semantics
+        # table; legacy-only programs emit the original 20-entry subset so a
+        # recompiled pinned program reproduces its frozen hash byte-identically.
+        "semantics": (
+            copy.deepcopy(SEMANTICS)
+            if any(
+                instruction["opcode"] not in LEGACY_OPCODES
+                for instruction in instructions
+            )
+            else {
+                opcode: copy.deepcopy(declaration)
+                for opcode, declaration in SEMANTICS.items()
+                if opcode in LEGACY_OPCODES
+            }
+        ),
         "instructions": instructions,
         "tensors": tensors,
         "opaque_composite_operations": [],
@@ -693,7 +838,10 @@ def verify_gemma_ir(program: dict[str, Any], manifest: dict[str, Any] | None = N
             and len(set(layer_counts.values())) == 1
             and min(layer_counts.values()) > 0
         )
-        semantics_coverage_valid &= set(semantics) == set(ALLOWED_OPCODES)
+        semantics_coverage_valid &= set(semantics) in (
+            set(ALLOWED_OPCODES),
+            LEGACY_OPCODES,
+        )
         parameter_references_valid &= all(
             isinstance(descriptor, dict)
             and isinstance(descriptor.get("shape"), list)

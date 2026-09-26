@@ -58,11 +58,11 @@ class GemmaIrTests(unittest.TestCase):
         )
 
     def test_every_instruction_has_declared_semantics_and_hash(self) -> None:
-        from bioprocess_runtime.gemma_ir import ALLOWED_OPCODES, SEMANTICS_VERSION
+        from bioprocess_runtime.gemma_ir import LEGACY_OPCODES, SEMANTICS_VERSION
 
         self.assertEqual(
             {instruction["opcode"] for instruction in self.program["instructions"]},
-            ALLOWED_OPCODES - {"SOFTCAP"},
+            LEGACY_OPCODES - {"SOFTCAP"},
         )
         for instruction in self.program["instructions"]:
             self.assertEqual(
@@ -110,10 +110,10 @@ class GemmaIrTests(unittest.TestCase):
 
         scaled = copy.deepcopy(self.manifest)
         scaled["model"]["config"]["rope_scaling"] = {
-            "rope_type": "linear",
+            "rope_type": "yarn",
             "factor": 2.0,
         }
-        with self.assertRaisesRegex(ValueError, "Scaled RoPE"):
+        with self.assertRaisesRegex(ValueError, "Unsupported rope_scaling type"):
             compile_gemma_ir(scaled)
 
     def test_verifier_rejects_malformed_structures_without_crashing(self) -> None:

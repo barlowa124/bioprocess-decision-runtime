@@ -1,7 +1,12 @@
 import hashlib
 import unittest
 
-from bioprocess_runtime.gemma_ir import compile_gemma_ir, verify_gemma_ir
+from bioprocess_runtime.gemma_ir import (
+    ALLOWED_OPCODES,
+    LEGACY_OPCODES,
+    compile_gemma_ir,
+    verify_gemma_ir,
+)
 from bioprocess_runtime.serialization import canonical_json
 
 
@@ -54,6 +59,53 @@ def _params(layers, qk_norm=True, local_rotary=True, embed_scale=True,
                 f"{prefix}.self_attn.q_norm.weight",
                 f"{prefix}.self_attn.k_norm.weight",
             })
+    return sorted(names)
+
+
+# Qwen2-family shape (qwen2.5-coder style): no head_dim field, no sandwich
+# norms, no q/k norms, no embed scale, no local rotary, biased q/k/v
+# projections, SiLU MLP, sliding window configured but disabled.
+QWEN_CONFIG = {
+    "model_type": "qwen2",
+    "num_hidden_layers": 2,
+    "hidden_size": 64,
+    "intermediate_size": 128,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "vocab_size": 256,
+    "rms_norm_eps": 1e-6,
+    "torch_dtype": "bfloat16",
+    "use_sliding_window": False,
+    "sliding_window": 32768,
+    "hidden_act": "silu",
+    "rope_theta": 1000000.0,
+    "tie_word_embeddings": False,
+}
+
+
+def _qwen_params(layers):
+    names = {
+        "model.embed_tokens.weight",
+        "model.rotary_emb.inv_freq",
+        "model.norm.weight",
+        "lm_head.weight",
+    }
+    for layer in range(layers):
+        prefix = f"model.layers.{layer}"
+        names.update({
+            f"{prefix}.self_attn.q_proj.weight",
+            f"{prefix}.self_attn.q_proj.bias",
+            f"{prefix}.self_attn.k_proj.weight",
+            f"{prefix}.self_attn.k_proj.bias",
+            f"{prefix}.self_attn.v_proj.weight",
+            f"{prefix}.self_attn.v_proj.bias",
+            f"{prefix}.self_attn.o_proj.weight",
+            f"{prefix}.mlp.gate_proj.weight",
+            f"{prefix}.mlp.up_proj.weight",
+            f"{prefix}.mlp.down_proj.weight",
+            f"{prefix}.input_layernorm.weight",
+            f"{prefix}.post_attention_layernorm.weight",
+        })
     return sorted(names)
 
 
@@ -201,6 +253,70 @@ class GemmaIrGlobalTests(unittest.TestCase):
                  and "hidden.0" in i["outputs"]][0]
         self.assertEqual(scale["parameter_refs"], [])
         self.assertEqual(scale["attributes"]["scalar"], 8.0)  # sqrt(64)
+
+
+class QwenIrTests(unittest.TestCase):
+
+    def test_qwen2_standard_layout(self):
+        manifest = _manifest(
+            dict(QWEN_CONFIG), _qwen_params(2), model_class="Qwen2ForCausalLM"
+        )
+        program = compile_gemma_ir(manifest)
+        ops = [i["opcode"] for i in program["instructions"]]
+        # 25 instructions/layer: input norm, 3x(LINEAR_BIAS+RESHAPE), rotary,
+        # 2x REPEAT_KV, QK matmul, scale, mask add, softmax, AV, transpose,
+        # o_proj, residual add, post-attn norm, gate/up, SILU, MUL, down,
+        # residual add. Plus 4 prologue + 4 epilogue.
+        self.assertEqual(len(ops), 2 * 25 + 8)
+        self.assertEqual(ops.count("LINEAR_BIAS"), 6)   # biased q/k/v only
+        self.assertEqual(ops.count("SILU"), 2)
+        self.assertEqual(ops.count("RMS_NORM_PLAIN"), 5)  # 2/layer + final
+        self.assertNotIn("RMS_NORM", ops)
+        self.assertNotIn("GELU_TANH", ops)
+        self.assertNotIn("SOFTCAP", ops)
+        scales = [i for i in program["instructions"] if i["opcode"] == "SCALE"]
+        self.assertEqual(len(scales), 2)  # attention scale only, no embed scale
+        self.assertEqual(
+            [i for i in program["instructions"] if i["opcode"] == "CAUSAL_MASK"]
+            .__len__(), 1)
+        self.assertEqual(program["configuration"]["head_dimension"], 16)
+        self.assertIsNone(program["configuration"]["sliding_window"])
+        self.assertEqual(
+            program["configuration"]["layer_types"], ["full_attention"] * 2)
+        # Extended-family programs declare the full semantics table.
+        self.assertEqual(set(program["semantics"]), set(ALLOWED_OPCODES))
+        checks = _checks(verify_gemma_ir(program, manifest))
+        self.assertTrue(all(checks.values()), checks)
+
+    def test_qwen2_family_from_class_without_model_type(self):
+        config = {key: value for key, value in QWEN_CONFIG.items()
+                  if key != "model_type"}
+        manifest = _manifest(
+            config, _qwen_params(2), model_class="Qwen2ForCausalLM")
+        program = compile_gemma_ir(manifest)
+        self.assertIn(
+            "RMS_NORM_PLAIN", [i["opcode"] for i in program["instructions"]])
+
+    def test_unknown_family_rejected(self):
+        manifest = _manifest(
+            dict(QWEN_CONFIG, model_type="phi3"), _qwen_params(2),
+            model_class="Phi3ForCausalLM")
+        with self.assertRaisesRegex(ValueError, "architecture family"):
+            compile_gemma_ir(manifest)
+
+    def test_unknown_activation_rejected(self):
+        manifest = _manifest(
+            dict(QWEN_CONFIG, hidden_act="gelu_new"), _qwen_params(2),
+            model_class="Qwen2ForCausalLM")
+        with self.assertRaisesRegex(ValueError, "hidden_act"):
+            compile_gemma_ir(manifest)
+
+    def test_gemma_semantics_stay_legacy(self):
+        # A legacy-only program must emit the original 20-entry semantics
+        # table so recompiled pinned programs reproduce their frozen hash.
+        manifest = _manifest(dict(BASE_CONFIG), _params(2))
+        program = compile_gemma_ir(manifest)
+        self.assertEqual(set(program["semantics"]), LEGACY_OPCODES)
 
 
 if __name__ == "__main__":

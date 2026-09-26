@@ -109,8 +109,18 @@ def _execute_instruction(
             value.float().pow(2).mean(-1, keepdim=True) + attributes["epsilon"]
         )
         values = ((normalized * (1.0 + parameter_values[0].float())).type_as(value),)
+    elif opcode == "RMS_NORM_PLAIN":
+        value = inputs[0]
+        normalized = value.float() * torch.rsqrt(
+            value.float().pow(2).mean(-1, keepdim=True) + attributes["epsilon"]
+        )
+        values = ((normalized * parameter_values[0].float()).type_as(value),)
     elif opcode == "LINEAR":
         values = (functional.linear(inputs[0], parameter_values[0]),)
+    elif opcode == "LINEAR_BIAS":
+        values = (
+            functional.linear(inputs[0], parameter_values[0], parameter_values[1]),
+        )
     elif opcode == "RESHAPE_TRANSPOSE_HEADS":
         value = inputs[0]
         batch, sequence, _ = value.shape
@@ -156,6 +166,8 @@ def _execute_instruction(
         values = (value.reshape(value.shape[0], value.shape[1], -1).contiguous(),)
     elif opcode == "GELU_TANH":
         values = (functional.gelu(inputs[0], approximate="tanh"),)
+    elif opcode == "SILU":
+        values = (functional.silu(inputs[0]),)
     elif opcode == "MUL":
         values = (inputs[0] * inputs[1],)
     elif opcode == "SLICE_LAST_TOKEN":
