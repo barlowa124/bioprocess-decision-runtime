@@ -61,6 +61,7 @@ Two earlier bounded studies are retained for context: capturing and intervening 
 - Architecture-defined coordinate semantics separated from empirical biological interpretations
 - Per-layer explicit-attention versus SDPA comparisons using identical Q/K/V tensors and masks for non-softcapped attention. Softcapped configurations are rejected because SDPA cannot reproduce the score transform
 - Exhaustive reference/eager/deployed checks over caller-declared finite canonical input grids
+- Presence-driven IR compilation across the Gemma family rather than a fixed 270M structure: `layer_types` derived from `sliding_window_pattern` when absent, optional q/k pre-norms and embedding scale, single or dual rotary embeddings, linear `rope_scaling` bound to a `position_scaling` attribute (other scaling families still reject), tied or explicit `lm_head`, and optional `sliding_window`. This is structural program generation only — per-checkpoint bit-exact certificates remain separately executed evidence and the compiled program's own qualification flags stay false
 
 ## Toward explaining a writing failure (in progress)
 

@@ -79,6 +79,9 @@ def _execute_instruction(
         inverse_frequency = parameter_values[0]
         expanded_frequency = inverse_frequency[None, :, None].float().expand(value.shape[0], -1, 1).to(value.device)
         expanded_position = position_ids[:, None, :].float()
+        position_scaling = attributes.get("position_scaling")
+        if position_scaling is not None:
+            expanded_position = expanded_position / float(position_scaling)
         frequency = (expanded_frequency @ expanded_position).transpose(1, 2)
         embedding = torch.cat((frequency, frequency), dim=-1)
         scaling = attributes["attention_scaling"]

@@ -75,6 +75,52 @@ def _require_config(config: dict[str, Any], field: str, expected_type: type) -> 
     return value
 
 
+def _resolve_layer_types(config: dict[str, Any], layers: int) -> list[str]:
+    # Explicit layer_types wins (Gemma-3 configs carry it). Otherwise derive
+    # from sliding_window_pattern (Gemma-2 style: every pattern-th layer is
+    # full-attention, the rest sliding), else a uniform layout.
+    layer_types = config.get("layer_types")
+    if layer_types is None:
+        pattern = config.get("sliding_window_pattern")
+        if pattern is not None:
+            if not isinstance(pattern, int) or isinstance(pattern, bool) or pattern <= 0:
+                raise ValueError("Invalid Gemma sliding_window_pattern")
+            layer_types = [
+                "full_attention" if (index + 1) % pattern == 0 else "sliding_attention"
+                for index in range(layers)
+            ]
+        elif config.get("sliding_window") is not None:
+            layer_types = ["sliding_attention"] * layers
+        else:
+            layer_types = ["full_attention"] * layers
+    if not isinstance(layer_types, list) or len(layer_types) != layers or any(
+        layer_type not in {"sliding_attention", "full_attention"} for layer_type in layer_types
+    ):
+        raise ValueError("Invalid Gemma layer types")
+    return list(layer_types)
+
+
+def _resolve_rope_scaling(config: dict[str, Any]) -> float:
+    # Only linear RoPE scaling is bound to manifest constants (Gemma-3 4b+
+    # global attention). Other scaling families stay rejected rather than
+    # silently compiling an unverified transform.
+    rope = config.get("rope_scaling")
+    if rope is None:
+        return 1.0
+    if not isinstance(rope, dict):
+        raise ValueError("Invalid Gemma rope_scaling entry")
+    rope_type = rope.get("rope_type") or rope.get("type")
+    if rope_type != "linear":
+        raise ValueError(
+            f"Unsupported rope_scaling type {rope_type!r}; only 'linear' is "
+            "bound to manifest constants"
+        )
+    factor = rope.get("factor")
+    if not isinstance(factor, (int, float)) or isinstance(factor, bool) or factor <= 0:
+        raise ValueError("Invalid rope_scaling factor")
+    return float(factor)
+
+
 def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(manifest, dict) or not isinstance(manifest.get("model"), dict):
         raise ValueError("Architecture manifest must contain a model mapping")
@@ -89,29 +135,28 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     kv_heads = _require_config(config, "num_key_value_heads", int)
     head_dimension = _require_config(config, "head_dim", int)
     vocabulary = _require_config(config, "vocab_size", int)
-    sliding_window = _require_config(config, "sliding_window", int)
+    sliding_window = config.get("sliding_window")
+    if sliding_window is not None and (
+        not isinstance(sliding_window, int)
+        or isinstance(sliding_window, bool)
+        or sliding_window <= 0
+    ):
+        raise ValueError("Invalid Gemma sliding_window")
     epsilon = config.get("rms_norm_eps")
-    layer_types = config.get("layer_types")
+    layer_types = _resolve_layer_types(config, layers)
     if not isinstance(epsilon, (int, float)) or epsilon <= 0:
         raise ValueError("Invalid RMS normalization epsilon")
-    if config.get("rope_scaling") is not None:
-        raise ValueError(
-            "Scaled RoPE requires manifest-bound global and local attention-scaling constants"
-        )
-    if not isinstance(layer_types, list) or len(layer_types) != layers or any(
-        layer_type not in {"sliding_attention", "full_attention"} for layer_type in layer_types
-    ):
-        raise ValueError("Invalid Gemma layer types")
+    rope_position_scaling = _resolve_rope_scaling(config)
+    uses_sliding = "sliding_attention" in layer_types
+    if uses_sliding and sliding_window is None:
+        raise ValueError("Sliding-attention layers require sliding_window")
     if heads <= 0 or kv_heads <= 0 or heads % kv_heads != 0 or hidden <= 0:
         raise ValueError("Invalid Gemma attention dimensions")
     parameters = _parameter_map(manifest)
     required_parameters = {
         "model.embed_tokens.weight",
-        "model.embed_tokens.embed_scale",
         "model.rotary_emb.inv_freq",
-        "model.rotary_emb_local.inv_freq",
         "model.norm.weight",
-        "lm_head.weight",
     }
     for layer in range(layers):
         prefix = f"model.layers.{layer}"
@@ -121,8 +166,6 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
                 f"{prefix}.self_attn.k_proj.weight",
                 f"{prefix}.self_attn.v_proj.weight",
                 f"{prefix}.self_attn.o_proj.weight",
-                f"{prefix}.self_attn.q_norm.weight",
-                f"{prefix}.self_attn.k_norm.weight",
                 f"{prefix}.mlp.gate_proj.weight",
                 f"{prefix}.mlp.up_proj.weight",
                 f"{prefix}.mlp.down_proj.weight",
@@ -135,6 +178,14 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
     missing = sorted(required_parameters - parameters.keys())
     if missing:
         raise ValueError(f"Architecture manifest is missing required tensors: {missing}")
+    # Presence-driven structure: embed scale, a dedicated local rotary,
+    # q/k pre-norms, and an untied lm_head exist on Gemma-3 but not all
+    # family members — emit them only when the manifest binds tensors.
+    has_embed_scale = "model.embed_tokens.embed_scale" in parameters
+    has_local_rotary = "model.rotary_emb_local.inv_freq" in parameters
+    lm_head_parameter = (
+        "lm_head.weight" if "lm_head.weight" in parameters else "model.embed_tokens.weight"
+    )
 
     tensors: dict[str, dict[str, Any]] = {
         "input_ids": {"shape": _shape("B", "S"), "dtype": "torch.int64", "producer": "EXTERNAL"}
@@ -190,12 +241,23 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         {"embedding_unscaled": (_shape("B", "S", hidden), dtype)},
         parameters_used=["model.embed_tokens.weight"],
     )
-    emit(
-        "SCALE",
-        ["embedding_unscaled"],
-        {"hidden.0": (_shape("B", "S", hidden), dtype)},
-        parameters_used=["model.embed_tokens.embed_scale"],
-    )
+    if has_embed_scale:
+        emit(
+            "SCALE",
+            ["embedding_unscaled"],
+            {"hidden.0": (_shape("B", "S", hidden), dtype)},
+            parameters_used=["model.embed_tokens.embed_scale"],
+        )
+    else:
+        emit(
+            "SCALE",
+            ["embedding_unscaled"],
+            {"hidden.0": (_shape("B", "S", hidden), dtype)},
+            attributes={"scalar": float(hidden) ** 0.5},
+        )
+    global_rotary_attributes = {"attention_scaling": 1.0}
+    if rope_position_scaling != 1.0:
+        global_rotary_attributes["position_scaling"] = rope_position_scaling
     emit(
         "ROTARY_TABLE",
         ["hidden.0", "position_ids"],
@@ -204,30 +266,32 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
             "rotary.global.sine": (_shape("B", "S", head_dimension), dtype),
         },
         parameters_used=["model.rotary_emb.inv_freq"],
-        attributes={"attention_scaling": 1.0},
+        attributes=global_rotary_attributes,
     )
-    emit(
-        "ROTARY_TABLE",
-        ["hidden.0", "position_ids"],
-        {
-            "rotary.local.cosine": (_shape("B", "S", head_dimension), dtype),
-            "rotary.local.sine": (_shape("B", "S", head_dimension), dtype),
-        },
-        parameters_used=["model.rotary_emb_local.inv_freq"],
-        attributes={"attention_scaling": 1.0},
-    )
+    if has_local_rotary:
+        emit(
+            "ROTARY_TABLE",
+            ["hidden.0", "position_ids"],
+            {
+                "rotary.local.cosine": (_shape("B", "S", head_dimension), dtype),
+                "rotary.local.sine": (_shape("B", "S", head_dimension), dtype),
+            },
+            parameters_used=["model.rotary_emb_local.inv_freq"],
+            attributes={"attention_scaling": 1.0},
+        )
     emit(
         "CAUSAL_MASK",
         ["input_ids", "hidden.0"],
         {"mask.full": (_shape(1, 1, "S", "S"), dtype)},
         attributes={"sequence_length": "S", "sliding_window": None},
     )
-    emit(
-        "CAUSAL_MASK",
-        ["input_ids", "hidden.0"],
-        {"mask.sliding": (_shape(1, 1, "S", "S"), dtype)},
-        attributes={"sequence_length": "S", "sliding_window": sliding_window},
-    )
+    if uses_sliding:
+        emit(
+            "CAUSAL_MASK",
+            ["input_ids", "hidden.0"],
+            {"mask.sliding": (_shape(1, 1, "S", "S"), dtype)},
+            attributes={"sequence_length": "S", "sliding_window": sliding_window},
+        )
 
     kv_repetitions = heads // kv_heads
     attention_scale = float(config.get("query_pre_attn_scalar", head_dimension)) ** -0.5
@@ -259,28 +323,38 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
                 layer=layer,
                 attributes={"heads": count, "head_dimension": head_dimension},
             )
-        emit(
-            "RMS_NORM",
-            [f"layer.{layer}.query.heads"],
-            {f"layer.{layer}.query.normalized": (_shape("B", heads, "S", head_dimension), dtype)},
-            layer=layer,
-            parameters_used=[f"{prefix}.self_attn.q_norm.weight"],
-            attributes={"epsilon": epsilon},
+        query_rotary_input = f"layer.{layer}.query.heads"
+        if f"{prefix}.self_attn.q_norm.weight" in parameters:
+            emit(
+                "RMS_NORM",
+                [f"layer.{layer}.query.heads"],
+                {f"layer.{layer}.query.normalized": (_shape("B", heads, "S", head_dimension), dtype)},
+                layer=layer,
+                parameters_used=[f"{prefix}.self_attn.q_norm.weight"],
+                attributes={"epsilon": epsilon},
+            )
+            query_rotary_input = f"layer.{layer}.query.normalized"
+        key_rotary_input = f"layer.{layer}.key.heads"
+        if f"{prefix}.self_attn.k_norm.weight" in parameters:
+            emit(
+                "RMS_NORM",
+                [f"layer.{layer}.key.heads"],
+                {f"layer.{layer}.key.normalized": (_shape("B", kv_heads, "S", head_dimension), dtype)},
+                layer=layer,
+                parameters_used=[f"{prefix}.self_attn.k_norm.weight"],
+                attributes={"epsilon": epsilon},
+            )
+            key_rotary_input = f"layer.{layer}.key.normalized"
+        rotary = (
+            "local"
+            if layer_types[layer] == "sliding_attention" and has_local_rotary
+            else "global"
         )
-        emit(
-            "RMS_NORM",
-            [f"layer.{layer}.key.heads"],
-            {f"layer.{layer}.key.normalized": (_shape("B", kv_heads, "S", head_dimension), dtype)},
-            layer=layer,
-            parameters_used=[f"{prefix}.self_attn.k_norm.weight"],
-            attributes={"epsilon": epsilon},
-        )
-        rotary = "local" if layer_types[layer] == "sliding_attention" else "global"
         emit(
             "ROTARY_APPLY_PAIR",
             [
-                f"layer.{layer}.query.normalized",
-                f"layer.{layer}.key.normalized",
+                query_rotary_input,
+                key_rotary_input,
                 f"rotary.{rotary}.cosine",
                 f"rotary.{rotary}.sine",
             ],
@@ -447,7 +521,7 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
         "LINEAR",
         ["hidden.last"],
         {"logits.last": (_shape("B", 1, vocabulary), dtype)},
-        parameters_used=["lm_head.weight"],
+        parameters_used=[lm_head_parameter],
     )
     final_cap = config.get("final_logit_softcapping")
     logits_output = "logits.last"
@@ -482,6 +556,8 @@ def compile_gemma_ir(manifest: dict[str, Any]) -> dict[str, Any]:
             "sliding_window": sliding_window,
             "attention_scale": attention_scale,
             "rotary_attention_scaling": 1.0,
+            **({"rotary_position_scaling": rope_position_scaling}
+               if rope_position_scaling != 1.0 else {}),
         },
         "external_inputs": ["input_ids"],
         "declared_outputs": [logits_output, "selected_token_id"],
