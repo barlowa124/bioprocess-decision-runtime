@@ -455,3 +455,4 @@ These references provide context. Listing them does not imply that the prototype
 ## Related work
 
 - [oncology-coscientist](https://github.com/barlowa124/oncology-coscientist) applies the same discipline one layer up: every number in an agent-drafted report is bound to its computation and hash-pinned for human review.
+- [lab-instrument-gateway](https://github.com/barlowa124/lab-instrument-gateway) supplies real capture data: `capture-scenario` maps a lablink SQLite capture window onto this policy's observation domain, so fault-injection sessions exercise the same decision surface as the synthetic scenarios.
