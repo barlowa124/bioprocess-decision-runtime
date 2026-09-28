@@ -445,3 +445,7 @@ A next study would compare this approach with PID/MPC baselines and a black-box 
 - [DeepProve: Verifiable End-to-End Large Language Model Inference](https://eprint.iacr.org/2026/1112)
 
 These references provide context. Listing them does not imply that the prototype conforms to or has been reviewed under any framework.
+
+## Related work
+
+- [oncology-coscientist](https://github.com/barlowa124/oncology-coscientist) applies the same discipline one layer up: every number in an agent-drafted report is bound to its computation and hash-pinned for human review.
