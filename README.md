@@ -261,6 +261,12 @@ python -m bioprocess_runtime scenario low_oxygen
 python -m bioprocess_runtime suite
 ```
 
+A capture from [lab-instrument-gateway](https://github.com/barlowa124/lab-instrument-gateway) can be evaluated directly. The newest window of the lablink SQLite capture maps onto the same observation domain (DO, DO slope, agitation, sensor agreement):
+
+```powershell
+python -m bioprocess_runtime capture-scenario path/to/capture.sqlite --window-s 120
+```
+
 The Gemma experiments use optional dependencies. The tested NVIDIA installation is:
 
 ```powershell

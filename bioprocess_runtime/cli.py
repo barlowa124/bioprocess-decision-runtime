@@ -65,6 +65,19 @@ def command_scenario(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_capture_scenario(args: argparse.Namespace) -> int:
+    from .gateway_scenario import scenario_from_capture
+    try:
+        scenario = scenario_from_capture(
+            args.db, window_s=args.window_s)
+    except ValueError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 2
+    decision = _run_scenario(args.policy, scenario, args.audit)
+    _print_decision(decision, args.json)
+    return 0
+
+
 def command_suite(args: argparse.Namespace) -> int:
     results = []
     passed = 0
@@ -3601,6 +3614,17 @@ def build_parser() -> argparse.ArgumentParser:
     scenario_parser.add_argument("--audit", type=Path)
     scenario_parser.add_argument("--json", action="store_true")
     scenario_parser.set_defaults(handler=command_scenario)
+
+    capture_parser = subparsers.add_parser(
+        "capture-scenario",
+        help="Evaluate the newest window of a lab-instrument-gateway capture DB")
+    capture_parser.add_argument("db", type=Path,
+                                help="lablink capture.sqlite path")
+    capture_parser.add_argument("--window-s", type=int, default=120)
+    capture_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
+    capture_parser.add_argument("--audit", type=Path)
+    capture_parser.add_argument("--json", action="store_true")
+    capture_parser.set_defaults(handler=command_capture_scenario)
 
     suite_parser = subparsers.add_parser("suite", help="Evaluate all built-in synthetic scenarios")
     suite_parser.add_argument("--policy", type=Path, default=DEFAULT_POLICY)
