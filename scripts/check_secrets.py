@@ -30,6 +30,9 @@ PATTERNS = [
     (re.compile(r"sk-[A-Za-z0-9_-]{20,}"), "OpenAI-style key"),
     (re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"), "Slack token"),
     (re.compile(r"AIza[0-9A-Za-z_-]{35}"), "Google API key"),
+    (re.compile(r"pypi-[A-Za-z0-9_-]{16,}"), "PyPI token"),
+    (re.compile(r"glpat-[A-Za-z0-9_-]{20,}"), "GitLab PAT"),
+    (re.compile(r"npm_[A-Za-z0-9]{36}"), "npm token"),
     (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY"), "private key"),
 ]
 
